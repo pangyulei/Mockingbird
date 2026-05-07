@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:mockingbird/app/app_events.dart';
 import 'package:mockingbird/app/app_state.dart';
-import 'package:mockingbird/tab_play_widget/tab_play_widget/tab_play_widget.dart';
-import 'package:mockingbird/tab_playlist_widget/tab_playlist_widget/tab_playlist_widget.dart';
-import 'package:mockingbird/tab_setting_widget/tab_setting_widget/tab_setting_widget.dart';
+import 'package:mockingbird/tab_play/tab_play_widget.dart';
+import 'package:mockingbird/tab_playlist/tab_playlist_widget.dart';
+import 'package:mockingbird/tab_setting/tab_setting_widget.dart';
 
 class AppWidget extends StatefulWidget {
   final AppEvents handler;
   const AppWidget({required this.handler, super.key});
 
   @override
-  State<AppWidget> createState() => _MainWidgetFactory();
+  State<AppWidget> createState() => _AppWidgetFactory();
 }
 
-class _MainWidgetFactory extends State<AppWidget> {
+class _AppWidgetFactory extends State<AppWidget> {
   late AppState _state;
 
   @override

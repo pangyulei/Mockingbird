@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlist_widget/playlist_widget/playlist_widget.dart';
-import 'package:mockingbird/tab_playlist_widget/playlists_widget/playlists_widget.dart';
-import 'package:mockingbird/tab_playlist_widget/tab_playlist_widget/tab_playlist_route.dart';
+import 'package:mockingbird/tab_playlist/playlist/playlist_widget.dart';
+import 'package:mockingbird/tab_playlist/playlists/playlists_widget.dart';
+import 'package:mockingbird/tab_playlist/tab_playlist_route.dart';
 
 class TabPlaylistWidget extends StatelessWidget {
   const TabPlaylistWidget({super.key});
