@@ -5,14 +5,10 @@ import '../objectbox.g.dart'; // created by `flutter pub run build_runner build`
 
 class DB {
   static DB? _instance;
-  late final Store _store;
+  late final Store store;
 
-  DB._create(this._store) {
+  DB._create(this.store) {
     // Add any additional setup code, e.g. build queries.
-  }
-
-  static Store get store {
-    return instance._store;
   }
 
   static DB get instance {

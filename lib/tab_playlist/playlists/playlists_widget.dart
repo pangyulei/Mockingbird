@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_widget.dart';
 
 class PlaylistsWidget extends StatefulWidget {
   const PlaylistsWidget({super.key});
@@ -19,7 +22,23 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Playlists')),
+      appBar: AppBar(
+        title: const Text('Playlists'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              await showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return const PlaylistCreateWidget();
+                },
+              );
+            },
+            tooltip: 'Add Playlist',
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: GridView.builder(
@@ -55,12 +74,16 @@ class PlaylistCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: playlist.coverColor,
               borderRadius: BorderRadius.circular(16),
+              image: playlist.coverImage != null
+                  ? DecorationImage(
+                      image: FileImage(playlist.coverImage!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
             ),
-            child: const Icon(
-              Icons.music_note,
-              color: Colors.white70,
-              size: 40,
-            ),
+            child: playlist.coverImage == null
+                ? const Icon(Icons.music_note, color: Colors.white70, size: 40)
+                : null,
           ),
         ),
         const SizedBox(height: 12),
@@ -77,8 +100,13 @@ class PlaylistCard extends StatelessWidget {
 }
 
 class _PlaylistData {
-  const _PlaylistData({required this.title, required this.coverColor});
+  const _PlaylistData({
+    required this.title,
+    this.coverColor = Colors.blue,
+    this.coverImage,
+  });
 
   final String title;
   final Color coverColor;
+  final File? coverImage;
 }
