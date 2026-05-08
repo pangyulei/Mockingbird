@@ -25,6 +25,10 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
 
   @override
   Widget build(BuildContext context) {
+    const bgColor = Color(0xFF1E1F23);
+    const lightShadow = Color(0xFF2A2B31);
+    const darkShadow = Color(0xFF121216);
+
     return GestureDetector(
       onTapDown: (_) => _updateState(
         widget._handler.playlistCardWidgetPressedStateChanged(_state, true),
@@ -38,77 +42,102 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
       onTapCancel: () => _updateState(
         widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
       ),
-      child: Container(
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2E3239),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: _state.isPressed
-              ? [] // No shadows when pressed makes it look "flat/pushed"
-              : [
-                  const BoxShadow(
-                    color: Color(0xFF23262B),
-                    offset: Offset(4, 4),
-                    blurRadius: 10,
-                    spreadRadius: 1,
+      child: AnimatedScale(
+        scale: _state.isPressed ? 0.96 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        child: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(24),
+            gradient: _state.isPressed
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [darkShadow, lightShadow],
+                  )
+                : null,
+            boxShadow: _state.isPressed
+                ? []
+                : [
+                    const BoxShadow(
+                      color: darkShadow,
+                      offset: Offset(6, 6),
+                      blurRadius: 12,
+                    ),
+                    const BoxShadow(
+                      color: lightShadow,
+                      offset: Offset(-6, -6),
+                      blurRadius: 12,
+                    ),
+                  ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              children: [
+                if (widget.playlist.cover != null)
+                  Positioned.fill(
+                    child: Opacity(
+                      opacity: _state.isPressed ? 0.6 : 0.9,
+                      child: Image.file(
+                        File(widget.playlist.cover!),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
-                  const BoxShadow(
-                    color: Color(0xFF393E46),
-                    offset: Offset(-4, -4),
-                    blurRadius: 10,
-                    spreadRadius: 1,
+                if (widget.playlist.cover == null)
+                  const Center(
+                    child: Icon(
+                      Icons.video_collection,
+                      color: Color(0xFF6A6C75), //Color(0xFFFF4D00),
+                      size: 24,
+                    ),
                   ),
-                ],
-          image: widget.playlist.cover != null
-              ? DecorationImage(
-                  image: FileImage(File(widget.playlist.cover!)),
-                  fit: BoxFit.cover,
-                )
-              : null,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            if (widget.playlist.cover == null)
-              const Center(
-                child: Icon(
-                  Icons.music_note,
-                  color: Colors.white70,
-                  size: 40,
-                ),
-              ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 4,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.7),
-                      Colors.transparent,
-                    ],
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.6),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.playlist.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            // fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          '0 Songs',
+                          style: TextStyle(
+                            color: Color(0xFF6A6C75),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: Text(
-                  widget.playlist.name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

@@ -48,7 +48,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2E3239),
+      backgroundColor: const Color(0xFF1E1F23),
       appBar: _buildAppBar(),
       body: Stack(
         children: [
@@ -61,22 +61,47 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      title: const Text('Playlists', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      backgroundColor: const Color(0xFF2E3239),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Playlists',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            '${_state.playlists.length} created playlists',
+            style: const TextStyle(color: Color(0xFF6A6C75), fontSize: 12),
+          ),
+        ],
+      ),
+      backgroundColor: const Color(0xFF1E1F23),
       elevation: 0,
       centerTitle: false,
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+          padding: const EdgeInsets.only(right: 16, top: 12, bottom: 4),
           child: GestureDetector(
             onTapDown: (_) => _updateState(
-              widget._handler.playlistsWidgetAddButtonStateChanged(_state, true),
+              widget._handler.playlistsWidgetAddButtonStateChanged(
+                _state,
+                true,
+              ),
             ),
             onTapUp: (_) => _updateState(
-              widget._handler.playlistsWidgetAddButtonStateChanged(_state, false),
+              widget._handler.playlistsWidgetAddButtonStateChanged(
+                _state,
+                false,
+              ),
             ),
             onTapCancel: () => _updateState(
-              widget._handler.playlistsWidgetAddButtonStateChanged(_state, false),
+              widget._handler.playlistsWidgetAddButtonStateChanged(
+                _state,
+                false,
+              ),
             ),
             onTap: _clickedAdd,
             child: AnimatedContainer(
@@ -84,26 +109,41 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF2E3239),
+                color: const Color(0xFF1E1F23),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: _state.isAddButtonPressed
-                    ? []
+                    ? [
+                        const BoxShadow(
+                          color: Color(0xFF121216),
+                          offset: Offset(2, 2),
+                          blurRadius: 2,
+                        ),
+                        const BoxShadow(
+                          color: Color(0xFF2A2B31),
+                          offset: Offset(-2, -2),
+                          blurRadius: 2,
+                        ),
+                      ]
                     : [
                         const BoxShadow(
-                          color: Color(0xFF23262B),
-                          offset: Offset(3, 3),
-                          blurRadius: 6,
+                          color: Color(0xFF121216),
+                          offset: Offset(4, 4),
+                          blurRadius: 10,
                           spreadRadius: 1,
                         ),
                         const BoxShadow(
-                          color: Color(0xFF393E46),
-                          offset: Offset(-3, -3),
-                          blurRadius: 6,
+                          color: Color(0xFF2A2B31),
+                          offset: Offset(-4, -4),
+                          blurRadius: 10,
                           spreadRadius: 1,
                         ),
                       ],
               ),
-              child: const Icon(Icons.add, color: Colors.white, size: 24),
+              child: const Icon(
+                Icons.playlist_add,
+                color: Color(0xFFFF4D00),
+                size: 20,
+              ),
             ),
           ),
         ),

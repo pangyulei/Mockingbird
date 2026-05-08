@@ -29,7 +29,12 @@ class _AppWidgetFactory extends State<AppWidget> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF1E1F23),
+      ),
       home: Scaffold(
+        backgroundColor: const Color(0xFF1E1F23),
         body: IndexedStack(
           index: _state.index,
           children: const [
@@ -45,22 +50,22 @@ class _AppWidgetFactory extends State<AppWidget> {
 
   BottomNavigationBar _buildBottomNavigationBar() {
     return BottomNavigationBar(
-      backgroundColor: const Color(0xFF2E3239),
-      selectedItemColor: Colors.blueAccent,
-      unselectedItemColor: Colors.grey[500],
+      backgroundColor: const Color(0xFF1E1F23),
+      selectedItemColor: const Color(0xFFFF4D00),
+      unselectedItemColor: const Color(0xFF6A6C75),
       type: BottomNavigationBarType.fixed,
       elevation: 0,
       items: const [
         BottomNavigationBarItem(
-          icon: Icon(Icons.playlist_play_rounded),
+          icon: Icon(Icons.playlist_play),
           label: 'Playlists',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.play_circle_rounded),
+          icon: Icon(Icons.play_circle),
           label: 'Player',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.settings_rounded),
+          icon: Icon(Icons.settings),
           label: 'Settings',
         ),
       ],
