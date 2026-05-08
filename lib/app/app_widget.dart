@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mockingbird/app/app_events.dart';
 import 'package:mockingbird/app/app_state.dart';
-import 'package:mockingbird/tab_play/tab_play_widget.dart';
 import 'package:mockingbird/tab_playlist/tab_playlist_widget.dart';
-import 'package:mockingbird/tab_setting/tab_setting_widget.dart';
 
 class AppWidget extends StatefulWidget {
   final AppEvents _handler;
@@ -47,16 +45,24 @@ class _AppWidgetFactory extends State<AppWidget> {
 
   BottomNavigationBar _buildBottomNavigationBar() {
     return BottomNavigationBar(
+      backgroundColor: const Color(0xFF2E3239),
+      selectedItemColor: Colors.blueAccent,
+      unselectedItemColor: Colors.grey[500],
+      type: BottomNavigationBarType.fixed,
+      elevation: 0,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.playlist_play_rounded),
-          label: '',
+          label: 'Playlists',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.play_circle_rounded),
-          label: '',
+          label: 'Player',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: ''),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings_rounded),
+          label: 'Settings',
+        ),
       ],
       onTap: (index) {
         AppState newState = widget._handler.appWidgetBottomBarSelectedIndex(
