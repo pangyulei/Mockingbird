@@ -46,9 +46,13 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: _state.isLoadingAll
-          ? _buildLoadingWidget()
-          : _buildGridWidget(),
+      body: Stack(
+        children: [
+          _buildGridWidget(),
+          if (_state.isLoadingAll)
+            _buildLoadingWidget(),
+        ],
+      ),
     );
   }
 
