@@ -6,9 +6,9 @@ import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_e
 import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_state.dart';
 
 class PlaylistCardWidget extends StatefulWidget {
-  final Playlist playlist;
+  final Playlist _playlist;
   final PlaylistCardEvents _handler;
-  const PlaylistCardWidget(this.playlist, this._handler, {super.key});
+  const PlaylistCardWidget(this._playlist, this._handler, {super.key});
 
   @override
   State<PlaylistCardWidget> createState() => _PlaylistCardWidgetState();
@@ -37,7 +37,7 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
         _updateState(
           widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
         );
-        widget._handler.playlistCardWidgetOnTap(widget.playlist);
+        widget._handler.playlistCardWidgetOnTap(widget._playlist);
       },
       onTapCancel: () => _updateState(
         widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
@@ -76,17 +76,17 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
             borderRadius: BorderRadius.circular(24),
             child: Stack(
               children: [
-                if (widget.playlist.cover != null)
+                if (widget._playlist.cover != null)
                   Positioned.fill(
                     child: Opacity(
                       opacity: _state.isPressed ? 0.6 : 0.9,
                       child: Image.file(
-                        File(widget.playlist.cover!),
+                        File(widget._playlist.cover!),
                         fit: BoxFit.cover,
                       ),
                     ),
                   ),
-                if (widget.playlist.cover == null)
+                if (widget._playlist.cover == null)
                   const Center(
                     child: Icon(
                       Icons.video_collection,
@@ -98,23 +98,31 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
                   alignment: Alignment.bottomCenter,
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                    ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [
-                          Colors.black.withValues(alpha: 0.6),
-                          Colors.transparent,
-                        ],
-                      ),
+                      gradient: widget._playlist.cover == null
+                          ? null
+                          : LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                bgColor.withValues(alpha: 1),
+                                bgColor.withValues(alpha: 0.9),
+                                bgColor.withValues(alpha: 0.8),
+                                bgColor.withValues(alpha: 0.3),
+                              ],
+                            ),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.playlist.name,
+                          widget._playlist.name,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
