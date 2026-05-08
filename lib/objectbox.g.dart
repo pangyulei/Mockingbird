@@ -22,7 +22,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(1, 829471958020190260),
     name: 'Playlist',
-    lastPropertyId: const obx_int.IdUid(3, 6772611246971960395),
+    lastPropertyId: const obx_int.IdUid(4, 5852462797454314994),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -41,6 +41,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(3, 6772611246971960395),
         name: 'cover',
         type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 5852462797454314994),
+        name: 'sortOrder',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -119,10 +125,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final coverOffset = object.cover == null
             ? null
             : fbb.writeString(object.cover!);
-        fbb.startTable(4);
+        fbb.startTable(5);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, nameOffset);
         fbb.addOffset(2, coverOffset);
+        fbb.addInt64(3, object.sortOrder);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -141,7 +148,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final coverParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 8);
-        final object = Playlist(nameParam, id: idParam, cover: coverParam);
+        final sortOrderParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final object = Playlist(
+          nameParam,
+          id: idParam,
+          cover: coverParam,
+          sortOrder: sortOrderParam,
+        );
 
         return object;
       },
@@ -166,5 +184,10 @@ class Playlist_ {
   /// See [Playlist.cover].
   static final cover = obx.QueryStringProperty<Playlist>(
     _entities[0].properties[2],
+  );
+
+  /// See [Playlist.sortOrder].
+  static final sortOrder = obx.QueryIntegerProperty<Playlist>(
+    _entities[0].properties[3],
   );
 }

@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:829471958020190260",
-      "lastPropertyId": "3:6772611246971960395",
+      "lastPropertyId": "4:5852462797454314994",
       "name": "Playlist",
       "properties": [
         {
@@ -23,6 +23,11 @@
           "id": "3:6772611246971960395",
           "name": "cover",
           "type": 9
+        },
+        {
+          "id": "4:5852462797454314994",
+          "name": "sortOrder",
+          "type": 6
         }
       ],
       "relations": []

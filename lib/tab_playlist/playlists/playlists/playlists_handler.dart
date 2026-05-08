@@ -1,5 +1,6 @@
 
 import 'package:mockingbird/db/db_playlist.dart';
+import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_events.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dart';
 
@@ -22,5 +23,27 @@ class PlaylistsHandler implements PlaylistsEvents {
   @override
   PlaylistsState playlistsWidgetAddButtonStateChanged(PlaylistsState state, bool isPressed) {
     return state.copyWith(isAddButtonPressed: isPressed);
+  }
+  
+  @override
+  Future<PlaylistsState> playlistsWidgetReordered(PlaylistsState state, int oldIndex, int newIndex) async {
+    // Adjust newIndex when moving down (account for the item being removed)
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
+    
+    // Create a new list with the reordered items
+    final List<dynamic> playlists = [...state.playlists];
+    final dynamic item = playlists.removeAt(oldIndex);
+    playlists.insert(newIndex, item);
+    
+    // Cast back to List<Playlist>
+    final List<Playlist> reorderedPlaylists = List<Playlist>.from(playlists);
+    
+    // Update the database with new sort orders
+    await DBPlaylist.updateSortOrders(reorderedPlaylists);
+    
+    // Return new state with reordered playlists
+    return state.copyWith(playlists: reorderedPlaylists);
   }
 }

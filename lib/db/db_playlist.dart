@@ -14,6 +14,11 @@ class DBPlaylist {
       return null;
     }
     newPlaylist.name = trimmedName;
+    
+    // Set sortOrder to the next available position
+    final allPlaylists = await all();
+    newPlaylist.sortOrder = allPlaylists.length;
+    
     if (cover != null) {
       final docsDir = await getApplicationDocumentsDirectory();
       final coversDir = Directory(p.join(docsDir.path, 'playlist_covers'));
@@ -33,5 +38,18 @@ class DBPlaylist {
     return newPlaylist.copyWith();
   }
 
-  static Future<List<Playlist>> all() async => await _box().getAllAsync();
+  static Future<List<Playlist>> all() async {
+    final playlists = await _box().getAllAsync();
+    // Sort by sortOrder ascending
+    playlists.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    return playlists;
+  }
+  
+  static Future<void> updateSortOrders(List<Playlist> playlists) async {
+    // Update sortOrder for each playlist based on its position in the list
+    for (int i = 0; i < playlists.length; i++) {
+      playlists[i].sortOrder = i;
+      _box().put(playlists[i]);
+    }
+  }
 }

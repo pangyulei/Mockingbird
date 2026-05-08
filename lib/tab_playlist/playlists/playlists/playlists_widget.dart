@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_handler.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_widget.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_events.dart';
@@ -54,7 +55,8 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
         children: [
           _buildGridWidget(),
           if (_state.isLoadingAll) _buildLoadingWidget(),
-        ],
+        ),
+      ],
       ),
     );
   }
@@ -76,7 +78,8 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
             '${_state.playlists.length} created playlists',
             style: const TextStyle(color: Color(0xFF6A6C75), fontSize: 12),
           ),
-        ],
+        ),
+      ],
       ),
       backgroundColor: const Color(0xFF1E1F23),
       elevation: 0,
@@ -167,7 +170,48 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
       ),
       itemBuilder: (context, index) {
         final playlist = _state.playlists[index];
-        return PlaylistCardWidget(playlist, PlaylistCardHandler());
+        return LongPressDraggable<Playlist>(
+          data: playlist,
+          feedback: Material(
+            elevation: 8,
+            borderRadius: BorderRadius.circular(24),
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width / 2 - 20,
+              height: MediaQuery.of(context).size.width / 2 - 20,
+              child: PlaylistCardWidget(playlist, PlaylistCardHandler()),
+            ),
+          ),
+          childWhenDragging: Opacity(
+            opacity: 0.3,
+            child: PlaylistCardWidget(playlist, PlaylistCardHandler()),
+          ),
+          onDragStarted: () {
+            // Optional: Add haptic feedback or visual indication
+          },
+          onDragEnd: (details) {
+            // Drag ended
+          },
+          child: DragTarget<Playlist>(
+            onWillAcceptWithDetails: (data) => data.data != playlist,
+            onAcceptWithDetails: (data) async {
+              final draggedPlaylist = data.data;
+              final oldIndex = _state.playlists.indexOf(draggedPlaylist);
+              final newIndex = _state.playlists.indexOf(playlist);
+
+              if (oldIndex != -1 && newIndex != -1 && oldIndex != newIndex) {
+                final newState = await widget._handler.playlistsWidgetReordered(
+                  _state,
+                  oldIndex,
+                  newIndex,
+                );
+                _updateState(newState);
+              }
+            },
+            builder: (context, candidateData, rejectedData) {
+              return PlaylistCardWidget(playlist, PlaylistCardHandler());
+            },
+          ),
+        );
       },
     );
   }
