@@ -17,7 +17,7 @@ class PlaylistsWidget extends StatefulWidget {
 
 class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   PlaylistsState _state = const PlaylistsState();
-  // final
+
   @override
   void initState() {
     super.initState();
@@ -66,10 +66,46 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
       elevation: 0,
       centerTitle: false,
       actions: [
-        IconButton(
-          icon: const Icon(Icons.add, color: Colors.white),
-          onPressed: _clickedAdd,
-          tooltip: 'Add Playlist',
+        Padding(
+          padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
+          child: GestureDetector(
+            onTapDown: (_) => _updateState(
+              widget._handler.playlistsWidgetAddButtonStateChanged(_state, true),
+            ),
+            onTapUp: (_) => _updateState(
+              widget._handler.playlistsWidgetAddButtonStateChanged(_state, false),
+            ),
+            onTapCancel: () => _updateState(
+              widget._handler.playlistsWidgetAddButtonStateChanged(_state, false),
+            ),
+            onTap: _clickedAdd,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 100),
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF2E3239),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: _state.isAddButtonPressed
+                    ? []
+                    : [
+                        const BoxShadow(
+                          color: Color(0xFF23262B),
+                          offset: Offset(3, 3),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                        const BoxShadow(
+                          color: Color(0xFF393E46),
+                          offset: Offset(-3, -3),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+              ),
+              child: const Icon(Icons.add, color: Colors.white, size: 24),
+            ),
+          ),
         ),
       ],
     );

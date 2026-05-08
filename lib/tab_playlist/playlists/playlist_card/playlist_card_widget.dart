@@ -27,13 +27,16 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => _updateState(
-        widget._handler.playlistCardWidgetClickedDown(_state),
+        widget._handler.playlistCardWidgetPressedStateChanged(_state, true),
       ),
-      onTap: () => _updateState(
-        widget._handler.playlistCardWidgetClickedUpInside(_state),
-      ),
+      onTapUp: (_) {
+        _updateState(
+          widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
+        );
+        widget._handler.playlistCardWidgetOnTap(widget.playlist);
+      },
       onTapCancel: () => _updateState(
-        widget._handler.playlistCardWidgetClickedUpOutside(_state),
+        widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
       ),
       child: Container(
         margin: const EdgeInsets.all(8),

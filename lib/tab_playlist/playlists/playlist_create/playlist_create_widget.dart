@@ -146,8 +146,6 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
 
   void _clickedCreate() async {
     final newPlaylist = await widget._handler.playlistCreateWidgetClickedCreate(_state, nameController.text);
-    if (context.mounted) {
-      Navigator.of(context).pop(newPlaylist);
-    }
+    Navigator.of(context).pop(newPlaylist);
   }
 }
