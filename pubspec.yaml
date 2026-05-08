@@ -1,5 +1,5 @@
 name: mockingbird
-description: "A language shadowing player."
+description: "A video/audio player for shadowing any language."
 publish_to: 'none'
 version: 0.1.0+1
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mockingbird/tab_playlist/playlist/playlist_widget.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlists_widget.dart';
+import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_widget.dart';
 import 'package:mockingbird/tab_playlist/tab_playlist_route.dart';
+import 'playlists/playlists/playlists_handler.dart';
 
 class TabPlaylistWidget extends StatelessWidget {
   const TabPlaylistWidget({super.key});
@@ -12,8 +13,6 @@ class TabPlaylistWidget extends StatelessWidget {
       onGenerateRoute: (settings) {
         if (settings.name != null) {
           _buildWidgetByURLString(settings.name!);
-        } else {
-          return null;
         }
         return null;
       },
@@ -41,13 +40,12 @@ class TabPlaylistWidget extends StatelessWidget {
         final segments = uri.pathSegments;
         if (segments.length == 1 &&
             segments.first == TabPlaylistRoute.playlists) {
-          return const PlaylistsWidget();
+          return PlaylistsWidget(PlaylistsHandler());
         } else if (segments.length == 2) {
-          String playlistName = segments.last; //TODO
-          return PlaylistWidget(playlistName);
-        } else {
-          throw Exception('$urlString is not defined');
+          String playlistId = segments.last; //TODO
+          return PlaylistWidget(playlistId);
         }
+        throw Exception('$urlString is not defined');
       },
     );
   }

@@ -6,5 +6,6 @@ class Playlist {
   int id;
 
   String name;
-  Playlist(this.name, {this.id = 0});
+  String? cover;
+  Playlist(this.name, {this.id = 0, this.cover});
 }

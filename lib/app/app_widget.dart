@@ -6,8 +6,8 @@ import 'package:mockingbird/tab_playlist/tab_playlist_widget.dart';
 import 'package:mockingbird/tab_setting/tab_setting_widget.dart';
 
 class AppWidget extends StatefulWidget {
-  final AppEvents handler;
-  const AppWidget({required this.handler, super.key});
+  final AppEvents _handler;
+  const AppWidget(this._handler, {super.key});
 
   @override
   State<AppWidget> createState() => _AppWidgetFactory();
@@ -19,7 +19,7 @@ class _AppWidgetFactory extends State<AppWidget> {
   @override
   void initState() {
     super.initState();
-    _state = widget.handler.appWidgetInitState();
+    _state = widget._handler.appWidgetInitState();
   }
 
   void _updateState(AppState newState) {
@@ -35,9 +35,9 @@ class _AppWidgetFactory extends State<AppWidget> {
         body: IndexedStack(
           index: _state.index,
           children: const [
-            TabPlaylistWidget(),
-            TabPlayWidget(),
-            TabSettingWidget(),
+            TabPlaylistWidget(), //TODO
+            // TabPlayWidget(),
+            // TabSettingWidget(),
           ],
         ),
         bottomNavigationBar: _buildBottomNavigationBar(),
@@ -59,7 +59,7 @@ class _AppWidgetFactory extends State<AppWidget> {
         BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: ''),
       ],
       onTap: (index) {
-        AppState newState = widget.handler.appWidgetBottomBarSelectedIndex(
+        AppState newState = widget._handler.appWidgetBottomBarSelectedIndex(
           _state,
           index,
         );
