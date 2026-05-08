@@ -16,59 +16,79 @@ class PlaylistsWidget extends StatefulWidget {
 }
 
 class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
-  PlaylistsState _state = const PlaylistsState([]);
-  // final List<_PlaylistData> _playlists = List.generate(
-  //   20,
-  //   (index) => _PlaylistData(
-  //     title: 'Playlist ${index + 1}',
-  //     coverColor: Colors.primaries[index % Colors.primaries.length],
-  //   ),
-  // );
+  PlaylistsState _state = const PlaylistsState();
+  // final
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     widget._handler.playlistsWidgetInitState().then((newState) {
-      setState(() {
-        _state = newState;
-      });
+      _updateState(newState);
     },);
+  }
+
+  void _updateState(PlaylistsState newState) {
+    setState(() {
+      _state = newState;
+    });
+  }
+
+  void _clickedAdd() async {
+    final newPlaylist = await PlaylistCreateWidget.show(context, PlaylistCreateHandler());
+    if (newPlaylist != null) {
+      final stream = widget._handler.playlistsWidgetCreatedNewPlaylist(_state);
+      await for (final newState in stream) {
+        _updateState(newState);
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Playlists'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              await PlaylistCreateWidget.show(context, PlaylistCreateHandler());
-            },
-            tooltip: 'Add Playlist',
-          ),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: GridView.builder(
-          itemCount: _state.playlists.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1,
-          ),
-          itemBuilder: (context, index) {
-            final playlist = _state.playlists[index];
-            return PlaylistCard(playlist: playlist);
-          },
+      appBar: _buildAppBar(),
+      body: _state.isLoadingAll
+          ? _buildLoadingWidget()
+          : _buildGridWidget(),
+    );
+  }
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      title: const Text('Playlists'),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: _clickedAdd,
+          tooltip: 'Add Playlist',
         ),
+      ],
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildGridWidget() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: GridView.builder(
+        itemCount: _state.playlists.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 10,
+          childAspectRatio: 1,
+        ),
+        itemBuilder: (context, index) {
+          final playlist = _state.playlists[index];
+          return PlaylistCard(playlist: playlist);
+        },
       ),
     );
   }
 }
+
 
 class PlaylistCard extends StatelessWidget {
   const PlaylistCard({super.key, required this.playlist});

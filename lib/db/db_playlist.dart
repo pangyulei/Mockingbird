@@ -8,10 +8,10 @@ import 'package:path_provider/path_provider.dart';
 class DBPlaylist {
   static Box<Playlist> _box() => DB.instance.store.box<Playlist>();
 
-  static Future<void> create(Playlist newPlaylist, File? cover) async {
+  static Future<Playlist?> create(Playlist newPlaylist, File? cover) async {
     final trimmedName = newPlaylist.name.trim();
     if (trimmedName.isEmpty) {
-      return;
+      return null;
     }
     newPlaylist.name = trimmedName;
     if (cover != null) {
@@ -30,9 +30,8 @@ class DBPlaylist {
       newPlaylist.cover = savedFile.path;
     }
     _box().put(newPlaylist);
+    return newPlaylist.copyWith();
   }
 
-  static Future<List<Playlist>> all() async {
-    return await _box().getAllAsync();
-  }
+  static Future<List<Playlist>> all() async => await _box().getAllAsync();
 }

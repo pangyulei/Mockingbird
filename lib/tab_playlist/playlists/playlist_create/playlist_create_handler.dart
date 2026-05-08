@@ -6,9 +6,9 @@ import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_crea
 
 class PlaylistCreateHandler implements PlaylistCreateEvents {
   @override
-  Future<void> playlistCreateWidgetClickedCreate(PlaylistCreateState state, String name) async {
+  Future<Playlist?> playlistCreateWidgetClickedCreate(PlaylistCreateState state, String name) async {
     final newPlaylist = Playlist(name);
-    await DBPlaylist.create(newPlaylist, state.cover);
+    return await DBPlaylist.create(newPlaylist, state.cover);
   }
 
   @override
@@ -18,12 +18,10 @@ class PlaylistCreateHandler implements PlaylistCreateEvents {
 
   @override
   PlaylistCreateState playlistCreateWidgetTypingName(PlaylistCreateState state, String name) {
-    if (name.isEmpty) {
-      return state.copyWith(alert: '', creatable: false);
-    } else if (name.trim().isEmpty) {
-      return state.copyWith(alert: 'invalid name', creatable: false);
+    if (name.trim().isEmpty) {
+      return state.copyWith(creatable: false);
     } else {
-      return state.copyWith(alert: '', creatable: true);
+      return state.copyWith(creatable: true);
     }
   }
 }
