@@ -7,7 +7,8 @@ project(runner LANGUAGES CXX)
 set(BINARY_NAME "mockingbird")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-set(APPLICATION_ID "com.example.mockingbird")
+set(APPLICATION_ID "com.raypang.mockingbird
+")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

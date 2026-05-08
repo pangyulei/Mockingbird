@@ -20,9 +20,9 @@ class TabPlaylistWidget extends StatelessWidget {
       onGenerateInitialRoutes: (navigator, initialRoute) {
         return [
           TabPlaylistRoute.urlStringForPlaylists(),
-          TabPlaylistRoute.urlStringForPlaylist(
-            'default',
-          ), //TODO not 100% is default, may edited name
+          // TabPlaylistRoute.urlStringForPlaylist(
+          //   'default',
+          // ), //TODO not 100% is default, may edited name
         ].map((urlString) => _buildWidgetByURLString(urlString)).toList();
       },
     );
@@ -46,9 +46,7 @@ class TabPlaylistWidget extends StatelessWidget {
           String playlistName = segments.last; //TODO
           return PlaylistWidget(playlistName);
         } else {
-          return Scaffold(
-            body: Center(child: Text('wrong route urlstring: $urlString')),
-          );
+          throw Exception('$urlString is not defined');
         }
       },
     );

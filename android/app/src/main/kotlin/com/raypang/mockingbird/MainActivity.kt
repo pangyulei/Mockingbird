@@ -1,4 +1,5 @@
-package com.example.mockingbird
+package com.raypang.mockingbird
+
 
 import io.flutter.embedding.android.FlutterActivity
 

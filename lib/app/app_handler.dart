@@ -5,12 +5,12 @@ class AppHandler implements AppEvents {
   const AppHandler();
 
   @override
-  AppState mainWidgetBottomBarSelectedIndex(AppState state, int selectedIndex) {
+  AppState appWidgetBottomBarSelectedIndex(AppState state, int selectedIndex) {
     return AppState(selectedIndex);
   }
 
   @override
-  AppState mainWidgetInitState() {
+  AppState appWidgetInitState() {
     return const AppState(0);
   }
 }

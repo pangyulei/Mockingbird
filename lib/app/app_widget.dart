@@ -19,7 +19,7 @@ class _AppWidgetFactory extends State<AppWidget> {
   @override
   void initState() {
     super.initState();
-    _state = widget.handler.mainWidgetInitState();
+    _state = widget.handler.appWidgetInitState();
   }
 
   void _updateState(AppState newState) {
@@ -59,7 +59,7 @@ class _AppWidgetFactory extends State<AppWidget> {
         BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: ''),
       ],
       onTap: (index) {
-        AppState newState = widget.handler.mainWidgetBottomBarSelectedIndex(
+        AppState newState = widget.handler.appWidgetBottomBarSelectedIndex(
           _state,
           index,
         );
