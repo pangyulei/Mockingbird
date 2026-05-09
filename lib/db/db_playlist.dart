@@ -20,7 +20,7 @@ class DBPlaylist {
     newPlaylist.name = trimmedName;
 
     // Set sortOrder to the next available position
-    final allPlaylists = await all();
+    final allPlaylists = await getAllAsync();
     newPlaylist.sortOrder = allPlaylists.length;
 
     if (cover != null) {
@@ -44,19 +44,25 @@ class DBPlaylist {
   }
 
   //TODO rename to same with objectbox getAllAsync
-  static Future<List<Playlist>> all() async {
+  static Future<List<Playlist>> getAllAsync() async {
     final playlists = await _box().getAllAsync();
-    // Sort by sortOrder ascending  //TODO make newest first
-    playlists.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    // Sort by sortOrder descending (newest first)
+    playlists.sort((a, b) => b.sortOrder.compareTo(a.sortOrder));
     return playlists;
   }
 
-  static Future<void> updateSortOrders(List<Playlist> playlists) async {
+  static Future<List<Playlist>> updateSortOrdersAsync(
+    List<Playlist> playlists,
+  ) async {
     // Update sortOrder for each playlist based on its position in the list
-    for (int i = 0; i < playlists.length; i++) {
-      playlists[i].sortOrder = i; //TODO make newest first
-      _box().put(playlists[i]);
-    }
+    // Position [0] gets the highest sortOrder (newest first)
+    final updatedPlaylists = playlists
+        .asMap()
+        .entries
+        .map((e) => e.value.copyWith(sortOrder: playlists.length - 1 - e.key))
+        .toList();
+    await _box().putManyAsync(updatedPlaylists);
+    return updatedPlaylists;
   }
 
   static Future<void> removeAsync(Playlist playlist) async {
