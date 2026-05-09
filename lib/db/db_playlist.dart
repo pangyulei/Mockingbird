@@ -5,7 +5,8 @@ import 'package:objectbox/objectbox.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-class DBPlaylist {
+class DBPlaylist { //TODO should i use class-level methods? or better instance-level for better memory, 
+//TODO will classlevel codes always in memory
   static Box<Playlist> _box() => DB.instance.store.box<Playlist>();
 
   static Future<Playlist?> create(Playlist newPlaylist, File? cover) async {
@@ -38,9 +39,10 @@ class DBPlaylist {
     return newPlaylist.copyWith();
   }
 
+  //TODO rename to same with objectbox getAllAsync
   static Future<List<Playlist>> all() async {
     final playlists = await _box().getAllAsync();
-    // Sort by sortOrder ascending
+    // Sort by sortOrder ascending  //TODO make newest first
     playlists.sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
     return playlists;
   }
@@ -48,7 +50,7 @@ class DBPlaylist {
   static Future<void> updateSortOrders(List<Playlist> playlists) async {
     // Update sortOrder for each playlist based on its position in the list
     for (int i = 0; i < playlists.length; i++) {
-      playlists[i].sortOrder = i;
+      playlists[i].sortOrder = i;//TODO make newest first
       _box().put(playlists[i]);
     }
   }
