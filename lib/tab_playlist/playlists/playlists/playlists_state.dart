@@ -1,5 +1,3 @@
-
-
 import 'package:mockingbird/models/playlist.dart';
 
 class PlaylistsState {
@@ -14,12 +12,12 @@ class PlaylistsState {
 
   PlaylistsState copyWith({
     List<Playlist>? playlists,
-    bool? isLoadingAll,
+    bool? showLoading,
     bool? isAddButtonPressed,
   }) {
     return PlaylistsState(
       playlists: playlists != null ? [...playlists] : [...this.playlists],
-      isLoadingAll: isLoadingAll ?? this.isLoadingAll,
+      isLoadingAll: showLoading ?? isLoadingAll,
       isAddButtonPressed: isAddButtonPressed ?? this.isAddButtonPressed,
     );
   }

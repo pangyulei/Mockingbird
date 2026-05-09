@@ -1,18 +1,15 @@
 import 'dart:io';
 
 import 'package:mockingbird/models/playlist.dart';
-import 'package:objectbox/objectbox.dart';
+import 'package:mockingbird/objectbox.g.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
-import 'db.dart';
-
 class DBPlaylist {
-  //TODO should i use class-level methods? or better instance-level for better memory,
-  //TODO will classlevel codes always in memory
-  static Box<Playlist> _box() => DB.instance.store.box<Playlist>();
+  final Box<Playlist> _box;
+  DBPlaylist(Store store) : _box = store.box<Playlist>();
 
-  static Future<Playlist?> createAsync(String name, File? cover) async {
+  Future<Playlist?> createAsync(String name, File? cover) async {
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
       return null;
@@ -40,21 +37,21 @@ class DBPlaylist {
       coverPath = null;
     }
     final newPlaylist = Playlist(trimmedName, sortOrder, cover: coverPath);
-    await _box().putAsync(newPlaylist); //will fill id field
+    await _box.putAsync(newPlaylist); //will fill id field
     return newPlaylist;
   }
 
-  //TODO rename to same with objectbox getAllAsync
-  static Future<List<Playlist>> getAllAsync() async {
-    final playlists = await _box().getAllAsync();
-    // Sort by sortOrder descending (newest first)
-    playlists.sort((a, b) => b.sortOrder.compareTo(a.sortOrder));
-    return playlists;
+  Future<List<Playlist>> getAllAsync() async {
+    final query = _box
+        .query()
+        .order(Playlist_.sortOrder, flags: Order.descending)
+        .build();
+    final result = await query.findAsync();
+    query.close();
+    return result;
   }
 
-  static Future<List<Playlist>> updateSortOrdersAsync(
-    List<Playlist> playlists,
-  ) async {
+  Future<List<Playlist>> updateSortOrdersAsync(List<Playlist> playlists) async {
     // Update sortOrder for each playlist based on its position in the list
     // Position [0] gets the highest sortOrder (newest first)
     final updatedPlaylists = playlists
@@ -62,20 +59,20 @@ class DBPlaylist {
         .entries
         .map((e) => e.value.copyWith(sortOrder: playlists.length - 1 - e.key))
         .toList();
-    await _box().putManyAsync(updatedPlaylists);
+    await _box.putManyAsync(updatedPlaylists);
     return updatedPlaylists;
   }
 
-  static Future<void> removeAsync(Playlist playlist) async {
+  Future<void> removeAsync(Playlist playlist) async {
     await removeManyAsync([playlist]);
   }
 
-  static Future<void> removeManyAsync(List<Playlist> playlists) async {
+  Future<void> removeManyAsync(List<Playlist> playlists) async {
     if (playlists.isEmpty) return;
+    if (playlists.any((p) => p.id == 0)) return;
 
     final ids = playlists.map((p) => p.id).toList();
-    await _box().removeManyAsync(ids);
-
+    await _box.removeManyAsync(ids);
     // Delete cover files for removed playlists
     final uselessCovers = playlists
         .where((p) => p.cover != null)

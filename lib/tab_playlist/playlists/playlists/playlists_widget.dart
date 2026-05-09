@@ -27,22 +27,26 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
     });
   }
 
+  Future<void> _updateStateByStream(Stream<PlaylistsState> stream) async {
+    await for (final newState in stream) {
+      _updateState(newState);
+    }
+  }
+
   void _updateState(PlaylistsState newState) {
     setState(() {
       _state = newState;
     });
   }
 
-  void _clickedAdd() async {
+  Future<void> _clickedAdd() async {
     final newPlaylist = await PlaylistCreateWidget.show(
       context,
       PlaylistCreateHandler(),
     );
     if (newPlaylist != null) {
       final stream = widget._handler.playlistsWidgetCreatedNewPlaylist(_state);
-      await for (final newState in stream) {
-        _updateState(newState);
-      }
+      await _updateStateByStream(stream);
     }
   }
 
@@ -190,20 +194,19 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
             // Drag ended
           },
           child: DragTarget<Playlist>(
-            onWillAcceptWithDetails: (data) => widget._handler.playlistsWidgetDragTargetWillAccept(
-              _state,
-              playlist,
-              data.data,
-            ),
+            onWillAcceptWithDetails: (data) =>
+                widget._handler.playlistsWidgetDragTargetWillAccept(
+                  _state,
+                  playlist,
+                  data.data,
+                ),
             onAcceptWithDetails: (data) async {
-              final newState = await widget._handler.playlistsWidgetDragTargetAccepted(
+              final stream = widget._handler.playlistsWidgetDragTargetAccepted(
                 _state,
                 playlist,
                 data.data,
               );
-              if (newState != null) {
-                _updateState(newState);
-              }
+              await _updateStateByStream(stream);
             },
             builder: (context, candidateData, rejectedData) {
               return PlaylistCardWidget(playlist, PlaylistCardHandler());

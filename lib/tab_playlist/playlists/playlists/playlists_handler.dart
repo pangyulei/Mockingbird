@@ -1,3 +1,4 @@
+import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_events.dart';
@@ -6,7 +7,7 @@ import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dar
 class PlaylistsHandler implements PlaylistsEvents {
   @override
   Future<PlaylistsState> playlistsWidgetInitState() async {
-    final playlists = await DBPlaylist.getAllAsync();
+    final playlists = await DBPlaylist(DB.instance.store).getAllAsync();
     return PlaylistsState(playlists: playlists, isLoadingAll: false);
   }
 
@@ -14,11 +15,9 @@ class PlaylistsHandler implements PlaylistsEvents {
   Stream<PlaylistsState> playlistsWidgetCreatedNewPlaylist(
     PlaylistsState state,
   ) async* {
-    var newState = state.copyWith(isLoadingAll: true);
-    yield newState;
-    final playlists = await DBPlaylist.getAllAsync();
-    newState = newState.copyWith(playlists: playlists, isLoadingAll: false);
-    yield newState;
+    yield state.copyWith(showLoading: true);
+    final playlists = await DBPlaylist(DB.instance.store).getAllAsync();
+    yield state.copyWith(playlists: playlists, showLoading: false);;
   }
 
   @override
@@ -40,11 +39,12 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
 
   @override
-  Future<PlaylistsState> playlistsWidgetDragTargetAccepted(
+  Stream<PlaylistsState> playlistsWidgetDragTargetAccepted(
     PlaylistsState state,
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
-  ) async {
+  ) async* {
+    yield state.copyWith(showLoading: true);
     int oldIndex = state.playlists.indexOf(draggedPlaylist);
     int newIndex = state.playlists.indexOf(targetPlaylist);
 
@@ -54,11 +54,11 @@ class PlaylistsHandler implements PlaylistsEvents {
     repositionedPlaylists.insert(newIndex, movedPlaylist);
 
     // Update the database with new sort orders
-    final updatedPlaylists = await DBPlaylist.updateSortOrdersAsync(
+    final updatedPlaylists = await DBPlaylist(DB.instance.store).updateSortOrdersAsync(
       repositionedPlaylists,
     );
 
     // Return new state with reordered playlists
-    return state.copyWith(playlists: updatedPlaylists);
+    yield state.copyWith(playlists: updatedPlaylists, showLoading: false);
   }
 }

@@ -15,7 +15,7 @@ abstract interface class PlaylistsEvents {
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
   );
-  Future<PlaylistsState> playlistsWidgetDragTargetAccepted(
+  Stream<PlaylistsState> playlistsWidgetDragTargetAccepted(
     PlaylistsState state,
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
