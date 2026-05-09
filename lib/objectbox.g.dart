@@ -139,6 +139,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final nameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGet(buffer, rootOffset, 6, '');
+        final sortOrderParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
         final idParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -148,17 +154,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final coverParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 8);
-        final sortOrderParam = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          10,
-          0,
-        );
         final object = Playlist(
           nameParam,
+          sortOrderParam,
           id: idParam,
           cover: coverParam,
-          sortOrder: sortOrderParam,
         );
 
         return object;

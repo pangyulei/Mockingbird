@@ -12,17 +12,16 @@ class DBPlaylist {
   //TODO will classlevel codes always in memory
   static Box<Playlist> _box() => DB.instance.store.box<Playlist>();
 
-  static Future<Playlist?> create(Playlist newPlaylist, File? cover) async {
-    final trimmedName = newPlaylist.name.trim();
+  static Future<Playlist?> createAsync(String name, File? cover) async {
+    final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
       return null;
     }
-    newPlaylist.name = trimmedName;
 
     // Set sortOrder to the next available position
     final allPlaylists = await getAllAsync();
-    newPlaylist.sortOrder = allPlaylists.length;
-
+    final sortOrder = allPlaylists.length;
+    final String? coverPath;
     if (cover != null) {
       final docsDir = await getApplicationDocumentsDirectory();
       final coversDir = Directory(p.join(docsDir.path, 'playlist_covers'));
@@ -34,13 +33,15 @@ class DBPlaylist {
       // Generate a unique filename using timestamp and original extension
       final String extension = p.extension(cover.path); //.jpg .png
       final String fileName =
-          '${newPlaylist.name}_${DateTime.now().millisecondsSinceEpoch}$extension';
+          '${trimmedName}_${DateTime.now().millisecondsSinceEpoch}$extension';
       final File savedFile = await cover.copy(p.join(coversDir.path, fileName));
-
-      newPlaylist.cover = savedFile.path;
+      coverPath = savedFile.path;
+    } else {
+      coverPath = null;
     }
-    _box().put(newPlaylist);
-    return newPlaylist.copyWith();
+    final newPlaylist = Playlist(trimmedName, sortOrder, cover: coverPath);
+    await _box().putAsync(newPlaylist); //will fill id field
+    return newPlaylist;
   }
 
   //TODO rename to same with objectbox getAllAsync
