@@ -40,14 +40,15 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   }
 
   Future<void> _clickedAdd() async {
-    final newPlaylist = await PlaylistCreateWidget.show(
+    final incompletePlaylist = await PlaylistCreateWidget.show(
       context,
       PlaylistCreateHandler(),
     );
-    if (newPlaylist != null) {
-      final stream = widget._handler.playlistsWidgetCreatedNewPlaylist(_state);
-      await _updateStateByStream(stream);
-    }
+    final stream = widget._handler.playlistsWidgetPoppedCreateWidget(
+      _state,
+      incompletePlaylist,
+    );
+    await _updateStateByStream(stream);
   }
 
   @override

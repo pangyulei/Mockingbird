@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_events.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_state.dart';
 
@@ -10,11 +9,11 @@ class PlaylistCreateWidget extends StatefulWidget {
   final PlaylistCreateEvents _handler;
   const PlaylistCreateWidget(this._handler, {super.key});
 
-  static Future<Playlist?> show(
+  static Future<({String name, File? cover})?> show(
     BuildContext context,
     PlaylistCreateEvents handler,
   ) async {
-    return await showDialog<Playlist?>(
+    return await showDialog<({String name, File? cover})?>(
       context: context,
       builder: (BuildContext context) {
         return PlaylistCreateWidget(handler);
@@ -220,12 +219,9 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     );
   }
 
-  void _clickedCreate() async {
-    //TODO while(true) test async 
-    final newPlaylist = await widget._handler.playlistCreateWidgetClickedCreate(
-      _state,
-      nameController.text,
-    );
-    Navigator.of(context).pop(newPlaylist);
+  void _clickedCreate() {
+    //TODO while(true) test async
+    final incompletePlaylist = (name: nameController.text, cover: _state.cover);
+    Navigator.of(context).pop(incompletePlaylist);
   }
 }

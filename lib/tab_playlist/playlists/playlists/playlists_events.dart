@@ -1,11 +1,9 @@
 import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dart';
+import 'dart:io';
 
 abstract interface class PlaylistsEvents {
   Future<PlaylistsState> playlistsWidgetInitState();
-  Stream<PlaylistsState> playlistsWidgetCreatedNewPlaylist(
-    PlaylistsState state,
-  );
   PlaylistsState playlistsWidgetAddButtonStateChanged(
     PlaylistsState state,
     bool isPressed,
@@ -19,5 +17,9 @@ abstract interface class PlaylistsEvents {
     PlaylistsState state,
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
+  );
+  Stream<PlaylistsState> playlistsWidgetPoppedCreateWidget(
+    PlaylistsState state,
+    ({String name, File? cover})? incompletePlaylist,
   );
 }

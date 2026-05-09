@@ -9,15 +9,11 @@ class DBPlaylist {
   final Box<Playlist> _box;
   DBPlaylist(Store store) : _box = store.box<Playlist>();
 
-  Future<Playlist?> createAsync(String name, File? cover) async {
-    final trimmedName = name.trim();
+  Future<Playlist?> createAsync(Playlist playlist, File? cover) async {
+    final trimmedName = playlist.name.trim();
     if (trimmedName.isEmpty) {
       return null;
     }
-
-    // Set sortOrder to the next available position
-    final allPlaylists = await getAllAsync();
-    final sortOrder = allPlaylists.length;
     final String? coverPath;
     if (cover != null) {
       final docsDir = await getApplicationDocumentsDirectory();
@@ -36,7 +32,8 @@ class DBPlaylist {
     } else {
       coverPath = null;
     }
-    final newPlaylist = Playlist(trimmedName, sortOrder, cover: coverPath);
+    final newPlaylist = playlist
+        .copyWith(name: trimmedName, cover: coverPath); 
     await _box.putAsync(newPlaylist); //will fill id field
     return newPlaylist;
   }

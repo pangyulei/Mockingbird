@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/models/playlist.dart';
@@ -9,15 +11,6 @@ class PlaylistsHandler implements PlaylistsEvents {
   Future<PlaylistsState> playlistsWidgetInitState() async {
     final playlists = await DBPlaylist(DB.instance.store).getAllAsync();
     return PlaylistsState(playlists: playlists, isLoadingAll: false);
-  }
-
-  @override
-  Stream<PlaylistsState> playlistsWidgetCreatedNewPlaylist(
-    PlaylistsState state,
-  ) async* {
-    yield state.copyWith(showLoading: true);
-    final playlists = await DBPlaylist(DB.instance.store).getAllAsync();
-    yield state.copyWith(playlists: playlists, showLoading: false);;
   }
 
   @override
@@ -49,16 +42,40 @@ class PlaylistsHandler implements PlaylistsEvents {
     int newIndex = state.playlists.indexOf(targetPlaylist);
 
     // Create a new list with the reordered items
-    final List<Playlist> repositionedPlaylists = [...state.playlists];
-    final Playlist movedPlaylist = repositionedPlaylists.removeAt(oldIndex);
-    repositionedPlaylists.insert(newIndex, movedPlaylist);
+    final List<Playlist> reindexedPlaylists = [...state.playlists];
+    final Playlist movedPlaylist = reindexedPlaylists.removeAt(oldIndex);
+    reindexedPlaylists.insert(newIndex, movedPlaylist);
 
     // Update the database with new sort orders
-    final updatedPlaylists = await DBPlaylist(DB.instance.store).updateSortOrdersAsync(
-      repositionedPlaylists,
-    );
+    final updatedPlaylists = await DBPlaylist(
+      DB.instance.store,
+    ).updateSortOrdersAsync(reindexedPlaylists);
 
     // Return new state with reordered playlists
     yield state.copyWith(playlists: updatedPlaylists, showLoading: false);
+  }
+
+  @override
+  Stream<PlaylistsState> playlistsWidgetPoppedCreateWidget(
+    PlaylistsState state,
+    ({String name, File? cover})? incompletePlaylist,
+  ) async* {
+    if (incompletePlaylist == null) {
+      yield state;
+    } else {
+      yield state.copyWith(showLoading: true);
+      final newPlaylist = await DBPlaylist(DB.instance.store).createAsync(
+        Playlist(incompletePlaylist.name, state.playlists.length),
+        incompletePlaylist.cover,
+      );
+      if (newPlaylist != null) {
+        yield state.copyWith(
+          playlists: [newPlaylist, ...state.playlists],
+          showLoading: false,
+        );
+      } else {
+        yield state.copyWith(showLoading: false);
+      }
+    }
   }
 }
