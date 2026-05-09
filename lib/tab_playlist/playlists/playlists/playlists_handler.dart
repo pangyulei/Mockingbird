@@ -14,14 +14,6 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
 
   @override
-  PlaylistsState playlistsWidgetAddButtonStateChanged(
-    PlaylistsState state,
-    bool isPressed,
-  ) {
-    return state.copyWith(isAddButtonPressed: isPressed);
-  }
-
-  @override
   bool playlistsWidgetDragTargetWillAccept(
     PlaylistsState state,
     Playlist targetPlaylist,

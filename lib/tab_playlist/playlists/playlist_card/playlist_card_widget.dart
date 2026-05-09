@@ -25,10 +25,6 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFF1E1F23);
-    const lightShadow = Color(0xFF2A2B31);
-    const darkShadow = Color(0xFF121216);
-
     return GestureDetector(
       onTapDown: (_) => _updateState(
         widget._handler.playlistCardWidgetPressedStateChanged(_state, true),
@@ -45,32 +41,11 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
       child: AnimatedScale(
         scale: _state.isPressed ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 100),
-        child: Container(
+        child: Card(
           margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: bgColor,
+          elevation: _state.isPressed ? 2 : 4,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
-            gradient: _state.isPressed
-                ? const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [darkShadow, lightShadow],
-                  )
-                : null,
-            boxShadow: _state.isPressed
-                ? []
-                : [
-                    const BoxShadow(
-                      color: darkShadow,
-                      offset: Offset(6, 6),
-                      blurRadius: 12,
-                    ),
-                    const BoxShadow(
-                      color: lightShadow,
-                      offset: Offset(-6, -6),
-                      blurRadius: 12,
-                    ),
-                  ],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
@@ -103,20 +78,20 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
                       right: 16,
                       bottom: 16,
                     ),
-                    decoration: BoxDecoration(
-                      gradient: widget._playlist.cover == null
-                          ? null
-                          : LinearGradient(
+                    decoration: widget._playlist.cover == null
+                        ? null
+                        : BoxDecoration(
+                            gradient: LinearGradient(
                               begin: Alignment.bottomCenter,
                               end: Alignment.topCenter,
                               colors: [
-                                bgColor.withValues(alpha: 1),
-                                bgColor.withValues(alpha: 0.9),
-                                bgColor.withValues(alpha: 0.8),
-                                bgColor.withValues(alpha: 0.3),
+                                Theme.of(context).colorScheme.surface.withValues(alpha: 1),
+                                Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
+                                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                                Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
                               ],
                             ),
-                    ),
+                          ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,9 +99,7 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
                         Text(
                           widget._playlist.name,
                           style: const TextStyle(
-                            color: Colors.white,
                             fontSize: 16,
-                            // fontWeight: FontWeight.bold,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -135,7 +108,6 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
                         const Text(
                           '0 Songs',
                           style: TextStyle(
-                            color: Color(0xFF6A6C75),
                             fontSize: 12,
                           ),
                         ),

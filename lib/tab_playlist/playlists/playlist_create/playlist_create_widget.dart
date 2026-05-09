@@ -57,40 +57,28 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFF1E1F23);
-    const lightShadow = Color(0xFF2A2B31);
-    const darkShadow = Color(0xFF121216);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return AlertDialog(
-      backgroundColor: bgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: const Text(
         'Create New Playlist',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildCoverWidget(bgColor, lightShadow, darkShadow),
+            _buildCoverWidget(),
             const SizedBox(height: 24),
             TextField(
               controller: nameController,
-              style: const TextStyle(color: Colors.white),
-              cursorColor: const Color(0xFFFF4D00),
-              decoration: const InputDecoration(
+              cursorColor: colorScheme.primary,
+              decoration: InputDecoration(
                 labelText: 'Playlist Name',
-                labelStyle: TextStyle(color: Color(0xFF6A6C75)),
                 hintText: 'Enter playlist name',
-                hintStyle: TextStyle(color: Color(0xFF444549)),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF2A2B31)),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFFF4D00)),
-                ),
-                prefixIcon: Icon(Icons.playlist_play, color: Color(0xFFFF4D00)),
+                prefixIcon: Icon(Icons.playlist_play, color: colorScheme.primary),
               ),
               autofocus: true,
             ),
@@ -100,10 +88,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(null),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Color(0xFF6A6C75)),
-          ),
+          child: const Text('Cancel'),
         ),
         GestureDetector(
           onTap: _state.creatable ? _clickedCreate : null,
@@ -111,28 +96,16 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
-              gradient: _state.creatable
-                  ? const LinearGradient(
-                      colors: [Color(0xFFFF4D00), Color(0xFFE63E00)],
-                    )
-                  : null,
-              color: _state.creatable ? null : const Color(0xFF2A2B31),
-              boxShadow: _state.creatable
-                  ? [
-                      BoxShadow(
-                        color: const Color(0xFFFF4D00).withValues(alpha: 0.3),
-                        offset: const Offset(0, 4),
-                        blurRadius: 12,
-                      ),
-                    ]
-                  : [],
+              color: _state.creatable
+                  ? colorScheme.primary
+                  : colorScheme.onSurface.withValues(alpha: 0.12),
             ),
             child: Text(
               'CREATE',
               style: TextStyle(
                 color: _state.creatable
-                    ? Colors.white
-                    : const Color(0xFF444549),
+                    ? colorScheme.onPrimary
+                    : colorScheme.onSurface.withValues(alpha: 0.38),
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.2,
               ),
@@ -160,7 +133,8 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     }
   }
 
-  Widget _buildCoverWidget(Color bgColor, Color lightShadow, Color darkShadow) {
+  Widget _buildCoverWidget() {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTapDown: (_) => _updateState(_state.copyWith(isCoverPressed: true)),
       onTapUp: (_) => _updateState(_state.copyWith(isCoverPressed: false)),
@@ -171,46 +145,32 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
         width: double.infinity,
         height: 150,
         decoration: BoxDecoration(
-          color: bgColor,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(24),
-          gradient: _state.isCoverPressed
-              ? LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [darkShadow, lightShadow],
-                )
-              : null,
-          boxShadow: _state.isCoverPressed
-              ? []
-              : [
-                  BoxShadow(
-                    color: darkShadow,
-                    offset: const Offset(6, 6),
-                    blurRadius: 12,
-                  ),
-                  BoxShadow(
-                    color: lightShadow,
-                    offset: const Offset(-6, -6),
-                    blurRadius: 12,
-                  ),
-                ],
+          border: Border.all(
+            color: colorScheme.outline.withValues(alpha: 0.2),
+            width: 1,
+          ),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
           child: _state.cover != null
               ? Image.file(_state.cover!, fit: BoxFit.cover)
-              : const Column(
+              : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.add_photo_alternate,
                       size: 40,
-                      color: Color(0xFF6A6C75),
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       'Select Cover',
-                      style: TextStyle(color: Color(0xFF6A6C75), fontSize: 14),
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),

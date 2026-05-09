@@ -1,5 +1,5 @@
 class AppState {
-  final int index;
+  final int tabIdx;
 
-  const AppState(this.index);
+  const AppState(this.tabIdx);
 }

@@ -54,7 +54,6 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E1F23),
       appBar: _buildAppBar(),
       body: Stack(
         children: [
@@ -72,88 +71,43 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
         children: [
           const Text(
             'Playlists',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           Text(
             '${_state.playlists.length} created playlists',
-            style: const TextStyle(color: Color(0xFF6A6C75), fontSize: 12),
+            style: TextStyle(
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.6),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
-      backgroundColor: const Color(0xFF1E1F23),
-      elevation: 0,
       centerTitle: false,
       actions: [
         Padding(
-          padding: const EdgeInsets.only(right: 16, top: 12, bottom: 4),
-          child: GestureDetector(
-            onTapDown: (_) => _updateState(
-              widget._handler.playlistsWidgetAddButtonStateChanged(
-                _state,
-                true,
+          padding: const EdgeInsets.only(right: 12),
+          child: Row(
+            spacing: 0,
+            children: [
+              _buildActionButton(const Icon(Icons.edit, size: 22), () {}),
+              _buildActionButton(
+                const Icon(Icons.playlist_add, size: 30),
+                _clickedAdd,
               ),
-            ),
-            onTapUp: (_) => _updateState(
-              widget._handler.playlistsWidgetAddButtonStateChanged(
-                _state,
-                false,
-              ),
-            ),
-            onTapCancel: () => _updateState(
-              widget._handler.playlistsWidgetAddButtonStateChanged(
-                _state,
-                false,
-              ),
-            ),
-            onTap: _clickedAdd,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 100),
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E1F23),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: _state.isAddButtonPressed
-                    ? [
-                        const BoxShadow(
-                          color: Color(0xFF121216),
-                          offset: Offset(2, 2),
-                          blurRadius: 2,
-                        ),
-                        const BoxShadow(
-                          color: Color(0xFF2A2B31),
-                          offset: Offset(-2, -2),
-                          blurRadius: 2,
-                        ),
-                      ]
-                    : [
-                        const BoxShadow(
-                          color: Color(0xFF121216),
-                          offset: Offset(4, 4),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                        const BoxShadow(
-                          color: Color(0xFF2A2B31),
-                          offset: Offset(-4, -4),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ],
-              ),
-              child: const Icon(
-                Icons.playlist_add,
-                color: Color(0xFFFF4D00),
-                size: 20,
-              ),
-            ),
+            ],
           ),
-        ),
+        ), //padding
       ],
+    );
+  }
+
+  Widget _buildActionButton(Icon icon, void Function() onTap) {
+    return SizedBox(
+      width: 50,
+      height: double.infinity,
+      child: IconButton(onPressed: onTap, icon: icon),
     );
   }
 

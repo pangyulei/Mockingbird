@@ -4,10 +4,6 @@ import 'dart:io';
 
 abstract interface class PlaylistsEvents {
   Future<PlaylistsState> playlistsWidgetInitState();
-  PlaylistsState playlistsWidgetAddButtonStateChanged(
-    PlaylistsState state,
-    bool isPressed,
-  );
   bool playlistsWidgetDragTargetWillAccept(
     PlaylistsState state,
     Playlist targetPlaylist,
