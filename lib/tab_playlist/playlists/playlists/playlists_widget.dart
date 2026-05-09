@@ -55,8 +55,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
         children: [
           _buildGridWidget(),
           if (_state.isLoadingAll) _buildLoadingWidget(),
-        ),
-      ],
+        ],
       ),
     );
   }
@@ -78,8 +77,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
             '${_state.playlists.length} created playlists',
             style: const TextStyle(color: Color(0xFF6A6C75), fontSize: 12),
           ),
-        ),
-      ],
+        ],
       ),
       backgroundColor: const Color(0xFF1E1F23),
       elevation: 0,
@@ -192,18 +190,18 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
             // Drag ended
           },
           child: DragTarget<Playlist>(
-            onWillAcceptWithDetails: (data) => data.data != playlist,
+            onWillAcceptWithDetails: (data) => widget._handler.playlistsWidgetDragTargetWillAccept(
+              _state,
+              playlist,
+              data.data,
+            ),
             onAcceptWithDetails: (data) async {
-              final draggedPlaylist = data.data;
-              final oldIndex = _state.playlists.indexOf(draggedPlaylist);
-              final newIndex = _state.playlists.indexOf(playlist);
-
-              if (oldIndex != -1 && newIndex != -1 && oldIndex != newIndex) {
-                final newState = await widget._handler.playlistsWidgetReordered(
-                  _state,
-                  oldIndex,
-                  newIndex,
-                );
+              final newState = await widget._handler.playlistsWidgetDragTargetAccepted(
+                _state,
+                playlist,
+                data.data,
+              );
+              if (newState != null) {
                 _updateState(newState);
               }
             },

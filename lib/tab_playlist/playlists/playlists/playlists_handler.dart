@@ -26,7 +26,16 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
   
   @override
-  Future<PlaylistsState> playlistsWidgetReordered(PlaylistsState state, int oldIndex, int newIndex) async {
+  bool playlistsWidgetDragTargetWillAccept(PlaylistsState state, Playlist targetPlaylist, Playlist draggedPlaylist) {
+    // Don't accept if dragging onto itself
+    return draggedPlaylist != targetPlaylist;
+  }
+  
+  @override
+  Future<PlaylistsState?> playlistsWidgetDragTargetAccepted(PlaylistsState state, Playlist targetPlaylist, Playlist draggedPlaylist) async {
+    int oldIndex = state.playlists.indexOf(draggedPlaylist);
+    int newIndex = state.playlists.indexOf(targetPlaylist);
+
     // Adjust newIndex when moving down (account for the item being removed)
     if (oldIndex < newIndex) {
       newIndex -= 1;
