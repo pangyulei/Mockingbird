@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mockingbird/tab_playlists/playlist/playlist_handler.dart';
 import 'package:mockingbird/tab_playlists/playlist/playlist_widget.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_handler.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_widget.dart';
+import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_handler.dart';
+import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_widget.dart';
 import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_events.dart';
 
 import 'tab_playlists_route.dart';
@@ -32,7 +32,7 @@ class TabPlaylistsHandler implements TabPlaylistsEvents {
         final segments = uri.pathSegments;
         if (segments.length == 1 &&
             segments.first == TabPlaylistsRoute.playlists) {
-          return const PlaylistsWidget(PlaylistsHandler());
+          return const PlaylistsListWidget(PlaylistsListHandler());
         } else if (segments.length == 2 &&
             segments.first == TabPlaylistsRoute.playlists) {
           final playlistIdStr = segments.last;

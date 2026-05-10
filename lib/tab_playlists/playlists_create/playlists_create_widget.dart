@@ -2,31 +2,31 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_events.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_state.dart';
+import 'package:mockingbird/tab_playlists/playlists_create/playlists_create_events.dart';
+import 'package:mockingbird/tab_playlists/playlists_create/playlists_create_state.dart';
 
-class PlaylistCreateWidget extends StatefulWidget {
-  final PlaylistCreateEvents _handler;
-  const PlaylistCreateWidget(this._handler, {super.key});
+class PlaylistsCreateWidget extends StatefulWidget {
+  final PlaylistsCreateEvents _handler;
+  const PlaylistsCreateWidget(this._handler, {super.key});
 
   static Future<({String name, File? cover})?> show(
     BuildContext context,
-    PlaylistCreateEvents handler,
+    PlaylistsCreateEvents handler,
   ) async {
     return await showDialog<({String name, File? cover})?>(
       context: context,
       builder: (BuildContext context) {
-        return PlaylistCreateWidget(handler);
+        return PlaylistsCreateWidget(handler);
       },
     );
   }
 
   @override
-  State<PlaylistCreateWidget> createState() => _PlaylistCreateWidgetFactory();
+  State<PlaylistsCreateWidget> createState() => _PlaylistsCreateWidgetFactory();
 }
 
-class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
-  PlaylistCreateState _state = const PlaylistCreateState();
+class _PlaylistsCreateWidgetFactory extends State<PlaylistsCreateWidget> {
+  PlaylistsCreateState _state = const PlaylistsCreateState();
   final TextEditingController nameController = TextEditingController();
   final ImagePicker picker = ImagePicker();
 
@@ -35,7 +35,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     super.initState();
     // Rebuilds the UI every time the text changes so the "Create" button updates
     nameController.addListener(() {
-      final newState = widget._handler.playlistCreateWidgetTypingName(
+      final newState = widget._handler.playlistsCreateWidgetTypingName(
         _state,
         nameController.text,
       );
@@ -49,7 +49,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     super.dispose();
   }
 
-  void _updateState(PlaylistCreateState newState) {
+  void _updateState(PlaylistsCreateState newState) {
     setState(() {
       _state = newState;
     });
@@ -78,7 +78,10 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
               decoration: InputDecoration(
                 labelText: 'Playlist Name',
                 hintText: 'Enter playlist name',
-                prefixIcon: Icon(Icons.playlist_play, color: colorScheme.primary),
+                prefixIcon: Icon(
+                  Icons.playlist_play,
+                  color: colorScheme.primary,
+                ),
               ),
               autofocus: true,
             ),
@@ -125,7 +128,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     );
     if (xImage != null) {
       File cover = File(xImage.path);
-      final newState = widget._handler.playlistCreateWidgetSelectedCover(
+      final newState = widget._handler.playlistsCreateWidgetSelectedCover(
         _state,
         cover,
       );

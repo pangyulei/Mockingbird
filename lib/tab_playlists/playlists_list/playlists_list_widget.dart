@@ -1,46 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_handler.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_widget.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_handler.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_widget.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_events.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_state.dart';
+import 'package:mockingbird/tab_playlists/playlists_create/playlists_create_handler.dart';
+import 'package:mockingbird/tab_playlists/playlists_create/playlists_create_widget.dart';
+import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_events.dart';
+import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_state.dart';
+import 'package:mockingbird/tab_playlists/playlists_list_card/playlists_list_card_handler.dart';
+import 'package:mockingbird/tab_playlists/playlists_list_card/playlists_list_card_widget.dart';
 
-class PlaylistsWidget extends StatefulWidget {
-  final PlaylistsEvents _handler;
-  const PlaylistsWidget(this._handler, {super.key});
+class PlaylistsListWidget extends StatefulWidget {
+  final PlaylistsListEvents _handler;
+  const PlaylistsListWidget(this._handler, {super.key});
 
   @override
-  State<PlaylistsWidget> createState() => _PlaylistsWidgetFactory();
+  State<PlaylistsListWidget> createState() => _PlaylistsListWidgetFactory();
 }
 
-class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
-  PlaylistsState _state = const PlaylistsState();
+class _PlaylistsListWidgetFactory extends State<PlaylistsListWidget> {
+  PlaylistsListState _state = const PlaylistsListState();
 
   @override
   void initState() {
     super.initState();
-    _updateStateByStream(widget._handler.playlistsWidgetInitState());
+    _updateStateByStream(widget._handler.playlistsListWidgetInitState());
   }
 
-  Future<void> _updateStateByStream(Stream<PlaylistsState> stream) async {
+  Future<void> _updateStateByStream(Stream<PlaylistsListState> stream) async {
     await for (final newState in stream) {
       _updateState(newState);
     }
   }
 
-  void _updateState(PlaylistsState newState) {
+  void _updateState(PlaylistsListState newState) {
     setState(() {
       _state = newState;
     });
   }
 
   Future<void> _clickedAdd() async {
-    final incompletePlaylist = await PlaylistCreateWidget.show(
+    final incompletePlaylist = await PlaylistsCreateWidget.show(
       context,
-      const PlaylistCreateHandler(),
+      const PlaylistsCreateHandler(),
     );
-    final stream = widget._handler.playlistsWidgetPoppedCreateWidget(
+    final stream = widget._handler.playlistsListWidgetPoppedCreateWidget(
       _state,
       incompletePlaylist,
     );
@@ -98,7 +98,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
               icon: const Icon(Icons.close),
               onPressed: () {
                 final newState = widget._handler
-                    .playlistsWidgetToggleSelectionMode(_state);
+                    .playlistsListWidgetToggleSelectionMode(_state);
                 _updateState(newState);
               },
             )
@@ -190,7 +190,9 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
     );
 
     if (confirmed == true) {
-      final stream = widget._handler.playlistsWidgetBatchRemoveSelected(_state);
+      final stream = widget._handler.playlistsListWidgetBatchRemoveSelected(
+        _state,
+      );
       await _updateStateByStream(stream);
     }
   }
@@ -225,26 +227,35 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
           onLongPress: () {
             if (!_state.isSelectionMode) {
               final newState = widget._handler
-                  .playlistsWidgetToggleSelectionMode(_state);
+                  .playlistsListWidgetToggleSelectionMode(_state);
               _updateState(newState);
             }
             // Toggle selection
             final toggleState = widget._handler
-                .playlistsWidgetTogglePlaylistSelection(_state, playlist.id);
+                .playlistsListWidgetTogglePlaylistSelection(
+                  _state,
+                  playlist.id,
+                );
             _updateState(toggleState);
           },
           onTap: () {
             if (_state.isSelectionMode) {
               // In selection mode, tap toggles selection
               final toggleState = widget._handler
-                  .playlistsWidgetTogglePlaylistSelection(_state, playlist.id);
+                  .playlistsListWidgetTogglePlaylistSelection(
+                    _state,
+                    playlist.id,
+                  );
               _updateState(toggleState);
             }
-            // In normal mode, tap does nothing here - navigation is handled by PlaylistCardWidget
+            // In normal mode, tap does nothing here - navigation is handled by PlaylistsListCardWidget
           },
           child: Stack(
             children: [
-              PlaylistCardWidget(playlist, const PlaylistCardHandler()),
+              PlaylistsListCardWidget(
+                playlist,
+                const PlaylistsListCardHandler(),
+              ),
               // Selection indicator overlay
               if (_state.isSelectionMode)
                 Positioned(

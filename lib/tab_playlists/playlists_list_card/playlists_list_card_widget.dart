@@ -2,22 +2,23 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mockingbird/models/playlist.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_events.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_state.dart';
+import 'package:mockingbird/tab_playlists/playlists_list_card/playlists_list_card_events.dart';
+import 'package:mockingbird/tab_playlists/playlists_list_card/playlists_list_card_state.dart';
 
-class PlaylistCardWidget extends StatefulWidget {
+class PlaylistsListCardWidget extends StatefulWidget {
   final Playlist _playlist;
-  final PlaylistCardEvents _handler;
-  const PlaylistCardWidget(this._playlist, this._handler, {super.key});
+  final PlaylistsListCardEvents _handler;
+  const PlaylistsListCardWidget(this._playlist, this._handler, {super.key});
 
   @override
-  State<PlaylistCardWidget> createState() => _PlaylistCardWidgetState();
+  State<PlaylistsListCardWidget> createState() =>
+      _PlaylistsListCardWidgetState();
 }
 
-class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
-  PlaylistCardState _state = const PlaylistCardState();
+class _PlaylistsListCardWidgetState extends State<PlaylistsListCardWidget> {
+  PlaylistsListCardState _state = const PlaylistsListCardState();
 
-  void _updateState(PlaylistCardState newState) {
+  void _updateState(PlaylistsListCardState newState) {
     setState(() {
       _state = newState;
     });
@@ -27,16 +28,25 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => _updateState(
-        widget._handler.playlistCardWidgetPressedStateChanged(_state, true),
+        widget._handler.playlistsListCardWidgetPressedStateChanged(
+          _state,
+          true,
+        ),
       ),
       onTapUp: (_) {
         _updateState(
-          widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
+          widget._handler.playlistsListCardWidgetPressedStateChanged(
+            _state,
+            false,
+          ),
         );
-        widget._handler.playlistCardWidgetOnTap(context, widget._playlist); 
+        widget._handler.playlistsListCardWidgetOnTap(context, widget._playlist);
       },
       onTapCancel: () => _updateState(
-        widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
+        widget._handler.playlistsListCardWidgetPressedStateChanged(
+          _state,
+          false,
+        ),
       ),
       child: AnimatedScale(
         scale: _state.isPressed ? 0.96 : 1.0,

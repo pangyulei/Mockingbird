@@ -3,22 +3,22 @@ import 'dart:io';
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/models/playlist.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_events.dart';
-import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_state.dart';
+import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_events.dart';
+import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_state.dart';
 
-class PlaylistsHandler implements PlaylistsEvents {
-  const PlaylistsHandler();
+class PlaylistsListHandler implements PlaylistsListEvents {
+  const PlaylistsListHandler();
 
   @override
-  Stream<PlaylistsState> playlistsWidgetInitState() async* {
-    yield const PlaylistsState(showLoading: true);
+  Stream<PlaylistsListState> playlistsListWidgetInitState() async* {
+    yield const PlaylistsListState(showLoading: true);
     final playlists = await DBPlaylist(DB.instance.store).getAllAsync();
-    yield PlaylistsState(playlists: playlists, showLoading: false);
+    yield PlaylistsListState(playlists: playlists, showLoading: false);
   }
 
   @override
-  bool playlistsWidgetDragTargetWillAccept(
-    PlaylistsState state,
+  bool playlistsListWidgetDragTargetWillAccept(
+    PlaylistsListState state,
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
   ) {
@@ -27,8 +27,8 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
 
   @override
-  Stream<PlaylistsState> playlistsWidgetDragTargetAccepted(
-    PlaylistsState state,
+  Stream<PlaylistsListState> playlistsListWidgetDragTargetAccepted(
+    PlaylistsListState state,
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
   ) async* {
@@ -51,8 +51,8 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
 
   @override
-  Stream<PlaylistsState> playlistsWidgetPoppedCreateWidget(
-    PlaylistsState state,
+  Stream<PlaylistsListState> playlistsListWidgetPoppedCreateWidget(
+    PlaylistsListState state,
     ({String name, File? cover})? incompletePlaylist,
   ) async* {
     if (incompletePlaylist == null) {
@@ -75,7 +75,9 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
 
   @override
-  PlaylistsState playlistsWidgetToggleSelectionMode(PlaylistsState state) {
+  PlaylistsListState playlistsListWidgetToggleSelectionMode(
+    PlaylistsListState state,
+  ) {
     // If exiting selection mode, clear selections
     if (state.isSelectionMode) {
       return state.copyWith(isSelectionMode: false, selectedPlaylistIds: {});
@@ -84,8 +86,8 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
 
   @override
-  PlaylistsState playlistsWidgetTogglePlaylistSelection(
-    PlaylistsState state,
+  PlaylistsListState playlistsListWidgetTogglePlaylistSelection(
+    PlaylistsListState state,
     int playlistId,
   ) {
     final Set<int> newSelectedIds = {...state.selectedPlaylistIds};
@@ -105,8 +107,8 @@ class PlaylistsHandler implements PlaylistsEvents {
   }
 
   @override
-  Stream<PlaylistsState> playlistsWidgetBatchRemoveSelected(
-    PlaylistsState state,
+  Stream<PlaylistsListState> playlistsListWidgetBatchRemoveSelected(
+    PlaylistsListState state,
   ) async* {
     if (state.selectedPlaylistIds.isEmpty) {
       yield state;

@@ -7,6 +7,9 @@ class Playlist {
 
   final String name; //TODO may add remoteCoverURLStr
   final String? cover; //TODO renmae to localCoverPathStr
+  //TODO rename properties guild, relate to db upgrade.
+
+  @Index()
   final int sortOrder;
 
   Playlist(this.name, this.sortOrder, {this.id = 0, this.cover});
