@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'playlist_events.dart';
@@ -37,12 +39,40 @@ class _PlaylistWidgetFactory extends State<PlaylistWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (_state.showLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_state.playlist == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Playlist not found')),
+        body: const Center(child: Text('Playlist not found')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_state.playlist?.name ?? 'null'),
+        title: Text(_state.playlist!.name),
         actions: const [IconButton(icon: Icon(Icons.add), onPressed: null)],
       ),
-      body: const Center(child: Text('No songs yet. Tap + to add.')),
+      body: Column(
+        children: [
+          if (_state.playlist!.cover != null)
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: FileImage(File(_state.playlist!.cover!)),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          const Expanded(
+            child: Center(child: Text('No songs yet. Tap + to add.')),
+          ),
+        ],
+      ),
     );
   }
 }
