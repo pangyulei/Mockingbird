@@ -18,4 +18,12 @@ abstract interface class PlaylistsEvents {
     PlaylistsState state,
     ({String name, File? cover})? incompletePlaylist,
   );
+  PlaylistsState playlistsWidgetToggleSelectionMode(PlaylistsState state);
+  PlaylistsState playlistsWidgetTogglePlaylistSelection(
+    PlaylistsState state,
+    int playlistId,
+  );
+  Stream<PlaylistsState> playlistsWidgetBatchRemoveSelected(
+    PlaylistsState state,
+  );
 }

@@ -70,4 +70,69 @@ class PlaylistsHandler implements PlaylistsEvents {
       }
     }
   }
+
+  @override
+  PlaylistsState playlistsWidgetToggleSelectionMode(PlaylistsState state) {
+    // If exiting selection mode, clear selections
+    if (state.isSelectionMode) {
+      return state.copyWith(
+        isSelectionMode: false,
+        selectedPlaylistIds: {},
+      );
+    }
+    return state.copyWith(isSelectionMode: true);
+  }
+
+  @override
+  PlaylistsState playlistsWidgetTogglePlaylistSelection(
+    PlaylistsState state,
+    int playlistId,
+  ) {
+    final Set<int> newSelectedIds = {...state.selectedPlaylistIds};
+    if (newSelectedIds.contains(playlistId)) {
+      newSelectedIds.remove(playlistId);
+    } else {
+      newSelectedIds.add(playlistId);
+    }
+    
+    // Auto-exit selection mode if no items are selected
+    final bool shouldExitSelectionMode = newSelectedIds.isEmpty;
+    
+    return state.copyWith(
+      selectedPlaylistIds: newSelectedIds,
+      isSelectionMode: shouldExitSelectionMode ? false : state.isSelectionMode,
+    );
+  }
+
+  @override
+  Stream<PlaylistsState> playlistsWidgetBatchRemoveSelected(
+    PlaylistsState state,
+  ) async* {
+    if (state.selectedPlaylistIds.isEmpty) {
+      yield state;
+      return;
+    }
+
+    yield state.copyWith(showLoading: true);
+
+    // Get the playlists to remove
+    final playlistsToRemove = state.playlists
+        .where((p) => state.selectedPlaylistIds.contains(p.id))
+        .toList();
+
+    // Remove from database
+    await DBPlaylist(DB.instance.store).removeManyAsync(playlistsToRemove);
+
+    // Update state with remaining playlists
+    final remainingPlaylists = state.playlists
+        .where((p) => !state.selectedPlaylistIds.contains(p.id))
+        .toList();
+
+    yield state.copyWith(
+      playlists: remainingPlaylists,
+      selectedPlaylistIds: {},
+      isSelectionMode: false,
+      showLoading: false,
+    );
+  }
 }

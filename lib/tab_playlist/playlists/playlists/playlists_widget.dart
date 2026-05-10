@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/models/playlist.dart';
+import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_handler.dart';
+import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_widget.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_handler.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_widget.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_events.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dart';
-
-import '../playlist_card/playlist_card_handler.dart';
-import '../playlist_card/playlist_card_widget.dart';
 
 class PlaylistsWidget extends StatefulWidget {
   final PlaylistsEvents _handler;
@@ -66,41 +64,138 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Playlists',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            '${_state.playlists.length} created playlists',
-            style: TextStyle(
-              color: Theme.of(
-                context,
-              ).colorScheme.onSurface.withValues(alpha: 0.6),
-              fontSize: 12,
+      title: _state.isSelectionMode
+          ? Row(
+              children: [
+                Text(
+                  '${_state.selectedPlaylistIds.length} selected',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Playlists',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${_state.playlists.length} created playlists',
+                  style: TextStyle(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
+      centerTitle: false,
+      leading: _state.isSelectionMode
+          ? IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                final newState = widget._handler
+                    .playlistsWidgetToggleSelectionMode(_state);
+                _updateState(newState);
+              },
+            )
+          : null,
+      actions: [
+        if (_state.isSelectionMode)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Row(
+              spacing: 8,
+              children: [
+                // Select All button
+                if (_state.selectedPlaylistIds.length < _state.playlists.length)
+                  TextButton(
+                    onPressed: () {
+                      final allIds = _state.playlists.map((p) => p.id).toSet();
+                      _updateState(
+                        _state.copyWith(selectedPlaylistIds: allIds),
+                      );
+                    },
+                    child: const Text('Select All'),
+                  ),
+                // Delete button
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: _state.selectedPlaylistIds.isEmpty
+                        ? Theme.of(context).disabledColor.withValues(alpha: 0.3)
+                        : Theme.of(context).colorScheme.errorContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    onPressed: _state.selectedPlaylistIds.isEmpty
+                        ? null
+                        : () => _showDeleteConfirmation(),
+                    icon: Icon(
+                      Icons.delete,
+                      color: _state.selectedPlaylistIds.isEmpty
+                          ? Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.38)
+                          : Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: Row(
+              spacing: 0,
+              children: [
+                _buildActionButton(const Icon(Icons.edit, size: 22), () {}),
+                _buildActionButton(
+                  const Icon(Icons.playlist_add, size: 30),
+                  _clickedAdd,
+                ),
+              ],
+            ),
+          ), //padding
+      ],
+    );
+  }
+
+  Future<void> _showDeleteConfirmation() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Playlists'),
+        content: Text(
+          'Are you sure you want to delete ${_state.selectedPlaylistIds.length} playlist(s)? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
           ),
         ],
       ),
-      centerTitle: false,
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: Row(
-            spacing: 0,
-            children: [
-              _buildActionButton(const Icon(Icons.edit, size: 22), () {}),
-              _buildActionButton(
-                const Icon(Icons.playlist_add, size: 30),
-                _clickedAdd,
-              ),
-            ],
-          ),
-        ), //padding
-      ],
     );
+
+    if (confirmed == true) {
+      final stream = widget._handler.playlistsWidgetBatchRemoveSelected(_state);
+      await _updateStateByStream(stream);
+    }
   }
 
   Widget _buildActionButton(Icon icon, void Function() onTap) {
@@ -127,45 +222,62 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
       ),
       itemBuilder: (context, index) {
         final playlist = _state.playlists[index];
-        return LongPressDraggable<Playlist>(
-          data: playlist,
-          feedback: Material(
-            elevation: 8,
-            borderRadius: BorderRadius.circular(24),
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width / 2 - 20,
-              height: MediaQuery.of(context).size.width / 2 - 20,
-              child: PlaylistCardWidget(playlist, PlaylistCardHandler()),
-            ),
-          ),
-          childWhenDragging: Opacity(
-            opacity: 0.3,
-            child: PlaylistCardWidget(playlist, PlaylistCardHandler()),
-          ),
-          onDragStarted: () {
-            // Optional: Add haptic feedback or visual indication
+        final isSelected = _state.isPlaylistSelected(playlist.id);
+        
+        return GestureDetector(
+          onLongPress: () {
+            if (!_state.isSelectionMode) {
+              final newState = widget._handler
+                  .playlistsWidgetToggleSelectionMode(_state);
+              _updateState(newState);
+            }
+            // Toggle selection
+            final toggleState = widget._handler
+                .playlistsWidgetTogglePlaylistSelection(_state, playlist.id);
+            _updateState(toggleState);
           },
-          onDragEnd: (details) {
-            // Drag ended
+          onTap: () {
+            if (_state.isSelectionMode) {
+              // In selection mode, tap toggles selection
+              final toggleState = widget._handler
+                  .playlistsWidgetTogglePlaylistSelection(_state, playlist.id);
+              _updateState(toggleState);
+            }
+            // In normal mode, tap does nothing here - navigation is handled by PlaylistCardWidget
           },
-          child: DragTarget<Playlist>(
-            onWillAcceptWithDetails: (data) =>
-                widget._handler.playlistsWidgetDragTargetWillAccept(
-                  _state,
-                  playlist,
-                  data.data,
+          child: Stack(
+            children: [
+              PlaylistCardWidget(playlist, PlaylistCardHandler()),
+              // Selection indicator overlay
+              if (_state.isSelectionMode)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                        width: 2,
+                      ),
+                    ),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          )
+                        : null,
+                  ),
                 ),
-            onAcceptWithDetails: (data) async {
-              final stream = widget._handler.playlistsWidgetDragTargetAccepted(
-                _state,
-                playlist,
-                data.data,
-              );
-              await _updateStateByStream(stream);
-            },
-            builder: (context, candidateData, rejectedData) {
-              return PlaylistCardWidget(playlist, PlaylistCardHandler());
-            },
+            ],
           ),
         );
       },

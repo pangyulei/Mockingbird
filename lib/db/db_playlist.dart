@@ -74,6 +74,8 @@ class DBPlaylist {
     final uselessCovers = playlists
         .where((p) => p.cover != null)
         .map((p) => File(p.cover!));
+    //map is lazy call, it would not execute until someone use it. 
+    //at this situation is Future.wait will trigger, so every delete() parallel started same time
     final removeCovers = uselessCovers.map((cover) async {
       if (await cover.exists()) {
         await cover.delete();
