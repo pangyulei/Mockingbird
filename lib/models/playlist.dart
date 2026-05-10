@@ -5,8 +5,8 @@ class Playlist {
   @Id()
   int id;
 
-  final String name;
-  final String? cover;
+  final String name; //TODO may add remoteCoverURLStr
+  final String? cover; //TODO renmae to localCoverPathStr
   final int sortOrder;
 
   Playlist(this.name, this.sortOrder, {this.id = 0, this.cover});

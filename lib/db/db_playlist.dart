@@ -32,8 +32,7 @@ class DBPlaylist {
     } else {
       coverPath = null;
     }
-    final newPlaylist = playlist
-        .copyWith(name: trimmedName, cover: coverPath); 
+    final newPlaylist = playlist.copyWith(name: trimmedName, cover: coverPath);
     await _box.putAsync(newPlaylist); //will fill id field
     return newPlaylist;
   }
@@ -46,6 +45,10 @@ class DBPlaylist {
     final result = await query.findAsync();
     query.close();
     return result;
+  }
+
+  Future<Playlist?> getByIdAsync(int id) async {
+    return await _box.getAsync(id);
   }
 
   Future<List<Playlist>> updateSortOrdersAsync(List<Playlist> playlists) async {
@@ -74,7 +77,7 @@ class DBPlaylist {
     final uselessCovers = playlists
         .where((p) => p.cover != null)
         .map((p) => File(p.cover!));
-    //map is lazy call, it would not execute until someone use it. 
+    //map is lazy call, it would not execute until someone use it.
     //at this situation is Future.wait will trigger, so every delete() parallel started same time
     final removeCovers = uselessCovers.map((cover) async {
       if (await cover.exists()) {

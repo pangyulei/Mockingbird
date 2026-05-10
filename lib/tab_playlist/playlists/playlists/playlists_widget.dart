@@ -20,9 +20,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   @override
   void initState() {
     super.initState();
-    widget._handler.playlistsWidgetInitState().then((newState) {
-      _updateState(newState);
-    });
+    _updateStateByStream(widget._handler.playlistsWidgetInitState());
   }
 
   Future<void> _updateStateByStream(Stream<PlaylistsState> stream) async {
@@ -56,7 +54,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
       body: Stack(
         children: [
           _buildGridWidget(),
-          if (_state.isLoadingAll) _buildLoadingWidget(),
+          if (_state.showLoading) _buildLoadingWidget(),
         ],
       ),
     );
@@ -156,7 +154,6 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
             child: Row(
               spacing: 0,
               children: [
-                _buildActionButton(const Icon(Icons.edit, size: 22), () {}),
                 _buildActionButton(
                   const Icon(Icons.playlist_add, size: 30),
                   _clickedAdd,
@@ -223,7 +220,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
       itemBuilder: (context, index) {
         final playlist = _state.playlists[index];
         final isSelected = _state.isPlaylistSelected(playlist.id);
-        
+
         return GestureDetector(
           onLongPress: () {
             if (!_state.isSelectionMode) {
@@ -259,12 +256,16 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                          : Theme.of(
+                              context,
+                            ).colorScheme.surface.withValues(alpha: 0.8),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isSelected
                             ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                            : Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.5),
                         width: 2,
                       ),
                     ),

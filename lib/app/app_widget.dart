@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_events.dart';
 import 'package:mockingbird/app/app_state.dart';
 import 'package:mockingbird/tab_playlist/tab_playlist_widget.dart';
@@ -29,6 +30,11 @@ class _AppWidgetFactory extends State<AppWidget> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+      ),
       home: Scaffold(
         body: IndexedStack(
           index: _state.tabIdx,
@@ -46,6 +52,7 @@ class _AppWidgetFactory extends State<AppWidget> {
   Widget _buildTabBar() {
     return BottomNavigationBar(
       type: BottomNavigationBarType.fixed,
+      selectedItemColor: const Color(0xFFFF6B35), // Hermes orange
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.playlist_play),

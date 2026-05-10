@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mockingbird/models/playlist.dart';
+import 'package:mockingbird/tab_playlist/playlist/playlist_widget.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_events.dart';
 import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_state.dart';
 
@@ -33,7 +34,7 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
         _updateState(
           widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
         );
-        widget._handler.playlistCardWidgetOnTap(widget._playlist);
+        widget._handler.playlistCardWidgetOnTap(widget._playlist); 
       },
       onTapCancel: () => _updateState(
         widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
@@ -41,83 +42,70 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
       child: AnimatedScale(
         scale: _state.isPressed ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 100),
-        child: Card(
-          margin: const EdgeInsets.all(8),
-          elevation: _state.isPressed ? 2 : 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Stack(
-              children: [
-                if (widget._playlist.cover != null)
-                  Positioned.fill(
-                    child: Opacity(
-                      opacity: _state.isPressed ? 0.6 : 0.9,
-                      child: Image.file(
-                        File(widget._playlist.cover!),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                if (widget._playlist.cover == null)
-                  const Center(
-                    child: Icon(
-                      Icons.video_collection,
-                      color: Color(0xFF6A6C75), //Color(0xFFFF4D00),
-                      size: 24,
-                    ),
-                  ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: 16,
-                    ),
-                    decoration: widget._playlist.cover == null
-                        ? null
-                        : BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Theme.of(context).colorScheme.surface.withValues(alpha: 1),
-                                Theme.of(context).colorScheme.surface.withValues(alpha: 0.9),
-                                Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
-                                Theme.of(context).colorScheme.surface.withValues(alpha: 0.3),
-                              ],
+        child: Column(
+          children: [
+            // Cover image area
+            Expanded(
+              child: Card(
+                margin: const EdgeInsets.all(8),
+                elevation: _state.isPressed ? 2 : 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    children: [
+                      if (widget._playlist.cover != null)
+                        Positioned.fill(
+                          child: Opacity(
+                            opacity: _state.isPressed ? 0.6 : 0.9,
+                            child: Image.file(
+                              File(widget._playlist.cover!),
+                              fit: BoxFit.cover,
                             ),
                           ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget._playlist.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          '0 Songs',
-                          style: TextStyle(
-                            fontSize: 12,
+                      if (widget._playlist.cover == null)
+                        const Center(
+                          child: Icon(
+                            Icons.video_collection,
+                            color: Color(0xFF6A6C75),
+                            size: 48,
                           ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+            // Name and song count below cover
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget._playlist.name,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '0 Songs',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

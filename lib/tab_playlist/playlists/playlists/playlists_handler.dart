@@ -8,9 +8,10 @@ import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dar
 
 class PlaylistsHandler implements PlaylistsEvents {
   @override
-  Future<PlaylistsState> playlistsWidgetInitState() async {
+  Stream<PlaylistsState> playlistsWidgetInitState() async* {
+    yield const PlaylistsState(showLoading: true);
     final playlists = await DBPlaylist(DB.instance.store).getAllAsync();
-    return PlaylistsState(playlists: playlists, isLoadingAll: false);
+    yield PlaylistsState(playlists: playlists, showLoading: false);
   }
 
   @override
@@ -75,10 +76,7 @@ class PlaylistsHandler implements PlaylistsEvents {
   PlaylistsState playlistsWidgetToggleSelectionMode(PlaylistsState state) {
     // If exiting selection mode, clear selections
     if (state.isSelectionMode) {
-      return state.copyWith(
-        isSelectionMode: false,
-        selectedPlaylistIds: {},
-      );
+      return state.copyWith(isSelectionMode: false, selectedPlaylistIds: {});
     }
     return state.copyWith(isSelectionMode: true);
   }
@@ -94,10 +92,10 @@ class PlaylistsHandler implements PlaylistsEvents {
     } else {
       newSelectedIds.add(playlistId);
     }
-    
+
     // Auto-exit selection mode if no items are selected
     final bool shouldExitSelectionMode = newSelectedIds.isEmpty;
-    
+
     return state.copyWith(
       selectedPlaylistIds: newSelectedIds,
       isSelectionMode: shouldExitSelectionMode ? false : state.isSelectionMode,

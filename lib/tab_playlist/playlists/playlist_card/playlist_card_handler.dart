@@ -10,6 +10,6 @@ class PlaylistCardHandler implements PlaylistCardEvents {
 
   @override
   void playlistCardWidgetOnTap(Playlist playlist) {
-    // do nothing for now
+    //TODO route to detail use route 
   }
 }

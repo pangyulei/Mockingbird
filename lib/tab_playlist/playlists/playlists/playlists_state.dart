@@ -2,14 +2,14 @@ import 'package:mockingbird/models/playlist.dart';
 
 class PlaylistsState {
   final List<Playlist> playlists;
-  final bool isLoadingAll;
+  final bool showLoading;
   final bool isAddButtonPressed;
   final bool isSelectionMode;
   final Set<int> selectedPlaylistIds;
-  
+
   const PlaylistsState({
     this.playlists = const [],
-    this.isLoadingAll = true,
+    this.showLoading = true,
     this.isAddButtonPressed = false,
     this.isSelectionMode = false,
     this.selectedPlaylistIds = const {},
@@ -24,13 +24,13 @@ class PlaylistsState {
   }) {
     return PlaylistsState(
       playlists: playlists != null ? [...playlists] : [...this.playlists],
-      isLoadingAll: showLoading ?? isLoadingAll,
+      showLoading: showLoading ?? this.showLoading,
       isAddButtonPressed: isAddButtonPressed ?? this.isAddButtonPressed,
       isSelectionMode: isSelectionMode ?? this.isSelectionMode,
       selectedPlaylistIds: selectedPlaylistIds ?? {...this.selectedPlaylistIds},
     );
   }
-  
+
   bool isPlaylistSelected(int playlistId) {
     return selectedPlaylistIds.contains(playlistId);
   }

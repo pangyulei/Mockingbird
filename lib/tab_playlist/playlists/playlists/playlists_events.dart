@@ -3,7 +3,7 @@ import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dar
 import 'dart:io';
 
 abstract interface class PlaylistsEvents {
-  Future<PlaylistsState> playlistsWidgetInitState();
+  Stream<PlaylistsState> playlistsWidgetInitState();
   bool playlistsWidgetDragTargetWillAccept(
     PlaylistsState state,
     Playlist targetPlaylist,
