@@ -1,5 +1,5 @@
 import 'package:mockingbird/models/playlist.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_state.dart';
 import 'dart:io';
 
 abstract interface class PlaylistsEvents {

@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_state.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_state.dart';
 
 abstract interface class PlaylistCreateEvents {
   PlaylistCreateState playlistCreateWidgetSelectedCover(PlaylistCreateState state, File cover);

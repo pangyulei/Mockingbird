@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_events.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_state.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_events.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_state.dart';
 
 class PlaylistCreateWidget extends StatefulWidget {
   final PlaylistCreateEvents _handler;

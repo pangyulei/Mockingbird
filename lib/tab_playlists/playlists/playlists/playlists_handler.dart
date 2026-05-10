@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/models/playlist.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_events.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_events.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_state.dart';
 
 class PlaylistsHandler implements PlaylistsEvents {
+  const PlaylistsHandler();
+
   @override
   Stream<PlaylistsState> playlistsWidgetInitState() async* {
     yield const PlaylistsState(showLoading: true);

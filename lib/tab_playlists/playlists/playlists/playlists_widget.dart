@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_handler.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_widget.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_handler.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_create/playlist_create_widget.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_events.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlists/playlists_state.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_handler.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_widget.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_handler.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_create/playlist_create_widget.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_events.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlists/playlists_state.dart';
 
 class PlaylistsWidget extends StatefulWidget {
   final PlaylistsEvents _handler;
@@ -38,7 +38,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
   Future<void> _clickedAdd() async {
     final incompletePlaylist = await PlaylistCreateWidget.show(
       context,
-      PlaylistCreateHandler(),
+      const PlaylistCreateHandler(),
     );
     final stream = widget._handler.playlistsWidgetPoppedCreateWidget(
       _state,
@@ -244,7 +244,7 @@ class _PlaylistsWidgetFactory extends State<PlaylistsWidget> {
           },
           child: Stack(
             children: [
-              PlaylistCardWidget(playlist, PlaylistCardHandler()),
+              PlaylistCardWidget(playlist, const PlaylistCardHandler()),
               // Selection indicator overlay
               if (_state.isSelectionMode)
                 Positioned(

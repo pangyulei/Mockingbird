@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mockingbird/models/playlist.dart';
-import 'package:mockingbird/tab_playlist/playlist/playlist_widget.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_events.dart';
-import 'package:mockingbird/tab_playlist/playlists/playlist_card/playlist_card_state.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_events.dart';
+import 'package:mockingbird/tab_playlists/playlists/playlist_card/playlist_card_state.dart';
 
 class PlaylistCardWidget extends StatefulWidget {
   final Playlist _playlist;
@@ -34,7 +33,7 @@ class _PlaylistCardWidgetState extends State<PlaylistCardWidget> {
         _updateState(
           widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
         );
-        widget._handler.playlistCardWidgetOnTap(widget._playlist); 
+        widget._handler.playlistCardWidgetOnTap(context, widget._playlist); 
       },
       onTapCancel: () => _updateState(
         widget._handler.playlistCardWidgetPressedStateChanged(_state, false),
