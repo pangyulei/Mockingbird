@@ -1,21 +1,21 @@
 import 'dart:io';
 
-class PlaylistsCreateState {
+class PlaylistCreateState {
   final File? cover;
   final bool creatable;
   final bool isCoverPressed;
-  const PlaylistsCreateState({
+  const PlaylistCreateState({
     this.cover,
     this.creatable = false,
     this.isCoverPressed = false,
   });
 
-  PlaylistsCreateState copyWith({
+  PlaylistCreateState copyWith({
     File? cover,
     bool? creatable,
     bool? isCoverPressed,
   }) {
-    return PlaylistsCreateState(
+    return PlaylistCreateState(
       cover: cover ?? this.cover,
       creatable: creatable ?? this.creatable,
       isCoverPressed: isCoverPressed ?? this.isCoverPressed,

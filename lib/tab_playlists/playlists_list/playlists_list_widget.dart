@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlists/playlists_create/playlists_create_handler.dart';
-import 'package:mockingbird/tab_playlists/playlists_create/playlists_create_widget.dart';
+import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_handler.dart';
+import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_widget.dart';
 import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_events.dart';
 import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_state.dart';
 import 'package:mockingbird/tab_playlists/playlists_list_card/playlists_list_card_handler.dart';
@@ -36,9 +36,9 @@ class _PlaylistsListWidgetFactory extends State<PlaylistsListWidget> {
   }
 
   Future<void> _clickedAdd() async {
-    final incompletePlaylist = await PlaylistsCreateWidget.show(
+    final incompletePlaylist = await PlaylistCreateWidget.show(
       context,
-      const PlaylistsCreateHandler(),
+      const PlaylistCreateHandler(),
     );
     final stream = widget._handler.playlistsListWidgetPoppedCreateWidget(
       _state,
