@@ -27,14 +27,16 @@
         {
           "id": "4:5852462797454314994",
           "name": "sortOrder",
-          "type": 6
+          "indexId": "1:9035501036105828516",
+          "type": 6,
+          "flags": 8
         }
       ],
       "relations": []
     }
   ],
   "lastEntityId": "1:829471958020190260",
-  "lastIndexId": "0:0",
+  "lastIndexId": "1:9035501036105828516",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
