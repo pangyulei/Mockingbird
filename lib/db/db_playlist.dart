@@ -51,7 +51,7 @@ class DBPlaylist {
     return await _box.getAsync(id);
   }
 
-  Future<List<Playlist>> updateSortOrdersAsync(Iterable<Playlist> playlists) async {
+  Future<List<Playlist>> updateSortOrdersAsync(List<Playlist> playlists) async {
     // Update sortOrder for each playlist based on its position in the list
     // Position [0] gets the highest sortOrder (newest first)
     final updatedPlaylists = playlists
@@ -61,6 +61,10 @@ class DBPlaylist {
         .toList();
     await _box.putManyAsync(updatedPlaylists);
     return updatedPlaylists;
+  }
+
+  Future<void> updateAsync(Playlist playlist) async {
+    await _box.putAsync(playlist);
   }
 
   Future<void> removeAsync(Playlist playlist) async {

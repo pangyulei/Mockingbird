@@ -37,7 +37,9 @@ class PlaylistsListHandler implements PlaylistsListEvents {
     int newIndex = state.playlists.indexOf(targetPlaylist);
 
     // Create a new list with the reordered items
-    final List<Playlist> reindexedPlaylists = [...state.playlists];
+    final List<Playlist> reindexedPlaylists = state.playlists
+        .map((e) => e.copyWith())
+        .toList();
     final Playlist movedPlaylist = reindexedPlaylists.removeAt(oldIndex);
     reindexedPlaylists.insert(newIndex, movedPlaylist);
 
@@ -60,7 +62,10 @@ class PlaylistsListHandler implements PlaylistsListEvents {
     } else {
       yield state.copyWith(showLoading: true);
       final newPlaylist = await DBPlaylist(DB.instance.store).createAsync(
-        Playlist(incompletePlaylist.name, state.playlists.length),
+        Playlist(
+          name: incompletePlaylist.name,
+          sortOrder: state.playlists.length,
+        ),
         incompletePlaylist.cover,
       );
       if (newPlaylist != null) {
