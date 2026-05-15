@@ -1,3 +1,7 @@
+---
+applyTo: "**/*"
+---
+
 # Mockingbird Flutter App - AI Agent Instructions
 
 ## Project Overview

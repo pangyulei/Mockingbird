@@ -33,17 +33,67 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "3:2902630092194733107",
+      "lastPropertyId": "6:870759552759158973",
+      "name": "Track",
+      "properties": [
+        {
+          "id": "1:1413366592083664129",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1655816391263710493",
+          "name": "filePath",
+          "type": 9
+        },
+        {
+          "id": "3:1490516829761327584",
+          "name": "fileName",
+          "type": 9
+        },
+        {
+          "id": "4:2201338343692054893",
+          "name": "subtitlePath",
+          "type": 9
+        },
+        {
+          "id": "5:7609236621875952952",
+          "name": "sortOrder",
+          "indexId": "3:3608696903975637121",
+          "type": 6,
+          "flags": 8
+        },
+        {
+          "id": "6:870759552759158973",
+          "name": "rawMediaType",
+          "type": 6
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "1:829471958020190260",
-  "lastIndexId": "1:9035501036105828516",
+  "lastEntityId": "3:2902630092194733107",
+  "lastIndexId": "3:3608696903975637121",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    3778120798045844687
+  ],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    4785425262980083747,
+    5845193090202763177,
+    7626920346769459600,
+    3603539920418873044,
+    6162896744855985987,
+    5416747868917117725
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

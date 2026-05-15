@@ -15,6 +15,7 @@ import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'models/playlist.dart';
+import 'models/track.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -49,6 +50,53 @@ final _entities = <obx_int.ModelEntity>[
         type: 6,
         flags: 8,
         indexId: const obx_int.IdUid(1, 9035501036105828516),
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(3, 2902630092194733107),
+    name: 'Track',
+    lastPropertyId: const obx_int.IdUid(6, 870759552759158973),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 1413366592083664129),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1655816391263710493),
+        name: 'filePath',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 1490516829761327584),
+        name: 'fileName',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 2201338343692054893),
+        name: 'subtitlePath',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 7609236621875952952),
+        name: 'sortOrder',
+        type: 6,
+        flags: 8,
+        indexId: const obx_int.IdUid(3, 3608696903975637121),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 870759552759158973),
+        name: 'rawMediaType',
+        type: 6,
+        flags: 0,
       ),
     ],
     relations: <obx_int.ModelRelation>[],
@@ -99,13 +147,20 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(1, 829471958020190260),
-    lastIndexId: const obx_int.IdUid(1, 9035501036105828516),
+    lastEntityId: const obx_int.IdUid(3, 2902630092194733107),
+    lastIndexId: const obx_int.IdUid(3, 3608696903975637121),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
-    retiredEntityUids: const [],
+    retiredEntityUids: const [3778120798045844687],
     retiredIndexUids: const [],
-    retiredPropertyUids: const [],
+    retiredPropertyUids: const [
+      4785425262980083747,
+      5845193090202763177,
+      7626920346769459600,
+      3603539920418873044,
+      6162896744855985987,
+      5416747868917117725,
+    ],
     retiredRelationUids: const [],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
@@ -165,6 +220,72 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    Track: obx_int.EntityDefinition<Track>(
+      model: _entities[1],
+      toOneRelations: (Track object) => [],
+      toManyRelations: (Track object) => {},
+      getId: (Track object) => object.id,
+      setId: (Track object, int id) {
+        object.id = id;
+      },
+      objectToFB: (Track object, fb.Builder fbb) {
+        final filePathOffset = fbb.writeString(object.filePath);
+        final fileNameOffset = fbb.writeString(object.fileName);
+        final subtitlePathOffset = object.subtitlePath == null
+            ? null
+            : fbb.writeString(object.subtitlePath!);
+        fbb.startTable(7);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, filePathOffset);
+        fbb.addOffset(2, fileNameOffset);
+        fbb.addOffset(3, subtitlePathOffset);
+        fbb.addInt64(4, object.sortOrder);
+        fbb.addInt64(5, object.rawMediaType);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final filePathParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final fileNameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final rawMediaTypeParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        final sortOrderParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
+        );
+        final subtitlePathParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 10);
+        final object = Track(
+          id: idParam,
+          filePath: filePathParam,
+          fileName: fileNameParam,
+          rawMediaType: rawMediaTypeParam,
+          sortOrder: sortOrderParam,
+          subtitlePath: subtitlePathParam,
+        );
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -190,5 +311,36 @@ class Playlist_ {
   /// See [Playlist.sortOrder].
   static final sortOrder = obx.QueryIntegerProperty<Playlist>(
     _entities[0].properties[3],
+  );
+}
+
+/// [Track] entity fields to define ObjectBox queries.
+class Track_ {
+  /// See [Track.id].
+  static final id = obx.QueryIntegerProperty<Track>(_entities[1].properties[0]);
+
+  /// See [Track.filePath].
+  static final filePath = obx.QueryStringProperty<Track>(
+    _entities[1].properties[1],
+  );
+
+  /// See [Track.fileName].
+  static final fileName = obx.QueryStringProperty<Track>(
+    _entities[1].properties[2],
+  );
+
+  /// See [Track.subtitlePath].
+  static final subtitlePath = obx.QueryStringProperty<Track>(
+    _entities[1].properties[3],
+  );
+
+  /// See [Track.sortOrder].
+  static final sortOrder = obx.QueryIntegerProperty<Track>(
+    _entities[1].properties[4],
+  );
+
+  /// See [Track.rawMediaType].
+  static final rawMediaType = obx.QueryIntegerProperty<Track>(
+    _entities[1].properties[5],
   );
 }
