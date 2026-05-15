@@ -10,7 +10,7 @@ class Playlist {
   final String name; //TODO may add remoteCoverURLStr
   final String? cover; //TODO renmae to localCoverPathStr
   //TODO rename properties guild, relate to db upgrade.
-  final tracks = ToMany<Track>();
+  final ToMany<Track> tracks;
 
   @Index()
   final int sortOrder;
@@ -21,11 +21,9 @@ class Playlist {
     Iterable<Track>? tracks,
     this.id = 0,
     this.cover,
-  }) {
-    if (tracks != null) {
-      this.tracks.addAll(tracks.map((e) => e.copyWith()));
-    }
-  }
+  }) : tracks = ToMany<Track>(
+         items: tracks == null ? const [] : tracks.toList(),
+       );
 
   Playlist copyWith({
     int? id,
@@ -39,7 +37,7 @@ class Playlist {
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
       cover: cover ?? this.cover,
-      tracks: tracks ?? this.tracks,
+      tracks: (tracks ?? this.tracks).map((e) => e.copyWith()),
     );
   }
 }
