@@ -32,7 +32,13 @@
           "flags": 8
         }
       ],
-      "relations": []
+      "relations": [
+        {
+          "id": "1:8095015116716904100",
+          "name": "tracks",
+          "targetId": "3:2902630092194733107"
+        }
+      ]
     },
     {
       "id": "3:2902630092194733107",
@@ -78,7 +84,7 @@
   ],
   "lastEntityId": "3:2902630092194733107",
   "lastIndexId": "3:3608696903975637121",
-  "lastRelationId": "0:0",
+  "lastRelationId": "1:8095015116716904100",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,

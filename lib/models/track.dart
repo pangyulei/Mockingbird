@@ -27,6 +27,7 @@ class Track {
   });
 
   Track copyWith({
+    int? id,
     String? filePath,
     String? fileName,
     String? subtitlePath,
@@ -34,7 +35,7 @@ class Track {
     int? sortOrder,
   }) {
     return Track(
-      id: id,
+      id: id ?? this.id,
       filePath: filePath ?? this.filePath,
       fileName: fileName ?? this.fileName,
       subtitlePath: subtitlePath ?? this.subtitlePath,

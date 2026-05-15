@@ -52,7 +52,13 @@ final _entities = <obx_int.ModelEntity>[
         indexId: const obx_int.IdUid(1, 9035501036105828516),
       ),
     ],
-    relations: <obx_int.ModelRelation>[],
+    relations: <obx_int.ModelRelation>[
+      obx_int.ModelRelation(
+        id: const obx_int.IdUid(1, 8095015116716904100),
+        name: 'tracks',
+        targetId: const obx_int.IdUid(3, 2902630092194733107),
+      ),
+    ],
     backlinks: <obx_int.ModelBacklink>[],
   ),
   obx_int.ModelEntity(
@@ -149,7 +155,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     entities: _entities,
     lastEntityId: const obx_int.IdUid(3, 2902630092194733107),
     lastIndexId: const obx_int.IdUid(3, 3608696903975637121),
-    lastRelationId: const obx_int.IdUid(0, 0),
+    lastRelationId: const obx_int.IdUid(1, 8095015116716904100),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [3778120798045844687],
     retiredIndexUids: const [],
@@ -171,7 +177,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
     Playlist: obx_int.EntityDefinition<Playlist>(
       model: _entities[0],
       toOneRelations: (Playlist object) => [],
-      toManyRelations: (Playlist object) => {},
+      toManyRelations: (Playlist object) => {
+        obx_int.RelInfo<Playlist>.toMany(1, object.id): object.tracks,
+      },
       getId: (Playlist object) => object.id,
       setId: (Playlist object, int id) {
         object.id = id;
@@ -211,12 +219,16 @@ obx_int.ModelDefinition getObjectBoxModel() {
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 8);
         final object = Playlist(
-          nameParam,
-          sortOrderParam,
+          name: nameParam,
+          sortOrder: sortOrderParam,
           id: idParam,
           cover: coverParam,
         );
-
+        obx_int.InternalToManyAccess.setRelInfo<Playlist>(
+          object.tracks,
+          store,
+          obx_int.RelInfo<Playlist>.toMany(1, object.id),
+        );
         return object;
       },
     ),
@@ -311,6 +323,11 @@ class Playlist_ {
   /// See [Playlist.sortOrder].
   static final sortOrder = obx.QueryIntegerProperty<Playlist>(
     _entities[0].properties[3],
+  );
+
+  /// see [Playlist.tracks]
+  static final tracks = obx.QueryRelationToMany<Playlist, Track>(
+    _entities[0].relations[0],
   );
 }
 
