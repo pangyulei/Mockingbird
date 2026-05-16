@@ -1,7 +1,14 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/db_playlist.dart';
+import 'package:mockingbird/db/db_track.dart';
+import 'package:mockingbird/models/track.dart';
 import 'package:mockingbird/tab_playlists/playlist/playlist_events.dart';
 import 'package:mockingbird/tab_playlists/playlist/playlist_state.dart';
+import 'package:path/path.dart' as p;
 
 class PlaylistHandler implements PlaylistEvents {
   const PlaylistHandler();
@@ -13,5 +20,64 @@ class PlaylistHandler implements PlaylistEvents {
       DB.instance.store,
     ).getByIdAsync(playlistId);
     yield PlaylistState(playlist: playlist, showLoading: false);
+  }
+
+  @override
+  Future<void> playlistWidgetAddTracks(PlaylistState state) async {
+    final playlist = state.playlist;
+    if (playlist == null) {
+      debugPrint('playlist not existed');
+      return;
+    }
+    try {
+      final dbPlaylist = DBPlaylist(DB.instance.store);
+
+      // Pick multiple audio/video files
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [
+          //TODO only allow player supported formats
+          // Audio formats
+          'mp3', 'wav', 'aac', 'm4a', 'flac', 'ogg', 'wma',
+          // Video formats
+          'mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm',
+        ],
+        allowMultiple: true,
+      );
+
+      if (result == null || result.files.isEmpty) {
+        return; // User cancelled
+      }
+
+      // int nextSortOrder = playlist.tracks.length;
+      //
+      // for (final file in result.files) {
+      //   if (file.path == null) continue;
+      //
+      //   final filePath = file.path!;
+      //   final fileName = p.basename(filePath);
+      //   final mediaType = DBTrack.getMediaTypeFromExtension(filePath);
+      //
+      //   // Auto-detect subtitle file
+      //   final subtitlePath = DBTrack.findSubtitleFile(filePath);
+      //
+      //   final track = Track(
+      //     id: 0, // Will be assigned by ObjectBox
+      //     filePath: filePath,
+      //     fileName: fileName,
+      //     rawMediaType: mediaType.raw,
+      //     sortOrder: nextSortOrder++,
+      //     subtitlePath: subtitlePath,
+      //   );
+      //
+      //   playlist.tracks.add(track);
+      // }
+      //
+      // if (result.files.isNotEmpty) {
+      //   await dbPlaylist.updateAsync(playlist);
+      // }
+    } catch (e) {
+      debugPrint('Error importing media files: $e');
+    }
   }
 }
