@@ -38,11 +38,6 @@ class _PlaylistWidgetFactory extends State<PlaylistWidget> {
     });
   }
 
-  Future<void> _handleImportMedia() async {
-    await widget._handler.playlistWidgetAddTracks(_state);
-
-  }
-
   @override
   Widget build(BuildContext context) {
     const bgColor = Color(0xFF1E1F23);
@@ -150,7 +145,9 @@ class _PlaylistWidgetFactory extends State<PlaylistWidget> {
           padding: const EdgeInsets.only(right: 12),
           child: _buildNeumorphicButton(
             icon: Icons.playlist_add,
-            onTap: _handleImportMedia,
+            onTap: () async {
+              _updateState(await widget._handler.playlistWidgetAddTracks(_state));
+            },
           ),
         ),
       ],

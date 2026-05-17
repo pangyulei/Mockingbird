@@ -23,11 +23,11 @@ class PlaylistHandler implements PlaylistEvents {
   }
 
   @override
-  Future<void> playlistWidgetAddTracks(PlaylistState state) async {
+  Future<PlaylistState> playlistWidgetAddTracks(PlaylistState state) async {
     final playlist = state.playlist;
     if (playlist == null) {
       debugPrint('playlist not existed');
-      return;
+      return state;
     }
     try {
       final dbPlaylist = DBPlaylist(DB.instance.store);
@@ -46,7 +46,7 @@ class PlaylistHandler implements PlaylistEvents {
       );
 
       if (result == null || result.files.isEmpty) {
-        return; // User cancelled
+        return state; // User cancelled
       }
 
       // int nextSortOrder = playlist.tracks.length;
@@ -76,8 +76,14 @@ class PlaylistHandler implements PlaylistEvents {
       // if (result.files.isNotEmpty) {
       //   await dbPlaylist.updateAsync(playlist);
       // }
+      return state;
+
     } catch (e) {
       debugPrint('Error importing media files: $e');
+      return state;
+
+    } finally {
+
     }
   }
 }

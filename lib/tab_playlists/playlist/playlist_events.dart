@@ -4,5 +4,5 @@ abstract interface class PlaylistEvents {
   Stream<PlaylistState> playlistWidgetInitState(int playlistId);
 
   /// Import audio/video files to the playlist
-  Future<void> playlistWidgetAddTracks(PlaylistState state);
+  Future<PlaylistState> playlistWidgetAddTracks(PlaylistState state);
 }
