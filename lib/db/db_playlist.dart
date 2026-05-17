@@ -6,8 +6,8 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 class DBPlaylist {
-  final Box<Playlist> _box;
-  DBPlaylist(Store store) : _box = store.box<Playlist>();
+  final Store _store;
+  DBPlaylist(this._store);
 
   Future<Playlist?> createAsync(Playlist playlist, File? cover) async {
     final trimmedName = playlist.name.trim();
@@ -33,12 +33,12 @@ class DBPlaylist {
       coverPath = null;
     }
     final newPlaylist = playlist.copyWith(name: trimmedName, cover: coverPath);
-    await _box.putAsync(newPlaylist); //will fill id field
+    await _store.box<Playlist>().putAsync(newPlaylist); //will fill id field
     return newPlaylist;
   }
 
   Future<List<Playlist>> getAllAsync() async {
-    final query = _box
+    final query = _store.box<Playlist>()
         .query()
         .order(Playlist_.sortOrder, flags: Order.descending)
         .build();
@@ -48,7 +48,7 @@ class DBPlaylist {
   }
 
   Future<Playlist?> getByIdAsync(int id) async {
-    return await _box.getAsync(id);
+    return await _store.box<Playlist>().getAsync(id);
   }
 
   Future<List<Playlist>> updateSortOrdersAsync(List<Playlist> playlists) async {
@@ -59,12 +59,12 @@ class DBPlaylist {
         .entries
         .map((e) => e.value.copyWith(sortOrder: playlists.length - 1 - e.key))
         .toList();
-    await _box.putManyAsync(updatedPlaylists);
+    await _store.box<Playlist>().putManyAsync(updatedPlaylists);
     return updatedPlaylists;
   }
 
   Future<void> updateAsync(Playlist playlist) async {
-    await _box.putAsync(playlist);
+    await _store.box<Playlist>().putAsync(playlist);
   }
 
   Future<void> removeAsync(Playlist playlist) async {
@@ -76,7 +76,7 @@ class DBPlaylist {
     if (playlists.any((p) => p.id == 0)) return;
 
     final ids = playlists.map((p) => p.id).toList();
-    await _box.removeManyAsync(ids);
+    await _store.box<Playlist>().removeManyAsync(ids);
     // Delete cover files for removed playlists
     final uselessCovers = playlists
         .where((p) => p.cover != null)

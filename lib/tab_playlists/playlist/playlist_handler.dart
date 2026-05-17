@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:mockingbird/db/db.dart';
+import 'package:mockingbird/db/objectbox.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/db/db_track.dart';
 import 'package:mockingbird/models/track.dart';
@@ -17,7 +17,7 @@ class PlaylistHandler implements PlaylistEvents {
   Stream<PlaylistState> playlistWidgetInitState(int playlistId) async* {
     yield const PlaylistState(showLoading: true);
     final playlist = await DBPlaylist(
-      DB.instance.store,
+      ObjectBox.instance.store,
     ).getByIdAsync(playlistId);
     yield PlaylistState(playlist: playlist, showLoading: false);
   }
@@ -30,7 +30,7 @@ class PlaylistHandler implements PlaylistEvents {
       return state;
     }
     try {
-      final dbPlaylist = DBPlaylist(DB.instance.store);
+      final dbPlaylist = DBPlaylist(ObjectBox.instance.store);
 
       // Pick multiple audio/video files
       final result = await FilePicker.pickFiles(

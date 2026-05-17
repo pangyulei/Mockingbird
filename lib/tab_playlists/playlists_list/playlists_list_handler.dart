@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:mockingbird/db/db.dart';
+import 'package:mockingbird/db/objectbox.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_events.dart';
@@ -12,7 +12,7 @@ class PlaylistsListHandler implements PlaylistsListEvents {
   @override
   Stream<PlaylistsListState> playlistsListWidgetInitState() async* {
     yield const PlaylistsListState(showLoading: true);
-    final playlists = await DBPlaylist(DB.instance.store).getAllAsync();
+    final playlists = await DBPlaylist(ObjectBox.instance.store).getAllAsync();
     yield PlaylistsListState(playlists: playlists, showLoading: false);
   }
 
@@ -45,7 +45,7 @@ class PlaylistsListHandler implements PlaylistsListEvents {
 
     // Update the database with new sort orders
     final updatedPlaylists = await DBPlaylist(
-      DB.instance.store,
+      ObjectBox.instance.store,
     ).updateSortOrdersAsync(reindexedPlaylists);
 
     // Return new state with reordered playlists
@@ -61,7 +61,7 @@ class PlaylistsListHandler implements PlaylistsListEvents {
       yield state;
     } else {
       yield state.copyWith(showLoading: true);
-      final newPlaylist = await DBPlaylist(DB.instance.store).createAsync(
+      final newPlaylist = await DBPlaylist(ObjectBox.instance.store).createAsync(
         Playlist(
           name: incompletePlaylist.name,
           sortOrder: state.playlists.length,
@@ -128,7 +128,7 @@ class PlaylistsListHandler implements PlaylistsListEvents {
         .toList();
 
     // Remove from database
-    await DBPlaylist(DB.instance.store).removeManyAsync(playlistsToRemove);
+    await DBPlaylist(ObjectBox.instance.store).removeManyAsync(playlistsToRemove);
 
     // Update state with remaining playlists
     final remainingPlaylists = state.playlists
