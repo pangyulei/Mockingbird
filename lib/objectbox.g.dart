@@ -64,7 +64,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(3, 2902630092194733107),
     name: 'Track',
-    lastPropertyId: const obx_int.IdUid(6, 870759552759158973),
+    lastPropertyId: const obx_int.IdUid(10, 6722002210046977888),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -74,33 +74,26 @@ final _entities = <obx_int.ModelEntity>[
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 1655816391263710493),
-        name: 'filePath',
+        id: const obx_int.IdUid(7, 4048672761681000610),
+        name: 'pathStr',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 1490516829761327584),
-        name: 'fileName',
+        id: const obx_int.IdUid(8, 1493073115367601420),
+        name: 'name',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 2201338343692054893),
-        name: 'subtitlePath',
+        id: const obx_int.IdUid(9, 1290579006963811226),
+        name: 'subtitlePathStr',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 7609236621875952952),
-        name: 'sortOrder',
-        type: 6,
-        flags: 8,
-        indexId: const obx_int.IdUid(3, 3608696903975637121),
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(6, 870759552759158973),
-        name: 'rawMediaType',
+        id: const obx_int.IdUid(10, 6722002210046977888),
+        name: 'rawType',
         type: 6,
         flags: 0,
       ),
@@ -158,7 +151,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     lastRelationId: const obx_int.IdUid(1, 8095015116716904100),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [3778120798045844687],
-    retiredIndexUids: const [],
+    retiredIndexUids: const [3608696903975637121],
     retiredPropertyUids: const [
       4785425262980083747,
       5845193090202763177,
@@ -166,6 +159,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
       3603539920418873044,
       6162896744855985987,
       5416747868917117725,
+      1655816391263710493,
+      1490516829761327584,
+      2201338343692054893,
+      7609236621875952952,
+      870759552759158973,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -209,6 +207,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
+        final tracksParam = obx.ToMany<Track>();
         final idParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -221,6 +220,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final object = Playlist(
           name: nameParam,
           sortOrder: sortOrderParam,
+          tracks: tracksParam,
           id: idParam,
           cover: coverParam,
         );
@@ -241,58 +241,50 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (Track object, fb.Builder fbb) {
-        final filePathOffset = fbb.writeString(object.filePath);
-        final fileNameOffset = fbb.writeString(object.fileName);
-        final subtitlePathOffset = object.subtitlePath == null
+        final pathStrOffset = fbb.writeString(object.pathStr);
+        final nameOffset = fbb.writeString(object.name);
+        final subtitlePathStrOffset = object.subtitlePathStr == null
             ? null
-            : fbb.writeString(object.subtitlePath!);
-        fbb.startTable(7);
+            : fbb.writeString(object.subtitlePathStr!);
+        fbb.startTable(11);
         fbb.addInt64(0, object.id);
-        fbb.addOffset(1, filePathOffset);
-        fbb.addOffset(2, fileNameOffset);
-        fbb.addOffset(3, subtitlePathOffset);
-        fbb.addInt64(4, object.sortOrder);
-        fbb.addInt64(5, object.rawMediaType);
+        fbb.addOffset(6, pathStrOffset);
+        fbb.addOffset(7, nameOffset);
+        fbb.addOffset(8, subtitlePathStrOffset);
+        fbb.addInt64(9, object.rawType);
         fbb.finish(fbb.endTable());
         return object.id;
       },
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
+        final pathStrParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 16, '');
+        final nameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 18, '');
+        final rawTypeParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          22,
+          0,
+        );
         final idParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
           4,
           0,
         );
-        final filePathParam = const fb.StringReader(
+        final subtitlePathStrParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 6, '');
-        final fileNameParam = const fb.StringReader(
-          asciiOptimization: true,
-        ).vTableGet(buffer, rootOffset, 8, '');
-        final rawMediaTypeParam = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          14,
-          0,
-        );
-        final sortOrderParam = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          12,
-          0,
-        );
-        final subtitlePathParam = const fb.StringReader(
-          asciiOptimization: true,
-        ).vTableGetNullable(buffer, rootOffset, 10);
+        ).vTableGetNullable(buffer, rootOffset, 20);
         final object = Track(
+          pathStr: pathStrParam,
+          name: nameParam,
+          rawType: rawTypeParam,
           id: idParam,
-          filePath: filePathParam,
-          fileName: fileNameParam,
-          rawMediaType: rawMediaTypeParam,
-          sortOrder: sortOrderParam,
-          subtitlePath: subtitlePathParam,
+          subtitlePathStr: subtitlePathStrParam,
         );
 
         return object;
@@ -336,28 +328,23 @@ class Track_ {
   /// See [Track.id].
   static final id = obx.QueryIntegerProperty<Track>(_entities[1].properties[0]);
 
-  /// See [Track.filePath].
-  static final filePath = obx.QueryStringProperty<Track>(
+  /// See [Track.pathStr].
+  static final pathStr = obx.QueryStringProperty<Track>(
     _entities[1].properties[1],
   );
 
-  /// See [Track.fileName].
-  static final fileName = obx.QueryStringProperty<Track>(
+  /// See [Track.name].
+  static final name = obx.QueryStringProperty<Track>(
     _entities[1].properties[2],
   );
 
-  /// See [Track.subtitlePath].
-  static final subtitlePath = obx.QueryStringProperty<Track>(
+  /// See [Track.subtitlePathStr].
+  static final subtitlePathStr = obx.QueryStringProperty<Track>(
     _entities[1].properties[3],
   );
 
-  /// See [Track.sortOrder].
-  static final sortOrder = obx.QueryIntegerProperty<Track>(
+  /// See [Track.rawType].
+  static final rawType = obx.QueryIntegerProperty<Track>(
     _entities[1].properties[4],
-  );
-
-  /// See [Track.rawMediaType].
-  static final rawMediaType = obx.QueryIntegerProperty<Track>(
-    _entities[1].properties[5],
   );
 }

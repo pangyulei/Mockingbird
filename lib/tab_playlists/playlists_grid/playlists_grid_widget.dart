@@ -1,35 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_handler.dart';
 import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_widget.dart';
-import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_events.dart';
-import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_state.dart';
-import 'package:mockingbird/tab_playlists/playlists_list_card/playlists_list_card_handler.dart';
-import 'package:mockingbird/tab_playlists/playlists_list_card/playlists_list_card_widget.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_interface_ui_events.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_state.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_logic.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_widget.dart';
 
-class PlaylistsListWidget extends StatefulWidget {
-  final PlaylistsListEvents _handler;
-  const PlaylistsListWidget(this._handler, {super.key});
+class PlaylistsGridWidget extends StatefulWidget {
+  final PlaylistsGridInterfaceUIEvents _handler;
+  const PlaylistsGridWidget(this._handler, {super.key});
 
   @override
-  State<PlaylistsListWidget> createState() => _PlaylistsListWidgetFactory();
+  State<PlaylistsGridWidget> createState() => _PlaylistsGridWidgetFactory();
 }
 
-class _PlaylistsListWidgetFactory extends State<PlaylistsListWidget> {
-  PlaylistsListState _state = const PlaylistsListState();
+class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
+  PlaylistsGridState _state = const PlaylistsGridState();
 
   @override
   void initState() {
     super.initState();
-    _updateStateByStream(widget._handler.playlistsListWidgetInitState());
+    _updateStateByStream(widget._handler.playlistsGridInitState());
   }
 
-  Future<void> _updateStateByStream(Stream<PlaylistsListState> stream) async {
+  Future<void> _updateStateByStream(Stream<PlaylistsGridState> stream) async {
     await for (final newState in stream) {
       _updateState(newState);
     }
   }
 
-  void _updateState(PlaylistsListState newState) {
+  void _updateState(PlaylistsGridState newState) {
     setState(() {
       _state = newState;
     });
@@ -40,7 +40,7 @@ class _PlaylistsListWidgetFactory extends State<PlaylistsListWidget> {
       context,
       const PlaylistCreateHandler(),
     );
-    final stream = widget._handler.playlistsListWidgetPoppedCreateWidget(
+    final stream = widget._handler.playlistsGridPoppedCreateWidget(
       _state,
       incompletePlaylist,
     );
@@ -98,7 +98,7 @@ class _PlaylistsListWidgetFactory extends State<PlaylistsListWidget> {
               icon: const Icon(Icons.close),
               onPressed: () {
                 final newState = widget._handler
-                    .playlistsListWidgetToggleSelectionMode(_state);
+                    .playlistsGridToggleSelectionMode(_state);
                 _updateState(newState);
               },
             )
@@ -190,9 +190,7 @@ class _PlaylistsListWidgetFactory extends State<PlaylistsListWidget> {
     );
 
     if (confirmed == true) {
-      final stream = widget._handler.playlistsListWidgetBatchRemoveSelected(
-        _state,
-      );
+      final stream = widget._handler.playlistsGridBatchRemoveSelected(_state);
       await _updateStateByStream(stream);
     }
   }
@@ -226,36 +224,28 @@ class _PlaylistsListWidgetFactory extends State<PlaylistsListWidget> {
         return GestureDetector(
           onLongPress: () {
             if (!_state.isSelectionMode) {
-              final newState = widget._handler
-                  .playlistsListWidgetToggleSelectionMode(_state);
+              final newState = widget._handler.playlistsGridToggleSelectionMode(
+                _state,
+              );
               _updateState(newState);
             }
             // Toggle selection
             final toggleState = widget._handler
-                .playlistsListWidgetTogglePlaylistSelection(
-                  _state,
-                  playlist.id,
-                );
+                .playlistsGridTogglePlaylistSelection(_state, playlist.id);
             _updateState(toggleState);
           },
           onTap: () {
             if (_state.isSelectionMode) {
               // In selection mode, tap toggles selection
               final toggleState = widget._handler
-                  .playlistsListWidgetTogglePlaylistSelection(
-                    _state,
-                    playlist.id,
-                  );
+                  .playlistsGridTogglePlaylistSelection(_state, playlist.id);
               _updateState(toggleState);
             }
             // In normal mode, tap does nothing here - navigation is handled by PlaylistsListCardWidget
           },
           child: Stack(
             children: [
-              PlaylistsListCardWidget(
-                playlist,
-                const PlaylistsListCardHandler(),
-              ),
+              PlaylistsGridCardWidget(playlist, const PlaylistsGridCardLogic()),
               // Selection indicator overlay
               if (_state.isSelectionMode)
                 Positioned(

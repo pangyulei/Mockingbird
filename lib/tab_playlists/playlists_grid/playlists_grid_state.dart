@@ -1,13 +1,13 @@
 import 'package:mockingbird/models/playlist.dart';
 
-class PlaylistsListState {
+class PlaylistsGridState {
   final List<Playlist> playlists;
   final bool showLoading;
   final bool isAddButtonPressed;
   final bool isSelectionMode;
   final Set<int> selectedPlaylistIds;
 
-  const PlaylistsListState({
+  const PlaylistsGridState({
     this.playlists = const [],
     this.showLoading = true,
     this.isAddButtonPressed = false,
@@ -15,14 +15,14 @@ class PlaylistsListState {
     this.selectedPlaylistIds = const {},
   });
 
-  PlaylistsListState copyWith({
+  PlaylistsGridState copyWith({
     Iterable<Playlist>? playlists,
     bool? showLoading,
     bool? isAddButtonPressed,
     bool? isSelectionMode,
     Set<int>? selectedPlaylistIds,
   }) {
-    return PlaylistsListState(
+    return PlaylistsGridState(
       playlists: (playlists ?? this.playlists)
           .map((e) => e.copyWith())
           .toList(),

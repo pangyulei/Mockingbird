@@ -1,12 +1,12 @@
 import 'package:mockingbird/models/playlist.dart';
 
-class PlaylistState {
+class PlaylistDetailState {
   final Playlist? playlist;
   final bool showLoading;
-  const PlaylistState({this.playlist, this.showLoading = true});
+  const PlaylistDetailState({this.playlist, this.showLoading = true});
 
-  PlaylistState copyWith({Playlist? playlist, bool? showLoading}) {
-    return PlaylistState(
+  PlaylistDetailState copyWith({Playlist? playlist, bool? showLoading}) {
+    return PlaylistDetailState(
       playlist: (playlist ?? this.playlist)?.copyWith(),
       showLoading: showLoading ?? this.showLoading,
     );

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlists/playlist/playlist_handler.dart';
-import 'package:mockingbird/tab_playlists/playlist/playlist_widget.dart';
-import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_handler.dart';
-import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_widget.dart';
-import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_events.dart';
+import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_logic.dart';
+import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_widget.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_logic.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_widget.dart';
+import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_interface_ui_events.dart';
 
 import 'tab_playlists_route.dart';
 
-class TabPlaylistsHandler implements TabPlaylistsEvents {
-  const TabPlaylistsHandler();
+class TabPlaylistsLogic implements TabPlaylistsInterfaceUIEvents {
+  const TabPlaylistsLogic();
 
   @override
   Route<dynamic>? tabPlaylistsOnGenerateRoute(RouteSettings settings) {
@@ -32,13 +32,16 @@ class TabPlaylistsHandler implements TabPlaylistsEvents {
         final segments = uri.pathSegments;
         if (segments.length == 1 &&
             segments.first == TabPlaylistsRoute.playlists) {
-          return const PlaylistsListWidget(PlaylistsListHandler());
+          return const PlaylistsGridWidget(PlaylistsGridLogic());
         } else if (segments.length == 2 &&
             segments.first == TabPlaylistsRoute.playlists) {
           final playlistIdStr = segments.last;
           final playlistId = int.tryParse(playlistIdStr);
           if (playlistId != null) {
-            return PlaylistWidget(playlistId, const PlaylistHandler());
+            return PlaylistDetailWidget(
+              playlistId,
+              const PlaylistDetailLogic(),
+            );
           } else {
             throw Exception('Invalid playlist ID: $playlistIdStr');
           }

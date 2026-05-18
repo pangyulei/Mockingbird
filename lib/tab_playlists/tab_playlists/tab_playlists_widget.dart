@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_events.dart';
+import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_interface_ui_events.dart';
 
 class TabPlaylistsWidget extends StatelessWidget {
-  final TabPlaylistsEvents _handler;
+  final TabPlaylistsInterfaceUIEvents _handler;
   const TabPlaylistsWidget(this._handler, {super.key});
 
   @override

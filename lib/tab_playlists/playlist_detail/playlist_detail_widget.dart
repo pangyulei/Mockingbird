@@ -8,29 +8,29 @@ import 'playlist_detail_state.dart';
 
 class PlaylistDetailWidget extends StatefulWidget {
   final int _playlistId;
-  final InterfaceUIEvents _handler;
-  const PlaylistDetailWidget(this._playlistId, this._handler, {super.key});
+  final PlaylistDetailInterfaceUIEvents _logic;
+  const PlaylistDetailWidget(this._playlistId, this._logic, {super.key});
 
   @override
-  State<PlaylistDetailWidget> createState() => _PlaylistDetailWidgetFactory();
+  State<PlaylistDetailWidget> createState() => _WidgetFactory();
 }
 
-class _PlaylistDetailWidgetFactory extends State<PlaylistDetailWidget> {
+class _WidgetFactory extends State<PlaylistDetailWidget> {
   PlaylistDetailState _state = const PlaylistDetailState();
 
   @override
   void initState() {
     super.initState();
-    _updateStateByStream(widget._handler.playlistInitState(widget._playlistId));
+    _updateStateByStream(widget._logic.initState(widget._playlistId));
   }
 
-  Future<void> _updateStateByStream(Stream<State> stream) async {
+  Future<void> _updateStateByStream(Stream<PlaylistDetailState> stream) async {
     await for (final newState in stream) {
       _updateState(newState);
     }
   }
 
-  void _updateState(State newState) {
+  void _updateState(PlaylistDetailState newState) {
     setState(() {
       _state = newState;
     });
@@ -150,7 +150,7 @@ class _PlaylistDetailWidgetFactory extends State<PlaylistDetailWidget> {
           child: _buildNeumorphicButton(
             icon: Icons.playlist_add,
             onTap: () async {
-              _updateState(await widget._handler.playlistAddTracks(_state));
+              _updateState(await widget._logic.addTracks(_state));
             },
           ),
         ),

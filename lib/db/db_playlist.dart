@@ -9,7 +9,7 @@ class DBPlaylist {
   final Store _store;
   DBPlaylist(this._store);
 
-  Future<Playlist?> createAsync(Playlist playlist, File? cover) async {
+  Future<Playlist?> create(Playlist playlist, File? cover) async {
     final trimmedName = playlist.name.trim();
     if (trimmedName.isEmpty) {
       return null;
@@ -37,7 +37,7 @@ class DBPlaylist {
     return newPlaylist;
   }
 
-  Future<List<Playlist>> getAllAsync() async {
+  Future<List<Playlist>> getAll() async {
     final query = _store.box<Playlist>()
         .query()
         .order(Playlist_.sortOrder, flags: Order.descending)
@@ -47,31 +47,32 @@ class DBPlaylist {
     return result;
   }
 
-  Future<Playlist?> getByIdAsync(int id) async {
+  Future<Playlist?> getById(int id) async {
     return await _store.box<Playlist>().getAsync(id);
   }
 
-  Future<List<Playlist>> updateSortOrdersAsync(List<Playlist> playlists) async {
-    // Update sortOrder for each playlist based on its position in the list
-    // Position [0] gets the highest sortOrder (newest first)
-    final updatedPlaylists = playlists
-        .asMap()
-        .entries
-        .map((e) => e.value.copyWith(sortOrder: playlists.length - 1 - e.key))
-        .toList();
+  Future<List<Playlist>> swapSortOrder(Playlist aPlaylist, Playlist bPlaylist) async {
+    final aSortOrder = aPlaylist.sortOrder;
+    final bSortOrder = bPlaylist.sortOrder;
+    return (await updateMany([aPlaylist.copyWith(sortOrder: bSortOrder), bPlaylist.copyWith(sortOrder: aSortOrder)]));
+  }
+
+  Future<Playlist> update(Playlist playlist) async {
+    return (await updateMany([playlist])).first;
+  }
+
+  Future<List<Playlist>> updateMany(List<Playlist> playlists) async {
+    final updatedPlaylists = playlists.map((p)=>p.copyWith()).toList();
     await _store.box<Playlist>().putManyAsync(updatedPlaylists);
+    //TODO if cover empty, remove covers
     return updatedPlaylists;
   }
 
-  Future<void> updateAsync(Playlist playlist) async {
-    await _store.box<Playlist>().putAsync(playlist);
+  Future<void> remove(Playlist playlist) async {
+    await removeMany([playlist]);
   }
 
-  Future<void> removeAsync(Playlist playlist) async {
-    await removeManyAsync([playlist]);
-  }
-
-  Future<void> removeManyAsync(Iterable<Playlist> playlists) async {
+  Future<void> removeMany(Iterable<Playlist> playlists) async {
     if (playlists.isEmpty) return;
     if (playlists.any((p) => p.id == 0)) return;
 

@@ -1,24 +1,28 @@
 import 'dart:io';
 
-import 'package:mockingbird/db/objectbox.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:mockingbird/db/db_playlist.dart';
+import 'package:mockingbird/db/objectbox.dart';
 import 'package:mockingbird/models/playlist.dart';
-import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_events.dart';
-import 'package:mockingbird/tab_playlists/playlists_list/playlists_list_state.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_interface_ui_events.dart';
+import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_state.dart';
 
-class PlaylistsListHandler implements PlaylistsListEvents {
-  const PlaylistsListHandler();
+import '../../models/track.dart';
+import '../../objectbox.g.dart';
+
+class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
+  const PlaylistsGridLogic();
 
   @override
-  Stream<PlaylistsListState> playlistsListWidgetInitState() async* {
-    yield const PlaylistsListState(showLoading: true);
-    final playlists = await DBPlaylist(ObjectBox.instance.store).getAllAsync();
-    yield PlaylistsListState(playlists: playlists, showLoading: false);
+  Stream<PlaylistsGridState> playlistsGridInitState() async* {
+    yield const PlaylistsGridState(showLoading: true);
+    final playlists = await DBPlaylist(ObjectBox.instance.store).getAll();
+    yield PlaylistsGridState(playlists: playlists, showLoading: false);
   }
 
   @override
-  bool playlistsListWidgetDragTargetWillAccept(
-    PlaylistsListState state,
+  bool dragTargetWillAccept(
+    PlaylistsGridState state,
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
   ) {
@@ -27,44 +31,50 @@ class PlaylistsListHandler implements PlaylistsListEvents {
   }
 
   @override
-  Stream<PlaylistsListState> playlistsListWidgetDragTargetAccepted(
-    PlaylistsListState state,
+  Stream<PlaylistsGridState> playlistsGridDragTargetAccepted(
+    PlaylistsGridState state,
     Playlist targetPlaylist,
     Playlist draggedPlaylist,
   ) async* {
     yield state.copyWith(showLoading: true);
-    int oldIndex = state.playlists.indexOf(draggedPlaylist);
-    int newIndex = state.playlists.indexOf(targetPlaylist);
+    int fromIndex = state.playlists.indexOf(draggedPlaylist);
+    int toIndex = state.playlists.indexOf(targetPlaylist);
 
     // Create a new list with the reordered items
-    final List<Playlist> reindexedPlaylists = state.playlists
-        .map((e) => e.copyWith())
+    final reindexedPlaylists = state.playlists
+        .map((p) => p.copyWith())
         .toList();
-    final Playlist movedPlaylist = reindexedPlaylists.removeAt(oldIndex);
-    reindexedPlaylists.insert(newIndex, movedPlaylist);
-
-    // Update the database with new sort orders
-    final updatedPlaylists = await DBPlaylist(
+    //swap db sortorder first, then swap their place in List
+    final swappedPlaylists = await DBPlaylist(
       ObjectBox.instance.store,
-    ).updateSortOrdersAsync(reindexedPlaylists);
-
-    // Return new state with reordered playlists
-    yield state.copyWith(playlists: updatedPlaylists, showLoading: false);
+    ).swapSortOrder(reindexedPlaylists[fromIndex], reindexedPlaylists[toIndex]);
+    //dragged id playlist should place at toIndex
+    for (final playlist in swappedPlaylists) {
+      if (playlist.id == draggedPlaylist.id) {
+        reindexedPlaylists.replaceRange(toIndex, toIndex, [playlist]);
+      } else if (playlist.id == targetPlaylist.id) {
+        reindexedPlaylists.replaceRange(fromIndex, fromIndex, [playlist]);
+      } else {
+        debugPrint('2 swapped playlists must correspond to drag/target index');
+      }
+    }
+    yield state.copyWith(playlists: reindexedPlaylists, showLoading: false);
   }
 
   @override
-  Stream<PlaylistsListState> playlistsListWidgetPoppedCreateWidget(
-    PlaylistsListState state,
+  Stream<PlaylistsGridState> playlistsGridPoppedCreateWidget(
+    PlaylistsGridState state,
     ({String name, File? cover})? incompletePlaylist,
   ) async* {
     if (incompletePlaylist == null) {
       yield state;
     } else {
       yield state.copyWith(showLoading: true);
-      final newPlaylist = await DBPlaylist(ObjectBox.instance.store).createAsync(
+      final newPlaylist = await DBPlaylist(ObjectBox.instance.store).create(
         Playlist(
           name: incompletePlaylist.name,
           sortOrder: state.playlists.length,
+          tracks: ToMany<Track>(),
         ),
         incompletePlaylist.cover,
       );
@@ -80,8 +90,8 @@ class PlaylistsListHandler implements PlaylistsListEvents {
   }
 
   @override
-  PlaylistsListState playlistsListWidgetToggleSelectionMode(
-    PlaylistsListState state,
+  PlaylistsGridState playlistsGridToggleSelectionMode(
+    PlaylistsGridState state,
   ) {
     // If exiting selection mode, clear selections
     if (state.isSelectionMode) {
@@ -91,8 +101,8 @@ class PlaylistsListHandler implements PlaylistsListEvents {
   }
 
   @override
-  PlaylistsListState playlistsListWidgetTogglePlaylistSelection(
-    PlaylistsListState state,
+  PlaylistsGridState playlistsGridTogglePlaylistSelection(
+    PlaylistsGridState state,
     int playlistId,
   ) {
     final Set<int> newSelectedIds = {...state.selectedPlaylistIds};
@@ -112,8 +122,8 @@ class PlaylistsListHandler implements PlaylistsListEvents {
   }
 
   @override
-  Stream<PlaylistsListState> playlistsListWidgetBatchRemoveSelected(
-    PlaylistsListState state,
+  Stream<PlaylistsGridState> playlistsGridBatchRemoveSelected(
+    PlaylistsGridState state,
   ) async* {
     if (state.selectedPlaylistIds.isEmpty) {
       yield state;
@@ -128,7 +138,7 @@ class PlaylistsListHandler implements PlaylistsListEvents {
         .toList();
 
     // Remove from database
-    await DBPlaylist(ObjectBox.instance.store).removeManyAsync(playlistsToRemove);
+    await DBPlaylist(ObjectBox.instance.store).removeMany(playlistsToRemove);
 
     // Update state with remaining playlists
     final remainingPlaylists = state.playlists

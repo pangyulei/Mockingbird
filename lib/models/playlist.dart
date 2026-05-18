@@ -18,12 +18,10 @@ class Playlist {
   Playlist({
     required this.name,
     required this.sortOrder,
-    Iterable<Track>? tracks,
+    required this.tracks,
     this.id = 0,
     this.cover,
-  }) : tracks = ToMany<Track>(
-         items: tracks == null ? const [] : tracks.toList(),
-       );
+  });
 
   Playlist copyWith({
     int? id,
@@ -37,7 +35,7 @@ class Playlist {
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
       cover: cover ?? this.cover,
-      tracks: (tracks ?? this.tracks).map((e) => e.copyWith()),
+      tracks: ToMany<Track>(items: (tracks ?? this.tracks).map((t) => t.copyWith()).toList()),
     );
   }
 }
