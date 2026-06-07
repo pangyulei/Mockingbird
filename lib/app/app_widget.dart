@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_events.dart';
 import 'package:mockingbird/app/app_state.dart';
+import 'package:mockingbird/tab_play/tab_play_widget.dart';
 import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_logic.dart';
 import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_widget.dart';
+import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
 class AppWidget extends StatefulWidget {
   final AppEvents _handler;
@@ -40,9 +42,9 @@ class _AppWidgetFactory extends State<AppWidget> {
         body: IndexedStack(
           index: _state.tabIdx,
           children: const [
-            TabPlaylistsWidget(TabPlaylistsLogic()), //TODO
-            // TabPlayWidget(),
-            // TabSettingWidget(),
+            TabPlaylistsWidget(TabPlaylistsLogic()),
+            TabPlayWidget(),
+            TabSettingsWidget(),
           ],
         ),
         bottomNavigationBar: _buildTabBar(),
