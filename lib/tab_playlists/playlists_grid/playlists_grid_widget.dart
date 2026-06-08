@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_handler.dart';
+import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_logic.dart';
 import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_widget.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_interface_ui_events.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_state.dart';
@@ -7,8 +7,8 @@ import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_car
 import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_widget.dart';
 
 class PlaylistsGridWidget extends StatefulWidget {
-  final PlaylistsGridInterfaceUIEvents _handler;
-  const PlaylistsGridWidget(this._handler, {super.key});
+  final PlaylistsGridInterfaceUIEvents _logic;
+  const PlaylistsGridWidget(this._logic, {super.key});
 
   @override
   State<PlaylistsGridWidget> createState() => _PlaylistsGridWidgetFactory();
@@ -20,7 +20,7 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
   @override
   void initState() {
     super.initState();
-    _updateStateByStream(widget._handler.playlistsGridInitState());
+    _updateStateByStream(widget._logic.playlistsGridInitState());
   }
 
   Future<void> _updateStateByStream(Stream<PlaylistsGridState> stream) async {
@@ -36,13 +36,13 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
   }
 
   Future<void> _clickedAdd() async {
-    final incompletePlaylist = await PlaylistCreateWidget.show(
+    final newPlaylistInfo = await PlaylistCreateWidget.show(
       context,
-      const PlaylistCreateHandler(),
+      const PlaylistCreateLogic(),
     );
-    final stream = widget._handler.playlistsGridPoppedCreateWidget(
+    final stream = widget._logic.playlistsGridPoppedCreateWidget(
       _state,
-      incompletePlaylist,
+      newPlaylistInfo,
     );
     await _updateStateByStream(stream);
   }
@@ -63,31 +63,15 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
   AppBar _buildAppBar() {
     return AppBar(
       title: _state.isSelectionMode
-          ? Row(
-              children: [
-                Text(
-                  '${_state.selectedPlaylistIds.length} selected',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            )
+          ? Text('${_state.selectedPlaylistIds.length} selected')
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Playlists',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
+                const Text('Playlists'),
                 Text(
                   '${_state.playlists.length} created playlists',
-                  style: TextStyle(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
-                    fontSize: 12,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
                   ),
                 ),
               ],
@@ -97,7 +81,7 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
           ? IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
-                final newState = widget._handler
+                final newState = widget._logic
                     .playlistsGridToggleSelectionMode(_state);
                 _updateState(newState);
               },
@@ -110,7 +94,6 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
             child: Row(
               spacing: 8,
               children: [
-                // Select All button
                 if (_state.selectedPlaylistIds.length < _state.playlists.length)
                   TextButton(
                     onPressed: () {
@@ -121,28 +104,18 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
                     },
                     child: const Text('Select All'),
                   ),
-                // Delete button
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: _state.selectedPlaylistIds.isEmpty
-                        ? Theme.of(context).disabledColor.withValues(alpha: 0.3)
-                        : Theme.of(context).colorScheme.errorContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    onPressed: _state.selectedPlaylistIds.isEmpty
+                IconButton.filledTonal(
+                  onPressed: _state.selectedPlaylistIds.isEmpty
+                      ? null
+                      : () => _showDeleteConfirmation(),
+                  icon: const Icon(Icons.delete),
+                  style: IconButton.styleFrom(
+                    backgroundColor: _state.selectedPlaylistIds.isEmpty
                         ? null
-                        : () => _showDeleteConfirmation(),
-                    icon: Icon(
-                      Icons.delete,
-                      color: _state.selectedPlaylistIds.isEmpty
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.38)
-                          : Theme.of(context).colorScheme.onErrorContainer,
-                    ),
+                        : Theme.of(context).colorScheme.errorContainer,
+                    foregroundColor: _state.selectedPlaylistIds.isEmpty
+                        ? null
+                        : Theme.of(context).colorScheme.onErrorContainer,
                   ),
                 ),
               ],
@@ -150,17 +123,12 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
           )
         else
           Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Row(
-              spacing: 0,
-              children: [
-                _buildActionButton(
-                  const Icon(Icons.playlist_add, size: 30),
-                  _clickedAdd,
-                ),
-              ],
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton.filledTonal(
+              onPressed: _clickedAdd,
+              icon: const Icon(Icons.playlist_add),
             ),
-          ), //padding
+          ),
       ],
     );
   }
@@ -190,7 +158,7 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
     );
 
     if (confirmed == true) {
-      final stream = widget._handler.playlistsGridBatchRemoveSelected(_state);
+      final stream = widget._logic.playlistsGridBatchRemoveSelected(_state);
       await _updateStateByStream(stream);
     }
   }
@@ -224,20 +192,20 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
         return GestureDetector(
           onLongPress: () {
             if (!_state.isSelectionMode) {
-              final newState = widget._handler.playlistsGridToggleSelectionMode(
+              final newState = widget._logic.playlistsGridToggleSelectionMode(
                 _state,
               );
               _updateState(newState);
             }
             // Toggle selection
-            final toggleState = widget._handler
+            final toggleState = widget._logic
                 .playlistsGridTogglePlaylistSelection(_state, playlist.id);
             _updateState(toggleState);
           },
           onTap: () {
             if (_state.isSelectionMode) {
               // In selection mode, tap toggles selection
-              final toggleState = widget._handler
+              final toggleState = widget._logic
                   .playlistsGridTogglePlaylistSelection(_state, playlist.id);
               _updateState(toggleState);
             }

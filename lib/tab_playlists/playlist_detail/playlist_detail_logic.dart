@@ -13,7 +13,7 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
   const PlaylistDetailLogic();
 
   @override
-  Stream<PlaylistDetailState> initState(int playlistId) async* {
+  Stream<PlaylistDetailState> playlistDetailInitState(int playlistId) async* {
     yield const PlaylistDetailState(showLoading: true);
     final playlist = await DBPlaylist(
       ObjectBox.instance.store,
@@ -22,7 +22,7 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
   }
 
   @override
-  Future<PlaylistDetailState> addTracks(PlaylistDetailState state) async {
+  Future<PlaylistDetailState> playlistDetailAddTracks(PlaylistDetailState state) async {
     final playlist = state.playlist;
     if (playlist == null) {
       debugPrint('playlist not existed');
@@ -79,7 +79,7 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
           pathStr: file.path!,
           name: file.name,
           rawType: type.raw,
-          subtitlePathStr: subtitlePathStr,
+          subPathStr: subtitlePathStr,
         );
         playlist.tracks.add(track);
       }

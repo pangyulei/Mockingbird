@@ -64,19 +64,19 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
   @override
   Stream<PlaylistsGridState> playlistsGridPoppedCreateWidget(
     PlaylistsGridState state,
-    ({String name, File? cover})? incompletePlaylist,
+    ({String name, File? coverFile})? newPlaylistInfo,
   ) async* {
-    if (incompletePlaylist == null) {
+    if (newPlaylistInfo == null) {
       yield state;
     } else {
       yield state.copyWith(showLoading: true);
       final newPlaylist = await DBPlaylist(ObjectBox.instance.store).create(
         Playlist(
-          name: incompletePlaylist.name,
+          name: newPlaylistInfo.name,
           sortOrder: state.playlists.length,
           tracks: ToMany<Track>(),
         ),
-        incompletePlaylist.cover,
+        newPlaylistInfo.coverFile,
       );
       if (newPlaylist != null) {
         yield state.copyWith(

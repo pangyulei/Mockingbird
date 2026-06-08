@@ -21,7 +21,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
   @override
   void initState() {
     super.initState();
-    _updateStateByStream(widget._logic.initState(widget._playlistId));
+    _updateStateByStream(widget._logic.playlistDetailInitState(widget._playlistId));
   }
 
   Future<void> _updateStateByStream(Stream<PlaylistDetailState> stream) async {
@@ -38,29 +38,21 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
 
   @override
   Widget build(BuildContext context) {
-    const bgColor = Color(0xFF1E1F23);
-
     if (_state.showLoading) {
       return const Scaffold(
-        backgroundColor: bgColor,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF4D00)),
+          child: CircularProgressIndicator(),
         ),
       );
     }
 
     if (_state.playlist == null) {
       return Scaffold(
-        backgroundColor: bgColor,
         appBar: AppBar(
-          backgroundColor: bgColor,
           title: const Text('Playlist not found'),
         ),
         body: const Center(
-          child: Text(
-            'Playlist not found',
-            style: TextStyle(color: Colors.white),
-          ),
+          child: Text('Playlist not found'),
         ),
       );
     }
@@ -68,7 +60,6 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
     final tracks = _state.playlist!.tracks.toList();
 
     return Scaffold(
-      backgroundColor: bgColor,
       body: CustomScrollView(
         slivers: [
           _buildSliverAppBar(context),
@@ -77,13 +68,13 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
               child: Center(
                 child: Text(
                   'No tracks yet. Tap + to add.',
-                  style: TextStyle(color: Color(0xFF6A6C75)),
+                  style: TextStyle(color: Colors.grey),
                 ),
               ),
             )
           else
             SliverPadding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) => _buildTrackItem(tracks[index]),
@@ -97,60 +88,62 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
   }
 
   Widget _buildSliverAppBar(BuildContext context) {
-    const bgColor = Color(0xFF1E1F23);
-    final hasCover = _state.playlist!.cover != null;
+    final hasCover = _state.playlist!.coverPathStr != null;
 
     return SliverAppBar(
       expandedHeight: 250,
       pinned: true,
-      backgroundColor: bgColor,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           _state.playlist!.name,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: hasCover ? Colors.white : Theme.of(context).colorScheme.onSurface,
             fontWeight: FontWeight.bold,
-            shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+            shadows: hasCover
+                ? [const Shadow(color: Colors.black, blurRadius: 4)]
+                : null,
           ),
         ),
         background: Stack(
           fit: StackFit.expand,
           children: [
             if (hasCover)
-              Image.file(File(_state.playlist!.cover!), fit: BoxFit.cover)
+              Image.file(File(_state.playlist!.coverPathStr!), fit: BoxFit.cover)
             else
               Container(
-                color: const Color(0xFF121216),
-                child: const Icon(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: Icon(
                   Icons.music_note,
                   size: 100,
-                  color: Color(0xFF2A2B31),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.1),
                 ),
               ),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Color(0xAA1E1F23),
-                    Color(0xFF1E1F23),
-                  ],
+            if (hasCover)
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black54,
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 12),
-          child: _buildNeumorphicButton(
-            icon: Icons.playlist_add,
-            onTap: () async {
-              _updateState(await widget._logic.addTracks(_state));
+          child: IconButton.filledTonal(
+            icon: const Icon(Icons.playlist_add),
+            onPressed: () async {
+              _updateState(await widget._logic.playlistDetailAddTracks(_state));
             },
           ),
         ),
@@ -158,114 +151,83 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
     );
   }
 
-  Widget _buildNeumorphicButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          color: Color(0xFF1E1F23),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0xFF121216),
-              offset: Offset(4, 4),
-              blurRadius: 10,
-            ),
-            BoxShadow(
-              color: Color(0xFF2A2B31),
-              offset: Offset(-4, -4),
-              blurRadius: 10,
-            ),
-          ],
-        ),
-        child: Icon(icon, color: const Color(0xFFFF4D00), size: 28),
-      ),
-    );
-  }
-
   Widget _buildTrackItem(Track track) {
-    const lightShadow = Color(0xFF2A2B31);
-    const darkShadow = Color(0xFF121216);
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1F23),
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(color: darkShadow, offset: Offset(4, 4), blurRadius: 8),
-          BoxShadow(color: lightShadow, offset: Offset(-4, -4), blurRadius: 8),
-        ],
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.4),
+          width: 1,
+        ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: const Color(0xFF121216),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              track.type == TrackType.video
-                  ? Icons.videocam_rounded
-                  : Icons.audiotrack_rounded,
-              color: const Color(0xFFFF4D00),
-            ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.7),
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  track.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+          child: Icon(
+            track.type == TrackType.video
+                ? Icons.videocam_rounded
+                : Icons.audiotrack_rounded,
+            color: Theme.of(context).colorScheme.primary,
+            size: 28,
+          ),
+        ),
+        title: Text(
+          track.name,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF191C1E),
+            fontSize: 16,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            children: [
+              if (track.subPathStr != null) ...[
+                Icon(
+                  Icons.subtitles_rounded,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 14,
                 ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    if (track.subtitlePathStr != null) ...[
-                      const Icon(
-                        Icons.subtitles_rounded,
-                        color: Color(0xFF6A6C75),
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                    ],
-                    Text(
-                      track.type.name.toUpperCase(),
-                      style: const TextStyle(
-                        color: Color(0xFF6A6C75),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
+                const SizedBox(width: 4),
               ],
-            ),
+              Text(
+                track.type.name.toUpperCase(),
+                style: TextStyle(
+                  color: const Color(0xFF42474E),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
           ),
-          IconButton(
+        ),
+        trailing: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary,
+            shape: BoxShape.circle,
+          ),
+          child: IconButton(
             icon: const Icon(
               Icons.play_arrow_rounded,
-              color: Color(0xFFFF4D00),
+              color: Colors.white,
             ),
             onPressed: () {
               // TODO: Play track
             },
           ),
-        ],
+        ),
       ),
     );
   }

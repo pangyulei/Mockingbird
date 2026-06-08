@@ -9,13 +9,13 @@ class DBPlaylist {
   final Store _store;
   DBPlaylist(this._store);
 
-  Future<Playlist?> create(Playlist playlist, File? cover) async {
+  Future<Playlist?> create(Playlist playlist, File? coverFile) async {
     final trimmedName = playlist.name.trim();
     if (trimmedName.isEmpty) {
       return null;
     }
-    final String? coverPath;
-    if (cover != null) {
+    final String? localCoverPathStr;
+    if (coverFile != null) {
       final docsDir = await getApplicationDocumentsDirectory();
       final coversDir = Directory(p.join(docsDir.path, 'playlist_covers'));
 
@@ -24,15 +24,15 @@ class DBPlaylist {
       }
 
       // Generate a unique filename using timestamp and original extension
-      final String extension = p.extension(cover.path); //.jpg .png
+      final String extension = p.extension(coverFile.path); //.jpg .png
       final String fileName =
           '${trimmedName}_${DateTime.now().millisecondsSinceEpoch}$extension';
-      final File savedFile = await cover.copy(p.join(coversDir.path, fileName));
-      coverPath = savedFile.path;
+      final File savedFile = await coverFile.copy(p.join(coversDir.path, fileName));
+      localCoverPathStr = savedFile.path;
     } else {
-      coverPath = null;
+      localCoverPathStr = null;
     }
-    final newPlaylist = playlist.copyWith(name: trimmedName, cover: coverPath);
+    final newPlaylist = playlist.copyWith(name: trimmedName, localCoverPathStr: localCoverPathStr);
     await _store.box<Playlist>().putAsync(newPlaylist); //will fill id field
     return newPlaylist;
   }
@@ -80,8 +80,8 @@ class DBPlaylist {
     await _store.box<Playlist>().removeManyAsync(ids);
     // Delete cover files for removed playlists
     final uselessCovers = playlists
-        .where((p) => p.cover != null)
-        .map((p) => File(p.cover!));
+        .where((p) => p.coverPathStr != null)
+        .map((p) => File(p.coverPathStr!));
     //map is lazy call, it would not execute until someone use it.
     //at this situation is Future.wait will trigger, so every delete() parallel started same time
     final removeCovers = uselessCovers.map((cover) async {

@@ -23,7 +23,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(1, 829471958020190260),
     name: 'Playlist',
-    lastPropertyId: const obx_int.IdUid(4, 5852462797454314994),
+    lastPropertyId: const obx_int.IdUid(6, 4765408429268319335),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -39,17 +39,17 @@ final _entities = <obx_int.ModelEntity>[
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 6772611246971960395),
-        name: 'cover',
-        type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
         id: const obx_int.IdUid(4, 5852462797454314994),
         name: 'sortOrder',
         type: 6,
         flags: 8,
         indexId: const obx_int.IdUid(1, 9035501036105828516),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 4765408429268319335),
+        name: 'coverPathStr',
+        type: 9,
+        flags: 0,
       ),
     ],
     relations: <obx_int.ModelRelation>[
@@ -64,7 +64,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(3, 2902630092194733107),
     name: 'Track',
-    lastPropertyId: const obx_int.IdUid(10, 6722002210046977888),
+    lastPropertyId: const obx_int.IdUid(11, 3987868685570132360),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -86,15 +86,15 @@ final _entities = <obx_int.ModelEntity>[
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(9, 1290579006963811226),
-        name: 'subtitlePathStr',
-        type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
         id: const obx_int.IdUid(10, 6722002210046977888),
         name: 'rawType',
         type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(11, 3987868685570132360),
+        name: 'subPathStr',
+        type: 9,
         flags: 0,
       ),
     ],
@@ -164,6 +164,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
       2201338343692054893,
       7609236621875952952,
       870759552759158973,
+      6772611246971960395,
+      9014700357397305896,
+      1290579006963811226,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -184,14 +187,14 @@ obx_int.ModelDefinition getObjectBoxModel() {
       },
       objectToFB: (Playlist object, fb.Builder fbb) {
         final nameOffset = fbb.writeString(object.name);
-        final coverOffset = object.cover == null
+        final coverPathStrOffset = object.coverPathStr == null
             ? null
-            : fbb.writeString(object.cover!);
-        fbb.startTable(5);
+            : fbb.writeString(object.coverPathStr!);
+        fbb.startTable(7);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, nameOffset);
-        fbb.addOffset(2, coverOffset);
         fbb.addInt64(3, object.sortOrder);
+        fbb.addOffset(5, coverPathStrOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -214,15 +217,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final coverParam = const fb.StringReader(
+        final coverPathStrParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGetNullable(buffer, rootOffset, 8);
+        ).vTableGetNullable(buffer, rootOffset, 14);
         final object = Playlist(
           name: nameParam,
           sortOrder: sortOrderParam,
           tracks: tracksParam,
           id: idParam,
-          cover: coverParam,
+          coverPathStr: coverPathStrParam,
         );
         obx_int.InternalToManyAccess.setRelInfo<Playlist>(
           object.tracks,
@@ -243,15 +246,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectToFB: (Track object, fb.Builder fbb) {
         final pathStrOffset = fbb.writeString(object.pathStr);
         final nameOffset = fbb.writeString(object.name);
-        final subtitlePathStrOffset = object.subtitlePathStr == null
+        final subPathStrOffset = object.subPathStr == null
             ? null
-            : fbb.writeString(object.subtitlePathStr!);
-        fbb.startTable(11);
+            : fbb.writeString(object.subPathStr!);
+        fbb.startTable(12);
         fbb.addInt64(0, object.id);
         fbb.addOffset(6, pathStrOffset);
         fbb.addOffset(7, nameOffset);
-        fbb.addOffset(8, subtitlePathStrOffset);
         fbb.addInt64(9, object.rawType);
+        fbb.addOffset(10, subPathStrOffset);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -276,15 +279,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final subtitlePathStrParam = const fb.StringReader(
+        final subPathStrParam = const fb.StringReader(
           asciiOptimization: true,
-        ).vTableGetNullable(buffer, rootOffset, 20);
+        ).vTableGetNullable(buffer, rootOffset, 24);
         final object = Track(
           pathStr: pathStrParam,
           name: nameParam,
           rawType: rawTypeParam,
           id: idParam,
-          subtitlePathStr: subtitlePathStrParam,
+          subPathStr: subPathStrParam,
         );
 
         return object;
@@ -307,13 +310,13 @@ class Playlist_ {
     _entities[0].properties[1],
   );
 
-  /// See [Playlist.cover].
-  static final cover = obx.QueryStringProperty<Playlist>(
+  /// See [Playlist.sortOrder].
+  static final sortOrder = obx.QueryIntegerProperty<Playlist>(
     _entities[0].properties[2],
   );
 
-  /// See [Playlist.sortOrder].
-  static final sortOrder = obx.QueryIntegerProperty<Playlist>(
+  /// See [Playlist.coverPathStr].
+  static final coverPathStr = obx.QueryStringProperty<Playlist>(
     _entities[0].properties[3],
   );
 
@@ -338,13 +341,13 @@ class Track_ {
     _entities[1].properties[2],
   );
 
-  /// See [Track.subtitlePathStr].
-  static final subtitlePathStr = obx.QueryStringProperty<Track>(
+  /// See [Track.rawType].
+  static final rawType = obx.QueryIntegerProperty<Track>(
     _entities[1].properties[3],
   );
 
-  /// See [Track.rawType].
-  static final rawType = obx.QueryIntegerProperty<Track>(
+  /// See [Track.subPathStr].
+  static final subPathStr = obx.QueryStringProperty<Track>(
     _entities[1].properties[4],
   );
 }

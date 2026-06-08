@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_events.dart';
+import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_interface_ui_events.dart';
 import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_state.dart';
 
-class PlaylistCreateHandler implements PlaylistCreateEvents {
-  const PlaylistCreateHandler();
+class PlaylistCreateLogic implements PlaylistCreateInterfaceUIEvents {
+  const PlaylistCreateLogic();
 
   @override
-  PlaylistCreateState playlistCreateWidgetSelectedCover(
+  PlaylistCreateState playlistCreateSelectedCover(
     PlaylistCreateState state,
     File cover,
   ) {
@@ -15,7 +15,7 @@ class PlaylistCreateHandler implements PlaylistCreateEvents {
   }
 
   @override
-  PlaylistCreateState playlistCreateWidgetTypingName(
+  PlaylistCreateState playlistCreateTypingName(
     PlaylistCreateState state,
     String name,
   ) {

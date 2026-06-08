@@ -2,21 +2,21 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_events.dart';
+import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_interface_ui_events.dart';
 import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_state.dart';
 
 class PlaylistCreateWidget extends StatefulWidget {
-  final PlaylistCreateEvents _handler;
+  final PlaylistCreateInterfaceUIEvents _handler;
   const PlaylistCreateWidget(this._handler, {super.key});
 
-  static Future<({String name, File? cover})?> show(
+  static Future<({String name, File? coverFile})?> show(
     BuildContext context,
-    PlaylistCreateEvents handler,
+    PlaylistCreateInterfaceUIEvents logic,
   ) async {
-    return await showDialog<({String name, File? cover})?>(
+    return await showDialog<({String name, File? coverFile})?>(
       context: context,
       builder: (BuildContext context) {
-        return PlaylistCreateWidget(handler);
+        return PlaylistCreateWidget(logic);
       },
     );
   }
@@ -35,7 +35,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     super.initState();
     // Rebuilds the UI every time the text changes so the "Create" button updates
     nameController.addListener(() {
-      final newState = widget._handler.playlistCreateWidgetTypingName(
+      final newState = widget._handler.playlistCreateTypingName(
         _state,
         nameController.text,
       );
@@ -93,27 +93,9 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
           onPressed: () => Navigator.of(context).pop(null),
           child: const Text('Cancel'),
         ),
-        GestureDetector(
-          onTap: _state.creatable ? _clickedCreate : null,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: _state.creatable
-                  ? colorScheme.primary
-                  : colorScheme.onSurface.withValues(alpha: 0.12),
-            ),
-            child: Text(
-              'CREATE',
-              style: TextStyle(
-                color: _state.creatable
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurface.withValues(alpha: 0.38),
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
+        FilledButton(
+          onPressed: _state.creatable ? _clickedCreate : null,
+          child: const Text('CREATE'),
         ),
       ],
     );
@@ -129,7 +111,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     );
     if (xImage != null) {
       File cover = File(xImage.path);
-      final newState = widget._handler.playlistCreateWidgetSelectedCover(
+      final newState = widget._handler.playlistCreateSelectedCover(
         _state,
         cover,
       );
@@ -149,10 +131,10 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
         width: double.infinity,
         height: 150,
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: colorScheme.primaryContainer.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: colorScheme.outline.withValues(alpha: 0.2),
+            color: colorScheme.primary.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -164,15 +146,16 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.add_photo_alternate,
+                      Icons.add_photo_alternate_outlined,
                       size: 40,
-                      color: colorScheme.onSurfaceVariant,
+                      color: colorScheme.primary,
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Select Cover',
+                      'Select Cover Image',
                       style: TextStyle(
-                        color: colorScheme.onSurfaceVariant,
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w500,
                         fontSize: 14,
                       ),
                     ),
@@ -185,7 +168,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
 
   void _clickedCreate() {
     //TODO while(true) test async
-    final incompletePlaylist = (name: nameController.text, cover: _state.cover);
+    final incompletePlaylist = (name: nameController.text, coverPathStr: _state.cover);
     Navigator.of(context).pop(incompletePlaylist);
   }
 }

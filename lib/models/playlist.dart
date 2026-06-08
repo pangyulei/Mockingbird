@@ -7,9 +7,9 @@ class Playlist {
   @Id()
   int id;
 
-  final String name; //TODO may add remoteCoverURLStr
-  final String? cover; //TODO renmae to localCoverPathStr
-  //TODO rename properties guild, relate to db upgrade.
+  final String name;
+  final String? coverPathStr;
+  //TODO rename properties guide, relate to db upgrade.
   final ToMany<Track> tracks;
 
   @Index()
@@ -20,13 +20,13 @@ class Playlist {
     required this.sortOrder,
     required this.tracks,
     this.id = 0,
-    this.cover,
+    this.coverPathStr,
   });
 
   Playlist copyWith({
     int? id,
     String? name,
-    String? cover,
+    String? localCoverPathStr,
     int? sortOrder,
     Iterable<Track>? tracks,
   }) {
@@ -34,7 +34,7 @@ class Playlist {
       id: id ?? this.id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
-      cover: cover ?? this.cover,
+      coverPathStr: localCoverPathStr ?? this.coverPathStr,
       tracks: ToMany<Track>(items: (tracks ?? this.tracks).map((t) => t.copyWith()).toList()),
     );
   }

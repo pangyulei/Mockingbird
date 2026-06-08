@@ -33,10 +33,32 @@ class _AppWidgetFactory extends State<AppWidget> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        brightness: Brightness.dark,
-        textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF005691),
+          brightness: Brightness.light,
+          primary: const Color(0xFF005691),
+          onPrimary: Colors.white,
+          surface: Colors.white,
+          onSurface: const Color(0xFF191C1E),
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        textTheme: GoogleFonts.interTextTheme(
+          const TextTheme(
+            titleLarge: TextStyle(color: Color(0xFF191C1E), fontWeight: FontWeight.bold),
+            titleMedium: TextStyle(color: Color(0xFF191C1E), fontWeight: FontWeight.w600),
+            bodyLarge: TextStyle(color: Color(0xFF191C1E)),
+            bodyMedium: TextStyle(color: Color(0xFF42474E)),
+          ),
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xFF191C1E),
+          elevation: 0,
+          scrolledUnderElevation: 2,
+        ),
       ),
       home: Scaffold(
         body: IndexedStack(
@@ -53,25 +75,32 @@ class _AppWidgetFactory extends State<AppWidget> {
   }
 
   Widget _buildTabBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFFFF6B35), // Hermes orange
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.playlist_play),
+    return NavigationBar(
+      destinations: const [
+        NavigationDestination(
+          icon: Icon(Icons.playlist_play_outlined),
+          selectedIcon: Icon(Icons.playlist_play),
           label: 'Playlists',
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.play_circle), label: 'Player'),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+        NavigationDestination(
+          icon: Icon(Icons.play_circle_outline),
+          selectedIcon: Icon(Icons.play_circle),
+          label: 'Player',
+        ),
+        NavigationDestination(
+          icon: Icon(Icons.settings_outlined),
+          selectedIcon: Icon(Icons.settings),
+          label: 'Settings',
+        ),
       ],
-      onTap: (index) {
+      onDestinationSelected: (index) {
         AppState newState = widget._handler.appWidgetBottomBarSelectedIndex(
           _state,
           index,
         );
         _updateState(newState);
       },
-      currentIndex: _state.tabIdx,
+      selectedIndex: _state.tabIdx,
     );
   }
 }

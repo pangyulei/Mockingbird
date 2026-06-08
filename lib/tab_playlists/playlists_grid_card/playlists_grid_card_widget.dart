@@ -48,30 +48,35 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
             Expanded(
               child: Card(
                 margin: const EdgeInsets.all(8),
-                elevation: _state.isPressed ? 2 : 4,
+                elevation: _state.isPressed ? 1 : 2,
+                shadowColor: Colors.black26,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(20),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    width: 1,
+                  ),
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(20),
                   child: Stack(
                     children: [
-                      if (widget._playlist.cover != null)
+                      if (widget._playlist.coverPathStr != null)
                         Positioned.fill(
                           child: Opacity(
-                            opacity: _state.isPressed ? 0.6 : 0.9,
+                            opacity: _state.isPressed ? 0.7 : 1.0,
                             child: Image.file(
-                              File(widget._playlist.cover!),
+                              File(widget._playlist.coverPathStr!),
                               fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                      if (widget._playlist.cover == null)
-                        const Center(
+                      if (widget._playlist.coverPathStr == null)
+                        Center(
                           child: Icon(
-                            Icons.video_collection,
-                            color: Color(0xFF6A6C75),
-                            size: 48,
+                            Icons.video_library_rounded,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 40,
                           ),
                         ),
                     ],
@@ -81,25 +86,25 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
             ),
             // Name and song count below cover
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     widget._playlist.name,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF191C1E),
+                      fontWeight: FontWeight.bold,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '0 Songs',
+                    '0 Tracks',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                      color: const Color(0xFF42474E),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

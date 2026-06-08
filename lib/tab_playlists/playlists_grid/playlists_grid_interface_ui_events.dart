@@ -17,7 +17,7 @@ abstract interface class PlaylistsGridInterfaceUIEvents {
   );
   Stream<PlaylistsGridState> playlistsGridPoppedCreateWidget(
     PlaylistsGridState state,
-    ({String name, File? cover})? incompletePlaylist,
+    ({String name, File? coverFile})? newPlaylistInfo,
   );
   PlaylistsGridState playlistsGridToggleSelectionMode(PlaylistsGridState state);
   PlaylistsGridState playlistsGridTogglePlaylistSelection(
