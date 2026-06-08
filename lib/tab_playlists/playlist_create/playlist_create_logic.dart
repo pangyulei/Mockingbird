@@ -9,9 +9,9 @@ class PlaylistCreateLogic implements PlaylistCreateInterfaceUIEvents {
   @override
   PlaylistCreateState playlistCreateSelectedCover(
     PlaylistCreateState state,
-    File cover,
+    File coverFile,
   ) {
-    return state.copyWith(cover: cover);
+    return state.copyWith(coverFile: coverFile);
   }
 
   @override

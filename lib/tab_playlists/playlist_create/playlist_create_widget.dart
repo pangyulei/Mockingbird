@@ -140,8 +140,8 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          child: _state.cover != null
-              ? Image.file(_state.cover!, fit: BoxFit.cover)
+          child: _state.coverFile != null
+              ? Image.file(_state.coverFile!, fit: BoxFit.cover)
               : Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -168,7 +168,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
 
   void _clickedCreate() {
     //TODO while(true) test async
-    final incompletePlaylist = (name: nameController.text, coverPathStr: _state.cover);
-    Navigator.of(context).pop(incompletePlaylist);
+    final newPlaylistInfo = (name: nameController.text, coverFile: _state.coverFile);
+    Navigator.of(context).pop(newPlaylistInfo);
   }
 }

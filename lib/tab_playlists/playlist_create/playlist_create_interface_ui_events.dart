@@ -5,7 +5,7 @@ import 'package:mockingbird/tab_playlists/playlist_create/playlist_create_state.
 abstract interface class PlaylistCreateInterfaceUIEvents {
   PlaylistCreateState playlistCreateSelectedCover(
     PlaylistCreateState state,
-    File cover,
+    File coverFile,
   );
   PlaylistCreateState playlistCreateTypingName(
     PlaylistCreateState state,
