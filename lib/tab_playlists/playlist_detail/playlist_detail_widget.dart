@@ -203,8 +203,8 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
               ],
               Text(
                 track.type.name.toUpperCase(),
-                style: TextStyle(
-                  color: const Color(0xFF42474E),
+                style: const TextStyle(
+                  color: Color(0xFF42474E),
                   fontWeight: FontWeight.w600,
                   fontSize: 12,
                   letterSpacing: 0.5,

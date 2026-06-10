@@ -3,10 +3,9 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_playlist.dart';
+import 'package:mockingbird/db/db_track.dart';
 import 'package:mockingbird/db/objectbox.dart';
 import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_interface_ui_events.dart';
-
-import '../../models/track.dart';
 import 'playlist_detail_state.dart';
 
 class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
@@ -22,15 +21,14 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
   }
 
   @override
-  Future<PlaylistDetailState> playlistDetailAddTracks(PlaylistDetailState state) async {
+  Future<PlaylistDetailState> playlistDetailAddTracks(
+      PlaylistDetailState state) async {
     final playlist = state.playlist;
     if (playlist == null) {
       debugPrint('playlist not existed');
       return state;
     }
     try {
-      final dbPlaylist = DBPlaylist(ObjectBox.instance.store);
-
       // Pick multiple audio/video files
       const audioExtensions = [
         'mp3',
@@ -50,7 +48,7 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
         'flv',
         'webm',
       ];
-      final result = await FilePicker.pickFiles(
+      final pickedFiles = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: [
           //TODO only allow player supported formats
@@ -60,53 +58,24 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
         allowMultiple: true,
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (pickedFiles == null || pickedFiles.files.isEmpty) {
         return state; // User cancelled
       }
+      final files = pickedFiles.files.where((f) => f.path != null).map((f) =>
+          File(f.path!)).toList();
+      final tracks = await DBTrack(ObjectBox.instance.store).createMany(files);
+      playlist.tracks.addAll(tracks);
 
-      //TODO sort by name
-      for (final file in result.files) {
-        if (file.path == null || file.extension == null) continue;
-        final type = audioExtensions.contains(file.extension!)
-            ? TrackType.audio
-            : TrackType.video;
-        // Auto-detect subtitle file
-        final subtitlePathStr = _getSameNameSubtitlePathStr(
-          file.path!,
-          file.extension!,
-        );
-        final track = Track(
-          pathStr: file.path!,
-          name: file.name,
-          rawType: type.raw,
-          subPathStr: subtitlePathStr,
-        );
-        playlist.tracks.add(track);
-      }
+      // Ascend sort tracks by track's name
+      final allTracks = playlist.tracks.toList();
+      allTracks.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      final newPlaylist = playlist.copyWith(tracks: allTracks);
+      await DBPlaylist(ObjectBox.instance.store).update(newPlaylist);
+      return state.copyWith(playlist: newPlaylist);
 
-      if (result.files.isNotEmpty) {
-        await dbPlaylist.update(playlist);
-      }
-      return state;
     } catch (e) {
       debugPrint('Error importing media files: $e');
       return state;
     } finally {}
-  }
-
-  String? _getSameNameSubtitlePathStr(String pathStr, String extension) {
-    const subtitleExtensions = ['.srt', '.vtt', '.sub', '.ass'];
-    for (final subtitleExtension in subtitleExtensions) {
-      final extensionRangeStart = pathStr.length - extension.length;
-      final subtitlePathStr = pathStr.replaceRange(
-        extensionRangeStart,
-        pathStr.length,
-        subtitleExtension,
-      );
-      if (File(subtitlePathStr).existsSync()) {
-        return subtitlePathStr;
-      }
-    }
-    return null;
   }
 }

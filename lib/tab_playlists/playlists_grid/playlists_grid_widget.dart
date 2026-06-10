@@ -163,14 +163,6 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
     }
   }
 
-  Widget _buildActionButton(Icon icon, void Function() onTap) {
-    return SizedBox(
-      width: 50,
-      height: double.infinity,
-      child: IconButton(onPressed: onTap, icon: icon),
-    );
-  }
-
   Widget _buildLoadingWidget() {
     return const Center(child: CircularProgressIndicator());
   }

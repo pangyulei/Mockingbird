@@ -26,7 +26,7 @@ class Playlist {
   Playlist copyWith({
     int? id,
     String? name,
-    String? localCoverPathStr,
+    String? coverPathStr,
     int? sortOrder,
     Iterable<Track>? tracks,
   }) {
@@ -34,7 +34,7 @@ class Playlist {
       id: id ?? this.id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
-      coverPathStr: localCoverPathStr ?? this.coverPathStr,
+      coverPathStr: coverPathStr ?? this.coverPathStr,
       tracks: ToMany<Track>(items: (tracks ?? this.tracks).map((t) => t.copyWith()).toList()),
     );
   }

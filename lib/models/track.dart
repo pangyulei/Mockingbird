@@ -27,14 +27,14 @@ class Track {
     int? id,
     String? pathStr,
     String? name,
-    String? subtitlePathStr,
+    String? subPathStr,
     int? rawType,
   }) {
     return Track(
       id: id ?? this.id,
       pathStr: pathStr ?? this.pathStr,
       name: name ?? this.name,
-      subPathStr: subtitlePathStr ?? this.subPathStr,
+      subPathStr: subPathStr ?? this.subPathStr,
       rawType: rawType ?? this.rawType,
     );
   }

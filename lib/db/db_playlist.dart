@@ -9,30 +9,30 @@ class DBPlaylist {
   final Store _store;
   DBPlaylist(this._store);
 
+
+
   Future<Playlist?> create(Playlist playlist, File? coverFile) async {
     final trimmedName = playlist.name.trim();
     if (trimmedName.isEmpty) {
       return null;
     }
-    final String? localCoverPathStr;
+    final String? coverPathStr;
     if (coverFile != null) {
-      final docsDir = await getApplicationDocumentsDirectory();
-      final coversDir = Directory(p.join(docsDir.path, 'playlist_covers'));
+      final appDir = await getApplicationDocumentsDirectory();
+      final coversDir = Directory(p.join(appDir.path, 'playlist_covers'));
 
       if (!await coversDir.exists()) {
         await coversDir.create(recursive: true);
       }
-
       // Generate a unique filename using timestamp and original extension
-      final String extension = p.extension(coverFile.path); //.jpg .png
       final String fileName =
-          '${trimmedName}_${DateTime.now().millisecondsSinceEpoch}$extension';
-      final File savedFile = await coverFile.copy(p.join(coversDir.path, fileName));
-      localCoverPathStr = savedFile.path;
+          '${DateTime.now().millisecondsSinceEpoch}${p.extension(coverFile.path)}';
+      final savedFile = await coverFile.copy(p.join(coversDir.path, fileName));
+      coverPathStr = savedFile.path;
     } else {
-      localCoverPathStr = null;
+      coverPathStr = null;
     }
-    final newPlaylist = playlist.copyWith(name: trimmedName, localCoverPathStr: localCoverPathStr);
+    final newPlaylist = playlist.copyWith(name: trimmedName, coverPathStr: coverPathStr);
     await _store.box<Playlist>().putAsync(newPlaylist); //will fill id field
     return newPlaylist;
   }
@@ -53,19 +53,19 @@ class DBPlaylist {
 
   Future<List<Playlist>> swapSortOrder(Playlist aPlaylist, Playlist bPlaylist) async {
     final aSortOrder = aPlaylist.sortOrder;
-    final bSortOrder = bPlaylist.sortOrder;
-    return (await updateMany([aPlaylist.copyWith(sortOrder: bSortOrder), bPlaylist.copyWith(sortOrder: aSortOrder)]));
+    aPlaylist = aPlaylist.copyWith(sortOrder: bPlaylist.sortOrder);
+    bPlaylist = bPlaylist.copyWith(sortOrder: aSortOrder);
+    await updateMany([aPlaylist, bPlaylist]);
+    return [aPlaylist, bPlaylist];
   }
 
-  Future<Playlist> update(Playlist playlist) async {
-    return (await updateMany([playlist])).first;
+  Future<void> update(Playlist playlist) async {
+    await updateMany([playlist]);
   }
 
-  Future<List<Playlist>> updateMany(List<Playlist> playlists) async {
-    final updatedPlaylists = playlists.map((p)=>p.copyWith()).toList();
-    await _store.box<Playlist>().putManyAsync(updatedPlaylists);
+  Future<void> updateMany(List<Playlist> playlists) async {
+    await _store.box<Playlist>().putManyAsync(playlists);
     //TODO if cover empty, remove covers
-    return updatedPlaylists;
   }
 
   Future<void> remove(Playlist playlist) async {
