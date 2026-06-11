@@ -24,10 +24,11 @@ class DBTrack {
     ]);
 
     // Optimize: Use a single timestamp and index to ensure unique filenames
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
+
     final saveTasks = relatedFiles.asMap().entries.map((entry) async {
       final i = entry.key;
       final rf = entry.value;
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
       final uniqueName = "${timestamp}_$i";
 
       final results = await Future.wait([
