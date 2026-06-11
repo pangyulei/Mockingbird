@@ -1,5 +1,4 @@
 import 'package:objectbox/objectbox.dart';
-
 import 'track.dart';
 
 @Entity()
@@ -9,8 +8,9 @@ class Playlist {
 
   final String name;
   final String? coverPathStr;
-  //TODO rename properties guide, relate to db upgrade.
-  final ToMany<Track> tracks;
+  
+  // ObjectBox managed relationship
+  final tracks = ToMany<Track>();
 
   @Index()
   final int sortOrder;
@@ -18,10 +18,12 @@ class Playlist {
   Playlist({
     required this.name,
     required this.sortOrder,
-    required this.tracks,
+    Iterable<Track> tracks = const [],
     this.id = 0,
     this.coverPathStr,
-  });
+  }) {
+    this.tracks.addAll(tracks);
+  }
 
   Playlist copyWith({
     int? id,
@@ -35,7 +37,7 @@ class Playlist {
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
       coverPathStr: coverPathStr ?? this.coverPathStr,
-      tracks: ToMany<Track>(items: (tracks ?? this.tracks).map((t) => t.copyWith()).toList()),
+      tracks: (tracks ?? this.tracks).map((t) => t.copyWith()),
     );
   }
 }

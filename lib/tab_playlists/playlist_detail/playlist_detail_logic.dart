@@ -6,7 +6,9 @@ import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/db/db_track.dart';
 import 'package:mockingbird/db/objectbox.dart';
 import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_interface_ui_events.dart';
+import '../../models/track.dart';
 import 'playlist_detail_state.dart';
+import 'package:path/path.dart' as p;
 
 class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
   const PlaylistDetailLogic();
@@ -29,31 +31,12 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
       return state;
     }
     try {
-      // Pick multiple audio/video files
-      const audioExtensions = [
-        'mp3',
-        'wav',
-        'aac',
-        'm4a',
-        'flac',
-        'ogg',
-        'wma',
-      ];
-      const videoExtensions = [
-        'mp4',
-        'avi',
-        'mkv',
-        'mov',
-        'wmv',
-        'flv',
-        'webm',
-      ];
       final pickedFiles = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: [
-          //TODO only allow player supported formats
           ...audioExtensions,
           ...videoExtensions,
+          ...subtitleExtensions,
         ],
         allowMultiple: true,
       );
@@ -61,17 +44,47 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
       if (pickedFiles == null || pickedFiles.files.isEmpty) {
         return state; // User cancelled
       }
-      final files = pickedFiles.files.where((f) => f.path != null).map((f) =>
-          File(f.path!)).toList();
-      final tracks = await DBTrack(ObjectBox.instance.store).createMany(files);
-      playlist.tracks.addAll(tracks);
+      final files = pickedFiles.files
+          .where((f) => f.path != null)
+          .map((f) => File(f.path!))
+          .toList();
 
-      // Ascend sort tracks by track's name
-      final allTracks = playlist.tracks.toList();
-      allTracks.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      final newPlaylist = playlist.copyWith(tracks: allTracks);
-      await DBPlaylist(ObjectBox.instance.store).update(newPlaylist);
-      return state.copyWith(playlist: newPlaylist);
+      final videoFiles = files
+          .where((f) => TrackType.fromFile(f) == TrackType.video)
+          .toList();
+      final audioFiles = files
+          .where((f) => TrackType.fromFile(f) == TrackType.audio)
+          .toList();
+      final subFiles = files
+          .where((f) => subtitleExtensions.contains(
+              p.extension(f.path).replaceFirst('.', '').toLowerCase()))
+          .toList();
+
+      //match subtitles to tracks
+      final subFileMap = {
+        for (final f in subFiles) p.basenameWithoutExtension(f.path): f
+      };
+      List<({File trackFile, File? subFile})> relatedFiles = [];
+      for (File trackFile in [...videoFiles, ...audioFiles]) {
+        final trackName = p.basenameWithoutExtension(trackFile.path);
+        final matchedSubName = subFileMap.keys.firstWhere(
+            (name) => name.contains(trackName),
+            orElse: () => "");
+        final subFile =
+            matchedSubName.isEmpty ? null : subFileMap[matchedSubName];
+        relatedFiles.add((trackFile: trackFile, subFile: subFile));
+      }
+
+      // Save tracks to disk and DB
+      final newTracks =
+          await DBTrack(ObjectBox.instance.store).createMany(relatedFiles);
+
+      // Combine existing and new tracks, then sort
+      playlist.tracks.addAll(newTracks);
+      playlist.tracks.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      await DBPlaylist(ObjectBox.instance.store).update(playlist);
+      return state;
 
     } catch (e) {
       debugPrint('Error importing media files: $e');

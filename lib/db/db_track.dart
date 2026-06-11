@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:mockingbird/models/track.dart';
@@ -10,44 +9,58 @@ class DBTrack {
   final Store _store;
   DBTrack(this._store);
 
-  Future<List<Track>> createMany(List<File> files) async {
-    if (files.isEmpty) return [];
-    //make sure appDir/tracks exist
+  Future<List<Track>> createMany(
+      List<({File trackFile, File? subFile})> relatedFiles) async {
+    if (relatedFiles.isEmpty) return [];
+
     final appDir = await getApplicationDocumentsDirectory();
     final tracksDir = Directory(p.join(appDir.path, 'tracks'));
-    if (!await tracksDir.exists()) {
-      await tracksDir.create(recursive: true);
-    }
-    //write all trackfiles into that dir, rename to timestamp unique filename
-    final saveTrackFiles = files.map((file) async {
-      String filename = "${DateTime.now().millisecondsSinceEpoch}${p.extension(file.path)}";
-      final savedFile = await file.copy(p.join(tracksDir.path, filename));
-      return savedFile.path;
-    });
-    final trackPathsInAppDir = await Future.wait(saveTrackFiles);
-    final tracks = List.generate(files.length, (i) {
-      //TODO allowed extensions should be at a public accessible const
-      const audioExtensions = [
-        'mp3',
-        'wav',
-        'aac',
-        'm4a',
-        'flac',
-        'ogg',
-        'wma',
-      ];
-      final extension = p.extension(trackPathsInAppDir[i]).substring(1);
-      final type = audioExtensions.contains(extension)
-          ? TrackType.audio
-          : TrackType.video;
-      return Track(
-          pathStr: trackPathsInAppDir[i],
-          name: p.basenameWithoutExtension(files[i].path),
-          rawType: type.raw
+    final subsDir = Directory(p.join(appDir.path, 'subtitles'));
+
+    // Ensure directories exist in parallel
+    await Future.wait([
+      if (!await tracksDir.exists()) tracksDir.create(recursive: true),
+      if (!await subsDir.exists()) subsDir.create(recursive: true),
+    ]);
+
+    // Optimize: Use a single timestamp and index to ensure unique filenames
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final saveTasks = relatedFiles.asMap().entries.map((entry) async {
+      final i = entry.key;
+      final rf = entry.value;
+      final uniqueName = "${timestamp}_$i";
+
+      final results = await Future.wait([
+        rf.trackFile.copy(
+          p.join(tracksDir.path, "$uniqueName${p.extension(rf.trackFile.path)}"),
+        ),
+        if (rf.subFile != null)
+          rf.subFile!.copy(
+            p.join(subsDir.path, "$uniqueName${p.extension(rf.subFile!.path)}"),
+          ),
+      ]);
+
+      return (
+        track: results[0],
+        sub: rf.subFile != null ? results[1] : null,
+        original: rf.trackFile
       );
     });
-    await _store.box<Track>().putManyAsync(tracks);
-    return tracks; //now tracks contains updated id
+
+    final savedResults = await Future.wait(saveTasks);
+
+    final tracks = savedResults.map((res) {
+      final type = TrackType.fromFile(res.track);
+      return Track(
+        pathStr: res.track.path,
+        subPathStr: res.sub?.path,
+        name: p.basenameWithoutExtension(res.original.path),
+        rawType: type.raw,
+      );
+    }).toList();
+    //
+    // await _store.box<Track>().putManyAsync(tracks);
+    return tracks;
   }
 
   Future<List<Track>> getByPlaylistIdAsync(int playlistId) async {

@@ -39,7 +39,6 @@ Widget (UI) → Handler (implements Events interface) → State (immutable)
 - **fileName**: Computed getter from `filePath` (not stored)
 - **MediaType enum**: `audio` or `video` (can be mixed in same playlist)
 - **Subtitle auto-detection**: Automatically finds .srt, .vtt, .sub, .ass files with same name
-- **No file copying**: Stores original file paths, doesn't duplicate media files
 - **One-way relation**: Tracks belong to playlists but don't store playlistId
 
 ### Widget Organization
@@ -210,7 +209,7 @@ class _PlaylistWidgetFactory extends State<PlaylistWidget> {
 
 ## Development Workflow
 1. Define feature contract in `*Events` interface
-2. Implement business logic in `*Handler`
+2. Implement business logic in `*Logic`
 3. Design immutable state in `*State`
 4. Build UI in `*Widget` that reacts to state changes
 5. Test with real data using ObjectBox
