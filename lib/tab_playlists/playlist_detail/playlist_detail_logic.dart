@@ -23,12 +23,13 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
   }
 
   @override
-  Future<PlaylistDetailState> playlistDetailAddTracks(
-      PlaylistDetailState state) async {
-    final playlist = state.playlist;
+  Stream<PlaylistDetailState> playlistDetailAddTracks(
+      PlaylistDetailState state) async* {
+    var playlist = state.playlist;
     if (playlist == null) {
       debugPrint('playlist not existed');
-      return state;
+      yield state;
+      return;
     }
     try {
       final pickedFiles = await FilePicker.pickFiles(
@@ -42,31 +43,32 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
       );
 
       if (pickedFiles == null || pickedFiles.files.isEmpty) {
-        return state; // User cancelled
+        yield state; // User cancelled
+        return;
       }
       final files = pickedFiles.files
           .where((f) => f.path != null)
           .map((f) => File(f.path!))
           .toList();
 
-      final videoFiles = files
-          .where((f) => TrackType.fromFile(f) == TrackType.video)
-          .toList();
-      final audioFiles = files
-          .where((f) => TrackType.fromFile(f) == TrackType.audio)
-          .toList();
-      final subFiles = files
-          .where((f) => subtitleExtensions.contains(
-              p.extension(f.path).replaceFirst('.', '').toLowerCase()))
-          .toList();
+      final List<File> videoFiles = [];
+      final List<File> audioFiles = [];
+      final List<File> subFiles = [];
+      for (var f in files) {
+        final ext = p.extension(f.path).replaceFirst('.', '').toLowerCase();
+        if (videoExtensions.contains(ext)) videoFiles.add(f);
+        if (audioExtensions.contains(ext)) audioFiles.add(f);
+        if (subtitleExtensions.contains(ext)) subFiles.add(f);
+      }
 
-      //match subtitles to tracks
+      // Match subtitles to tracks
       final subFileMap = {
         for (final f in subFiles) p.basenameWithoutExtension(f.path): f
       };
       List<({File trackFile, File? subFile})> relatedFiles = [];
       for (File trackFile in [...videoFiles, ...audioFiles]) {
         final trackName = p.basenameWithoutExtension(trackFile.path);
+        // Find a subtitle file that contains the track name
         final matchedSubName = subFileMap.keys.firstWhere(
             (name) => name.contains(trackName),
             orElse: () => "");
@@ -74,21 +76,27 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
             matchedSubName.isEmpty ? null : subFileMap[matchedSubName];
         relatedFiles.add((trackFile: trackFile, subFile: subFile));
       }
-
+      yield state.copyWith(showLoading: true);
       // Save tracks to disk and DB
-      final newTracks =
+      final tracks =
           await DBTrack(ObjectBox.instance.store).createMany(relatedFiles);
 
-      // Combine existing and new tracks, then sort
-      playlist.tracks.addAll(newTracks);
+      // Add to playlist relationship
+      playlist.tracks.addAll(tracks);
+      final dbPlaylist = DBPlaylist(ObjectBox.instance.store);
+      await dbPlaylist.update(playlist);
+
+      // Fetch updated playlist to ensure everything is synced
+      playlist = (await dbPlaylist.getById(playlist.id))!;
+
+      // Sort tracks by name ascending
       playlist.tracks.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-      await DBPlaylist(ObjectBox.instance.store).update(playlist);
-      return state;
 
+      yield state.copyWith(playlist: playlist, showLoading: false);
     } catch (e) {
       debugPrint('Error importing media files: $e');
-      return state;
-    } finally {}
+      yield state;
+    }
   }
 }

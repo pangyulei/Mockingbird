@@ -4,5 +4,5 @@ abstract interface class PlaylistDetailInterfaceUIEvents {
   Stream<PlaylistDetailState> playlistDetailInitState(int playlistId);
 
   /// Import audio/video files to the playlist
-  Future<PlaylistDetailState> playlistDetailAddTracks(PlaylistDetailState state);
+  Stream<PlaylistDetailState> playlistDetailAddTracks(PlaylistDetailState state);
 }

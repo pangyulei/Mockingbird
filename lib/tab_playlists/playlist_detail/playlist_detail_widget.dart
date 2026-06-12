@@ -143,7 +143,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
           child: IconButton.filledTonal(
             icon: const Icon(Icons.playlist_add),
             onPressed: () async {
-              _updateState(await widget._logic.playlistDetailAddTracks(_state));
+              _updateStateByStream(widget._logic.playlistDetailAddTracks(_state));
             },
           ),
         ),

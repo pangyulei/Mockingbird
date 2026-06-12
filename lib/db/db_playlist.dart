@@ -33,8 +33,8 @@ class DBPlaylist {
       coverPathStr = null;
     }
     final newPlaylist = playlist.copyWith(name: trimmedName, coverPathStr: coverPathStr);
-    await _store.box<Playlist>().putAsync(newPlaylist); //will fill id field
-    return newPlaylist;
+    final id = await _store.box<Playlist>().putAsync(newPlaylist);
+    return newPlaylist.copyWith(id: id);
   }
 
   Future<List<Playlist>> getAll() async {

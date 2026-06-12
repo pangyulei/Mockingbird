@@ -74,7 +74,6 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
         Playlist(
           name: newPlaylistInfo.name,
           sortOrder: state.playlists.length,
-          tracks: ToMany<Track>(),
         ),
         newPlaylistInfo.coverFile,
       );

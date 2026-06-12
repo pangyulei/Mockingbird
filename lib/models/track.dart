@@ -51,17 +51,14 @@ enum TrackType {
   const TrackType(this.raw);
 
   static TrackType fromFile(File file) {
-    return fromExtension(p.extension(file.path));
-  }
-
-  static TrackType fromExtension(String ext) {
-    if (ext.isEmpty) throw ArgumentError('Extension cannot be empty');
+    var ext = p.extension(file.path);
     if (ext.startsWith('.')) ext = ext.substring(1);
     ext = ext.toLowerCase();
     if (videoExtensions.contains(ext)) return TrackType.video;
     if (audioExtensions.contains(ext)) return TrackType.audio;
     throw ArgumentError('Unsupported file extension: $ext');
   }
+
 }
 
 const audioExtensions = {'mp3', 'wav', 'aac', 'm4a', 'flac', 'ogg', 'wma'};
