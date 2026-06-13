@@ -7,9 +7,7 @@ class ObjectBox {
   static ObjectBox? _instance;
   final Store store;
 
-  ObjectBox._create(this.store) {
-    // Add any additional setup code, e.g. build queries.
-  }
+  ObjectBox._(this.store);
 
   static ObjectBox get instance {
     if (_instance == null) {
@@ -25,7 +23,7 @@ class ObjectBox {
     final store = await openStore(
       directory: p.join(docsDir.path, "db_objectbox"),
     );
-    _instance = ObjectBox._create(store);
+    _instance = ObjectBox._(store);
     return _instance!;
   }
 }

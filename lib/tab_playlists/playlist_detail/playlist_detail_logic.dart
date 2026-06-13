@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/db/db_track.dart';
 import 'package:mockingbird/db/objectbox.dart';
-import 'package:mockingbird/notifications/notification_play_track.dart';
+import 'package:mockingbird/global_broadcaster/global_broadcaster.dart';
+import 'package:mockingbird/global_broadcaster/global_events.dart';
 import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_interface_ui_events.dart';
 import '../../models/track.dart';
 import 'playlist_detail_state.dart';
@@ -92,6 +93,6 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
 
   @override
   void playlistDetailPlayTrack(Track track, BuildContext context) {
-    NotificationPlayTrack(track).dispatch(context);
+    GlobalBroadcaster.instance.emit(GlobalEventPlayTrack(track));
   }
 }

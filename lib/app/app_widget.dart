@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_interface_ui_events.dart';
 import 'package:mockingbird/app/app_state.dart';
+import 'package:mockingbird/global_broadcaster/global_broadcaster.dart';
+import 'package:mockingbird/global_broadcaster/global_events.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
 import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_logic.dart';
@@ -17,12 +21,23 @@ class AppWidget extends StatefulWidget {
 }
 
 class _AppWidgetFactory extends State<AppWidget> {
-  late AppState _state;
+  AppState _state = const AppState(AppTab.playlists);
+  final List<StreamSubscription> _subs = [];
 
   @override
   void initState() {
     super.initState();
-    _state = widget._logic.appInitState();
+    _subs.add(GlobalBroadcaster.instance.on<GlobalEventPlayTrack>((event) {
+      _updateState(widget._logic.appSwitchToTab(_state, .player));
+    }));
+  }
+  
+  @override
+  void dispose() {
+    for (final sub in _subs) {
+      sub.cancel();
+    }
+    super.dispose();
   }
 
   void _updateState(AppState newState) {
@@ -41,23 +56,16 @@ class _AppWidgetFactory extends State<AppWidget> {
   }
 
   Widget _buildHome() {
-    return NotificationListener(
-      onNotification: (notification) {
-        final (res, state) = widget._logic.appReceiveNotification(_state, notification as Notification);
-        _updateState(state);
-        return res;
-      },
-      child: Scaffold(
-        body: IndexedStack(
-          index: _state.selectedTab.raw,
-          children: const [
-            PlaylistsNavWidget(PlaylistsNavLogic()),
-            PlayerNavWidget(PlayerNavLogic()),
-            TabSettingsWidget(),
-          ],
-        ),
-        bottomNavigationBar: _buildTabBar(),
+    return Scaffold(
+      body: IndexedStack(
+        index: _state.selectedTab.raw,
+        children: const [
+          PlaylistsNavWidget(PlaylistsNavLogic()),
+          PlayerNavWidget(PlayerNavLogic()),
+          TabSettingsWidget(),
+        ],
       ),
+      bottomNavigationBar: _buildTabBar(),
     );
   }
 

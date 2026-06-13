@@ -6,5 +6,5 @@ import 'package:mockingbird/db/objectbox.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); //objectbox official code
   await ObjectBox.init();
-  runApp(const AppWidget(AppHandler()));
+  runApp(const AppWidget(AppLogic()));
 }
