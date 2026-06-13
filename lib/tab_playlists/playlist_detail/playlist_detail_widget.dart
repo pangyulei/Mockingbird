@@ -22,6 +22,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
   void initState() {
     super.initState();
     _updateStateByStream(widget._logic.playlistDetailInitState(widget._playlistId));
+
   }
 
   Future<void> _updateStateByStream(Stream<PlaylistDetailState> stream) async {
@@ -224,7 +225,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
               color: Colors.white,
             ),
             onPressed: () {
-              // TODO: Play track
+              widget._logic.playlistDetailPlayTrack(track, context);
             },
           ),
         ),

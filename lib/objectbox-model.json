@@ -32,17 +32,11 @@
           "type": 9
         }
       ],
-      "relations": [
-        {
-          "id": "1:8095015116716904100",
-          "name": "tracks",
-          "targetId": "3:2902630092194733107"
-        }
-      ]
+      "relations": []
     },
     {
       "id": "3:2902630092194733107",
-      "lastPropertyId": "11:3987868685570132360",
+      "lastPropertyId": "12:3619442436442203962",
       "name": "Track",
       "properties": [
         {
@@ -70,13 +64,21 @@
           "id": "11:3987868685570132360",
           "name": "subPathStr",
           "type": 9
+        },
+        {
+          "id": "12:3619442436442203962",
+          "name": "playlistId",
+          "indexId": "4:4812271662658072660",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "Playlist"
         }
       ],
       "relations": []
     }
   ],
   "lastEntityId": "3:2902630092194733107",
-  "lastIndexId": "3:3608696903975637121",
+  "lastIndexId": "4:4812271662658072660",
   "lastRelationId": "1:8095015116716904100",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
@@ -103,6 +105,8 @@
     9014700357397305896,
     1290579006963811226
   ],
-  "retiredRelationUids": [],
+  "retiredRelationUids": [
+    8095015116716904100
+  ],
   "version": 1
 }

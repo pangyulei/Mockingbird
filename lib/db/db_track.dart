@@ -5,11 +5,14 @@ import 'package:mockingbird/objectbox.g.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../models/playlist.dart';
+
 class DBTrack {
   final Store _store;
   DBTrack(this._store);
 
   Future<List<Track>> createMany(
+      Playlist playlist,
       List<({File trackFile, File? subFile})> relatedFiles) async {
     if (relatedFiles.isEmpty) return [];
 
@@ -50,29 +53,19 @@ class DBTrack {
 
     final savedResults = await Future.wait(saveTasks);
 
-    final tracks = savedResults.map((res) {
+    var tracks = savedResults.map((res) {
       final type = TrackType.fromFile(res.track);
       return Track(
         pathStr: res.track.path,
         subPathStr: res.sub?.path,
         name: p.basenameWithoutExtension(res.original.path),
         rawType: type.raw,
+        playlist: playlist,
       );
     }).toList();
-    //
-    // await _store.box<Track>().putManyAsync(tracks);
+    tracks = await _store.box<Track>().putAndGetManyAsync(tracks);
+    playlist.tracks.addAll(tracks);
     return tracks;
   }
 
-  Future<List<Track>> getByPlaylistIdAsync(int playlistId) async {
-    // Note: Track doesn't have playlistId field in current model
-    // This would need to be implemented based on actual relationship design
-    final query = _store.box<Track>()
-        .query()
-        .order(Track_.name)
-        .build();
-    final result = await query.findAsync();
-    query.close();
-    return result;
-  }
 }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/db/db_track.dart';
 import 'package:mockingbird/db/objectbox.dart';
+import 'package:mockingbird/notifications/notification_play_track.dart';
 import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_interface_ui_events.dart';
 import '../../models/track.dart';
 import 'playlist_detail_state.dart';
@@ -18,7 +20,7 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
     yield const PlaylistDetailState(showLoading: true);
     final playlist = await DBPlaylist(
       ObjectBox.instance.store,
-    ).getById(playlistId);
+    ).get(playlistId);
     yield PlaylistDetailState(playlist: playlist, showLoading: false);
   }
 
@@ -77,26 +79,19 @@ class PlaylistDetailLogic implements PlaylistDetailInterfaceUIEvents {
         relatedFiles.add((trackFile: trackFile, subFile: subFile));
       }
       yield state.copyWith(showLoading: true);
-      // Save tracks to disk and DB
-      final tracks =
-          await DBTrack(ObjectBox.instance.store).createMany(relatedFiles);
-
-      // Add to playlist relationship
-      playlist.tracks.addAll(tracks);
-      final dbPlaylist = DBPlaylist(ObjectBox.instance.store);
-      await dbPlaylist.update(playlist);
-
-      // Fetch updated playlist to ensure everything is synced
-      playlist = (await dbPlaylist.getById(playlist.id))!;
-
-      // Sort tracks by name ascending
+      await DBTrack(ObjectBox.instance.store).createMany(playlist, relatedFiles);
       playlist.tracks.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+      yield state.copyWith(showLoading: false);
 
-      yield state.copyWith(playlist: playlist, showLoading: false);
     } catch (e) {
       debugPrint('Error importing media files: $e');
       yield state;
     }
+  }
+
+  @override
+  void playlistDetailPlayTrack(Track track, BuildContext context) {
+    NotificationPlayTrack(track).dispatch(context);
   }
 }

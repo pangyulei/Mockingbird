@@ -9,7 +9,7 @@ class Playlist {
   final String name;
   final String? coverPathStr;
   
-  // ObjectBox managed relationship
+  @Backlink('playlist')
   final tracks = ToMany<Track>();
 
   @Index()
@@ -18,12 +18,9 @@ class Playlist {
   Playlist({
     required this.name,
     required this.sortOrder,
-    Iterable<Track> tracks = const [],
     this.id = 0,
     this.coverPathStr,
-  }) {
-    this.tracks.addAll(tracks);
-  }
+  });
 
   Playlist copyWith({
     int? id,
@@ -32,12 +29,17 @@ class Playlist {
     int? sortOrder,
     Iterable<Track>? tracks,
   }) {
-    return Playlist(
+    final p = Playlist(
       id: id ?? this.id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
       coverPathStr: coverPathStr ?? this.coverPathStr,
-      tracks: (tracks ?? this.tracks).map((t) => t.copyWith()),
     );
+    if (tracks != null) {
+      p.tracks.addAll(tracks);
+    } else {
+      p.tracks.addAll(this.tracks);
+    }
+    return p;
   }
 }

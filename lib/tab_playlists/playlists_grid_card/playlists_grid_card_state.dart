@@ -1,9 +1,19 @@
+import 'package:mockingbird/models/playlist.dart';
+
 class PlaylistsGridCardState {
   final bool isPressed;
+  final Playlist playlist;
+  const PlaylistsGridCardState({
+    required this.playlist,
+    this.isPressed = false
+  });
 
-  const PlaylistsGridCardState({this.isPressed = false});
-
-  PlaylistsGridCardState copyWith({bool? isPressed}) {
-    return PlaylistsGridCardState(isPressed: isPressed ?? this.isPressed);
+  PlaylistsGridCardState copyWith({
+    Playlist? playlist,
+    bool? isPressed}) {
+    return PlaylistsGridCardState(
+      playlist: playlist ?? this.playlist,
+      isPressed: isPressed ?? this.isPressed
+    );
   }
 }

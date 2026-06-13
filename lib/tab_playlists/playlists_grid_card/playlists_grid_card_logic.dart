@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_interface_ui_events.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_state.dart';
-import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_route.dart';
+import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_route.dart';
 
 class PlaylistsGridCardLogic implements PlaylistsGridCardInterfaceUIEvents {
   const PlaylistsGridCardLogic();
@@ -19,7 +19,12 @@ class PlaylistsGridCardLogic implements PlaylistsGridCardInterfaceUIEvents {
   void playlistsGridCardOnTap(BuildContext context, Playlist playlist) {
     Navigator.pushNamed(
       context,
-      TabPlaylistsRoute.urlStrForPlaylist(playlist.id),
+      PlaylistsNavRoute.urlStrForPlaylist(playlist.id),
     );
+  }
+
+  @override
+  PlaylistsGridCardState playlistsGridCardInitState(Playlist playlist) {
+    return PlaylistsGridCardState(playlist: playlist);
   }
 }

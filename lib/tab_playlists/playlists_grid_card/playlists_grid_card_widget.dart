@@ -7,8 +7,8 @@ import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_car
 
 class PlaylistsGridCardWidget extends StatefulWidget {
   final Playlist _playlist;
-  final PlaylistsGridCardInterfaceUIEvents _handler;
-  const PlaylistsGridCardWidget(this._playlist, this._handler, {super.key});
+  final PlaylistsGridCardInterfaceUIEvents _logic;
+  const PlaylistsGridCardWidget(this._playlist, this._logic, {super.key});
 
   @override
   State<PlaylistsGridCardWidget> createState() =>
@@ -16,7 +16,13 @@ class PlaylistsGridCardWidget extends StatefulWidget {
 }
 
 class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
-  PlaylistsGridCardState _state = const PlaylistsGridCardState();
+  late PlaylistsGridCardState _state;
+
+  @override
+  void initState() {
+    super.initState();
+    _updateState(widget._logic.playlistsGridCardInitState(widget._playlist));
+  }
 
   void _updateState(PlaylistsGridCardState newState) {
     setState(() {
@@ -28,16 +34,16 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => _updateState(
-        widget._handler.playlistsGridCardPressedStateChanged(_state, true),
+        widget._logic.playlistsGridCardPressedStateChanged(_state, true),
       ),
       onTapUp: (_) {
         _updateState(
-          widget._handler.playlistsGridCardPressedStateChanged(_state, false),
+          widget._logic.playlistsGridCardPressedStateChanged(_state, false),
         );
-        widget._handler.playlistsGridCardOnTap(context, widget._playlist);
+        widget._logic.playlistsGridCardOnTap(context, widget._playlist);
       },
       onTapCancel: () => _updateState(
-        widget._handler.playlistsGridCardPressedStateChanged(_state, false),
+        widget._logic.playlistsGridCardPressedStateChanged(_state, false),
       ),
       child: AnimatedScale(
         scale: _state.isPressed ? 0.96 : 1.0,
@@ -101,7 +107,7 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '0 Tracks',
+                    '${_state.playlist.tracks.length} Tracks',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: const Color(0xFF42474E),
                       fontWeight: FontWeight.w500,

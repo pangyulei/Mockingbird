@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:mockingbird/db/db_playlist.dart';
 import 'package:mockingbird/db/objectbox.dart';
 import 'package:mockingbird/models/playlist.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_interface_ui_events.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_state.dart';
 
-import '../../models/track.dart';
-import '../../objectbox.g.dart';
 
 class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
   const PlaylistsGridLogic();
@@ -45,19 +42,13 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
         .map((p) => p.copyWith())
         .toList();
     //swap db sortorder first, then swap their place in List
-    final swappedPlaylists = await DBPlaylist(
+    var aPlaylist = reindexedPlaylists[fromIndex];
+    var bPlaylist = reindexedPlaylists[toIndex];
+    (aPlaylist, bPlaylist) = await DBPlaylist(
       ObjectBox.instance.store,
-    ).swapSortOrder(reindexedPlaylists[fromIndex], reindexedPlaylists[toIndex]);
-    //dragged id playlist should place at toIndex
-    for (final playlist in swappedPlaylists) {
-      if (playlist.id == draggedPlaylist.id) {
-        reindexedPlaylists.replaceRange(toIndex, toIndex, [playlist]);
-      } else if (playlist.id == targetPlaylist.id) {
-        reindexedPlaylists.replaceRange(fromIndex, fromIndex, [playlist]);
-      } else {
-        debugPrint('2 swapped playlists must correspond to drag/target index');
-      }
-    }
+    ).swapSortOrder(aPlaylist, bPlaylist);
+    reindexedPlaylists[fromIndex] = bPlaylist;
+    reindexedPlaylists[toIndex] = aPlaylist;
     yield state.copyWith(playlists: reindexedPlaylists, showLoading: false);
   }
 

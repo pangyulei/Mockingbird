@@ -52,19 +52,19 @@ final _entities = <obx_int.ModelEntity>[
         flags: 0,
       ),
     ],
-    relations: <obx_int.ModelRelation>[
-      obx_int.ModelRelation(
-        id: const obx_int.IdUid(1, 8095015116716904100),
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[
+      obx_int.ModelBacklink(
         name: 'tracks',
-        targetId: const obx_int.IdUid(3, 2902630092194733107),
+        srcEntity: 'Track',
+        srcField: 'playlist',
       ),
     ],
-    backlinks: <obx_int.ModelBacklink>[],
   ),
   obx_int.ModelEntity(
     id: const obx_int.IdUid(3, 2902630092194733107),
     name: 'Track',
-    lastPropertyId: const obx_int.IdUid(11, 3987868685570132360),
+    lastPropertyId: const obx_int.IdUid(12, 3619442436442203962),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -96,6 +96,15 @@ final _entities = <obx_int.ModelEntity>[
         name: 'subPathStr',
         type: 9,
         flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(12, 3619442436442203962),
+        name: 'playlistId',
+        type: 11,
+        flags: 520,
+        indexId: const obx_int.IdUid(4, 4812271662658072660),
+        relationField: 'playlist',
+        relationTarget: 'Playlist',
       ),
     ],
     relations: <obx_int.ModelRelation>[],
@@ -147,7 +156,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
     lastEntityId: const obx_int.IdUid(3, 2902630092194733107),
-    lastIndexId: const obx_int.IdUid(3, 3608696903975637121),
+    lastIndexId: const obx_int.IdUid(4, 4812271662658072660),
     lastRelationId: const obx_int.IdUid(1, 8095015116716904100),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [3778120798045844687],
@@ -168,7 +177,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       9014700357397305896,
       1290579006963811226,
     ],
-    retiredRelationUids: const [],
+    retiredRelationUids: const [8095015116716904100],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
     version: 1,
@@ -179,7 +188,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
       model: _entities[0],
       toOneRelations: (Playlist object) => [],
       toManyRelations: (Playlist object) => {
-        obx_int.RelInfo<Playlist>.toMany(1, object.id): object.tracks,
+        obx_int.RelInfo<Track>.toOneBacklink(
+          12,
+          object.id,
+          (Track srcObject) => srcObject.playlist,
+        ): object.tracks,
       },
       getId: (Playlist object) => object.id,
       setId: (Playlist object, int id) {
@@ -210,7 +223,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
-        final tracksParam = obx.ToMany<Track>();
         final idParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -223,21 +235,24 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final object = Playlist(
           name: nameParam,
           sortOrder: sortOrderParam,
-          tracks: tracksParam,
           id: idParam,
           coverPathStr: coverPathStrParam,
         );
         obx_int.InternalToManyAccess.setRelInfo<Playlist>(
           object.tracks,
           store,
-          obx_int.RelInfo<Playlist>.toMany(1, object.id),
+          obx_int.RelInfo<Track>.toOneBacklink(
+            12,
+            object.id,
+            (Track srcObject) => srcObject.playlist,
+          ),
         );
         return object;
       },
     ),
     Track: obx_int.EntityDefinition<Track>(
       model: _entities[1],
-      toOneRelations: (Track object) => [],
+      toOneRelations: (Track object) => [object.playlist],
       toManyRelations: (Track object) => {},
       getId: (Track object) => object.id,
       setId: (Track object, int id) {
@@ -249,12 +264,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final subPathStrOffset = object.subPathStr == null
             ? null
             : fbb.writeString(object.subPathStr!);
-        fbb.startTable(12);
+        fbb.startTable(13);
         fbb.addInt64(0, object.id);
         fbb.addOffset(6, pathStrOffset);
         fbb.addOffset(7, nameOffset);
         fbb.addInt64(9, object.rawType);
         fbb.addOffset(10, subPathStrOffset);
+        fbb.addInt64(11, object.playlist.targetId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -289,7 +305,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
           id: idParam,
           subPathStr: subPathStrParam,
         );
-
+        object.playlist.targetId = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          26,
+          0,
+        );
+        object.playlist.attach(store);
         return object;
       },
     ),
@@ -321,8 +343,8 @@ class Playlist_ {
   );
 
   /// see [Playlist.tracks]
-  static final tracks = obx.QueryRelationToMany<Playlist, Track>(
-    _entities[0].relations[0],
+  static final tracks = obx.QueryBacklinkToMany<Track, Playlist>(
+    Track_.playlist,
   );
 }
 
@@ -349,5 +371,10 @@ class Track_ {
   /// See [Track.subPathStr].
   static final subPathStr = obx.QueryStringProperty<Track>(
     _entities[1].properties[4],
+  );
+
+  /// See [Track.playlist].
+  static final playlist = obx.QueryRelationToOne<Track, Playlist>(
+    _entities[1].properties[5],
   );
 }

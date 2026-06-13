@@ -32,9 +32,9 @@ class DBPlaylist {
     } else {
       coverPathStr = null;
     }
-    final newPlaylist = playlist.copyWith(name: trimmedName, coverPathStr: coverPathStr);
-    final id = await _store.box<Playlist>().putAsync(newPlaylist);
-    return newPlaylist.copyWith(id: id);
+    playlist = playlist.copyWith(name: trimmedName, coverPathStr: coverPathStr);
+    playlist = await _store.box<Playlist>().putAndGetAsync(playlist);
+    return playlist;
   }
 
   Future<List<Playlist>> getAll() async {
@@ -47,16 +47,16 @@ class DBPlaylist {
     return result;
   }
 
-  Future<Playlist?> getById(int id) async {
+  Future<Playlist?> get(int id) async {
     return await _store.box<Playlist>().getAsync(id);
   }
 
-  Future<List<Playlist>> swapSortOrder(Playlist aPlaylist, Playlist bPlaylist) async {
+  Future<(Playlist, Playlist)> swapSortOrder(Playlist aPlaylist, Playlist bPlaylist) async {
     final aSortOrder = aPlaylist.sortOrder;
     aPlaylist = aPlaylist.copyWith(sortOrder: bPlaylist.sortOrder);
     bPlaylist = bPlaylist.copyWith(sortOrder: aSortOrder);
     await updateMany([aPlaylist, bPlaylist]);
-    return [aPlaylist, bPlaylist];
+    return (aPlaylist, bPlaylist);
   }
 
   Future<void> update(Playlist playlist) async {

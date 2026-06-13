@@ -7,7 +7,7 @@ class PlaylistDetailState {
 
   PlaylistDetailState copyWith({Playlist? playlist, bool? showLoading}) {
     return PlaylistDetailState(
-      playlist: (playlist ?? this.playlist)?.copyWith(),
+      playlist: playlist ?? this.playlist,
       showLoading: showLoading ?? this.showLoading,
     );
   }

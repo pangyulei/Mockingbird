@@ -3,15 +3,15 @@ import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_logic.
 import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_widget.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_logic.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_widget.dart';
-import 'package:mockingbird/tab_playlists/tab_playlists/tab_playlists_interface_ui_events.dart';
+import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_interface_ui_events.dart';
 
-import 'tab_playlists_route.dart';
+import 'playlists_nav_route.dart';
 
-class TabPlaylistsLogic implements TabPlaylistsInterfaceUIEvents {
-  const TabPlaylistsLogic();
+class PlaylistsNavLogic implements PlaylistsNavInterfaceUIEvents {
+  const PlaylistsNavLogic();
 
   @override
-  Route<dynamic>? tabPlaylistsOnGenerateRoute(RouteSettings settings) {
+  Route<dynamic>? playlistsNavOnGenerateRoute(RouteSettings settings) {
     if (settings.name != null) {
       return _buildWidgetByURLStr(settings.name!);
     } else {
@@ -31,10 +31,10 @@ class TabPlaylistsLogic implements TabPlaylistsInterfaceUIEvents {
         // ['playlists', '42']
         final segments = uri.pathSegments;
         if (segments.length == 1 &&
-            segments.first == TabPlaylistsRoute.playlists) {
+            segments.first == PlaylistsNavRoute.playlists) {
           return const PlaylistsGridWidget(PlaylistsGridLogic());
         } else if (segments.length == 2 &&
-            segments.first == TabPlaylistsRoute.playlists) {
+            segments.first == PlaylistsNavRoute.playlists) {
           final playlistIdStr = segments.last;
           final playlistId = int.tryParse(playlistIdStr);
           if (playlistId != null) {
@@ -53,12 +53,12 @@ class TabPlaylistsLogic implements TabPlaylistsInterfaceUIEvents {
   }
 
   @override
-  List<Route<dynamic>> tabPlaylistsOnGenerateInitialRoute(
+  List<Route<dynamic>> playlistsNavOnGenerateInitialRoute(
     NavigatorState navigator,
     String initialRoute,
   ) {
     return [
-      TabPlaylistsRoute.urlStrForPlaylists(),
+      PlaylistsNavRoute.urlStrForPlaylists(),
       // TabPlaylistRoute.urlStrForPlaylist(
       //   'default',
       // ), //TODO not 100% is default, may edited name

@@ -16,20 +16,18 @@ class PlaylistsGridState {
   });
 
   PlaylistsGridState copyWith({
-    Iterable<Playlist>? playlists,
+    List<Playlist>? playlists,
     bool? showLoading,
     bool? isAddButtonPressed,
     bool? isSelectionMode,
     Set<int>? selectedPlaylistIds,
   }) {
     return PlaylistsGridState(
-      playlists: (playlists ?? this.playlists)
-          .map((e) => e.copyWith())
-          .toList(),
+      playlists: playlists ?? this.playlists,
       showLoading: showLoading ?? this.showLoading,
       isAddButtonPressed: isAddButtonPressed ?? this.isAddButtonPressed,
       isSelectionMode: isSelectionMode ?? this.isSelectionMode,
-      selectedPlaylistIds: selectedPlaylistIds ?? {...this.selectedPlaylistIds},
+      selectedPlaylistIds: selectedPlaylistIds ?? this.selectedPlaylistIds,
     );
   }
 
