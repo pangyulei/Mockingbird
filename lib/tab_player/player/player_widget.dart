@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:marquee/marquee.dart';
 import 'package:mockingbird/global_broadcaster/global_broadcaster.dart';
 import 'package:mockingbird/global_broadcaster/global_events.dart';
 import 'package:video_player/video_player.dart';
@@ -54,7 +55,19 @@ class _PlayerWidgetFactory extends State<PlayerWidget> {
     VideoPlayerController playerController = _state.playerController!;
     return Scaffold(
       appBar: AppBar(
-        title: Text(track.name),
+        title: SizedBox(
+          width: double.infinity,
+          height: kToolbarHeight,
+          child: Marquee(
+            text: track.name,
+            scrollAxis: Axis.horizontal,
+            blankSpace: 50,
+            velocity: 30,
+            pauseAfterRound: Duration.zero,
+            accelerationDuration: Duration.zero,
+            decelerationDuration: Duration.zero,
+          ),
+        ),
       ),
       body: _state.showLoading ? const Center(child: CircularProgressIndicator()):
       Column(
