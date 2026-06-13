@@ -9,6 +9,9 @@ import '../../models/track.dart';
 import 'player_state.dart';
 import 'player_logic.dart';
 
+const double _kPlayerControlBarHeight = 36;
+const double _kPlayerControlBarButtonWidth = 40;
+
 class PlayerWidget extends StatefulWidget {
   final PlayerLogic _logic;
   const PlayerWidget(this._logic, {super.key});
@@ -75,12 +78,58 @@ class _PlayerWidgetFactory extends State<PlayerWidget> {
             AspectRatio(
                 aspectRatio: playerController.value.aspectRatio,
                 child: VideoPlayer(playerController)
-            )
+            ),
+            Padding(
+              padding: const EdgeInsets.all(4),
+              child: SizedBox(
+                width: double.infinity,
+                height: _kPlayerControlBarHeight,
+                child: Row(
+                  spacing: 4,
+                  children: [
+                    _playerButton((){}, const Icon(Icons.skip_previous)),
+                    _playerButton((){}, const Icon(Icons.replay)),
+                    _playerButton((){}, const Icon(Icons.play_circle)),
+                    _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
+                    _playerButton((){}, const Icon(Icons.skip_next)),
+                    const Spacer(),
+                    _playerButton((){}, const Icon(Icons.repeat_one)),
+                    _playerSpeedButton(),
+                  ]
+                ),
+              ),
+            ),
           ]
       ),
     );
   }
 
+  Widget _playerSpeedButton() {
+    return FilledButton.tonal(
+      onPressed: (){},
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromWidth(_kPlayerControlBarButtonWidth),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+        ),
+      ),
+      child: const Text('2.25x', style: TextStyle(
+        fontWeight: FontWeight.bold,
+      ),),
+    );
+  }
+
+  Widget _playerButton(void Function() onPressed, Widget icon) {
+    return SizedBox(
+      width: _kPlayerControlBarButtonWidth,
+      child: IconButton.filledTonal(
+        onPressed: onPressed,
+        icon: icon,
+        padding: EdgeInsets.zero,
+      ),
+    );
+  }
   void _updateState(PlayerState newState) {
     setState(() {
       _state = newState;
