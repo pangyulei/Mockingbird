@@ -10,20 +10,20 @@ class PlayerNavLogic implements PlayerNavInterfaceUIEvents {
   @override
   Route<dynamic>? playerNavOnGenerateRoute(RouteSettings settings) {
     if (settings.name != null) {
-      return _buildWidgetByURLStr(settings.name!);
+      return _widgetByURLStr(settings.name!);
     } else {
       return null;
     }
   }
 
-  Route<dynamic> _buildWidgetByURLStr(String urlStr) {
+  Route<dynamic> _widgetByURLStr(String urlStr) {
     return MaterialPageRoute(
       builder: (context) {
         final uri = Uri.parse(urlStr);
         final segments = uri.pathSegments;
         if (segments.length == 1 &&
             segments.first == PlayerNavRoute.player) {
-          return const PlayerWidget(PlayerLogic());
+          return PlayerWidget(PlayerLogic());
         } else {
           throw Exception('$urlStr is not defined');
         }
@@ -38,6 +38,6 @@ class PlayerNavLogic implements PlayerNavInterfaceUIEvents {
   ) {
     return [
       PlayerNavRoute.urlStrForPlayer(),
-    ].map((urlStr) => _buildWidgetByURLStr(urlStr)).toList();
+    ].map((urlStr) => _widgetByURLStr(urlStr)).toList();
   }
 }

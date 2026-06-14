@@ -50,17 +50,17 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _appBar(),
       body: Stack(
         children: [
-          _buildGridWidget(),
-          if (_state.showLoading) _buildLoadingWidget(),
+          _gridWidget(),
+          if (_state.showLoading) _loadingWidget(),
         ],
       ),
     );
   }
 
-  AppBar _buildAppBar() {
+  AppBar _appBar() {
     return AppBar(
       title: _state.isSelectionMode
           ? Text('${_state.selectedPlaylistIds.length} selected')
@@ -163,11 +163,11 @@ class _PlaylistsGridWidgetFactory extends State<PlaylistsGridWidget> {
     }
   }
 
-  Widget _buildLoadingWidget() {
+  Widget _loadingWidget() {
     return const Center(child: CircularProgressIndicator());
   }
 
-  Widget _buildGridWidget() {
+  Widget _gridWidget() {
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: _state.playlists.length,

@@ -22,9 +22,4 @@ class PlaylistsGridCardLogic implements PlaylistsGridCardInterfaceUIEvents {
       PlaylistsNavRoute.urlStrForPlaylist(playlist.id),
     );
   }
-
-  @override
-  PlaylistsGridCardState playlistsGridCardInitState(Playlist playlist) {
-    return PlaylistsGridCardState(playlist: playlist);
-  }
 }

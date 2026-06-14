@@ -13,13 +13,13 @@ class PlaylistsNavLogic implements PlaylistsNavInterfaceUIEvents {
   @override
   Route<dynamic>? playlistsNavOnGenerateRoute(RouteSettings settings) {
     if (settings.name != null) {
-      return _buildWidgetByURLStr(settings.name!);
+      return _widgetByURLStr(settings.name!);
     } else {
       return null;
     }
   }
 
-  Route<dynamic> _buildWidgetByURLStr(String urlStr) {
+  Route<dynamic> _widgetByURLStr(String urlStr) {
     /*
     /playlists           -> playlist list page
     /playlists/42        -> playlist songs
@@ -62,6 +62,6 @@ class PlaylistsNavLogic implements PlaylistsNavInterfaceUIEvents {
       // TabPlaylistRoute.urlStrForPlaylist(
       //   'default',
       // ), //TODO not 100% is default, may edited name
-    ].map((urlStr) => _buildWidgetByURLStr(urlStr)).toList();
+    ].map((urlStr) => _widgetByURLStr(urlStr)).toList();
   }
 }

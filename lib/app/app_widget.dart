@@ -50,12 +50,12 @@ class _AppWidgetFactory extends State<AppWidget> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: _buildTheme(),
-      home: _buildHome(),
+      theme: _theme(),
+      home: _home(),
     );
   }
 
-  Widget _buildHome() {
+  Widget _home() {
     return Scaffold(
       body: IndexedStack(
         index: _state.selectedTab.raw,
@@ -65,11 +65,11 @@ class _AppWidgetFactory extends State<AppWidget> {
           TabSettingsWidget(),
         ],
       ),
-      bottomNavigationBar: _buildTabBar(),
+      bottomNavigationBar: _tabBar(),
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _tabBar() {
     return NavigationBar(
       destinations: const [
         NavigationDestination(
@@ -95,7 +95,7 @@ class _AppWidgetFactory extends State<AppWidget> {
     );
   }
 
-  ThemeData _buildTheme() {
+  ThemeData _theme() {
     return ThemeData(
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(

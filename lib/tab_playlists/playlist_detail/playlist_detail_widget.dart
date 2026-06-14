@@ -22,7 +22,6 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
   void initState() {
     super.initState();
     _updateStateByStream(widget._logic.playlistDetailInitState(widget._playlistId));
-
   }
 
   Future<void> _updateStateByStream(Stream<PlaylistDetailState> stream) async {
@@ -63,7 +62,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          _buildSliverAppBar(context),
+          _sliverAppBar(context),
           if (tracks.isEmpty)
             const SliverFillRemaining(
               child: Center(
@@ -78,7 +77,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildTrackItem(tracks[index]),
+                  (context, index) => _trackItem(tracks[index]),
                   childCount: tracks.length,
                 ),
               ),
@@ -88,7 +87,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context) {
+  Widget _sliverAppBar(BuildContext context) {
     final hasCover = _state.playlist!.coverPathStr != null;
 
     return SliverAppBar(
@@ -152,7 +151,7 @@ class _WidgetFactory extends State<PlaylistDetailWidget> {
     );
   }
 
-  Widget _buildTrackItem(Track track) {
+  Widget _trackItem(Track track) {
     return Card(
       elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

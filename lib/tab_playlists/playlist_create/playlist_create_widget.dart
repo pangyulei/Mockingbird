@@ -70,7 +70,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildCoverWidget(),
+            _coverWidget(),
             const SizedBox(height: 24),
             TextField(
               controller: nameController,
@@ -119,7 +119,7 @@ class _PlaylistCreateWidgetFactory extends State<PlaylistCreateWidget> {
     }
   }
 
-  Widget _buildCoverWidget() {
+  Widget _coverWidget() {
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTapDown: (_) => _updateState(_state.copyWith(isCoverPressed: true)),

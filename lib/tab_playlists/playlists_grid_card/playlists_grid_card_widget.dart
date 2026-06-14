@@ -21,7 +21,7 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
   @override
   void initState() {
     super.initState();
-    _updateState(widget._logic.playlistsGridCardInitState(widget._playlist));
+    _state = PlaylistsGridCardState(playlist: widget._playlist);
   }
 
   void _updateState(PlaylistsGridCardState newState) {
