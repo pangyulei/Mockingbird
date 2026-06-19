@@ -12,29 +12,29 @@ class Media {
   int id;
 
   final albums = ToMany<Album>();
-  final String pathStr; // Full path to the media file
+  final String path; // Full path to the media file
   final String name;
   final subtitle = ToOne<Subtitle>();
 
   //objectbox will use this default constructor
   Media({
-    required this.pathStr,
+    required this.path,
     required this.name,
     this.id = 0,
   });
 
-  MediaType get type => MediaType.fromExtension(p.extension(pathStr));
+  MediaType get type => MediaType.fromExtension(p.extension(path));
 
   Media copyWith({
     int? id,
-    String? pathStr,
+    String? path,
     String? name,
     Subtitle? subtitle,
     List<Album>? albums,
   }) {
     final media = Media(
       id: id ?? this.id,
-      pathStr: pathStr ?? this.pathStr,
+      path: path ?? this.path,
       name: name ?? this.name,
     );
     media.subtitle.target = subtitle ?? this.subtitle.target;

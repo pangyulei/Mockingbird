@@ -6,7 +6,7 @@ class AppState {
 }
 
 enum AppTab {
-  playlists(0),
+  albums(0),
   player(1),
   settings(2);
 
@@ -16,7 +16,7 @@ enum AppTab {
   static AppTab fromRaw(int raw) {
     return AppTab.values.firstWhere(
           (v) => v.raw == raw,
-      orElse: () => AppTab.playlists,
+      orElse: () => AppTab.albums,
     );
   }
 }

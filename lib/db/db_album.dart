@@ -9,30 +9,30 @@ class DBAlbum {
   final Store _store;
   DBAlbum(this._store);
 
-  Future<Album?> create(Album playlist, File? coverFile) async {
-    final trimmedName = playlist.name.trim();
+  Future<Album?> create(Album album, File? cover) async {
+    final trimmedName = album.name.trim();
     if (trimmedName.isEmpty) {
       return null;
     }
     final String? coverPathStr;
-    if (coverFile != null) {
+    if (cover != null) {
       final appDir = await getApplicationDocumentsDirectory();
-      final coversDir = Directory(p.join(appDir.path, 'playlist_covers'));
+      final coversDir = Directory(p.join(appDir.path, 'album_covers'));
 
       if (!await coversDir.exists()) {
         await coversDir.create(recursive: true);
       }
       // Generate a unique filename using timestamp and original extension
       final String fileName =
-          '${DateTime.now().millisecondsSinceEpoch}${p.extension(coverFile.path)}';
-      final savedFile = await coverFile.copy(p.join(coversDir.path, fileName));
+          '${DateTime.now().millisecondsSinceEpoch}${p.extension(cover.path)}';
+      final savedFile = await cover.copy(p.join(coversDir.path, fileName));
       coverPathStr = savedFile.path;
     } else {
       coverPathStr = null;
     }
-    playlist = playlist.copyWith(name: trimmedName, coverPathStr: coverPathStr);
-    playlist = await _store.box<Album>().putAndGetAsync(playlist);
-    return playlist;
+    album = album.copyWith(name: trimmedName, coverPathStr: coverPathStr);
+    album = await _store.box<Album>().putAndGetAsync(album);
+    return album;
   }
 
   Future<List<Album>> getAll() async {
@@ -49,12 +49,12 @@ class DBAlbum {
     return await _store.box<Album>().getAsync(id);
   }
 
-  Future<(Album, Album)> swapSortOrder(Album aPlaylist, Album bPlaylist) async {
-    final aSortOrder = aPlaylist.sortOrder;
-    aPlaylist = aPlaylist.copyWith(sortOrder: bPlaylist.sortOrder);
-    bPlaylist = bPlaylist.copyWith(sortOrder: aSortOrder);
-    await updateMany([aPlaylist, bPlaylist]);
-    return (aPlaylist, bPlaylist);
+  Future<(Album, Album)> swapSortOrder(Album aAlbum, Album bAlbum) async {
+    final aSortOrder = aAlbum.sortOrder;
+    aAlbum = aAlbum.copyWith(sortOrder: bAlbum.sortOrder);
+    bAlbum = bAlbum.copyWith(sortOrder: aSortOrder);
+    await updateMany([aAlbum, bAlbum]);
+    return (aAlbum, bAlbum);
   }
 
   Future<void> update(Album playlist) async {
@@ -78,8 +78,8 @@ class DBAlbum {
     await _store.box<Album>().removeManyAsync(ids);
     // Delete cover files for removed playlists
     final uselessCovers = playlists
-        .where((p) => p.coverPathStr != null)
-        .map((p) => File(p.coverPathStr!));
+        .where((p) => p.cover != null)
+        .map((p) => File(p.cover!));
     //map is lazy call, it would not execute until someone use it.
     //at this situation is Future.wait will trigger, so every delete() parallel started same time
     final removeCovers = uselessCovers.map((cover) async {

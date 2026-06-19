@@ -2,29 +2,29 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mockingbird/model/album.dart';
-import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_interface_ui_events.dart';
-import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_state.dart';
+import 'album_card_interface_ui_events.dart';
+import 'album_card_state.dart';
 
-class PlaylistsGridCardWidget extends StatefulWidget {
-  final Album _playlist;
-  final PlaylistsGridCardInterfaceUIEvents _logic;
-  const PlaylistsGridCardWidget(this._playlist, this._logic, {super.key});
+class AlbumCardWidget extends StatefulWidget {
+  final Album _album;
+  final AlbumCardInterfaceUIEvents _logic;
+  const AlbumCardWidget(this._album, this._logic, {super.key});
 
   @override
-  State<PlaylistsGridCardWidget> createState() =>
-      _PlaylistsGridCardWidgetFactory();
+  State<AlbumCardWidget> createState() =>
+      _WidgetFactory();
 }
 
-class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
-  late PlaylistsGridCardState _state;
+class _WidgetFactory extends State<AlbumCardWidget> {
+  late AlbumCardState _state;
 
   @override
   void initState() {
     super.initState();
-    _state = PlaylistsGridCardState(playlist: widget._playlist);
+    _state = AlbumCardState(album: widget._album);
   }
 
-  void _updateState(PlaylistsGridCardState newState) {
+  void _updateState(AlbumCardState newState) {
     setState(() {
       _state = newState;
     });
@@ -34,16 +34,16 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => _updateState(
-        widget._logic.playlistsGridCardPressedStateChanged(_state, true),
+        widget._logic.albumCardPressedStateChanged(_state, true),
       ),
       onTapUp: (_) {
         _updateState(
-          widget._logic.playlistsGridCardPressedStateChanged(_state, false),
+          widget._logic.albumCardPressedStateChanged(_state, false),
         );
-        widget._logic.playlistsGridCardOnTap(context, widget._playlist);
+        widget._logic.albumCardOnTap(context, widget._album);
       },
       onTapCancel: () => _updateState(
-        widget._logic.playlistsGridCardPressedStateChanged(_state, false),
+        widget._logic.albumCardPressedStateChanged(_state, false),
       ),
       child: AnimatedScale(
         scale: _state.isPressed ? 0.96 : 1.0,
@@ -67,17 +67,17 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
                   borderRadius: BorderRadius.circular(20),
                   child: Stack(
                     children: [
-                      if (widget._playlist.coverPathStr != null)
+                      if (widget._album.cover != null)
                         Positioned.fill(
                           child: Opacity(
                             opacity: _state.isPressed ? 0.7 : 1.0,
                             child: Image.file(
-                              File(widget._playlist.coverPathStr!),
+                              File(widget._album.cover!),
                               fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                      if (widget._playlist.coverPathStr == null)
+                      if (widget._album.cover == null)
                         Center(
                           child: Icon(
                             Icons.video_library_rounded,
@@ -97,7 +97,7 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget._playlist.name,
+                    widget._album.name,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: const Color(0xFF191C1E),
                       fontWeight: FontWeight.bold,
@@ -107,7 +107,7 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${_state.playlist.medias.length} Medias',
+                    '${_state.album.medias.length} Medias',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: const Color(0xFF42474E),
                       fontWeight: FontWeight.w500,

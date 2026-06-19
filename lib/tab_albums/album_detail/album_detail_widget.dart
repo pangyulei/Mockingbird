@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mockingbird/model/media.dart';
-import 'package:mockingbird/tab_playlists/playlist_detail/media_card_widget.dart';
 
 import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
+import 'media_card_widget.dart';
 
 class AlbumDetailWidget extends StatefulWidget {
   final AlbumDetailInterfaceUIEvents _logic;

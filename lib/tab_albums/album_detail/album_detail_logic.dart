@@ -6,13 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_media.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/tab_playlists/playlist_detail/album_detail_interface_ui_events.dart';
-import 'package:mockingbird/tab_playlists/playlist_detail/media_card_state.dart';
 import '../../model/album.dart';
 import '../../model/media.dart';
 import '../../tool/global_broadcaster.dart';
+import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
 import 'package:path/path.dart' as p;
+
+import 'media_card_state.dart';
 
 class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
   Album? _album;
@@ -36,7 +37,7 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
     return AlbumDetailState(
       showLoading: false,
       name: album.name,
-      cover: album.coverPathStr == null ? null : File(album.coverPathStr!),
+      cover: album.cover == null ? null : File(album.cover!),
       mediaStates: album.medias.map((m) => _mediaCardState(m)).toList(),
     );
   }

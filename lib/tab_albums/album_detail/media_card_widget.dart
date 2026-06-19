@@ -2,7 +2,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlists/playlist_detail/media_card_state.dart';
+import 'media_card_state.dart';
 
 class MediaCardWidget extends StatelessWidget {
   final MediaCardState _state;

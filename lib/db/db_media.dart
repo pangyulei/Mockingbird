@@ -46,7 +46,7 @@ class DBMedia {
       int i = e.key;
       final dirMedia = e.value;
       final mediaName = p.basenameWithoutExtension(readFiles[i].media.path);
-      final media = Media(pathStr: dirMedia.path, name: mediaName);
+      final media = Media(path: dirMedia.path, name: mediaName);
       media.albums.add(album);
       media.subtitle.target = subtitlesWithoutId[i];
       return media;

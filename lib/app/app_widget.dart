@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_interface_ui_events.dart';
 import 'package:mockingbird/app/app_state.dart';
+import 'package:mockingbird/tab_albums/albums_nav/albums_nav_widget.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
-import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_logic.dart';
-import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_widget.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
+import '../tab_albums/albums_nav/albums_nav_logic.dart';
 import '../tool/global_broadcaster.dart';
 
 class AppWidget extends StatefulWidget {
@@ -21,7 +21,7 @@ class AppWidget extends StatefulWidget {
 }
 
 class _AppWidgetFactory extends State<AppWidget> {
-  AppState _state = const AppState(AppTab.playlists);
+  AppState _state = const AppState(AppTab.albums);
   final List<StreamSubscription> _subs = [];
 
   @override
@@ -60,7 +60,7 @@ class _AppWidgetFactory extends State<AppWidget> {
       body: IndexedStack(
         index: _state.selectedTab.raw,
         children: const [
-          PlaylistsNavWidget(PlaylistsNavLogic()),
+          AlbumsNavWidget(AlbumsNavLogic()),
           PlayerNavWidget(PlayerNavLogic()),
           TabSettingsWidget(),
         ],
@@ -73,9 +73,9 @@ class _AppWidgetFactory extends State<AppWidget> {
     return NavigationBar(
       destinations: const [
         NavigationDestination(
-          icon: Icon(Icons.playlist_play_outlined),
-          selectedIcon: Icon(Icons.playlist_play),
-          label: 'Playlists',
+          icon: Icon(Icons.album_outlined),
+          selectedIcon: Icon(Icons.album),
+          label: 'Albums',
         ),
         NavigationDestination(
           icon: Icon(Icons.play_circle_outline),

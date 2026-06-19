@@ -7,7 +7,7 @@ class Album {
   int id;
 
   final String name;
-  final String? coverPathStr;
+  final String? cover;
   
   @Backlink('albums')
   final medias = ToMany<Media>();
@@ -19,7 +19,7 @@ class Album {
     required this.name,
     required this.sortOrder,
     this.id = 0,
-    this.coverPathStr,
+    this.cover,
   });
 
   Album copyWith({
@@ -33,7 +33,7 @@ class Album {
       id: id ?? this.id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
-      coverPathStr: coverPathStr ?? this.coverPathStr,
+      cover: coverPathStr ?? this.cover,
     );
     if (medias != null) {
       p.medias.addAll(medias);

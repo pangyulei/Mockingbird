@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:mockingbird/tab_playlists/playlist_detail/album_detail_state.dart';
-
 import '../../model/media.dart';
+import 'album_detail_state.dart';
 
 abstract interface class AlbumDetailInterfaceUIEvents {
   Stream<AlbumDetailState> albumDetailInitState();
