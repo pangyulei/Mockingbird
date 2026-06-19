@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:mockingbird/db/db_playlist.dart';
-import 'package:mockingbird/db/objectbox.dart';
-import 'package:mockingbird/models/playlist.dart';
+import 'package:mockingbird/db/db_album.dart';
+import 'package:mockingbird/db/db_objectbox.dart';
+import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_interface_ui_events.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_state.dart';
 
@@ -13,15 +13,15 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
   @override
   Stream<PlaylistsGridState> playlistsGridInitState() async* {
     yield const PlaylistsGridState(showLoading: true);
-    final playlists = await DBPlaylist(ObjectBox.instance.store).getAll();
+    final playlists = await DBAlbum(DBObjectBox.instance.store).getAll();
     yield PlaylistsGridState(playlists: playlists, showLoading: false);
   }
 
   @override
   bool dragTargetWillAccept(
     PlaylistsGridState state,
-    Playlist targetPlaylist,
-    Playlist draggedPlaylist,
+    Album targetPlaylist,
+    Album draggedPlaylist,
   ) {
     // Don't accept if dragging onto itself
     return draggedPlaylist != targetPlaylist;
@@ -30,8 +30,8 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
   @override
   Stream<PlaylistsGridState> playlistsGridDragTargetAccepted(
     PlaylistsGridState state,
-    Playlist targetPlaylist,
-    Playlist draggedPlaylist,
+    Album targetPlaylist,
+    Album draggedPlaylist,
   ) async* {
     yield state.copyWith(showLoading: true);
     int fromIndex = state.playlists.indexOf(draggedPlaylist);
@@ -44,8 +44,8 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
     //swap db sortorder first, then swap their place in List
     var aPlaylist = reindexedPlaylists[fromIndex];
     var bPlaylist = reindexedPlaylists[toIndex];
-    (aPlaylist, bPlaylist) = await DBPlaylist(
-      ObjectBox.instance.store,
+    (aPlaylist, bPlaylist) = await DBAlbum(
+      DBObjectBox.instance.store,
     ).swapSortOrder(aPlaylist, bPlaylist);
     reindexedPlaylists[fromIndex] = bPlaylist;
     reindexedPlaylists[toIndex] = aPlaylist;
@@ -61,8 +61,8 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
       yield state;
     } else {
       yield state.copyWith(showLoading: true);
-      final newPlaylist = await DBPlaylist(ObjectBox.instance.store).create(
-        Playlist(
+      final newPlaylist = await DBAlbum(DBObjectBox.instance.store).create(
+        Album(
           name: newPlaylistInfo.name,
           sortOrder: state.playlists.length,
         ),
@@ -128,7 +128,7 @@ class PlaylistsGridLogic implements PlaylistsGridInterfaceUIEvents {
         .toList();
 
     // Remove from database
-    await DBPlaylist(ObjectBox.instance.store).removeMany(playlistsToRemove);
+    await DBAlbum(DBObjectBox.instance.store).removeMany(playlistsToRemove);
 
     // Update state with remaining playlists
     final remainingPlaylists = state.playlists

@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/global_broadcaster/global_broadcaster.dart';
-import 'package:mockingbird/global_broadcaster/global_events.dart';
 import 'package:mockingbird/tab_player/player_sentence/player_sentence_widget.dart';
 import 'package:video_player/video_player.dart';
+import '../../tool/global_broadcaster.dart';
 import 'player_state.dart';
 import 'player_logic.dart';
 
@@ -21,14 +20,14 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _PlayerWidgetFactory extends State<PlayerWidget> {
-  PlayerState _state = const PlayerState(showLoading: false);
-  final List<StreamSubscription> _subs = [];
+  PlayerState _state = const PlayerState();
+  final _subs = <StreamSubscription>[];
 
   @override
   void initState() {
     super.initState();
-    _subs.add(GlobalBroadcaster.instance.on<GlobalEventPlayTrack>((event) {
-      _updateStateByStream(widget._logic.playerPlayTrack(_state, event.track));
+    _subs.add(GlobalBroadcaster.instance.on<GlobalEventPlayMedia>((event) {
+      _updateStateByStream(widget._logic.playerPlayMedia(_state, event.media));
     }));
   }
 
@@ -65,8 +64,8 @@ class _PlayerWidgetFactory extends State<PlayerWidget> {
 
   Widget _playerEmpty() {
     return Scaffold(
-      appBar: AppBar(title: const Text('no track to play')),
-      body: const Center(child: Text('go select a track'),),
+      appBar: AppBar(title: const Text('no media to play')),
+      body: const Center(child: Text('go select a media'),),
     );
   }
 
@@ -91,7 +90,7 @@ class _PlayerWidgetFactory extends State<PlayerWidget> {
           final sentence = _state.sentences[index];
           return PlayerSentenceWidget(
             sentence: sentence,
-            isSelected: _state.currentSentenceIndex == index,
+            isSelected: _state.playingSentenceIndex == index,
             onTap: () {
               _state.playerController?.seekTo(sentence.start);
               _state.playerController?.play();

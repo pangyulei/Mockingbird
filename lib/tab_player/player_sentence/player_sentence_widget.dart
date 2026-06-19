@@ -1,9 +1,10 @@
 
 import 'package:flutter/material.dart';
-import '../../models/subtitle_sentence.dart';
+
+import '../../model/sentence.dart';
 
 class PlayerSentenceWidget extends StatelessWidget {
-  final SubtitleSentence sentence;
+  final Sentence sentence;
   final bool isSelected;
   final VoidCallback? onTap;
 
@@ -29,7 +30,7 @@ class PlayerSentenceWidget extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected 
                   ? colorScheme.primary 
-                  : colorScheme.surfaceVariant.withOpacity(0.5),
+                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(8),
               border: isSelected 
                   ? Border.all(color: colorScheme.primary, width: 2)
@@ -43,7 +44,7 @@ class PlayerSentenceWidget extends StatelessWidget {
                   Text(
                     sentence.text,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: isSelected ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                      color: _state.isPlaying ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),

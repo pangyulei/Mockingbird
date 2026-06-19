@@ -1,44 +1,44 @@
 import 'package:objectbox/objectbox.dart';
-import 'track.dart';
+import 'media.dart';
 
 @Entity()
-class Playlist {
+class Album {
   @Id()
   int id;
 
   final String name;
   final String? coverPathStr;
   
-  @Backlink('playlist')
-  final tracks = ToMany<Track>();
+  @Backlink('albums')
+  final medias = ToMany<Media>();
 
   @Index()
   final int sortOrder;
 
-  Playlist({
+  Album({
     required this.name,
     required this.sortOrder,
     this.id = 0,
     this.coverPathStr,
   });
 
-  Playlist copyWith({
+  Album copyWith({
     int? id,
     String? name,
     String? coverPathStr,
     int? sortOrder,
-    Iterable<Track>? tracks,
+    Iterable<Media>? medias,
   }) {
-    final p = Playlist(
+    final p = Album(
       id: id ?? this.id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
       coverPathStr: coverPathStr ?? this.coverPathStr,
     );
-    if (tracks != null) {
-      p.tracks.addAll(tracks);
+    if (medias != null) {
+      p.medias.addAll(medias);
     } else {
-      p.tracks.addAll(this.tracks);
+      p.medias.addAll(this.medias);
     }
     return p;
   }

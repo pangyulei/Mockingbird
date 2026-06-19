@@ -1,8 +1,16 @@
 
 import 'dart:async';
 
-import 'global_events.dart';
+import '../model/media.dart';
 
+abstract class GlobalEvent {
+  const GlobalEvent();
+}
+
+class GlobalEventPlayMedia extends GlobalEvent {
+  final Media media;
+  const GlobalEventPlayMedia(this.media);
+}
 
 class GlobalBroadcaster {
   static final instance = GlobalBroadcaster._();

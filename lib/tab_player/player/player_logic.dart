@@ -1,42 +1,52 @@
 import 'dart:io';
 
-import 'package:mockingbird/models/track.dart';
+import 'package:mockingbird/model/media.dart';
+import 'package:mockingbird/model/sentence.dart';
+import 'package:mockingbird/tab_player/player_sentence/player_sentence_state.dart';
 import 'package:video_player/video_player.dart';
 import 'player_interface_ui_events.dart';
 import 'player_state.dart';
-import 'subtitle_parser.dart';
-import '../../models/subtitle_sentence.dart';
+import '../../tool/subtitle_parser.dart';
+import '../../models/subtitle.dart';
 
 class PlayerLogic implements PlayerInterfaceUIEvents {
-  Track? _track;
-  PlayerLogic({this._track});
+  Media? _media;
+  PlayerLogic({this._media});
+
+
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final milliseconds = (d.inMilliseconds.remainder(1000) ~/ 100).toString();
+    return '$minutes:$seconds.$milliseconds';
+  }
 
   @override
-  Stream<PlayerState> playerPlayTrack(PlayerState state, Track track) async* {
-    _track = track;
+  Stream<PlayerState> playerPlayMedia(PlayerState state, Media media) async* {
+    _media = media;
     state = state.copyWith(
-      title: track.name,
+      title: media.name,
       showLoading: true,
-      sentences: [],
-      currentSentenceIndex: -1,
+      sentenceStates: media.subtitle.target?.sentences.asMap().entries.map((e) {
+        int i = e.key;
+        Sentence s = e.value;
+        return PlayerSentenceState(
+            isPlaying: i == 0,
+            text: s.text,
+            period: '${_formatDuration(s.start)} - ${_formatDuration(s.end)}',
+        );
+      }).toList(),
+      playingSentenceIndex: media.subtitle.target == null ? null : 0,
     );
     yield state;
 
     //load media
     await state.playerController?.dispose();
-    final playerController = VideoPlayerController.file(File(track.pathStr));
+    final playerController = VideoPlayerController.file(File(media.pathStr));
     await playerController.initialize();
     state = state.copyWith(playerController: playerController);
     yield state;
 
-    //load subtitle
-    List<SubtitleSentence> sentences = [];
-    if (_track!.subPathStr != null) {
-      sentences = await SubtitleParser.parse(_track!.subPathStr!);
-    }
-    
-    yield state.copyWith(showLoading: false, sentences: sentences);
-    
     // Auto play
     await playerController.play();
   }
@@ -49,7 +59,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
       (s) => position >= s.start && position <= s.end,
     );
 
-    if (index != -1 && index != state.currentSentenceIndex) {
+    if (index != -1 && index != state.playingSentenceIndex) {
       return state.copyWith(currentSentenceIndex: index);
     }
     

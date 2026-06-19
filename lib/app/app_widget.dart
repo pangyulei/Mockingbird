@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_interface_ui_events.dart';
 import 'package:mockingbird/app/app_state.dart';
-import 'package:mockingbird/global_broadcaster/global_broadcaster.dart';
-import 'package:mockingbird/global_broadcaster/global_events.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
 import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_logic.dart';
 import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_widget.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
+
+import '../tool/global_broadcaster.dart';
 
 class AppWidget extends StatefulWidget {
   final AppInterfaceUIEvents _logic;
@@ -27,7 +27,7 @@ class _AppWidgetFactory extends State<AppWidget> {
   @override
   void initState() {
     super.initState();
-    _subs.add(GlobalBroadcaster.instance.on<GlobalEventPlayTrack>((event) {
+    _subs.add(GlobalBroadcaster.instance.on<GlobalEventPlayMedia>((event) {
       _updateState(widget._logic.appSwitchToTab(_state, .player));
     }));
   }

@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mockingbird/models/playlist.dart';
+import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_interface_ui_events.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid_card/playlists_grid_card_state.dart';
 
 class PlaylistsGridCardWidget extends StatefulWidget {
-  final Playlist _playlist;
+  final Album _playlist;
   final PlaylistsGridCardInterfaceUIEvents _logic;
   const PlaylistsGridCardWidget(this._playlist, this._logic, {super.key});
 
@@ -107,7 +107,7 @@ class _PlaylistsGridCardWidgetFactory extends State<PlaylistsGridCardWidget> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${_state.playlist.tracks.length} Tracks',
+                    '${_state.playlist.medias.length} Medias',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: const Color(0xFF42474E),
                       fontWeight: FontWeight.w500,

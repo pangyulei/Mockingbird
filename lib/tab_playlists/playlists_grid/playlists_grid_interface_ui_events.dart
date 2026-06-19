@@ -1,19 +1,19 @@
 import 'dart:io';
 
-import 'package:mockingbird/models/playlist.dart';
+import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_state.dart';
 
 abstract interface class PlaylistsGridInterfaceUIEvents {
   Stream<PlaylistsGridState> playlistsGridInitState();
   bool dragTargetWillAccept(
     PlaylistsGridState state,
-    Playlist targetPlaylist,
-    Playlist draggedPlaylist,
+    Album targetPlaylist,
+    Album draggedPlaylist,
   );
   Stream<PlaylistsGridState> playlistsGridDragTargetAccepted(
     PlaylistsGridState state,
-    Playlist targetPlaylist,
-    Playlist draggedPlaylist,
+    Album targetPlaylist,
+    Album draggedPlaylist,
   );
   Stream<PlaylistsGridState> playlistsGridPoppedCreateWidget(
     PlaylistsGridState state,

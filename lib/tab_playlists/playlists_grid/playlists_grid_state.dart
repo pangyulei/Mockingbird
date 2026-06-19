@@ -1,7 +1,7 @@
-import 'package:mockingbird/models/playlist.dart';
+import 'package:mockingbird/model/album.dart';
 
 class PlaylistsGridState {
-  final List<Playlist> playlists;
+  final List<Album> playlists;
   final bool showLoading;
   final bool isAddButtonPressed;
   final bool isSelectionMode;
@@ -16,7 +16,7 @@ class PlaylistsGridState {
   });
 
   PlaylistsGridState copyWith({
-    List<Playlist>? playlists,
+    List<Album>? playlists,
     bool? showLoading,
     bool? isAddButtonPressed,
     bool? isSelectionMode,

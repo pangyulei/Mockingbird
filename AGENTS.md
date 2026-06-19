@@ -29,16 +29,16 @@ Widget (UI) → Logic (implements InterfaceUIEvents) → State (immutable)
 
 ### Database Layer (ObjectBox)
 - **Setup**: Singleton `ObjectBox` class (in `lib/db/objectbox.dart`) manages the Store.
-- **Repositories**: `DBPlaylist` and `DBTrack` handle data persistence.
+- **Repositories**: `DBPlaylist` and `DBMedia` handle data persistence.
 - **Relationships**:
-  - `Playlist` has a `ToMany<Track>` relationship named `tracks`.
-  - `Track` has a `ToOne<Playlist>` relationship named `playlist`.
-  - Use `@Backlink('playlist')` on `Playlist.tracks` for automatic synchronization.
+  - `Playlist` has a `ToMany<Media>` relationship named `medias`.
+  - `Media` has a `ToOne<Playlist>` relationship named `playlist`.
+  - Use `@Backlink('playlist')` on `Playlist.medias` for automatic synchronization.
 - **Constructor Rule**: Entity constructors should favor optional relationship parameters (`Playlist? playlist`) to allow ObjectBox to instantiate them before relationships are fully resolved.
 
 ### Navigation and Tab Management
 - **Main Shell**: `AppWidget` manages the bottom navigation using an `IndexedStack`.
-- **Tab Switching**: Handled by dispatching a Flutter `Notification` (e.g., `NotificationPlayTrack`) which is caught by a `NotificationListener` in `AppWidget`.
+- **Tab Switching**: Handled by dispatching a Flutter `Notification` (e.g., `NotificationPlayMedia`) which is caught by a `NotificationListener` in `AppWidget`.
 - **Nested Navigation**: Each tab uses its own `Navigator` (e.g., `PlaylistsNavWidget`, `PlayerNavWidget`).
 
 ## File Structure Conventions
@@ -48,8 +48,8 @@ Widget (UI) → Logic (implements InterfaceUIEvents) → State (immutable)
 lib/
 ├── app/                    # Root app components (Shell, Logic, State)
 ├── db/                     # Database repositories and ObjectBox setup
-├── models/                 # ObjectBox Entities (Playlist, Track)
-├── notifications/          # Global Flutter Notifications (e.g., NotificationPlayTrack)
+├── models/                 # ObjectBox Entities (Playlist, Media)
+├── notifications/          # Global Flutter Notifications (e.g., NotificationPlayMedia)
 ├── tab_playlists/          # Playlists Feature (Grid, Detail, Nav)
 │   ├── playlists_nav/      # Tab-specific Navigator
 │   ├── playlists_grid/     # Main grid view
@@ -89,7 +89,7 @@ class FeatureLogic implements FeatureInterfaceUIEvents {
 ```
 
 ### Notification Pattern for Tab Communication
-To trigger cross-tab actions (like playing a track and switching to the player):
+To trigger cross-tab actions (like playing a media and switching to the player):
 1. **Logic** pushes a Notification object into a broadcast stream.
 2. **Widget** listens to the stream and calls `notification.dispatch(context)`.
 3. **AppWidget** catches it with `NotificationListener` and updates the global `AppState`.

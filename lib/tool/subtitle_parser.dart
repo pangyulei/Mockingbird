@@ -1,22 +1,26 @@
 import 'dart:io';
-import '../../models/subtitle_sentence.dart';
+import 'package:flutter/widgets.dart';
+import 'package:mockingbird/model/subtitle.dart';
+import 'package:path/path.dart' as p;
+import '../model/sentence.dart';
 
 class SubtitleParser {
-  static Future<List<SubtitleSentence>> parse(String path) async {
-    final file = File(path);
-    if (!await file.exists()) return [];
-
+  static Future<Subtitle> parsePath(String pathStr) async {
+    final file = File(pathStr);
+    return await parseFile(file);
+  }
+  static Future<Subtitle> parseFile(File file) async {
     final content = await file.readAsString();
-    if (path.toLowerCase().endsWith('.srt')) {
+    if (file.path.endsWith('.srt')) {
       return _parseSrt(content);
-    } else if (path.toLowerCase().endsWith('.vtt')) {
+    } else if (file.path.endsWith('.vtt')) {
       return _parseVtt(content);
     }
-    return [];
+    throw ArgumentError('We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}');
   }
 
-  static List<SubtitleSentence> _parseSrt(String content) {
-    final sentences = <SubtitleSentence>[];
+  static Subtitle _parseSrt(String content) {
+    final sentences = <Sentence>[];
     // Split by double newline (supporting both \n and \r\n)
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
@@ -48,15 +52,20 @@ class SubtitleParser {
         final text = lines.sublist(textStartIndex).join('\n').trim();
 
         if (text.isNotEmpty) {
-          sentences.add(SubtitleSentence(start: start, end: end, text: text));
+          sentences.add(Sentence(
+            text: text,
+            startMilliseconds: start.inMilliseconds,
+            endMilliseconds: end.inMilliseconds,
+          ));
         }
       } catch (e) {
         // Skip malformed blocks
-        print('Error parsing SRT block: $e');
+        debugPrint('Error parsing SRT block: $e');
       }
     }
-
-    return sentences;
+    final subtitle = Subtitle();
+    subtitle.sentences.addAll(sentences);
+    return subtitle;
   }
 
   static Duration _parseSrtTime(String timeStr) {
@@ -76,8 +85,8 @@ class SubtitleParser {
     );
   }
 
-  static List<SubtitleSentence> _parseVtt(String content) {
-    final sentences = <SubtitleSentence>[];
+  static Subtitle _parseVtt(String content) {
+    final sentences = <Sentence>[];
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
     for (var block in blocks) {
@@ -108,13 +117,21 @@ class SubtitleParser {
         final text = lines.sublist(textStartLine).join('\n').trim();
 
         if (text.isNotEmpty) {
-          sentences.add(SubtitleSentence(start: start, end: end, text: text));
+          sentences.add(
+              Sentence(
+                startMilliseconds: start.inMilliseconds,
+                endMilliseconds: end.inMilliseconds,
+                text: text
+              )
+          );
         }
       } catch (e) {
         print('Error parsing VTT block: $e');
       }
     }
-    return sentences;
+    final subtitle = Subtitle();
+    subtitle.sentences.addAll(sentences);
+    return subtitle;
   }
 
   static Duration _parseVttTime(String timeStr) {

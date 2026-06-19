@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_logic.dart';
-import 'package:mockingbird/tab_playlists/playlist_detail/playlist_detail_widget.dart';
+import 'package:mockingbird/tab_playlists/playlist_detail/album_detail_logic.dart';
+import 'package:mockingbird/tab_playlists/playlist_detail/album_detail_widget.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_logic.dart';
 import 'package:mockingbird/tab_playlists/playlists_grid/playlists_grid_widget.dart';
 import 'package:mockingbird/tab_playlists/playlists_nav/playlists_nav_interface_ui_events.dart';
@@ -36,11 +36,10 @@ class PlaylistsNavLogic implements PlaylistsNavInterfaceUIEvents {
         } else if (segments.length == 2 &&
             segments.first == PlaylistsNavRoute.playlists) {
           final playlistIdStr = segments.last;
-          final playlistId = int.tryParse(playlistIdStr);
-          if (playlistId != null) {
-            return PlaylistDetailWidget(
-              playlistId,
-              const PlaylistDetailLogic(),
+          final albumId = int.tryParse(playlistIdStr);
+          if (albumId != null) {
+            return AlbumDetailWidget(
+              AlbumDetailLogic(albumId: albumId),
             );
           } else {
             throw Exception('Invalid playlist ID: $playlistIdStr');
