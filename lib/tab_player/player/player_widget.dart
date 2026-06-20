@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_interface_ui_events.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_widget.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 import '../../tool/global_broadcaster.dart';
 import 'player_state.dart';
@@ -37,7 +38,7 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
     for (final sub in _subs) {
       sub.cancel();
     }
-    _state.playerController?.dispose();
+    _state.videoController?.dispose();
     super.dispose();
   }
 
@@ -64,6 +65,7 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
   }
 
   Widget _playerEmpty() {
+    //TODO make it a real empty shit
     return Scaffold(
       appBar: AppBar(title: const Text('no media to play')),
       body: const Center(child: Text('go select a media'),),
@@ -71,11 +73,13 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
   }
 
   Widget _playerPage() {
+    assert(!_state.showEmpty, 'showEmpty should be false');
+    assert(_state.videoController != null, 'videoController should not be null');
     return Column(
         children: [
           AspectRatio(
-              aspectRatio: _state.playerController!.value.aspectRatio,
-              child: VideoPlayer(_state.playerController!)
+              aspectRatio: _state.videoController!.value.aspectRatio,
+              child: VideoPlayer(_state.videoController!)
           ),
           _playerControlBar(),
           _sentencesList(),
@@ -85,8 +89,9 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
 
   Widget _sentencesList() {
     return Expanded(
-      child: ListView.builder(
+      child: ScrollablePositionedList.builder(
         itemCount: _state.sentenceStates.length,
+        itemScrollController: widget._logic.playerScrollController,
         itemBuilder: (context, index) {
           final sentenceState = _state.sentenceStates[index];
           return SentenceCardWidget(
@@ -167,18 +172,18 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
   }
 
   void _updateState(PlayerState newState) {
-    if (newState.playerController != _state.playerController) {
-      newState.playerController?.addListener(() => _onPlayerTimelinePositionChanged(newState.playerController!));
+    if (newState.videoController != _state.videoController) {
+      newState.videoController?.addListener(() => _onPlayerTimelinePositionChanged(newState.videoController!));
     }
     setState(() {
       _state = newState;
     });
   }
 
-  void _onPlayerTimelinePositionChanged(VideoPlayerController player) {
+  void _onPlayerTimelinePositionChanged(VideoPlayerController videoController) {
     //TODO here should judge by preference
     //auto scroll subtitle sentences
-    _updateState(widget._logic.playerPositionChanged(_state, player.value.position));
+    _updateState(widget._logic.playerPositionChanged(_state, videoController.value.position));
   }
 
   @override

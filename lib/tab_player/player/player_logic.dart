@@ -4,11 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:mockingbird/model/media.dart';
 import 'package:mockingbird/model/sentence.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
+import 'package:scrollable_positioned_list/src/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 import 'player_interface_ui_events.dart';
 import 'player_state.dart';
 
 class PlayerLogic implements PlayerInterfaceUIEvents {
+  final _scrollController = ItemScrollController();
   Media? _media;
   PlayerLogic({this._media});
 
@@ -42,16 +44,17 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
 
     //load media
     if (_media?.path != media.path) {
-      await state.playerController?.dispose();
-      final playerController = VideoPlayerController.file(File(media.path));
-      await playerController.initialize();
-      state = state.copyWith(playerController: playerController);
+      await state.videoController?.dispose();
+      final videoController = VideoPlayerController.file(File(media.path));
+      await videoController.initialize();
+      state = state.copyWith(videoController: videoController);
+
     }
     yield state.copyWith(showLoading: false);
 
     // Auto play
     _media = media;
-    await state.playerController?.play();
+    await state.videoController?.play();
   }
 
   @override
@@ -83,6 +86,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
     }
     if (newPlayingIndex != state.playingSentenceIndex) {
       debugPrint('newPlayingIndex: $newPlayingIndex');
+      _scrollController.jumpTo(index: newPlayingIndex,alignment: 0.3);
       return state.copyWith(playingSentenceIndex: newPlayingIndex);
     } else {
       return state;
@@ -93,17 +97,23 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
     final start = s.start;
     final end = s.end;
     final matched = start <= position && position <= end;
-    if (matched) {
-      debugPrint('start: $start, end: $end, position: $position');
-    }
     return matched;
   }
 
   @override
   PlayerState playerPlaySentence(PlayerState state, int index) {
-    final sentence = _media?.subtitle.target?.sentences[index];
-    state.playerController?.seekTo(sentence!.start);
-    state.playerController?.play();
+    assert(state.videoController!=null);
+    assert(_media != null);
+    assert(_media!.subtitle.target!=null);
+    assert(_media!.subtitle.target!.sentences.isNotEmpty);
+
+    final sentence = _media!.subtitle.target!.sentences[index];
+    state.videoController!.seekTo(sentence.start);
+    state.videoController!.play();
     return state;
   }
+
+  @override
+  ItemScrollController get playerScrollController => _scrollController;
+
 }

@@ -8,9 +8,9 @@ class MediaCardState {
   final int index;
 
   const MediaCardState({
-    required this.type,
-    required this.name,
-    required this.hasSubtitle,
-    required this.index,
+    this.type = .video,
+    this.name = '',
+    this.hasSubtitle = false,
+    this.index = 0,
   });
 }

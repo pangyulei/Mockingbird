@@ -8,10 +8,10 @@ class SentenceCardState {
   final int index;
 
   const SentenceCardState({
-    required this.text,
-    required this.period,
-    required this.isPlaying,
-    required this.index,
+    this.text = '',
+    this.period = '',
+    this.isPlaying = false,
+    this.index = 0,
   });
 
   SentenceCardState copyWith({
