@@ -1,11 +1,11 @@
-import 'package:mockingbird/tab_player/player_sentence/player_sentence_state.dart';
+import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 import 'package:video_player/video_player.dart';
 
 class PlayerState {
   final bool showLoading;
   final String? title;
   final VideoPlayerController? playerController;
-  final List<PlayerSentenceState> sentenceStates;
+  final List<SentenceCardState> sentenceStates;
   final int? playingSentenceIndex;
 
   const PlayerState({
@@ -26,7 +26,7 @@ class PlayerState {
     bool? showLoading,
     VideoPlayerController? playerController,
     String? title,
-    List<PlayerSentenceState>? sentenceStates,
+    List<SentenceCardState>? sentenceStates,
     int? playingSentenceIndex,
   }) {
     return PlayerState(

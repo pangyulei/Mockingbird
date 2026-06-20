@@ -6,18 +6,18 @@ class Sentence {
   @Id()
   int id;
 
-  final int startMilliseconds;
-  final int endMilliseconds;
+  final int startMicroseconds;
+  final int endMicroseconds;
   final String text;
   final subtitle = ToOne<Subtitle>();
 
   Sentence({
-    required this.startMilliseconds,
-    required this.endMilliseconds,
+    required this.startMicroseconds,
+    required this.endMicroseconds,
     required this.text,
     this.id = 0,
   });
 
-  Duration get start => Duration(microseconds: startMilliseconds);
-  Duration get end => Duration(microseconds: endMilliseconds);
+  Duration get start => Duration(microseconds: startMicroseconds);
+  Duration get end => Duration(microseconds: endMicroseconds);
 }

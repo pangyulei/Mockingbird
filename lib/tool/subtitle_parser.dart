@@ -54,8 +54,8 @@ class SubtitleParser {
         if (text.isNotEmpty) {
           sentences.add(Sentence(
             text: text,
-            startMilliseconds: start.inMilliseconds,
-            endMilliseconds: end.inMilliseconds,
+            startMicroseconds: start.inMicroseconds,
+            endMicroseconds: end.inMicroseconds,
           ));
         }
       } catch (e) {
@@ -119,8 +119,8 @@ class SubtitleParser {
         if (text.isNotEmpty) {
           sentences.add(
               Sentence(
-                startMilliseconds: start.inMilliseconds,
-                endMilliseconds: end.inMilliseconds,
+                startMicroseconds: start.inMicroseconds,
+                endMicroseconds: end.inMicroseconds,
                 text: text
               )
           );

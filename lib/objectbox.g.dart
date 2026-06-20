@@ -68,7 +68,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(3, 7871170772057366465),
     name: 'Sentence',
-    lastPropertyId: const obx_int.IdUid(5, 4688229675110530019),
+    lastPropertyId: const obx_int.IdUid(7, 5000760017826921348),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -76,18 +76,6 @@ final _entities = <obx_int.ModelEntity>[
         name: 'id',
         type: 6,
         flags: 1,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 4348816439563618990),
-        name: 'startMilliseconds',
-        type: 6,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 7859161537347489575),
-        name: 'endMilliseconds',
-        type: 6,
-        flags: 0,
       ),
       obx_int.ModelProperty(
         id: const obx_int.IdUid(4, 4966457835990661018),
@@ -104,6 +92,18 @@ final _entities = <obx_int.ModelEntity>[
         relationField: 'subtitle',
         relationTarget: 'Subtitle',
       ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 7294205140072690908),
+        name: 'startMicroseconds',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 5000760017826921348),
+        name: 'endMicroseconds',
+        type: 6,
+        flags: 0,
+      ),
     ],
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
@@ -119,15 +119,6 @@ final _entities = <obx_int.ModelEntity>[
         name: 'id',
         type: 6,
         flags: 1,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 4611615002765150875),
-        name: 'mediaId',
-        type: 11,
-        flags: 520,
-        indexId: const obx_int.IdUid(6, 5898832665637527043),
-        relationField: 'media',
-        relationTarget: 'Media',
       ),
     ],
     relations: <obx_int.ModelRelation>[],
@@ -230,7 +221,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     lastRelationId: const obx_int.IdUid(1, 706679735308781074),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [9011113446969728974, 5796585602580892729],
-    retiredIndexUids: const [6937227900520055071],
+    retiredIndexUids: const [6937227900520055071, 5898832665637527043],
     retiredPropertyUids: const [
       2814719371012559683,
       4796821091185661977,
@@ -241,6 +232,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
       7225881723818059437,
       1518802893302678615,
       2970887111947828870,
+      4611615002765150875,
+      4348816439563618990,
+      7859161537347489575,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -311,28 +305,28 @@ obx_int.ModelDefinition getObjectBoxModel() {
       },
       objectToFB: (Sentence object, fb.Builder fbb) {
         final textOffset = fbb.writeString(object.text);
-        fbb.startTable(6);
+        fbb.startTable(8);
         fbb.addInt64(0, object.id);
-        fbb.addInt64(1, object.startMilliseconds);
-        fbb.addInt64(2, object.endMilliseconds);
         fbb.addOffset(3, textOffset);
         fbb.addInt64(4, object.subtitle.targetId);
+        fbb.addInt64(5, object.startMicroseconds);
+        fbb.addInt64(6, object.endMicroseconds);
         fbb.finish(fbb.endTable());
         return object.id;
       },
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
-        final startMillisecondsParam = const fb.Int64Reader().vTableGet(
+        final startMicrosecondsParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
-          6,
+          14,
           0,
         );
-        final endMillisecondsParam = const fb.Int64Reader().vTableGet(
+        final endMicrosecondsParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
-          8,
+          16,
           0,
         );
         final textParam = const fb.StringReader(
@@ -345,8 +339,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           0,
         );
         final object = Sentence(
-          startMilliseconds: startMillisecondsParam,
-          endMilliseconds: endMillisecondsParam,
+          startMicroseconds: startMicrosecondsParam,
+          endMicroseconds: endMicrosecondsParam,
           text: textParam,
           id: idParam,
         );
@@ -362,7 +356,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     ),
     Subtitle: obx_int.EntityDefinition<Subtitle>(
       model: _entities[2],
-      toOneRelations: (Subtitle object) => [object.media],
+      toOneRelations: (Subtitle object) => [],
       toManyRelations: (Subtitle object) => {
         obx_int.RelInfo<Sentence>.toOneBacklink(
           5,
@@ -377,7 +371,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectToFB: (Subtitle object, fb.Builder fbb) {
         fbb.startTable(3);
         fbb.addInt64(0, object.id);
-        fbb.addInt64(1, object.media.targetId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -391,13 +384,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
           0,
         );
         final object = Subtitle(id: idParam);
-        object.media.targetId = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          6,
-          0,
-        );
-        object.media.attach(store);
         obx_int.InternalToManyAccess.setRelInfo<Subtitle>(
           object.sentences,
           store,
@@ -506,23 +492,23 @@ class Sentence_ {
     _entities[1].properties[0],
   );
 
-  /// See [Sentence.startMilliseconds].
-  static final startMilliseconds = obx.QueryIntegerProperty<Sentence>(
-    _entities[1].properties[1],
-  );
-
-  /// See [Sentence.endMilliseconds].
-  static final endMilliseconds = obx.QueryIntegerProperty<Sentence>(
-    _entities[1].properties[2],
-  );
-
   /// See [Sentence.text].
   static final text = obx.QueryStringProperty<Sentence>(
-    _entities[1].properties[3],
+    _entities[1].properties[1],
   );
 
   /// See [Sentence.subtitle].
   static final subtitle = obx.QueryRelationToOne<Sentence, Subtitle>(
+    _entities[1].properties[2],
+  );
+
+  /// See [Sentence.startMicroseconds].
+  static final startMicroseconds = obx.QueryIntegerProperty<Sentence>(
+    _entities[1].properties[3],
+  );
+
+  /// See [Sentence.endMicroseconds].
+  static final endMicroseconds = obx.QueryIntegerProperty<Sentence>(
     _entities[1].properties[4],
   );
 }
@@ -532,11 +518,6 @@ class Subtitle_ {
   /// See [Subtitle.id].
   static final id = obx.QueryIntegerProperty<Subtitle>(
     _entities[2].properties[0],
-  );
-
-  /// See [Subtitle.media].
-  static final media = obx.QueryRelationToOne<Subtitle, Media>(
-    _entities[2].properties[1],
   );
 
   /// see [Subtitle.sentences]

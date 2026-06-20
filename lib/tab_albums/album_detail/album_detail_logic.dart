@@ -13,7 +13,7 @@ import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
 import 'package:path/path.dart' as p;
 
-import 'media_card_state.dart';
+import 'media_card/media_card_state.dart';
 
 class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
   Album? _album;
@@ -38,13 +38,13 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
       showLoading: false,
       name: album.name,
       cover: album.cover == null ? null : File(album.cover!),
-      mediaStates: album.medias.map((m) => _mediaCardState(m)).toList(),
+      mediaStates: album.medias.asMap().entries.map((e) {
+        final m = e.value;
+        return MediaCardState(name: m.name, type: m.type, hasSubtitle: m.subtitle.target != null, index: e.key);
+      }).toList(),
     );
   }
 
-  MediaCardState _mediaCardState(Media m) {
-    return MediaCardState(name: m.name, type: m.type, hasSubtitle: m.subtitle.target != null);
-  }
 
   @override
   Stream<AlbumDetailState> albumDetailImportMedias(
@@ -113,7 +113,9 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
   }
 
   @override
-  void albumDetailPlayMedia(Media media, BuildContext context) {
+  void albumDetailPlayMedia(int index, BuildContext context) {
+    if (_album == null) return;
+    final media = _album!.medias[index];
     GlobalBroadcaster.instance.emit(GlobalEventPlayMedia(media));
   }
 }

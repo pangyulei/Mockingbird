@@ -2,7 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/tab_player/player_sentence/player_sentence_widget.dart';
+import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_interface_ui_events.dart';
+import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_widget.dart';
 import 'package:video_player/video_player.dart';
 import '../../tool/global_broadcaster.dart';
 import 'player_state.dart';
@@ -16,10 +17,10 @@ class PlayerWidget extends StatefulWidget {
   const PlayerWidget(this._logic, {super.key});
 
   @override
-  State<PlayerWidget> createState() => _PlayerWidgetFactory();
+  State<PlayerWidget> createState() => _WidgetFactory();
 }
 
-class _PlayerWidgetFactory extends State<PlayerWidget> {
+class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfaceUIEvents {
   PlayerState _state = const PlayerState();
   final _subs = <StreamSubscription>[];
 
@@ -85,16 +86,12 @@ class _PlayerWidgetFactory extends State<PlayerWidget> {
   Widget _sentencesList() {
     return Expanded(
       child: ListView.builder(
-        itemCount: _state.sentences.length,
+        itemCount: _state.sentenceStates.length,
         itemBuilder: (context, index) {
-          final sentence = _state.sentences[index];
-          return PlayerSentenceWidget(
-            sentence: sentence,
-            isSelected: _state.playingSentenceIndex == index,
-            onTap: () {
-              _state.playerController?.seekTo(sentence.start);
-              _state.playerController?.play();
-            },
+          final sentenceState = _state.sentenceStates[index];
+          return SentenceCardWidget(
+              state: sentenceState.copyWith(isPlaying: index==_state.playingSentenceIndex),
+              logic: this
           );
         },
       ),
@@ -168,24 +165,24 @@ class _PlayerWidgetFactory extends State<PlayerWidget> {
       ),
     );
   }
+
   void _updateState(PlayerState newState) {
     if (newState.playerController != _state.playerController) {
-      _state.playerController?.removeListener(_onPlayerControllerUpdate);
-      newState.playerController?.addListener(_onPlayerControllerUpdate);
+      newState.playerController?.addListener(() => _onPlayerTimelinePositionChanged(newState.playerController!));
     }
     setState(() {
       _state = newState;
     });
   }
 
-  void _onPlayerControllerUpdate() {
-    if (_state.playerController == null) return;
-    final newState = widget._logic.playerUpdatePosition(
-      _state,
-      _state.playerController!.value.position,
-    );
-    if (newState != _state) {
-      _updateState(newState);
-    }
+  void _onPlayerTimelinePositionChanged(VideoPlayerController player) {
+    //TODO here should judge by preference
+    //auto scroll subtitle sentences
+    _updateState(widget._logic.playerPositionChanged(_state, player.value.position));
+  }
+
+  @override
+  void sentenceCardClicked(int index) {
+    _updateState(widget._logic.playerPlaySentence(_state, index));
   }
 }

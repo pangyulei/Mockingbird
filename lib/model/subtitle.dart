@@ -11,7 +11,7 @@ class Subtitle {
   @Backlink('subtitle')
   final sentences = ToMany<Sentence>();
 
-  final media = ToOne<Media>();
+  //final media = ToOne<Media>();
 
   Subtitle({
     this.id = 0,

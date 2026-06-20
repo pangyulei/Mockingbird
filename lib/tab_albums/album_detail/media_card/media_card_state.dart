@@ -5,10 +5,12 @@ class MediaCardState {
   final String name;
   final MediaType type;
   final bool hasSubtitle;
+  final int index;
 
   const MediaCardState({
-    this.type = .audio,
-    this.name = '',
-    this.hasSubtitle = false,
+    required this.type,
+    required this.name,
+    required this.hasSubtitle,
+    required this.index,
   });
 }

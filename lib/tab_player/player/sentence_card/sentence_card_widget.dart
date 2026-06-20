@@ -1,17 +1,18 @@
 
 import 'package:flutter/material.dart';
+import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_interface_ui_events.dart';
+import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 
-import '../../model/sentence.dart';
+import '../../../model/sentence.dart';
 
-class PlayerSentenceWidget extends StatelessWidget {
-  final Sentence sentence;
-  final bool isSelected;
-  final VoidCallback? onTap;
 
-  const PlayerSentenceWidget({
-    required this.sentence,
-    this.isSelected = false,
-    this.onTap,
+class SentenceCardWidget extends StatelessWidget {
+  final SentenceCardState _state;
+  final SentenceCardInterfaceUIEvents _logic;
+
+  const SentenceCardWidget({
+    required this._state,
+    required this._logic,
     super.key,
   });
 
@@ -24,15 +25,15 @@ class PlayerSentenceWidget extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: InkWell(
-          onTap: onTap,
+          onTap: () => _logic.sentenceCardClicked(_state.index),
           borderRadius: BorderRadius.circular(8),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: isSelected 
+              color: _state.isPlaying
                   ? colorScheme.primary 
                   : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(8),
-              border: isSelected 
+              border: _state.isPlaying
                   ? Border.all(color: colorScheme.primary, width: 2)
                   : null,
             ),
@@ -42,17 +43,17 @@ class PlayerSentenceWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    sentence.text,
+                    _state.text,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       color: _state.isPlaying ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_formatDuration(sentence.start)} - ${_formatDuration(sentence.end)}',
+                    _state.period,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: isSelected ? colorScheme.onPrimary.withOpacity(0.8) : colorScheme.outline,
+                      color: _state.isPlaying ? colorScheme.onPrimary.withOpacity(0.8) : colorScheme.outline,
                     ),
                   ),
                 ],

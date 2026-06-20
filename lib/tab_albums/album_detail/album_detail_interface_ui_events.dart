@@ -9,5 +9,5 @@ abstract interface class AlbumDetailInterfaceUIEvents {
   Stream<AlbumDetailState> albumDetailImportMedias(AlbumDetailState state);
 
   /// Trigger playing a media
-  void albumDetailPlayMedia(Media media, BuildContext context);
+  void albumDetailPlayMedia(int index, BuildContext context);
 }

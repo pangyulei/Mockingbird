@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:mockingbird/model/media.dart';
+import 'package:mockingbird/tab_albums/album_detail/media_card/media_card_interface_ui_events.dart';
 
 import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
-import 'media_card_widget.dart';
+import 'media_card/media_card_widget.dart';
 
 class AlbumDetailWidget extends StatefulWidget {
   final AlbumDetailInterfaceUIEvents _logic;
@@ -13,9 +14,11 @@ class AlbumDetailWidget extends StatefulWidget {
 
   @override
   State<AlbumDetailWidget> createState() => _WidgetFactory();
+
+
 }
 
-class _WidgetFactory extends State<AlbumDetailWidget> {
+class _WidgetFactory extends State<AlbumDetailWidget> implements MediaCardInterfaceUIEvents {
   AlbumDetailState _state = const AlbumDetailState();
 
   @override
@@ -34,6 +37,11 @@ class _WidgetFactory extends State<AlbumDetailWidget> {
     setState(() {
       _state = newState;
     });
+  }
+
+  @override
+  void mediaCardClickPlay(int index) {
+    widget._logic.albumDetailPlayMedia(index, context);
   }
 
   @override
@@ -68,7 +76,7 @@ class _WidgetFactory extends State<AlbumDetailWidget> {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final mediaState = _state.mediaStates[index];
-                    return MediaCardWidget(mediaState);
+                    return MediaCardWidget(state: mediaState, logic: this);
                   },
                   childCount: _state.mediaStates.length,
                 ),

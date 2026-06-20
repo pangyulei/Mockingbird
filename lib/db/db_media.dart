@@ -54,12 +54,12 @@ class DBMedia {
     final mediasWithoutId = await Future.wait(constructMedias);
     final medias = await _store.box<Media>().putAndGetManyAsync(mediasWithoutId);
     //update subtitles ToOne relations
-    final subtitles = medias.where((m) => m.subtitle.target != null && m.id != 0).map((m) {
-      Subtitle subtitle = m.subtitle.target!;
-      subtitle.media.targetId = m.id;
-      return subtitle;
-    }).toList();
-    await _store.box<Subtitle>().putManyAsync(subtitles);
+    // final subtitles = medias.where((m) => m.subtitle.target != null && m.id != 0).map((m) {
+    //   Subtitle subtitle = m.subtitle.target!;
+    //   subtitle.media.targetId = m.id;
+    //   return subtitle;
+    // }).toList();
+    // await _store.box<Subtitle>().putManyAsync(subtitles);
     album.medias.addAll(medias);
     return medias;
   }

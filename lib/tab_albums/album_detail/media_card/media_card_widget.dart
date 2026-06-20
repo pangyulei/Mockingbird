@@ -3,10 +3,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'media_card_state.dart';
+import 'media_card_interface_ui_events.dart';
 
 class MediaCardWidget extends StatelessWidget {
   final MediaCardState _state;
-  const MediaCardWidget(this._state, {super.key});
+  final MediaCardInterfaceUIEvents _logic;
+  const MediaCardWidget({
+    required this._state,
+    required this._logic,
+    super.key
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +88,7 @@ class MediaCardWidget extends StatelessWidget {
               color: Colors.white,
             ),
             onPressed: () {
-              //TODO press to play media
-              // widget._logic.albumDetailPlayMedia(media, context);
+              _logic.mediaCardClickPlay(_state.index);
             },
           ),
         ),

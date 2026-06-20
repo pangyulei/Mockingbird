@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'media_card_state.dart';
+import 'media_card/media_card_state.dart';
 
 class AlbumDetailState {
   final String name;
