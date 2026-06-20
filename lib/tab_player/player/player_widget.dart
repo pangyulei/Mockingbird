@@ -22,7 +22,7 @@ class PlayerWidget extends StatefulWidget {
 }
 
 class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfaceUIEvents {
-  PlayerState _state = const PlayerState();
+  PlayerState _state = const PlayerState(showEmpty: true, showLoading: false);
   final _subs = <StreamSubscription>[];
 
   @override
@@ -67,8 +67,8 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
   Widget _playerEmpty() {
     //TODO make it a real empty shit
     return Scaffold(
-      appBar: AppBar(title: const Text('no media to play')),
-      body: const Center(child: Text('go select a media'),),
+      appBar: AppBar(title: const Text('No title')),
+      body: const Center(child: Text('No media selected'),),
     );
   }
 

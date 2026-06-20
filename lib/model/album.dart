@@ -25,7 +25,7 @@ class Album {
   Album copyWith({
     int? id,
     String? name,
-    String? coverPathStr,
+    String? Function()? cover,
     int? sortOrder,
     Iterable<Media>? medias,
   }) {
@@ -33,7 +33,7 @@ class Album {
       id: id ?? this.id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
-      cover: coverPathStr ?? this.cover,
+      cover: cover != null ? cover() : this.cover,
     );
     if (medias != null) {
       p.medias.addAll(medias);

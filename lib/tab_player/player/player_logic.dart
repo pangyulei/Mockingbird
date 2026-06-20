@@ -28,6 +28,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
     state = state.copyWith(
       title: media.name,
       showLoading: true,
+      showEmpty: true,
       sentenceStates: media.subtitle.target?.sentences.asMap().entries.map((e) {
         int i = e.key;
         Sentence s = e.value;
@@ -50,7 +51,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
       state = state.copyWith(videoController: videoController);
 
     }
-    yield state.copyWith(showLoading: false);
+    yield state.copyWith(showLoading: false, showEmpty: false);
 
     // Auto play
     _media = media;
@@ -74,14 +75,14 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
           .firstWhere((s) => _isSentencePlaying(s.value, position));
       newPlayingIndex = s.key;
     } catch (e1) {
-      debugPrint(e1.toString());
+      // debugPrint(e1.toString());
       try {
         final s = sentencesWithIndex
             .skipWhile((s) => s.key >= state.playingSentenceIndex!)
             .firstWhere((s) => _isSentencePlaying(s.value, position));
         newPlayingIndex = s.key;
       } catch (e2) {
-        debugPrint(e2.toString());
+        // debugPrint(e2.toString());
       }
     }
     if (newPlayingIndex != state.playingSentenceIndex) {

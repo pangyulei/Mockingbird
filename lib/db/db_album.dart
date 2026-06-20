@@ -9,30 +9,69 @@ class DBAlbum {
   final Store _store;
   DBAlbum(this._store);
 
+  Future<Directory> get _coversDir async {
+    final appDir = await getApplicationDocumentsDirectory();
+    return Directory(p.join(appDir.path, 'album_covers'));
+  }
+
+  Future<String> get _coverPath async {
+    final coversDir = await _coversDir;
+    if (!await coversDir.exists()) {
+      await coversDir.create(recursive: true);
+    }
+    // Generate a unique filename using timestamp and original extension
+    final String fileName =
+        '${DateTime.now().millisecondsSinceEpoch}}';
+    return p.join(coversDir.path, fileName);
+  }
+
   Future<Album?> create(Album album, File? cover) async {
     final trimmedName = album.name.trim();
     if (trimmedName.isEmpty) {
       return null;
     }
-    final String? coverPathStr;
-    if (cover != null) {
-      final appDir = await getApplicationDocumentsDirectory();
-      final coversDir = Directory(p.join(appDir.path, 'album_covers'));
 
-      if (!await coversDir.exists()) {
-        await coversDir.create(recursive: true);
-      }
-      // Generate a unique filename using timestamp and original extension
-      final String fileName =
-          '${DateTime.now().millisecondsSinceEpoch}${p.extension(cover.path)}';
-      final savedFile = await cover.copy(p.join(coversDir.path, fileName));
-      coverPathStr = savedFile.path;
+    final String? coverPath;
+    if (cover != null) {
+      coverPath = await _coverPath;
+      await cover.copy(coverPath);
     } else {
-      coverPathStr = null;
+      coverPath = null;
     }
-    album = album.copyWith(name: trimmedName, coverPathStr: coverPathStr);
+    album = album.copyWith(name: trimmedName, cover: () => coverPath);
     album = await _store.box<Album>().putAndGetAsync(album);
     return album;
+  }
+
+  Future<Album> update({
+    required Album album,
+    String? newName,
+    File? newCover,
+    bool removeCover = false}) async {
+
+    if (newName != null) {
+      final trimmedNewName = newName.trim();
+      if (trimmedNewName.isNotEmpty) {
+        album = album.copyWith(name: trimmedNewName);
+      }
+    }
+
+    if (removeCover || newCover != null) {
+      //need remove current cover file in album_covers dir
+      if (album.cover != null) {
+        final oldCover = File(album.cover!);
+        if (await oldCover.exists()) {
+          await oldCover.delete();
+        }
+        album = album.copyWith(cover: () => null);
+      }
+    }
+    if (newCover != null) {
+      final coverPath = await _coverPath;
+      await newCover.copy(coverPath);
+      album = album.copyWith(cover: () => coverPath);
+    }
+    return _store.box<Album>().putAndGetAsync(album);
   }
 
   Future<List<Album>> getAll() async {
@@ -53,18 +92,10 @@ class DBAlbum {
     final aSortOrder = aAlbum.sortOrder;
     aAlbum = aAlbum.copyWith(sortOrder: bAlbum.sortOrder);
     bAlbum = bAlbum.copyWith(sortOrder: aSortOrder);
-    await updateMany([aAlbum, bAlbum]);
+    await _store.box<Album>().putManyAsync([aAlbum, bAlbum]);
     return (aAlbum, bAlbum);
   }
 
-  Future<void> update(Album playlist) async {
-    await updateMany([playlist]);
-  }
-
-  Future<void> updateMany(List<Album> playlists) async {
-    await _store.box<Album>().putManyAsync(playlists);
-    //TODO if cover empty, remove covers
-  }
 
   Future<void> remove(Album playlist) async {
     await removeMany([playlist]);
