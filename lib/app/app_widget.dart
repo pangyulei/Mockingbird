@@ -17,10 +17,10 @@ class AppWidget extends StatefulWidget {
   const AppWidget(this._logic, {super.key});
 
   @override
-  State<AppWidget> createState() => _AppWidgetFactory();
+  State<AppWidget> createState() => _State();
 }
 
-class _AppWidgetFactory extends State<AppWidget> {
+class _State extends State<AppWidget> {
   AppState _state = const AppState(AppTab.albums);
   final List<StreamSubscription> _subs = [];
 

@@ -42,6 +42,7 @@ class _State extends State<AlbumsGrid> {
 
     // 🌟 核心修复：在 setState 中更新数据，通知 UI 刷新
     setState(() {
+      _albums.clear();
       _albums.addAll(albums);
       _showLoading = false;
     });
