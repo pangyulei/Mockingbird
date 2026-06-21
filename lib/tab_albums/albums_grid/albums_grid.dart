@@ -8,8 +8,8 @@ import '../../model/album.dart';
 import '../album_create/album_create_logic.dart';
 import '../album_create/album_create_widget.dart';
 import 'album_card/album_card.dart';
-import 'albums_grid_interface_ui_events.dart';
-import 'albums_grid_state.dart';
+
+
 
 class AlbumsGrid extends StatefulWidget {
   const AlbumsGrid({super.key});
@@ -72,50 +72,6 @@ class _State extends State<AlbumsGrid> {
     });
   }
 
-  // Future<void> _clickedEdit(Album album) async {
-  //   final updatedAlbumInfo = await AlbumCreateWidget.show(
-  //     context,
-  //     const AlbumCreateLogic(),
-  //     initialName: album.name,
-  //     initialCover: album.cover != null ? File(album.cover!) : null,
-  //   );
-  //   final stream = widget._logic.albumsGridPoppedEditWidget(
-  //     _state,
-  //     album,
-  //     updatedAlbumInfo,
-  //   );
-  //   await _updateStateByStream(stream);
-  // }
-
-  // Future<void> _clickedDelete(Album album) async {
-  //   final confirmed = await showDialog<bool>(
-  //     context: context,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('Delete Album'),
-  //       content: Text(
-  //         'Are you sure you want to delete "${album.name}"? This action cannot be undone.',
-  //       ),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(context, false),
-  //           child: const Text('Cancel'),
-  //         ),
-  //         FilledButton(
-  //           onPressed: () => Navigator.pop(context, true),
-  //           style: FilledButton.styleFrom(
-  //             backgroundColor: Theme.of(context).colorScheme.error,
-  //           ),
-  //           child: const Text('Delete'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //
-  //   if (confirmed == true) {
-  //     final stream = widget._logic.albumsGridRemoveAlbum(_state, album);
-  //     await _updateStateByStream(stream);
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -174,8 +130,8 @@ class _State extends State<AlbumsGrid> {
       itemBuilder: (context, index) {
         final album = _albums[index];
         return DragTarget<Album>(
-          onWillAcceptWithDetails: (dragged) => album != dragged.data,
-          onAcceptWithDetails: (dragged) => _swapAlbums(dragged.data, album),
+          onWillAcceptWithDetails: (dragged) => album.id != dragged.data.id,
+          onAcceptWithDetails: (dragged) async => await _swapAlbums(dragged.data, album),
           builder: (context, candidateData, rejectedData) {
             final bool isTarget = candidateData.isNotEmpty;
             return LongPressDraggable<Album>(
@@ -190,13 +146,17 @@ class _State extends State<AlbumsGrid> {
                   borderRadius: BorderRadius.circular(20),
                   child: Opacity(
                     opacity: 0.8,
-                    child: AlbumCard(album),
+                    child: AlbumCard(
+                      album: album,
+                    ),
                   ),
                 ),
               ),
               childWhenDragging: Opacity(
                 opacity: 0.3,
-                child: AlbumCard(album),
+                child: AlbumCard(
+                  album: album,
+                ),
               ),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
@@ -209,7 +169,11 @@ class _State extends State<AlbumsGrid> {
                         borderRadius: BorderRadius.circular(20),
                       )
                     : null,
-                child: AlbumCard(album),
+                child: AlbumCard(
+                  album: album,
+                  onEdit: () async => await _onEdit(album),
+                  onDelete: () async => await _onDelete(album),
+                ),
               ),
             );
           },
@@ -218,7 +182,7 @@ class _State extends State<AlbumsGrid> {
     );
   }
 
-  void _swapAlbums(Album draggedAlbum, Album targetAlbum) async {
+  Future<void> _swapAlbums(Album draggedAlbum, Album targetAlbum) async {
     setState(() {
       _isLoading = true;
     });
@@ -233,5 +197,79 @@ class _State extends State<AlbumsGrid> {
       _albums[toIndex] = draggedAlbum;
       _isLoading = false;
     });
+  }
+
+  Future<void> _onEdit(Album album) async {
+    setState(() {
+      _isLoading = true;
+    });
+    final updatedAlbumInfo = await AlbumCreateWidget.show(
+      context,
+      const AlbumCreateLogic(),
+      initialName: album.name,
+      initialCover: album.cover != null ? File(album.cover!) : null,
+    );
+    final Album? updatedAlbum;
+    if (updatedAlbumInfo != null) {
+      updatedAlbum = await DBAlbum(DBObjectBox.instance.store).update(
+        album: album,
+        newName: updatedAlbumInfo.name,
+        newCover: updatedAlbumInfo.coverFile,
+        removeCover: updatedAlbumInfo.coverFile == null,
+      );
+    } else {
+      updatedAlbum = null;
+    }
+    setState(() {
+      if (updatedAlbum != null) {
+        int index = _albums.indexOf(album);
+        _albums[index] = updatedAlbum;
+      }
+      _isLoading = false;
+    });
+
+  }
+
+  Future<void> _onDelete(Album album) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Album'),
+        content: Text(
+          'Are you sure you want to delete "${album.name}"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == null || !confirmed) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Remove from database
+    await DBAlbum(DBObjectBox.instance.store).remove(album);
+
+    // Update state with remaining albums
+    setState(() {
+      _albums.remove(album);
+      _isLoading = false;
+    });
+
   }
 }

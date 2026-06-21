@@ -101,16 +101,16 @@ class DBAlbum {
     await removeMany([playlist]);
   }
 
-  Future<void> removeMany(Iterable<Album> playlists) async {
-    if (playlists.isEmpty) return;
-    if (playlists.any((p) => p.id == 0)) return;
+  Future<void> removeMany(Iterable<Album> albums) async {
+    if (albums.isEmpty) return;
+    assert(albums.every((a) => a.id != 0), 'try to remove albums without id');
 
-    final ids = playlists.map((p) => p.id).toList();
+    final ids = albums.map((p) => p.id).toList();
     await _store.box<Album>().removeManyAsync(ids);
     // Delete cover files for removed playlists
-    final uselessCovers = playlists
-        .where((p) => p.cover != null)
-        .map((p) => File(p.cover!));
+    final uselessCovers = albums
+        .where((a) => a.cover != null)
+        .map((a) => File(a.cover!));
     //map is lazy call, it would not execute until someone use it.
     //at this situation is Future.wait will trigger, so every delete() parallel started same time
     final removeCovers = uselessCovers.map((cover) async {

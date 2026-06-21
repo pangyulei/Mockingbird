@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../album_detail/album_detail_logic.dart';
 import '../album_detail/album_detail_widget.dart';
-import '../albums_grid/albums_grid_logic.dart';
 import '../albums_grid/albums_grid.dart';
 import 'albums_nav_interface_ui_events.dart';
 import 'albums_nav_route.dart';

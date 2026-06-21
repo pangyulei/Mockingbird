@@ -13,11 +13,11 @@ class AlbumCardDumb extends StatelessWidget {
 
   const AlbumCardDumb({
     super.key,
-    required this._onEdit,
-    required this._onDelete,
-    required this._cover,
-    required this._mediasCount,
-    required this._name,
+    this._onEdit,
+    this._onDelete,
+    this._mediasCount = 0,
+    this._cover,
+    this._name = '',
   });
 
   @override

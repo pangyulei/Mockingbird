@@ -8,8 +8,15 @@ import 'package:mockingbird/tab_albums/albums_nav/albums_nav_route.dart';
 
 
 class AlbumCard extends StatefulWidget {
+  final VoidCallback? _onEdit;
+  final VoidCallback? _onDelete;
   final Album _album;
-  const AlbumCard(this._album, {super.key});
+  const AlbumCard({
+    required this._album,
+    this._onEdit,
+    this._onDelete,
+    super.key
+  });
 
   @override
   State<AlbumCard> createState() =>
@@ -22,17 +29,9 @@ class _State extends State<AlbumCard> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onLongPress: () {
-        HapticFeedback.vibrate();
-        setState(() {
-          _isPressed = true;
-        });
-      },
-      onLongPressUp: () {
-        setState(() {
-          _isPressed = false;
-        });
-      },
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
       onTap: () {
         Navigator.pushNamed(context, AlbumsNavRoute.urlStrForAlbumDetail(widget._album.id));
       },
@@ -43,8 +42,8 @@ class _State extends State<AlbumCard> {
           cover: widget._album.cover,
           mediasCount: widget._album.medias.length,
           name: widget._album.name,
-          onDelete: null,
-          onEdit: null,
+          onDelete: widget._onDelete,
+          onEdit: widget._onEdit,
         ),
       ),
     );
