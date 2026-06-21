@@ -24,19 +24,22 @@ class AlbumCard extends StatefulWidget {
 }
 
 class _State extends State<AlbumCard> {
-  var _isPressed = false;
+  var _isPressing = false;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
+      onTapDown: (_) async {
+        await HapticFeedback.heavyImpact();
+        setState(() => _isPressing = true);
+      },
+      onTapUp: (_) => setState(() => _isPressing = false),
+      onTapCancel: () => setState(() => _isPressing = false),
       onTap: () {
         Navigator.pushNamed(context, AlbumsNavRoute.urlStrForAlbumDetail(widget._album.id));
       },
       child: AnimatedScale(
-        scale: _isPressed ? 0.96 : 1.0,
+        scale: _isPressing ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: AlbumCardDumb(
           cover: widget._album.cover,

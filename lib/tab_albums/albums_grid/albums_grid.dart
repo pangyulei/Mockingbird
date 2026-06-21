@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import '../../db/db_album.dart';
 import '../../db/db_objectbox.dart';
 import '../../model/album.dart';
-import '../album_create/album_create_logic.dart';
-import '../album_create/album_create_widget.dart';
+import '../album_edit/album_edit.dart';
 import 'album_card/album_card.dart';
 
 
@@ -46,31 +45,7 @@ class _State extends State<AlbumsGrid> {
     });
   }
 
-  Future<void> _clickedAdd() async {
-    final newAlbumInfo = await AlbumCreateWidget.show(
-      context,
-      const AlbumCreateLogic(),
-    );
-    if (newAlbumInfo == null) {
-      return;
-    }
-    setState(() {
-      _isLoading = true;
-    });
-    final newAlbum = await DBAlbum(DBObjectBox.instance.store).create(
-      Album(
-        name: newAlbumInfo.name,
-        sortOrder: _albums.length,
-      ),
-      newAlbumInfo.coverFile,
-    );
-    setState(() {
-      if (newAlbum != null) {
-        _albums.insert(0, newAlbum);
-      }
-      _isLoading = false;
-    });
-  }
+
 
 
   @override
@@ -105,7 +80,7 @@ class _State extends State<AlbumsGrid> {
         Padding(
           padding: const EdgeInsets.only(right: 8),
           child: IconButton.filledTonal(
-            onPressed: _clickedAdd,
+            onPressed: _onAdd,
             icon: const Icon(Icons.playlist_add),
           ),
         ),
@@ -171,8 +146,8 @@ class _State extends State<AlbumsGrid> {
                     : null,
                 child: AlbumCard(
                   album: album,
-                  onEdit: () async => await _onEdit(album),
-                  onDelete: () async => await _onDelete(album),
+                  onEdit: () => _onEdit(album),
+                  onDelete: () => _onDelete(album),
                 ),
               ),
             );
@@ -199,35 +174,54 @@ class _State extends State<AlbumsGrid> {
     });
   }
 
-  Future<void> _onEdit(Album album) async {
-    setState(() {
-      _isLoading = true;
-    });
-    final updatedAlbumInfo = await AlbumCreateWidget.show(
-      context,
-      const AlbumCreateLogic(),
-      initialName: album.name,
-      initialCover: album.cover != null ? File(album.cover!) : null,
-    );
-    final Album? updatedAlbum;
-    if (updatedAlbumInfo != null) {
-      updatedAlbum = await DBAlbum(DBObjectBox.instance.store).update(
-        album: album,
-        newName: updatedAlbumInfo.name,
-        newCover: updatedAlbumInfo.coverFile,
-        removeCover: updatedAlbumInfo.coverFile == null,
+  Future<void> _onAdd() async {
+    await showDialog(context: context, builder: (context) {
+      return AlbumEdit(
+        title: 'Create New Album',
+        submitTitle: 'Create',
+        onSubmit: (name, cover) async {
+          final newAlbum = await DBAlbum(DBObjectBox.instance.store).create(
+            name: name,
+            cover: cover,
+          );
+          setState(() {
+            if (newAlbum != null) {
+              _albums.insert(0, newAlbum);
+            }
+            _isLoading = false;
+          });
+        },
       );
-    } else {
-      updatedAlbum = null;
-    }
-    setState(() {
-      if (updatedAlbum != null) {
-        int index = _albums.indexOf(album);
-        _albums[index] = updatedAlbum;
-      }
-      _isLoading = false;
-    });
+    },);
+  }
 
+  Future<void> _onEdit(Album album) async {
+    await showDialog(context: context, builder: (context) {
+      return AlbumEdit(
+        name: album.name,
+        cover: album.cover != null ? File(album.cover!) : null,
+        title: 'Edit Album',
+        submitTitle: 'Save',
+        onSubmit: (name, cover) async {
+          bool isIdentical() {
+            if (name.trim() != album.name) return false;
+            if (cover == null && album.cover == null) return true;
+            return cover != null && album.cover != null && cover.path == album.cover;
+          }
+          if (!isIdentical()) {
+            final updatedAlbum = await DBAlbum(DBObjectBox.instance.store).update(
+              album: album,
+              name: name,
+              cover: cover,
+            );
+            setState(() {
+              int index = _albums.indexOf(album);
+              _albums[index] = updatedAlbum;
+            });
+          }
+        },
+      );
+    },);
   }
 
   Future<void> _onDelete(Album album) async {
