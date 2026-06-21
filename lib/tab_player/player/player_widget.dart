@@ -57,8 +57,8 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
       appBar: _appBar(),
       body: Stack(
         children: [
-          if (_state.showLoading) const Center(child: CircularProgressIndicator()),
           _playerPage(),
+          if (_state.showLoading) const Center(child: CircularProgressIndicator()),
         ],
       ),
     );

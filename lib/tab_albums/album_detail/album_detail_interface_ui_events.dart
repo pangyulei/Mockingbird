@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import '../../model/media.dart';
+
 import 'album_detail_state.dart';
 
 abstract interface class AlbumDetailInterfaceUIEvents {

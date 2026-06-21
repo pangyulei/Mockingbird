@@ -11,7 +11,14 @@ class AlbumCreateLogic implements AlbumCreateInterfaceUIEvents {
     AlbumCreateState state,
     File coverFile,
   ) {
-    return state.copyWith(coverFile: coverFile);
+    return state.copyWith(coverFile: () => coverFile);
+  }
+
+  @override
+  AlbumCreateState albumCreateRemoveCover(
+    AlbumCreateState state,
+  ) {
+    return state.copyWith(coverFile: () => null);
   }
 
   @override

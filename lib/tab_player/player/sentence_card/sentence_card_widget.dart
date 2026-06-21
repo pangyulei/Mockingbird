@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_interface_ui_events.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 
-import '../../../model/sentence.dart';
+
 
 
 class SentenceCardWidget extends StatelessWidget {
@@ -65,10 +65,5 @@ class SentenceCardWidget extends StatelessWidget {
     );
   }
 
-  String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final milliseconds = (d.inMilliseconds.remainder(1000) ~/ 100).toString();
-    return '$minutes:$seconds.$milliseconds';
-  }
+
 }

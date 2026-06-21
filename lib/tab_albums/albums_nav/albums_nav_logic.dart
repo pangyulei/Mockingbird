@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../album_detail/album_detail_logic.dart';
 import '../album_detail/album_detail_widget.dart';
 import '../albums_grid/albums_grid_logic.dart';
-import '../albums_grid/albums_grid_widget.dart';
+import '../albums_grid/albums_grid.dart';
 import 'albums_nav_interface_ui_events.dart';
 import 'albums_nav_route.dart';
 
@@ -31,7 +31,7 @@ class AlbumsNavLogic implements AlbumsNavInterfaceUIEvents {
         final segments = uri.pathSegments;
         if (segments.length == 1 &&
             segments.first == AlbumsNavRoute.albums) {
-          return const AlbumsGridWidget(AlbumsGridLogic());
+          return const AlbumsGrid();
         } else if (segments.length == 2 &&
             segments.first == AlbumsNavRoute.albums) {
           final albumIdStr = segments.last;

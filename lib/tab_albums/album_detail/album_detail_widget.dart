@@ -1,7 +1,7 @@
-import 'dart:io';
+
 
 import 'package:flutter/material.dart';
-import 'package:mockingbird/model/media.dart';
+
 import 'package:mockingbird/tab_albums/album_detail/media_card/media_card_interface_ui_events.dart';
 
 import 'album_detail_interface_ui_events.dart';

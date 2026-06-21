@@ -46,7 +46,7 @@ configurations {
 }
 
 dependencies {
-    debugImplementation("io.objectbox:objectbox-android-objectbrowser:5.4.1")
+    debugImplementation("io.objectbox:objectbox-android-objectbrowser:5.4.2")
 }
 
 flutter {

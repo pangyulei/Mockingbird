@@ -7,6 +7,9 @@ abstract interface class AlbumCreateInterfaceUIEvents {
     AlbumCreateState state,
     File coverFile,
   );
+  AlbumCreateState albumCreateRemoveCover(
+    AlbumCreateState state,
+  );
   AlbumCreateState albumCreateTypingName(
     AlbumCreateState state,
     String name,

@@ -21,7 +21,7 @@ class DBAlbum {
     }
     // Generate a unique filename using timestamp and original extension
     final String fileName =
-        '${DateTime.now().millisecondsSinceEpoch}}';
+        '${DateTime.now().millisecondsSinceEpoch}';
     return p.join(coversDir.path, fileName);
   }
 

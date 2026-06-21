@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:mockingbird/model/subtitle.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;

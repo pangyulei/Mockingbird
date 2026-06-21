@@ -7,16 +7,30 @@ import 'package:mockingbird/tab_albums/album_create/album_create_state.dart';
 
 class AlbumCreateWidget extends StatefulWidget {
   final AlbumCreateInterfaceUIEvents _handler;
-  const AlbumCreateWidget(this._handler, {super.key});
+  final String? initialName;
+  final File? initialCover;
+
+  const AlbumCreateWidget(
+    this._handler, {
+    this.initialName,
+    this.initialCover,
+    super.key,
+  });
 
   static Future<({String name, File? coverFile})?> show(
     BuildContext context,
-    AlbumCreateInterfaceUIEvents logic,
-  ) async {
+    AlbumCreateInterfaceUIEvents logic, {
+    String? initialName,
+    File? initialCover,
+  }) async {
     return await showDialog<({String name, File? coverFile})?>(
       context: context,
       builder: (BuildContext context) {
-        return AlbumCreateWidget(logic);
+        return AlbumCreateWidget(
+          logic,
+          initialName: initialName,
+          initialCover: initialCover,
+        );
       },
     );
   }
@@ -26,13 +40,19 @@ class AlbumCreateWidget extends StatefulWidget {
 }
 
 class _WidgetFactory extends State<AlbumCreateWidget> {
-  AlbumCreateState _state = const AlbumCreateState();
-  final TextEditingController nameController = TextEditingController();
+  late AlbumCreateState _state;
+  late final TextEditingController nameController;
   final ImagePicker picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
+    _state = AlbumCreateState(
+      coverFile: widget.initialCover,
+      creatable: widget.initialName?.isNotEmpty ?? false,
+    );
+    nameController = TextEditingController(text: widget.initialName);
+
     // Rebuilds the UI every time the text changes so the "Create" button updates
     nameController.addListener(() {
       final newState = widget._handler.albumCreateTypingName(
@@ -61,9 +81,9 @@ class _WidgetFactory extends State<AlbumCreateWidget> {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      title: const Text(
-        'Create New Album',
-        style: TextStyle(fontWeight: FontWeight.bold),
+      title: Text(
+        widget.initialName != null ? 'Edit Album' : 'Create New Album',
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       content: SingleChildScrollView(
@@ -83,7 +103,7 @@ class _WidgetFactory extends State<AlbumCreateWidget> {
                   color: colorScheme.primary,
                 ),
               ),
-              autofocus: true,
+              autofocus: widget.initialName == null,
             ),
           ],
         ),
@@ -95,7 +115,7 @@ class _WidgetFactory extends State<AlbumCreateWidget> {
         ),
         FilledButton(
           onPressed: _state.creatable ? _clickedCreate : null,
-          child: const Text('CREATE'),
+          child: Text(widget.initialName != null ? 'SAVE' : 'CREATE'),
         ),
       ],
     );
@@ -121,48 +141,64 @@ class _WidgetFactory extends State<AlbumCreateWidget> {
 
   Widget _coverWidget() {
     final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTapDown: (_) => _updateState(_state.copyWith(isCoverPressed: true)),
-      onTapUp: (_) => _updateState(_state.copyWith(isCoverPressed: false)),
-      onTapCancel: () => _updateState(_state.copyWith(isCoverPressed: false)),
-      onTap: _clickedCover,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
-        width: double.infinity,
-        height: 150,
-        decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: colorScheme.primary.withValues(alpha: 0.1),
-            width: 1,
+    return Column(
+      children: [
+        GestureDetector(
+          onTapDown: (_) => _updateState(_state.copyWith(isCoverPressed: true)),
+          onTapUp: (_) => _updateState(_state.copyWith(isCoverPressed: false)),
+          onTapCancel: () => _updateState(_state.copyWith(isCoverPressed: false)),
+          onTap: _clickedCover,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            width: double.infinity,
+            height: 150,
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: colorScheme.primary.withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: _state.coverFile != null
+                  ? Image.file(_state.coverFile!, fit: BoxFit.cover)
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: 40,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Select Cover Image',
+                          style: TextStyle(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: _state.coverFile != null
-              ? Image.file(_state.coverFile!, fit: BoxFit.cover)
-              : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 40,
-                      color: colorScheme.primary,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Select Cover Image',
-                      style: TextStyle(
-                        color: colorScheme.primary,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      ),
+        if (_state.coverFile != null)
+          TextButton.icon(
+            onPressed: () {
+              final newState = widget._handler.albumCreateRemoveCover(_state);
+              _updateState(newState);
+            },
+            icon: const Icon(Icons.delete_outline, size: 18),
+            label: const Text('Remove Cover'),
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.error,
+            ),
+          ),
+      ],
     );
   }
 

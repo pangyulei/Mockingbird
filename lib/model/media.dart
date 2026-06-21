@@ -1,6 +1,4 @@
 
-import 'package:mockingbird/tool/subtitle_parser.dart';
-
 import 'album.dart';
 import 'subtitle.dart';
 import 'package:objectbox/objectbox.dart';

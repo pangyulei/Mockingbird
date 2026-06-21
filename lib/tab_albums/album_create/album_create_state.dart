@@ -11,12 +11,12 @@ class AlbumCreateState {
   });
 
   AlbumCreateState copyWith({
-    File? coverFile,
+    File? Function()? coverFile,
     bool? creatable,
     bool? isCoverPressed,
   }) {
     return AlbumCreateState(
-      coverFile: coverFile ?? this.coverFile,
+      coverFile: coverFile != null ? coverFile() : this.coverFile,
       creatable: creatable ?? this.creatable,
       isCoverPressed: isCoverPressed ?? this.isCoverPressed,
     );
