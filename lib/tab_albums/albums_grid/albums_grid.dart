@@ -82,35 +82,12 @@ class _State extends State<AlbumsGrid> {
         IconButton(
           onPressed: _onEditGrid,
           icon: Icon(_showEditButtons ? Icons.check : Icons.edit),
-          // style: const ButtonStyle(
-          //     tapTargetSize: .shrinkWrap,
-          //     // overlayColor: WidgetStatePropertyAll(Colors.transparent),
-          //     // splashFactory: NoSplash.splashFactory,
-          // ),
-          // constraints: const BoxConstraints(
-          //   minWidth: 48,
-          //   minHeight: kToolbarHeight,
-          // ),
-          // padding: EdgeInsets.zero,
-          // alignment: .centerEnd,
           iconSize: 24,
         ),
         IconButton(
           onPressed: _onAdd,
           iconSize: 34,
-          // alignment: .centerEnd,
           icon: const Icon(Icons.add),
-          // style: const ButtonStyle(
-          //   tapTargetSize: .shrinkWrap,
-          //   // overlayColor: WidgetStatePropertyAll(Colors.transparent),
-          //   // splashFactory: NoSplash.splashFactory,
-          // ),
-          // constraints: const BoxConstraints(
-          //   minWidth: 48,
-          //   minHeight: kToolbarHeight,
-          // ),
-          // padding: EdgeInsets.zero,
-          // padding: const EdgeInsets.only(right: 4, left: 0),
         ),
       ],
     );

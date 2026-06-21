@@ -135,16 +135,20 @@ class _WidgetFactory extends State<AlbumDetailWidget> implements MediaCardInterf
           ],
         ),
       ),
+      actionsPadding: const EdgeInsets.only(right: 10),
+      leading: IconButton.filledTonal(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.arrow_back),
+      ),
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: IconButton.filledTonal(
-            icon: const Icon(Icons.download),
-            onPressed: () async {
-              _updateStateByStream(widget._logic.albumDetailImportMedias(_state));
-            },
-          ),
+        // const Spacer(flex: 12,),
+        IconButton.filledTonal(
+          icon: const Icon(Icons.download),
+          onPressed: () async {
+            _updateStateByStream(widget._logic.albumDetailImportMedias(_state));
+          },
         ),
+
       ],
     );
   }
