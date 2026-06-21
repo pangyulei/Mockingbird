@@ -10,6 +10,7 @@ class AlbumCardDumb extends StatelessWidget {
   final String? _cover;
   final int _mediasCount;
   final String _name;
+  final bool _showEditButtons;
 
   const AlbumCardDumb({
     super.key,
@@ -18,6 +19,7 @@ class AlbumCardDumb extends StatelessWidget {
     this._mediasCount = 0,
     this._cover,
     this._name = '',
+    this._showEditButtons = false,
   });
 
   @override
@@ -59,33 +61,34 @@ class AlbumCardDumb extends StatelessWidget {
                         size: 40,
                       ),
                     ),
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Column(
-                      spacing: 2,
-                      children: [
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.edit, size: 16),
-                          onPressed: _onEdit,
-                          style: IconButton.styleFrom(
-                            minimumSize: const Size(28, 28),
-                            padding: EdgeInsets.zero,
-                            tapTargetSize: .shrinkWrap,
+                  if (_showEditButtons)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Column(
+                        spacing: 2,
+                        children: [
+                          IconButton.filledTonal(
+                            icon: const Icon(Icons.edit, size: 16),
+                            onPressed: _onEdit,
+                            style: IconButton.styleFrom(
+                              minimumSize: const Size(28, 28),
+                              padding: EdgeInsets.zero,
+                              tapTargetSize: .shrinkWrap,
+                            ),
                           ),
-                        ),
-                        IconButton.filledTonal(
-                          icon: const Icon(Icons.delete, size: 18),
-                          onPressed: _onDelete,
-                          style: IconButton.styleFrom(
-                            minimumSize: const Size(28, 28),
-                            padding: EdgeInsets.zero,
-                            tapTargetSize: .shrinkWrap,
+                          IconButton.filledTonal(
+                            icon: const Icon(Icons.delete, size: 18),
+                            onPressed: _onDelete,
+                            style: IconButton.styleFrom(
+                              minimumSize: const Size(28, 28),
+                              padding: EdgeInsets.zero,
+                              tapTargetSize: .shrinkWrap,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),

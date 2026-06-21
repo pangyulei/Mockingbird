@@ -74,7 +74,10 @@ class _State extends State<AlbumEdit> {
       isSubmitEnabled: _isSubmitEnabled,
       onDeleteCover: _onDeleteCover,
       onPickCover: _onPickCover,
-      onSubmit: () => widget._onSubmit?.call(_nameController.text, _cover),
+      onSubmit: () {
+        widget._onSubmit?.call(_nameController.text, _cover);
+        Navigator.of(context).pop();
+      },
       submitTitle: widget._submitTitle,//_isCreating ? 'Create' : 'Save',
       title: widget._title,//_isCreating ? 'Create New Album' : 'Edit Album',
     );

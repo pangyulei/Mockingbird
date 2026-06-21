@@ -19,7 +19,8 @@ class AlbumsGrid extends StatefulWidget {
 
 class _State extends State<AlbumsGrid> {
   final _albums = <Album>[];
-  var _isLoading = false;
+  var _showLoading = false;
+  var _showEditButtons = false;
 
   @override
   void initState() {
@@ -30,7 +31,7 @@ class _State extends State<AlbumsGrid> {
   // 抽离出清晰的异步业务方法
   Future<void> _initAlbums() async {
     setState(() {
-      _isLoading = true;
+      _showLoading = true;
     });
     // 执行数据库查询
     final albums = await DBAlbum(DBObjectBox.instance.store).getAll();
@@ -41,7 +42,7 @@ class _State extends State<AlbumsGrid> {
     // 🌟 核心修复：在 setState 中更新数据，通知 UI 刷新
     setState(() {
       _albums.addAll(albums);
-      _isLoading = false;
+      _showLoading = false;
     });
   }
 
@@ -55,7 +56,7 @@ class _State extends State<AlbumsGrid> {
       body: Stack(
         children: [
           _gridWidget(),
-          if (_isLoading) _loadingWidget(),
+          if (_showLoading) _loadingWidget(),
         ],
       ),
     );
@@ -77,12 +78,38 @@ class _State extends State<AlbumsGrid> {
       ),
       centerTitle: false,
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: IconButton.filledTonal(
-            onPressed: _onAdd,
-            icon: const Icon(Icons.playlist_add),
-          ),
+        IconButton(
+          onPressed: _onEditGrid,
+          icon: Icon(_showEditButtons ? Icons.check : Icons.edit),
+          // style: const ButtonStyle(
+          //     tapTargetSize: .shrinkWrap,
+          //     // overlayColor: WidgetStatePropertyAll(Colors.transparent),
+          //     // splashFactory: NoSplash.splashFactory,
+          // ),
+          // constraints: const BoxConstraints(
+          //   minWidth: 48,
+          //   minHeight: kToolbarHeight,
+          // ),
+          // padding: EdgeInsets.zero,
+          // alignment: .centerEnd,
+          iconSize: 24,
+        ),
+        IconButton(
+          onPressed: _onAdd,
+          iconSize: 34,
+          // alignment: .centerEnd,
+          icon: const Icon(Icons.add),
+          // style: const ButtonStyle(
+          //   tapTargetSize: .shrinkWrap,
+          //   // overlayColor: WidgetStatePropertyAll(Colors.transparent),
+          //   // splashFactory: NoSplash.splashFactory,
+          // ),
+          // constraints: const BoxConstraints(
+          //   minWidth: 48,
+          //   minHeight: kToolbarHeight,
+          // ),
+          // padding: EdgeInsets.zero,
+          // padding: const EdgeInsets.only(right: 4, left: 0),
         ),
       ],
     );
@@ -123,6 +150,7 @@ class _State extends State<AlbumsGrid> {
                     opacity: 0.8,
                     child: AlbumCard(
                       album: album,
+                      showEditButtons: _showEditButtons,
                     ),
                   ),
                 ),
@@ -131,6 +159,7 @@ class _State extends State<AlbumsGrid> {
                 opacity: 0.3,
                 child: AlbumCard(
                   album: album,
+                  showEditButtons: _showEditButtons,
                 ),
               ),
               child: AnimatedContainer(
@@ -146,8 +175,9 @@ class _State extends State<AlbumsGrid> {
                     : null,
                 child: AlbumCard(
                   album: album,
-                  onEdit: () => _onEdit(album),
+                  onEdit: () => _onEditAlbum(album),
                   onDelete: () => _onDelete(album),
+                  showEditButtons: _showEditButtons,
                 ),
               ),
             );
@@ -159,7 +189,7 @@ class _State extends State<AlbumsGrid> {
 
   Future<void> _swapAlbums(Album draggedAlbum, Album targetAlbum) async {
     setState(() {
-      _isLoading = true;
+      _showLoading = true;
     });
     int fromIndex = _albums.indexOf(draggedAlbum);
     int toIndex = _albums.indexOf(targetAlbum);
@@ -170,11 +200,12 @@ class _State extends State<AlbumsGrid> {
     setState(() {
       _albums[fromIndex] = targetAlbum;
       _albums[toIndex] = draggedAlbum;
-      _isLoading = false;
+      _showLoading = false;
     });
   }
 
   Future<void> _onAdd() async {
+    setState(() => _showEditButtons = false);
     await showDialog(context: context, builder: (context) {
       return AlbumEdit(
         title: 'Create New Album',
@@ -188,14 +219,18 @@ class _State extends State<AlbumsGrid> {
             if (newAlbum != null) {
               _albums.insert(0, newAlbum);
             }
-            _isLoading = false;
+            _showLoading = false;
           });
         },
       );
     },);
   }
 
-  Future<void> _onEdit(Album album) async {
+  void _onEditGrid() {
+    setState(() => _showEditButtons = !_showEditButtons);
+  }
+
+  Future<void> _onEditAlbum(Album album) async {
     await showDialog(context: context, builder: (context) {
       return AlbumEdit(
         name: album.name,
@@ -209,6 +244,9 @@ class _State extends State<AlbumsGrid> {
             return cover != null && album.cover != null && cover.path == album.cover;
           }
           if (!isIdentical()) {
+            setState(() {
+              _showLoading = true;
+            });
             final updatedAlbum = await DBAlbum(DBObjectBox.instance.store).update(
               album: album,
               name: name,
@@ -217,6 +255,7 @@ class _State extends State<AlbumsGrid> {
             setState(() {
               int index = _albums.indexOf(album);
               _albums[index] = updatedAlbum;
+              _showLoading = false;
             });
           }
         },
@@ -253,7 +292,7 @@ class _State extends State<AlbumsGrid> {
     }
 
     setState(() {
-      _isLoading = true;
+      _showLoading = true;
     });
 
     // Remove from database
@@ -262,7 +301,7 @@ class _State extends State<AlbumsGrid> {
     // Update state with remaining albums
     setState(() {
       _albums.remove(album);
-      _isLoading = false;
+      _showLoading = false;
     });
 
   }

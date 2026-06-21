@@ -11,10 +11,13 @@ class AlbumCard extends StatefulWidget {
   final VoidCallback? _onEdit;
   final VoidCallback? _onDelete;
   final Album _album;
+  final bool _showEditButtons;
+
   const AlbumCard({
     required this._album,
     this._onEdit,
     this._onDelete,
+    this._showEditButtons = false,
     super.key
   });
 
@@ -47,6 +50,7 @@ class _State extends State<AlbumCard> {
           name: widget._album.name,
           onDelete: widget._onDelete,
           onEdit: widget._onEdit,
+          showEditButtons: widget._showEditButtons,
         ),
       ),
     );
