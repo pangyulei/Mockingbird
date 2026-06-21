@@ -6,6 +6,7 @@ import '../../db/db_album.dart';
 import '../../db/db_objectbox.dart';
 import '../../model/album.dart';
 import '../album_edit/album_edit.dart';
+import '../albums_nav/albums_nav_route.dart';
 import 'album_card/album_card.dart';
 
 
@@ -176,7 +177,8 @@ class _State extends State<AlbumsGrid> {
                 child: AlbumCard(
                   album: album,
                   onEdit: () => _onEditAlbum(album),
-                  onDelete: () => _onDelete(album),
+                  onDelete: () => _onDeleteAlbum(album),
+                  onTap: () => _onTapAlbum(album),
                   showEditButtons: _showEditButtons,
                 ),
               ),
@@ -230,6 +232,11 @@ class _State extends State<AlbumsGrid> {
     setState(() => _showEditButtons = !_showEditButtons);
   }
 
+  void _onTapAlbum(Album album) {
+    setState(() => _showEditButtons = false);
+    Navigator.pushNamed(context, AlbumsNavRoute.urlStrForAlbumDetail(album.id));
+  }
+
   Future<void> _onEditAlbum(Album album) async {
     await showDialog(context: context, builder: (context) {
       return AlbumEdit(
@@ -263,7 +270,7 @@ class _State extends State<AlbumsGrid> {
     },);
   }
 
-  Future<void> _onDelete(Album album) async {
+  Future<void> _onDeleteAlbum(Album album) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

@@ -9,6 +9,7 @@ import 'package:mockingbird/tab_albums/albums_nav/albums_nav_route.dart';
 
 class AlbumCard extends StatefulWidget {
   final VoidCallback? _onEdit;
+  final VoidCallback? _onTap;
   final VoidCallback? _onDelete;
   final Album _album;
   final bool _showEditButtons;
@@ -16,6 +17,7 @@ class AlbumCard extends StatefulWidget {
   const AlbumCard({
     required this._album,
     this._onEdit,
+    this._onTap,
     this._onDelete,
     this._showEditButtons = false,
     super.key
@@ -38,9 +40,7 @@ class _State extends State<AlbumCard> {
       },
       onTapUp: (_) => setState(() => _isPressing = false),
       onTapCancel: () => setState(() => _isPressing = false),
-      onTap: () {
-        Navigator.pushNamed(context, AlbumsNavRoute.urlStrForAlbumDetail(widget._album.id));
-      },
+      onTap: widget._onTap,
       child: AnimatedScale(
         scale: _isPressing ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 100),
