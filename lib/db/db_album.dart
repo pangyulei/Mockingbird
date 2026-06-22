@@ -5,6 +5,10 @@ import 'package:mockingbird/objectbox.g.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../model/media.dart';
+import '../model/subtitle.dart';
+import '../model/sentence.dart';
+
 class DBAlbum {
   final Store _store;
   DBAlbum(this._store);
@@ -121,14 +125,34 @@ class DBAlbum {
     if (albums.isEmpty) return;
     assert(albums.every((a) => a.id != 0), 'try to remove albums without id');
 
-    final ids = albums.map((p) => p.id).toList();
-    await _store.box<Album>().removeManyAsync(ids);
+    await _store.runInTransactionAsync(TxMode.write, (Store store, List<int> albumIds) {
+      final mediaBox = store.box<Media>();
+      final subtitleBox = store.box<Subtitle>();
+      final sentenceBox = store.box<Sentence>();
+      final albumBox = store.box<Album>();
+
+      final albumIdsSet = albumIds.toSet();
+      final medias = mediaBox.getAll().map((m) {
+        m.albums.removeWhere((a) => albumIdsSet.contains(a.id));
+        return m;
+      }).where((m) => m.albums.isEmpty).toList();
+      final mediaIds = medias.map((m) => m.id).toList();
+      final subtitles = medias.map((m) => m.subtitles).expand((e) => e).toList();
+      final subtitleIds = subtitles.map((s) => s.id).toList();
+      final sentences = subtitles.map((st) => st.sentences).expand((e) => e).toList();
+      final sentenceIds = sentences.map((s) => s.id).toList();
+      albumBox.removeMany(albumIds);
+      mediaBox.removeMany(mediaIds);
+      subtitleBox.removeMany(subtitleIds);
+      sentenceBox.removeMany(sentenceIds);
+
+    }, albums.map((a) => a.id).toList());
+
     // Delete cover files for removed playlists
     final uselessCovers = albums
         .where((a) => a.cover != null)
         .map((a) => File(a.cover!));
-    //map is lazy call, it would not execute until someone use it.
-    //at this situation is Future.wait will trigger, so every delete() parallel started same time
+
     final removeCovers = uselessCovers.map((cover) async {
       if (await cover.exists()) {
         await cover.delete();

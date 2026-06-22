@@ -24,12 +24,12 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
 
   @override
   Stream<PlayerState> playerPlayMedia(PlayerState state, Media media) async* {
-
+    final sentences = media.subtitles.firstOrNull?.sentences;
     state = state.copyWith(
       title: media.name,
       showLoading: true,
       showEmpty: true,
-      sentenceStates: media.subtitle.target?.sentences.asMap().entries.map((e) {
+      sentenceStates: sentences?.asMap().entries.map((e) {
         int i = e.key;
         Sentence s = e.value;
         return SentenceCardState(
@@ -39,7 +39,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
             index: i,
         );
       }).toList(),
-      playingSentenceIndex: media.subtitle.target == null ? null : 0,
+      playingSentenceIndex: (media.subtitles.isEmpty || media.subtitles.first.sentences.isEmpty) ? 0 : null,
     );
     yield state;
 
@@ -61,9 +61,9 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
   @override
   PlayerState playerPositionChanged(PlayerState state, Duration position) {
     //auto scroll subtitle sentences
-    if (_media?.subtitle.target == null || _media!.subtitle.target!.sentences.isEmpty) return state;
-    assert(state.playingSentenceIndex != null, '如果字幕文件存在，index 初始化是从0开始的');
-    final sentences = _media!.subtitle.target!.sentences;
+    if (_media == null) return state;
+    if (_media!.subtitles.isEmpty || _media!.subtitles.first.sentences.isEmpty) return state;
+    final sentences = _media!.subtitles.first.sentences;
     //刚开始的时候position=0,但是第一句话的start不一定是0
     //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
     if (position <= sentences[0].end) return state.copyWith(playingSentenceIndex: 0);
@@ -105,10 +105,10 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
   PlayerState playerPlaySentence(PlayerState state, int index) {
     assert(state.videoController!=null);
     assert(_media != null);
-    assert(_media!.subtitle.target!=null);
-    assert(_media!.subtitle.target!.sentences.isNotEmpty);
+    assert(_media!.subtitles.isNotEmpty);
+    assert(_media!.subtitles.first.sentences.isNotEmpty);
 
-    final sentence = _media!.subtitle.target!.sentences[index];
+    final sentence = _media!.subtitles.first.sentences[index];
     state.videoController!.seekTo(sentence.start);
     state.videoController!.play();
     return state;

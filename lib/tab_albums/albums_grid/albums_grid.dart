@@ -9,8 +9,6 @@ import '../album_edit/album_edit.dart';
 import '../albums_nav/albums_nav_route.dart';
 import 'album_card/album_card.dart';
 
-
-
 class AlbumsGrid extends StatefulWidget {
   const AlbumsGrid({super.key});
 
@@ -21,7 +19,6 @@ class AlbumsGrid extends StatefulWidget {
 class _State extends State<AlbumsGrid> {
   final _albums = <Album>[];
   var _showLoading = false;
-  var _showEditButtons = false;
 
   @override
   void initState() {
@@ -81,11 +78,6 @@ class _State extends State<AlbumsGrid> {
       centerTitle: false,
       actions: [
         IconButton(
-          onPressed: _onEditGrid,
-          icon: Icon(_showEditButtons ? Icons.check : Icons.edit),
-          iconSize: 24,
-        ),
-        IconButton(
           onPressed: _onAdd,
           iconSize: 34,
           icon: const Icon(Icons.add),
@@ -129,7 +121,6 @@ class _State extends State<AlbumsGrid> {
                     opacity: 0.8,
                     child: AlbumCard(
                       album: album,
-                      showEditButtons: _showEditButtons,
                     ),
                   ),
                 ),
@@ -138,7 +129,6 @@ class _State extends State<AlbumsGrid> {
                 opacity: 0.3,
                 child: AlbumCard(
                   album: album,
-                  showEditButtons: _showEditButtons,
                 ),
               ),
               child: AnimatedContainer(
@@ -157,7 +147,6 @@ class _State extends State<AlbumsGrid> {
                   onEdit: () => _onEditAlbum(album),
                   onDelete: () => _onDeleteAlbum(album),
                   onTap: () => _onTapAlbum(album),
-                  showEditButtons: _showEditButtons,
                 ),
               ),
             );
@@ -185,7 +174,6 @@ class _State extends State<AlbumsGrid> {
   }
 
   Future<void> _onAdd() async {
-    setState(() => _showEditButtons = false);
     await showDialog(context: context, builder: (context) {
       return AlbumEdit(
         title: 'Create New Album',
@@ -206,12 +194,8 @@ class _State extends State<AlbumsGrid> {
     },);
   }
 
-  void _onEditGrid() {
-    setState(() => _showEditButtons = !_showEditButtons);
-  }
 
   void _onTapAlbum(Album album) {
-    setState(() => _showEditButtons = false);
     Navigator.pushNamed(context, AlbumsNavRoute.urlStrForAlbumDetail(album.id));
   }
 

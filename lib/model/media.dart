@@ -12,7 +12,8 @@ class Media {
   final albums = ToMany<Album>();
   final String path; // Full path to the media file
   final String name;
-  final subtitle = ToOne<Subtitle>();
+  @Backlink('media')
+  final subtitles = ToMany<Subtitle>();
 
   //objectbox will use this default constructor
   Media({
@@ -27,7 +28,7 @@ class Media {
     int? id,
     String? path,
     String? name,
-    Subtitle? subtitle,
+    List<Subtitle>? Function()? subtitles,
     List<Album>? albums,
   }) {
     final media = Media(
@@ -35,7 +36,14 @@ class Media {
       path: path ?? this.path,
       name: name ?? this.name,
     );
-    media.subtitle.target = subtitle ?? this.subtitle.target;
+    if (subtitles != null) {
+      final res = subtitles();
+      if (res != null) {
+        media.subtitles.addAll(res);
+      }
+    } else {
+      media.subtitles.addAll(this.subtitles);
+    }
     media.albums.addAll(albums ?? this.albums);
     return media;
   }
@@ -51,12 +59,12 @@ enum MediaType {
   static MediaType fromExtension(String ext) {
     if (ext.startsWith('.')) ext = ext.substring(1);
     ext = ext.toLowerCase();
-    if (videoExtensions.contains(ext)) return MediaType.video;
-    if (audioExtensions.contains(ext)) return MediaType.audio;
+    if (kVideoExtensions.contains(ext)) return MediaType.video;
+    if (kAudioExtensions.contains(ext)) return MediaType.audio;
     throw ArgumentError('Unsupported file extension: $ext');
   }
 }
 
-const audioExtensions = {'mp3', 'm4a', 'aac', 'wav', 'ogg', 'oga', 'flac', 'amr'};
-const videoExtensions = {'mp4', 'm4v', 'mkv', 'webm', '3gp', 'ts', 'flv'};
-const subtitleExtensions = {'srt', 'vtt'};
+const kAudioExtensions = {'mp3', 'm4a', 'aac', 'wav', 'ogg', 'oga', 'flac', 'amr'};
+const kVideoExtensions = {'mp4', 'm4v', 'mkv', 'webm', '3gp', 'ts', 'flv'};
+const kSubtitleExtensions = {'srt', 'vtt'};

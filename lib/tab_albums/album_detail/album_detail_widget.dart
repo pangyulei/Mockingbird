@@ -45,6 +45,21 @@ class _WidgetFactory extends State<AlbumDetailWidget> implements MediaCardInterf
   }
 
   @override
+  void mediaCardClickAddSubtitle(int index) {
+    _updateStateByStream(widget._logic.albumDetailAddSubtitle(index));
+  }
+
+  @override
+  void mediaCardClickRemoveSubtitle(int index) {
+    _updateStateByStream(widget._logic.albumDetailRemoveSubtitle(index));
+  }
+
+  @override
+  void mediaCardClickDeleteMedia(int index) {
+    _updateStateByStream(widget._logic.albumDetailDeleteMedia(index));
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_state.showLoading) {
       return const Scaffold(

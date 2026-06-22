@@ -9,6 +9,7 @@ import 'package:mockingbird/db/db_objectbox.dart';
 import '../../model/album.dart';
 import '../../model/media.dart';
 import '../../tool/global_broadcaster.dart';
+import '../../tool/subtitle_parser.dart';
 import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
 import 'package:path/path.dart' as p;
@@ -40,7 +41,7 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
       cover: album.cover == null ? null : File(album.cover!),
       mediaStates: album.medias.asMap().entries.map((e) {
         final m = e.value;
-        return MediaCardState(name: m.name, type: m.type, hasSubtitle: m.subtitle.target != null, index: e.key);
+        return MediaCardState(name: m.name, type: m.type, hasSubtitle: m.subtitles.isNotEmpty, index: e.key);
       }).toList(),
     );
   }
@@ -55,9 +56,9 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
     }
     try {
       final allowedExtensions = [
-        ...audioExtensions,
-        ...videoExtensions,
-        ...subtitleExtensions,
+        ...kAudioExtensions,
+        ...kVideoExtensions,
+        ...kSubtitleExtensions,
       ];
       final pickedFiles = await FilePicker.pickFiles(
         type: FileType.custom,
@@ -80,9 +81,9 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
       final List<File> subFiles = [];
       for (var f in files) {
         final ext = p.extension(f.path).replaceFirst('.', '').toLowerCase();
-        if (videoExtensions.contains(ext)) videoFiles.add(f);
-        if (audioExtensions.contains(ext)) audioFiles.add(f);
-        if (subtitleExtensions.contains(ext)) subFiles.add(f);
+        if (kVideoExtensions.contains(ext)) videoFiles.add(f);
+        if (kAudioExtensions.contains(ext)) audioFiles.add(f);
+        if (kSubtitleExtensions.contains(ext)) subFiles.add(f);
       }
 
       // Match subtitles to medias
@@ -104,6 +105,8 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
       await DBMedia(DBObjectBox.instance.store).createMany(_album!, readFiles);
       _album!.medias.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+      _album = await DBAlbum(DBObjectBox.instance.store).get(_albumId);
       yield _albumDetailState(_album!);
 
     } catch (e) {
@@ -117,5 +120,62 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
     if (_album == null) return;
     final media = _album!.medias[index];
     GlobalBroadcaster.instance.emit(GlobalEventPlayMedia(media));
+  }
+
+  @override
+  Stream<AlbumDetailState> albumDetailAddSubtitle(int index) async* {
+    if (_album == null) return;
+    final media = _album!.medias[index];
+
+    try {
+      final pickedFiles = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [...kSubtitleExtensions],
+        allowMultiple: false,
+      );
+
+      if (pickedFiles == null || pickedFiles.files.isEmpty || pickedFiles.files.first.path == null) {
+        return;
+      }
+      final platformFile = pickedFiles.files
+          .where((f) => f.extension != null && kSubtitleExtensions.contains(f.extension!)).firstOrNull;
+      if (platformFile == null) {
+        return;
+      }
+      final subtitleFile = File(platformFile.path!);
+      yield _albumDetailState(_album!).copyWith(showLoading: true);
+
+      final subtitle = await SubtitleParser.parseFile(subtitleFile);
+      
+      // ObjectBox will handle the relation update.
+      media.subtitles.add(subtitle);
+      await DBMedia(DBObjectBox.instance.store).update(media);
+
+      _album = await DBAlbum(DBObjectBox.instance.store).get(_albumId);
+      yield _albumDetailState(_album!);
+    } catch (e) {
+      debugPrint('Error adding subtitle: $e');
+      yield _albumDetailState(_album!);
+    }
+  }
+
+  @override
+  Stream<AlbumDetailState> albumDetailRemoveSubtitle(int index) async* {
+    if (_album == null) return;
+    final media = _album!.medias[index];
+    yield _albumDetailState(_album!).copyWith(showLoading: true);
+    await DBMedia(DBObjectBox.instance.store).removeSubtitle(media);
+    _album = await DBAlbum(DBObjectBox.instance.store).get(_albumId);
+    yield _albumDetailState(_album!);
+  }
+
+  @override
+  Stream<AlbumDetailState> albumDetailDeleteMedia(int index) async* {
+    if (_album == null) return;
+    final media = _album!.medias[index];
+    yield _albumDetailState(_album!).copyWith(showLoading: true);
+    await DBMedia(DBObjectBox.instance.store).remove(media);
+    _album = await DBAlbum(DBObjectBox.instance.store).get(_albumId);
+    yield _albumDetailState(_album!);
   }
 }

@@ -1,5 +1,6 @@
 
 
+import 'media.dart';
 import 'sentence.dart';
 import 'package:objectbox/objectbox.dart';
 
@@ -11,7 +12,7 @@ class Subtitle {
   @Backlink('subtitle')
   final sentences = ToMany<Sentence>();
 
-  //final media = ToOne<Media>();
+  final media = ToOne<Media>();
 
   Subtitle({
     this.id = 0,

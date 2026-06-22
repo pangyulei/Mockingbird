@@ -10,4 +10,13 @@ abstract interface class AlbumDetailInterfaceUIEvents {
 
   /// Trigger playing a media
   void albumDetailPlayMedia(int index, BuildContext context);
+
+  /// Add or change subtitle for a media
+  Stream<AlbumDetailState> albumDetailAddSubtitle(int index);
+
+  /// Remove subtitle from a media
+  Stream<AlbumDetailState> albumDetailRemoveSubtitle(int index);
+
+  /// Delete a media
+  Stream<AlbumDetailState> albumDetailDeleteMedia(int index);
 }

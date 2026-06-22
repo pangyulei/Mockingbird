@@ -1,10 +1,9 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mockingbird/model/album.dart';
-import 'package:mockingbird/tab_albums/albums_grid/album_card/album_card_dumb.dart';
-import 'package:mockingbird/tab_albums/albums_nav/albums_nav_route.dart';
+
+import 'album_card_dumb.dart';
 
 
 class AlbumCard extends StatefulWidget {
@@ -12,14 +11,12 @@ class AlbumCard extends StatefulWidget {
   final VoidCallback? _onTap;
   final VoidCallback? _onDelete;
   final Album _album;
-  final bool _showEditButtons;
 
   const AlbumCard({
     required this._album,
     this._onEdit,
     this._onTap,
     this._onDelete,
-    this._showEditButtons = false,
     super.key
   });
 
@@ -50,7 +47,6 @@ class _State extends State<AlbumCard> {
           name: widget._album.name,
           onDelete: widget._onDelete,
           onEdit: widget._onEdit,
-          showEditButtons: widget._showEditButtons,
         ),
       ),
     );

@@ -10,7 +10,6 @@ class AlbumCardDumb extends StatelessWidget {
   final String? _cover;
   final int _mediasCount;
   final String _name;
-  final bool _showEditButtons;
 
   const AlbumCardDumb({
     super.key,
@@ -19,7 +18,6 @@ class AlbumCardDumb extends StatelessWidget {
     this._mediasCount = 0,
     this._cover,
     this._name = '',
-    this._showEditButtons = false,
   });
 
   @override
@@ -61,34 +59,48 @@ class AlbumCardDumb extends StatelessWidget {
                         size: 40,
                       ),
                     ),
-                  if (_showEditButtons)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Column(
-                        spacing: 2,
-                        children: [
-                          IconButton.filledTonal(
-                            icon: const Icon(Icons.edit, size: 16),
-                            onPressed: _onEdit,
-                            style: IconButton.styleFrom(
-                              minimumSize: const Size(28, 28),
-                              padding: EdgeInsets.zero,
-                              tapTargetSize: .shrinkWrap,
-                            ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, size: 20),
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _onEdit?.call();
+                        } else if (value == 'delete') {
+                          _onDelete?.call();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, size: 18),
+                              SizedBox(width: 8),
+                              Text('Edit'),
+                            ],
                           ),
-                          IconButton.filledTonal(
-                            icon: const Icon(Icons.delete, size: 18),
-                            onPressed: _onDelete,
-                            style: IconButton.styleFrom(
-                              minimumSize: const Size(28, 28),
-                              padding: EdgeInsets.zero,
-                              tapTargetSize: .shrinkWrap,
-                            ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, size: 18),
+                              SizedBox(width: 8),
+                              Text('Delete'),
+                            ],
                           ),
-                        ],
+                        ),
+                      ],
+                      style: IconButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+                        minimumSize: const Size(28, 28),
+                        padding: EdgeInsets.zero,
+                        tapTargetSize: .shrinkWrap,
                       ),
                     ),
+                  ),
                 ],
               ),
             ),

@@ -104,8 +104,10 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
   }
 
   Widget _playerControlBar() {
+    final videoController = _state.videoController!;
+    final isPlaying = videoController.value.isPlaying;
     return Padding(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: SizedBox(
         width: double.infinity,
         height: _kPlayerControlBarHeight,
@@ -113,9 +115,17 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
             spacing: 4,
             children: [
               // _playerButton((){}, const Icon(Icons.skip_previous)),
-              _playerButton((){}, const Icon(Icons.replay)),
-              _playerButton((){}, const Icon(Icons.play_circle)),
-              _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
+              // _playerButton((){}, const Icon(Icons.replay)),
+              _playerButton((){
+                setState(() {
+                  if (isPlaying) {
+                    videoController.pause();
+                  } else {
+                    videoController.play();
+                  }
+                });
+              }, Icon(isPlaying ? Icons.pause_circle : Icons.play_circle)),
+              // _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
               // _playerButton((){}, const Icon(Icons.skip_next)),
               const Spacer(),
               _playerButton((){}, const Icon(Icons.repeat_one)),
