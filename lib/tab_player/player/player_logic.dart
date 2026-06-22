@@ -24,22 +24,27 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
 
   @override
   Stream<PlayerState> playerPlayMedia(PlayerState state, Media media) async* {
+    if (_media != null && _media!.id == media.id) {
+      yield state;
+      return;
+    }
     final sentences = media.subtitles.firstOrNull?.sentences;
+    final sentenceStates = sentences?.asMap().entries.map((e) {
+      int i = e.key;
+      Sentence s = e.value;
+      return SentenceCardState(
+        isPlaying: i == 0,
+        text: s.text,
+        period: '${_formatDuration(s.start)} - ${_formatDuration(s.end)}',
+        index: i,
+      );
+    }).toList() ?? const [];
     state = state.copyWith(
       title: media.name,
       showLoading: true,
       showEmpty: true,
-      sentenceStates: sentences?.asMap().entries.map((e) {
-        int i = e.key;
-        Sentence s = e.value;
-        return SentenceCardState(
-            isPlaying: i == 0,
-            text: s.text,
-            period: '${_formatDuration(s.start)} - ${_formatDuration(s.end)}',
-            index: i,
-        );
-      }).toList(),
-      playingSentenceIndex: (media.subtitles.isEmpty || media.subtitles.first.sentences.isEmpty) ? 0 : null,
+      sentenceStates: sentenceStates,
+      playingSentenceIndex: () => sentenceStates.isEmpty ? null : 0,
     );
     yield state;
 
@@ -66,7 +71,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
     final sentences = _media!.subtitles.first.sentences;
     //刚开始的时候position=0,但是第一句话的start不一定是0
     //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
-    if (position <= sentences[0].end) return state.copyWith(playingSentenceIndex: 0);
+    if (position <= sentences[0].end) return state.copyWith(playingSentenceIndex: () => 0);
     final sentencesWithIndex = sentences.asMap().entries;
     var newPlayingIndex = state.playingSentenceIndex!;
     try {
@@ -88,7 +93,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
     if (newPlayingIndex != state.playingSentenceIndex) {
       debugPrint('newPlayingIndex: $newPlayingIndex');
       _scrollController.jumpTo(index: newPlayingIndex,alignment: 0.3);
-      return state.copyWith(playingSentenceIndex: newPlayingIndex);
+      return state.copyWith(playingSentenceIndex: () => newPlayingIndex);
     } else {
       return state;
     }

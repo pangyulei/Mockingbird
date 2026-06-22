@@ -24,7 +24,7 @@ class PlayerState {
     VideoPlayerController? videoController,
     String? title,
     List<SentenceCardState>? sentenceStates,
-    int? playingSentenceIndex,
+    int? Function()?  playingSentenceIndex,
   }) {
     return PlayerState(
       showEmpty: showEmpty ?? this.showEmpty,
@@ -32,7 +32,7 @@ class PlayerState {
       videoController: videoController ?? this.videoController,
       title: title ?? this.title,
       sentenceStates: sentenceStates ?? this.sentenceStates,
-      playingSentenceIndex: playingSentenceIndex ?? this.playingSentenceIndex,
+      playingSentenceIndex: playingSentenceIndex == null ? this.playingSentenceIndex : playingSentenceIndex(),
     );
   }
 }

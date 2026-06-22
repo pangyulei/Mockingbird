@@ -82,12 +82,13 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
               child: VideoPlayer(_state.videoController!)
           ),
           _playerControlBar(),
-          _sentencesList(),
+          if (_state.sentenceStates.isNotEmpty) _sentencesList(),
         ]
     );
   }
 
   Widget _sentencesList() {
+    assert(_state.sentenceStates.isNotEmpty, 'empty subtitle should not show sentences list');
     return Expanded(
       child: ScrollablePositionedList.builder(
         itemCount: _state.sentenceStates.length,
