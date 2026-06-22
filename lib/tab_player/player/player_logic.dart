@@ -45,6 +45,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
       showEmpty: true,
       sentenceStates: sentenceStates,
       playingSentenceIndex: () => sentenceStates.isEmpty ? null : 0,
+      isLoop1: false,
     );
     yield state;
 
@@ -67,35 +68,51 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
   PlayerState playerPositionChanged(PlayerState state, Duration position) {
     //auto scroll subtitle sentences
     if (_media == null) return state;
-    if (_media!.subtitles.isEmpty || _media!.subtitles.first.sentences.isEmpty) return state;
-    final sentences = _media!.subtitles.first.sentences;
-    //刚开始的时候position=0,但是第一句话的start不一定是0
-    //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
-    if (position <= sentences[0].end) return state.copyWith(playingSentenceIndex: () => 0);
-    final sentencesWithIndex = sentences.asMap().entries;
+    if (_media!.subtitles.isEmpty) return state;
+    final subtitle = _media!.subtitles.first;
+    final sentences = subtitle.sentences;
+    if (sentences.isEmpty) return state;
+
     var newPlayingIndex = state.playingSentenceIndex!;
-    try {
-      final s = sentencesWithIndex
-          .skip(state.playingSentenceIndex!)
-          .firstWhere((s) => _isSentencePlaying(s.value, position));
-      newPlayingIndex = s.key;
-    } catch (e1) {
-      // debugPrint(e1.toString());
-      try {
-        final s = sentencesWithIndex
-            .skipWhile((s) => s.key >= state.playingSentenceIndex!)
-            .firstWhere((s) => _isSentencePlaying(s.value, position));
-        newPlayingIndex = s.key;
-      } catch (e2) {
-        // debugPrint(e2.toString());
+    if (state.isLoop1) {
+      final sentence = sentences[newPlayingIndex];
+      if (position > sentence.end) {
+        state.videoController!.seekTo(sentence.start);
       }
-    }
-    if (newPlayingIndex != state.playingSentenceIndex) {
-      debugPrint('newPlayingIndex: $newPlayingIndex');
-      _scrollController.jumpTo(index: newPlayingIndex,alignment: 0.3);
-      return state.copyWith(playingSentenceIndex: () => newPlayingIndex);
-    } else {
       return state;
+
+    } else {
+      //刚开始的时候position=0,但是第一句话的start不一定是0
+      //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
+      // if (position <= sentences[0].end) return state.copyWith(playingSentenceIndex: () => 0);
+      if (position <= sentences[0].end) {
+        newPlayingIndex = 0;
+      } else {
+        //从当前sentence开始判断这句是不是真的在播放中
+        final sentencesWithIndex = sentences.asMap().entries;
+        try {
+          final s = sentencesWithIndex
+              .skip(state.playingSentenceIndex!)
+              .firstWhere((s) => _isSentencePlaying(s.value, position));
+          newPlayingIndex = s.key;
+        } catch (e1) {
+          // debugPrint(e1.toString());
+          try {
+            final s = sentencesWithIndex
+                .skipWhile((s) => s.key >= state.playingSentenceIndex!)
+                .firstWhere((s) => _isSentencePlaying(s.value, position));
+            newPlayingIndex = s.key;
+          } catch (e2) {
+            // debugPrint(e2.toString());
+          }
+        }
+      }
+      if (newPlayingIndex != state.playingSentenceIndex) {
+        _scrollController.jumpTo(index: newPlayingIndex, alignment: 0.3);
+        return state.copyWith(playingSentenceIndex: () => newPlayingIndex);
+      } else {
+        return state;
+      }
     }
   }
 

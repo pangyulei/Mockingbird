@@ -129,7 +129,11 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
               // _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
               // _playerButton((){}, const Icon(Icons.skip_next)),
               const Spacer(),
-              _playerButton((){}, const Icon(Icons.repeat_one)),
+              _playerButton((){
+                setState(() {
+                  _state = _state.copyWith(isLoop1: !_state.isLoop1);
+                });
+              }, Icon(_state.isLoop1 ? Icons.repeat_one : Icons.repeat)),
               _playerSpeedButton(),
             ]
         ),

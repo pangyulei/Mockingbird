@@ -8,8 +8,10 @@ class PlayerState {
   final List<SentenceCardState> sentenceStates;
   final int? playingSentenceIndex;
   final bool showEmpty;
+  final bool isLoop1;
 
   const PlayerState({
+    this.isLoop1 = false,
     this.showEmpty = false,
     this.showLoading = false,
     this.videoController,
@@ -25,8 +27,10 @@ class PlayerState {
     String? title,
     List<SentenceCardState>? sentenceStates,
     int? Function()?  playingSentenceIndex,
+    bool? isLoop1,
   }) {
     return PlayerState(
+      isLoop1: isLoop1 ?? this.isLoop1,
       showEmpty: showEmpty ?? this.showEmpty,
       showLoading: showLoading ?? this.showLoading,
       videoController: videoController ?? this.videoController,
