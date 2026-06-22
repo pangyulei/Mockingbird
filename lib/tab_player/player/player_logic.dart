@@ -133,7 +133,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
     final sentence = _media!.subtitles.first.sentences[index];
     state.videoController!.seekTo(sentence.start);
     state.videoController!.play();
-    return state;
+    return state.copyWith(playingSentenceIndex: () => index);
   }
 
   @override

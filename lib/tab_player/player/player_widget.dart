@@ -12,6 +12,8 @@ import 'player_logic.dart';
 
 const double _kPlayerControlBarHeight = 36;
 const double _kPlayerControlBarButtonWidth = 40;
+const kPlaySpeeds = <double>[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
+
 
 class PlayerWidget extends StatefulWidget {
   final PlayerLogic _logic;
@@ -161,7 +163,16 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
 
   Widget _playerSpeedButton() {
     return FilledButton.tonal(
-      onPressed: (){},
+      onPressed: () async {
+        var playSpeed = _state.playSpeed;
+        final index = kPlaySpeeds.indexOf(playSpeed);
+        final nextIndex = (index+1) % kPlaySpeeds.length;
+        playSpeed = kPlaySpeeds[nextIndex];
+        await _state.videoController!.setPlaybackSpeed(playSpeed);
+        setState(() {
+          _state = _state.copyWith(playSpeed: playSpeed);
+        });
+      },
       style: FilledButton.styleFrom(
         minimumSize: const Size.fromWidth(_kPlayerControlBarButtonWidth),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -169,7 +180,7 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
           horizontal: 8,
         ),
       ),
-      child: const Text('2.25x', style: TextStyle(
+      child: Text('${_state.playSpeed.toString()}x', style: const TextStyle(
         fontWeight: FontWeight.bold,
       ),),
     );

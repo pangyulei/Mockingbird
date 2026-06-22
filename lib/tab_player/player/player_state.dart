@@ -9,8 +9,10 @@ class PlayerState {
   final int? playingSentenceIndex;
   final bool showEmpty;
   final bool isLoop1;
+  final double playSpeed;
 
   const PlayerState({
+    this.playSpeed = 1.0,
     this.isLoop1 = false,
     this.showEmpty = false,
     this.showLoading = false,
@@ -21,6 +23,7 @@ class PlayerState {
   });
 
   PlayerState copyWith({
+    double? playSpeed,
     bool? showEmpty,
     bool? showLoading,
     VideoPlayerController? videoController,
@@ -30,6 +33,7 @@ class PlayerState {
     bool? isLoop1,
   }) {
     return PlayerState(
+      playSpeed: playSpeed ?? this.playSpeed,
       isLoop1: isLoop1 ?? this.isLoop1,
       showEmpty: showEmpty ?? this.showEmpty,
       showLoading: showLoading ?? this.showLoading,
