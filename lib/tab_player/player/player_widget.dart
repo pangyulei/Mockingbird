@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
@@ -12,8 +13,9 @@ import 'player_logic.dart';
 
 const double _kPlayerControlBarHeight = 36;
 const double _kPlayerControlBarButtonWidth = 40;
-const kPlaySpeeds = <double>[0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0];
-
+const double _kMaxPlaySpeed = 3.0;
+const double _kMinPlaySpeed = 0.25;
+const double _kStepPlaySpeed = 0.25;
 
 class PlayerWidget extends StatefulWidget {
   final PlayerLogic _logic;
@@ -98,7 +100,7 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
         itemBuilder: (context, index) {
           final sentenceState = _state.sentenceStates[index];
           return SentenceCardWidget(
-              state: sentenceState.copyWith(isPlaying: index==_state.playingSentenceIndex),
+              state: sentenceState.copyWith(isPlaying: index==_state.highlightedIndex),
               logic: this
           );
         },
@@ -107,8 +109,6 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
   }
 
   Widget _playerControlBar() {
-    final videoController = _state.videoController!;
-    final isPlaying = videoController.value.isPlaying;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: SizedBox(
@@ -119,24 +119,14 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
             children: [
               // _playerButton((){}, const Icon(Icons.skip_previous)),
               // _playerButton((){}, const Icon(Icons.replay)),
-              _playerButton((){
-                setState(() {
-                  if (isPlaying) {
-                    videoController.pause();
-                  } else {
-                    videoController.play();
-                  }
-                });
-              }, Icon(isPlaying ? Icons.pause_circle : Icons.play_circle)),
+              _playPauseButton(),
               // _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
               // _playerButton((){}, const Icon(Icons.skip_next)),
               const Spacer(),
-              _playerButton((){
-                setState(() {
-                  _state = _state.copyWith(isLoop1: !_state.isLoop1);
-                });
-              }, Icon(_state.isLoop1 ? Icons.repeat_one : Icons.repeat)),
-              _playerSpeedButton(),
+              _loopButton(),
+              _slowerSpeedButton(),
+              _playerSpeedLabel(),
+              _fasterSpeedButton(),
             ]
         ),
       ),
@@ -161,32 +151,83 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
     );
   }
 
-  Widget _playerSpeedButton() {
-    return FilledButton.tonal(
-      onPressed: () async {
-        var playSpeed = _state.playSpeed;
-        final index = kPlaySpeeds.indexOf(playSpeed);
-        final nextIndex = (index+1) % kPlaySpeeds.length;
-        playSpeed = kPlaySpeeds[nextIndex];
-        await _state.videoController!.setPlaybackSpeed(playSpeed);
-        setState(() {
-          _state = _state.copyWith(playSpeed: playSpeed);
-        });
-      },
-      style: FilledButton.styleFrom(
-        minimumSize: const Size.fromWidth(_kPlayerControlBarButtonWidth),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-        ),
-      ),
-      child: Text('${_state.playSpeed.toString()}x', style: const TextStyle(
-        fontWeight: FontWeight.bold,
-      ),),
-    );
+  Widget _playPauseButton() {
+    final videoController = _state.videoController!;
+    final isPlaying = videoController.value.isPlaying;
+    return _controlButton(() async {
+      if (isPlaying) {
+        await videoController.pause();
+      } else {
+        await videoController.play();
+      }
+      setState(() {
+
+      });
+    }, Icon(isPlaying ? Icons.pause_circle : Icons.play_circle));
   }
 
-  Widget _playerButton(void Function() onPressed, Widget icon) {
+  Widget _loopButton() {
+    return _controlButton((){
+      setState(() {
+        if (_state.loopIndex == null) {
+          _state = _state.copyWith(loopIndex: () => _state.highlightedIndex);
+        } else {
+          _state = _state.copyWith(loopIndex: () => null);
+        }
+      });
+    }, Icon(_state.loopIndex != null ? Icons.repeat_one : Icons.repeat));
+  }
+
+  Widget _slowerSpeedButton() {
+    return _controlButton(() async {
+      final videoController = _state.videoController!;
+      final currentSpeed = videoController.value.playbackSpeed;
+      var nextSpeed = max(_kMinPlaySpeed, currentSpeed - _kStepPlaySpeed);
+      if (nextSpeed == currentSpeed) {
+        return;
+      }
+      await _state.videoController!.setPlaybackSpeed(nextSpeed);
+      setState(() {
+
+      });
+    }, const Icon(Icons.fast_rewind));
+  }
+
+  Widget _fasterSpeedButton() {
+    return _controlButton(() async {
+      final videoController = _state.videoController!;
+      final currentSpeed = videoController.value.playbackSpeed;
+      var nextSpeed = min(_kMaxPlaySpeed, currentSpeed + _kStepPlaySpeed);
+      if (nextSpeed == currentSpeed) {
+        return;
+      }
+      await _state.videoController!.setPlaybackSpeed(nextSpeed);
+      setState(() {
+      });
+    }, const Icon(Icons.fast_forward));
+  }
+
+
+  Widget _playerSpeedLabel() {
+    return Container(
+      height: _kPlayerControlBarHeight,
+      alignment: .center,
+      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8), // 1. Padding inside the box
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer, // 2. Box Color
+        borderRadius: BorderRadius.circular(8.0), // 3. Rounded corners
+      ),
+      child: Text(
+        '${_state.videoController!.value.playbackSpeed.toString()}x',
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+
+  }
+
+  Widget _controlButton(void Function() onPressed, Widget icon) {
     return SizedBox(
       width: _kPlayerControlBarButtonWidth,
       child: IconButton.filledTonal(
@@ -206,14 +247,16 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
     });
   }
 
-  void _onPlayerTimelinePositionChanged(VideoPlayerController videoController) {
+  void _onPlayerTimelinePositionChanged(VideoPlayerController videoController) async {
     //TODO here should judge by preference
     //auto scroll subtitle sentences
-    _updateState(widget._logic.playerPositionChanged(_state, videoController.value.position));
+    final newState = await widget._logic.playerPositionChanged(_state, videoController.value.position);
+    _updateState(newState);
   }
 
   @override
-  void sentenceCardClicked(int index) {
-    _updateState(widget._logic.playerPlaySentence(_state, index));
+  void sentenceCardClicked(int index) async {
+    final newState = await widget._logic.playerPlaySentence(_state, index);
+    _updateState(newState);
   }
 }

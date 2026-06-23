@@ -1,10 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widget_previews.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mockingbird/model/media.dart';
 import 'package:mockingbird/model/sentence.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
-import 'package:scrollable_positioned_list/src/scrollable_positioned_list.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 import 'player_interface_ui_events.dart';
 import 'player_state.dart';
@@ -44,8 +45,8 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
       showLoading: true,
       showEmpty: true,
       sentenceStates: sentenceStates,
-      playingSentenceIndex: () => sentenceStates.isEmpty ? null : 0,
-      isLoop1: false,
+      highlightedIndex: () => sentenceStates.isEmpty ? null : 0,
+      loopIndex: null,
     );
     yield state;
 
@@ -65,75 +66,106 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
   }
 
   @override
-  PlayerState playerPositionChanged(PlayerState state, Duration position) {
+  Future<PlayerState> playerPositionChanged(PlayerState state, Duration position) async {
     //auto scroll subtitle sentences
     if (_media == null) return state;
     if (_media!.subtitles.isEmpty) return state;
     final subtitle = _media!.subtitles.first;
     final sentences = subtitle.sentences;
     if (sentences.isEmpty) return state;
+    final mediaEnd = state.videoController!.value.duration;
 
-    var newPlayingIndex = state.playingSentenceIndex!;
-    if (state.isLoop1) {
-      final sentence = sentences[newPlayingIndex];
-      if (position > sentence.end) {
-        state.videoController!.seekTo(sentence.start);
+    if (state.loopIndex != null) {
+      final index = state.loopIndex!;
+      final nextSentence = index+1 < sentences.length ? sentences[index+1] : null;
+      bool needToSeekToBeginning = false;
+      if (nextSentence != null) {
+        needToSeekToBeginning = position >= nextSentence.start;
+      } else {
+        needToSeekToBeginning = position >= mediaEnd;
       }
-      return state;
+      if (needToSeekToBeginning) {
+        await state.videoController!.seekTo(_startPositionForPlayingSentence(index));
+      }
+      if (index != state.highlightedIndex) {
+        _scrollController.jumpTo(index: index, alignment: 0.3);
+      }
+      return state.copyWith(highlightedIndex: () => index);
 
     } else {
-      //刚开始的时候position=0,但是第一句话的start不一定是0
-      //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
-      // if (position <= sentences[0].end) return state.copyWith(playingSentenceIndex: () => 0);
-      if (position <= sentences[0].end) {
-        newPlayingIndex = 0;
-      } else {
-        //从当前sentence开始判断这句是不是真的在播放中
-        final sentencesWithIndex = sentences.asMap().entries;
-        try {
-          final s = sentencesWithIndex
-              .skip(state.playingSentenceIndex!)
-              .firstWhere((s) => _isSentencePlaying(s.value, position));
-          newPlayingIndex = s.key;
-        } catch (e1) {
-          // debugPrint(e1.toString());
-          try {
-            final s = sentencesWithIndex
-                .skipWhile((s) => s.key >= state.playingSentenceIndex!)
-                .firstWhere((s) => _isSentencePlaying(s.value, position));
-            newPlayingIndex = s.key;
-          } catch (e2) {
-            // debugPrint(e2.toString());
-          }
+      int? currentPlayingIndex;
+
+      //从当前sentence开始判断这句是不是真的在播放中
+      final sentencesWithIndex = sentences.asMap().entries;
+      //从现在的 index，判断到最后，再从最前的index，判断到现在的index
+      final allRange = List.generate(sentences.length, (index)=>index);
+      final range1 = allRange.sublist(state.highlightedIndex!);
+      final range2 = allRange.sublist(0, state.highlightedIndex!);
+      final searchRange = [...range1, ...range2];
+      for (var i in searchRange) {
+        if (_isSentencePlaying(i, position, mediaEnd)) {
+          currentPlayingIndex = i;
+          break;
         }
       }
-      if (newPlayingIndex != state.playingSentenceIndex) {
-        _scrollController.jumpTo(index: newPlayingIndex, alignment: 0.3);
-        return state.copyWith(playingSentenceIndex: () => newPlayingIndex);
-      } else {
+      if (currentPlayingIndex == null) {
+        assert(false, 'player should always find an sentence for current playing position');
         return state;
       }
+      if (currentPlayingIndex != state.highlightedIndex) {
+        _scrollController.jumpTo(index: currentPlayingIndex, alignment: 0.3);
+      }
+      return state.copyWith(highlightedIndex: () => currentPlayingIndex);
     }
+
   }
 
-  bool _isSentencePlaying(Sentence s, Duration position) {
-    final start = s.start;
-    final end = s.end;
-    final matched = start <= position && position <= end;
-    return matched;
+  bool _isSentencePlaying(int sentenceIndex, Duration position, Duration mediaEnd) {
+    final sentences = _media!.subtitles.first.sentences;
+    if (sentences.length == 1) {
+      return true;
+    }
+    final nextSentence = sentenceIndex+1 < sentences.length ? sentences[sentenceIndex+1] : null;
+    final sentence = sentences[sentenceIndex];
+
+    //刚开始的时候position=0,但是第一句话的start不一定是0
+    //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
+    if (sentenceIndex == 0) {
+      return const Duration(microseconds: 0) <= position && position < nextSentence!.start;
+
+    } else if (sentenceIndex == sentences.length-1) {
+      return sentence.start <= position && position <= mediaEnd;
+
+    } else {
+      return sentence.start <= position && position < nextSentence!.start;
+    }
+
   }
 
   @override
-  PlayerState playerPlaySentence(PlayerState state, int index) {
+  Future<PlayerState> playerPlaySentence(PlayerState state, int index) async {
     assert(state.videoController!=null);
     assert(_media != null);
     assert(_media!.subtitles.isNotEmpty);
     assert(_media!.subtitles.first.sentences.isNotEmpty);
 
-    final sentence = _media!.subtitles.first.sentences[index];
-    state.videoController!.seekTo(sentence.start);
-    state.videoController!.play();
-    return state.copyWith(playingSentenceIndex: () => index);
+    final sentences = _media!.subtitles.first.sentences;
+    final sentence = sentences[index];
+    if (state.loopIndex != null) {
+      state = state.copyWith(loopIndex: () => index);
+    }
+    await state.videoController!.seekTo(_startPositionForPlayingSentence(index));
+    await state.videoController!.play();
+    return state.copyWith(highlightedIndex: () => index);
+  }
+
+  Duration _startPositionForPlayingSentence(int sentenceIndex) {
+    final sentences = _media!.subtitles.first.sentences;
+    if (sentenceIndex == 0) {
+      return const Duration(microseconds: 0);
+    } else {
+      return sentences[sentenceIndex].start;
+    }
   }
 
   @override

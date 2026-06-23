@@ -6,41 +6,37 @@ class PlayerState {
   final String? title;
   final VideoPlayerController? videoController;
   final List<SentenceCardState> sentenceStates;
-  final int? playingSentenceIndex;
+  final int? highlightedIndex;
   final bool showEmpty;
-  final bool isLoop1;
-  final double playSpeed;
+  final int? loopIndex;
 
   const PlayerState({
-    this.playSpeed = 1.0,
-    this.isLoop1 = false,
+    this.loopIndex,
     this.showEmpty = false,
     this.showLoading = false,
     this.videoController,
     this.title,
     this.sentenceStates = const [],
-    this.playingSentenceIndex,
+    this.highlightedIndex,
   });
 
   PlayerState copyWith({
-    double? playSpeed,
     bool? showEmpty,
     bool? showLoading,
     VideoPlayerController? videoController,
     String? title,
     List<SentenceCardState>? sentenceStates,
-    int? Function()?  playingSentenceIndex,
-    bool? isLoop1,
+    int? Function()?  highlightedIndex,
+    int? Function()? loopIndex,
   }) {
     return PlayerState(
-      playSpeed: playSpeed ?? this.playSpeed,
-      isLoop1: isLoop1 ?? this.isLoop1,
+      loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       showEmpty: showEmpty ?? this.showEmpty,
       showLoading: showLoading ?? this.showLoading,
       videoController: videoController ?? this.videoController,
       title: title ?? this.title,
       sentenceStates: sentenceStates ?? this.sentenceStates,
-      playingSentenceIndex: playingSentenceIndex == null ? this.playingSentenceIndex : playingSentenceIndex(),
+      highlightedIndex: highlightedIndex == null ? this.highlightedIndex : highlightedIndex(),
     );
   }
 }
