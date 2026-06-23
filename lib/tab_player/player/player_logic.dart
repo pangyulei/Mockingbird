@@ -66,15 +66,17 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
   }
 
   @override
-  Future<PlayerState> playerPositionChanged(PlayerState state, Duration position) async {
+  Future<PlayerState> playerPositionChanged(PlayerState state, VideoPlayerController videoController) async {
+    final position = videoController.value.position;
     //auto scroll subtitle sentences
     if (_media == null) return state;
     if (_media!.subtitles.isEmpty) return state;
     final subtitle = _media!.subtitles.first;
     final sentences = subtitle.sentences;
     if (sentences.isEmpty) return state;
-    final mediaEnd = state.videoController!.value.duration;
+    final mediaEnd = videoController.value.duration;
 
+    debugPrint('positon changed: loop index: ${state.loopIndex}');
     if (state.loopIndex != null) {
       final index = state.loopIndex!;
       final nextSentence = index+1 < sentences.length ? sentences[index+1] : null;
@@ -85,7 +87,7 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
         needToSeekToBeginning = position >= mediaEnd;
       }
       if (needToSeekToBeginning) {
-        await state.videoController!.seekTo(_startPositionForPlayingSentence(index));
+        await videoController.seekTo(_startPositionForPlayingSentence(index));
       }
       if (index != state.highlightedIndex) {
         _scrollController.jumpTo(index: index, alignment: 0.3);
@@ -151,10 +153,10 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
 
     final sentences = _media!.subtitles.first.sentences;
     final sentence = sentences[index];
-    if (state.loopIndex != null) {
-      state = state.copyWith(loopIndex: () => index);
-    }
-    await state.videoController!.seekTo(_startPositionForPlayingSentence(index));
+
+    final toPosition =  _startPositionForPlayingSentence(index);
+    await state.videoController!.seekTo(toPosition);
+    debugPrint('seeked to $toPosition');
     await state.videoController!.play();
     return state.copyWith(highlightedIndex: () => index);
   }

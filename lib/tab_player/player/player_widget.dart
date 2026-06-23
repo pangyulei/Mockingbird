@@ -250,12 +250,17 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
   void _onPlayerTimelinePositionChanged(VideoPlayerController videoController) async {
     //TODO here should judge by preference
     //auto scroll subtitle sentences
-    final newState = await widget._logic.playerPositionChanged(_state, videoController.value.position);
+    final newState = await widget._logic.playerPositionChanged(_state, videoController);
     _updateState(newState);
   }
 
   @override
   void sentenceCardClicked(int index) async {
+    debugPrint('click sentence at $index ${_state.sentenceStates[index].text}');
+    if (_state.loopIndex != null) {
+      _state = _state.copyWith(loopIndex: () => index);
+      debugPrint('set loop index: ${_state.loopIndex}');
+    }
     final newState = await widget._logic.playerPlaySentence(_state, index);
     _updateState(newState);
   }
