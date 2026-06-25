@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/widget_previews.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mockingbird/model/media.dart';
 import 'package:mockingbird/model/sentence.dart';
@@ -98,7 +97,6 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
       int? currentPlayingIndex;
 
       //从当前sentence开始判断这句是不是真的在播放中
-      final sentencesWithIndex = sentences.asMap().entries;
       //从现在的 index，判断到最后，再从最前的index，判断到现在的index
       final allRange = List.generate(sentences.length, (index)=>index);
       final range1 = allRange.sublist(state.highlightedIndex!);
@@ -150,9 +148,6 @@ class PlayerLogic implements PlayerInterfaceUIEvents {
     assert(_media != null);
     assert(_media!.subtitles.isNotEmpty);
     assert(_media!.subtitles.first.sentences.isNotEmpty);
-
-    final sentences = _media!.subtitles.first.sentences;
-    final sentence = sentences[index];
 
     final toPosition =  _startPositionForPlayingSentence(index);
     await state.videoController!.seekTo(toPosition);

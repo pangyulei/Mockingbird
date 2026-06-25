@@ -1,8 +1,16 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  errors:
+    # 💡 核心：把这些原本是 hint 的规则，强行升级为 warning（黄色波浪线）或 error（红色波浪线）
+    prefer_const_constructors: warning
+    prefer_const_declarations: warning
+    prefer_const_constructors_in_immutables: warning
+    prefer_const_literals_to_create_immutables: warning
+
 linter:
   rules:
-    - prefer_const_constructors
-    - prefer_const_declarations
-    - prefer_const_literals_to_create_immutables
-    - prefer_const_constructors_in_immutables
+    - prefer_const_constructors                  # 提示：创建组件时能加 const 就加
+    - prefer_const_declarations                  # 提示：声明变量时能加 const 就加
+    - prefer_const_constructors_in_immutables    # 提示：不可变类的构造函数应该加 const
+    - prefer_const_literals_to_create_immutables # 提示：List/Map 等字面量能加 const 就加

@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'media_card_state.dart';
 import 'media_card_interface_ui_events.dart';
 
-enum MoreItem {
+enum _MoreItem {
   addSubtitle('add subtitle'),
   deleteSubtitle('delete subtitle'),
   deleteMedia('delete media');
 
   final String raw;
-  const MoreItem(this.raw);
+  const _MoreItem(this.raw);
 }
 
 class MediaCardWidget extends StatelessWidget {
@@ -110,19 +110,19 @@ class MediaCardWidget extends StatelessWidget {
             child: PopupMenuButton<String>(
               icon: const Icon(Icons.more_vert, size: 20),
               onSelected: (value) {
-                if (value == MoreItem.addSubtitle.raw) {
+                if (value == _MoreItem.addSubtitle.raw) {
                   _logic.mediaCardClickAddSubtitle(_state.index);
 
-                } else if (value == MoreItem.deleteSubtitle.raw) {
+                } else if (value == _MoreItem.deleteSubtitle.raw) {
                   _logic.mediaCardClickRemoveSubtitle(_state.index);
 
-                } else if (value == MoreItem.deleteMedia.raw) {
+                } else if (value == _MoreItem.deleteMedia.raw) {
                   _logic.mediaCardClickDeleteMedia(_state.index);
                 }
               },
               itemBuilder: (context) => [
                 PopupMenuItem(
-                  value: MoreItem.addSubtitle.raw,
+                  value: _MoreItem.addSubtitle.raw,
                   child: Row(
                     children: [
                       const Icon(Icons.subtitles_rounded, size: 18),
@@ -133,7 +133,7 @@ class MediaCardWidget extends StatelessWidget {
                 ),
                 if (_state.hasSubtitle)
                    PopupMenuItem(
-                    value: MoreItem.deleteSubtitle.raw,
+                    value: _MoreItem.deleteSubtitle.raw,
                     child: const Row(
                       children: [
                         Icon(Icons.subtitles_off_rounded, size: 18),
@@ -143,7 +143,7 @@ class MediaCardWidget extends StatelessWidget {
                     ),
                   ),
                 PopupMenuItem(
-                  value: MoreItem.deleteMedia.raw,
+                  value: _MoreItem.deleteMedia.raw,
                   child: const Row(
                     children: [
                       Icon(Icons.delete_rounded, size: 18),

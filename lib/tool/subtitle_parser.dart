@@ -149,7 +149,7 @@ class SubtitleParser {
       minutes = int.parse(parts[0]);
       lastPart = parts[1];
     } else {
-      throw FormatException('Invalid VTT time format');
+      throw const FormatException('Invalid VTT time format');
     }
 
     final secondsParts = lastPart.split('.');

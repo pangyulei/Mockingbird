@@ -3,13 +3,15 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_logic.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_interface_ui_events.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
+
 import '../../tool/global_broadcaster.dart';
-import 'player_state.dart';
 import 'player_logic.dart';
+import 'player_state.dart';
 
 const double _kPlayerControlBarHeight = 36;
 const double _kPlayerControlBarButtonWidth = 40;
@@ -25,16 +27,21 @@ class PlayerWidget extends StatefulWidget {
   State<PlayerWidget> createState() => _WidgetFactory();
 }
 
-class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfaceUIEvents {
+class _WidgetFactory extends State<PlayerWidget>
+    implements SentenceCardInterfaceUIEvents {
   PlayerState _state = const PlayerState(showEmpty: true, showLoading: false);
   final _subs = <StreamSubscription>[];
 
   @override
   void initState() {
     super.initState();
-    _subs.add(GlobalBroadcaster.instance.on<GlobalEventPlayMedia>((event) {
-      _updateStateByStream(widget._logic.playerPlayMedia(_state, event.media));
-    }));
+    _subs.add(
+      Broadcaster().on<GlobalEventPlayMedia>((event) {
+        _updateStateByStream(
+          widget._logic.playerPlayMedia(_state, event.media),
+        );
+      }),
+    );
   }
 
   @override
@@ -62,7 +69,8 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
       body: Stack(
         children: [
           _playerPage(),
-          if (_state.showLoading) const Center(child: CircularProgressIndicator()),
+          if (_state.showLoading)
+            const Center(child: CircularProgressIndicator()),
         ],
       ),
     );
@@ -72,27 +80,33 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
     //TODO make it a real empty shit
     return Scaffold(
       appBar: AppBar(title: const Text('No title')),
-      body: const Center(child: Text('No media selected'),),
+      body: const Center(child: Text('No media selected')),
     );
   }
 
   Widget _playerPage() {
     assert(!_state.showEmpty, 'showEmpty should be false');
-    assert(_state.videoController != null, 'videoController should not be null');
+    assert(
+      _state.videoController != null,
+      'videoController should not be null',
+    );
     return Column(
-        children: [
-          AspectRatio(
-              aspectRatio: _state.videoController!.value.aspectRatio,
-              child: VideoPlayer(_state.videoController!)
-          ),
-          _playerControlBar(),
-          if (_state.sentenceStates.isNotEmpty) _sentencesList(),
-        ]
+      children: [
+        AspectRatio(
+          aspectRatio: _state.videoController!.value.aspectRatio,
+          child: VideoPlayer(_state.videoController!),
+        ),
+        _playerControlBar(),
+        if (_state.sentenceStates.isNotEmpty) _sentencesList(),
+      ],
     );
   }
 
   Widget _sentencesList() {
-    assert(_state.sentenceStates.isNotEmpty, 'empty subtitle should not show sentences list');
+    assert(
+      _state.sentenceStates.isNotEmpty,
+      'empty subtitle should not show sentences list',
+    );
     return Expanded(
       child: ScrollablePositionedList.builder(
         itemCount: _state.sentenceStates.length,
@@ -100,8 +114,10 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
         itemBuilder: (context, index) {
           final sentenceState = _state.sentenceStates[index];
           return SentenceCardWidget(
-              state: sentenceState.copyWith(isPlaying: index==_state.highlightedIndex),
-              logic: this
+            state: sentenceState.copyWith(
+              isPlaying: index == _state.highlightedIndex,
+            ),
+            logic: this,
           );
         },
       ),
@@ -115,19 +131,19 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
         width: double.infinity,
         height: _kPlayerControlBarHeight,
         child: Row(
-            spacing: 4,
-            children: [
-              // _playerButton((){}, const Icon(Icons.skip_previous)),
-              // _playerButton((){}, const Icon(Icons.replay)),
-              _playPauseButton(),
-              // _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
-              // _playerButton((){}, const Icon(Icons.skip_next)),
-              const Spacer(),
-              _loopButton(),
-              _slowerSpeedButton(),
-              _playerSpeedLabel(),
-              _fasterSpeedButton(),
-            ]
+          spacing: 4,
+          children: [
+            // _playerButton((){}, const Icon(Icons.skip_previous)),
+            // _playerButton((){}, const Icon(Icons.replay)),
+            _playPauseButton(),
+            // _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
+            // _playerButton((){}, const Icon(Icons.skip_next)),
+            const Spacer(),
+            _loopButton(),
+            _slowerSpeedButton(),
+            _playerSpeedLabel(),
+            _fasterSpeedButton(),
+          ],
         ),
       ),
     );
@@ -160,14 +176,12 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
       } else {
         await videoController.play();
       }
-      setState(() {
-
-      });
+      setState(() {});
     }, Icon(isPlaying ? Icons.pause_circle : Icons.play_circle));
   }
 
   Widget _loopButton() {
-    return _controlButton((){
+    return _controlButton(() {
       setState(() {
         if (_state.loopIndex == null) {
           _state = _state.copyWith(loopIndex: () => _state.highlightedIndex);
@@ -187,9 +201,7 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
         return;
       }
       await _state.videoController!.setPlaybackSpeed(nextSpeed);
-      setState(() {
-
-      });
+      setState(() {});
     }, const Icon(Icons.fast_rewind));
   }
 
@@ -202,29 +214,27 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
         return;
       }
       await _state.videoController!.setPlaybackSpeed(nextSpeed);
-      setState(() {
-      });
+      setState(() {});
     }, const Icon(Icons.fast_forward));
   }
-
 
   Widget _playerSpeedLabel() {
     return Container(
       height: _kPlayerControlBarHeight,
       alignment: .center,
-      padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8), // 1. Padding inside the box
+      padding: const EdgeInsets.symmetric(
+        vertical: 0,
+        horizontal: 8,
+      ), // 1. Padding inside the box
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer, // 2. Box Color
         borderRadius: BorderRadius.circular(8.0), // 3. Rounded corners
       ),
       child: Text(
         '${_state.videoController!.value.playbackSpeed.toString()}x',
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
     );
-
   }
 
   Widget _controlButton(void Function() onPressed, Widget icon) {
@@ -240,17 +250,24 @@ class _WidgetFactory extends State<PlayerWidget> implements SentenceCardInterfac
 
   void _updateState(PlayerState newState) {
     if (newState.videoController != _state.videoController) {
-      newState.videoController?.addListener(() => _onPlayerTimelinePositionChanged(newState.videoController!));
+      newState.videoController?.addListener(
+        () => _onPlayerTimelinePositionChanged(newState.videoController!),
+      );
     }
     setState(() {
       _state = newState;
     });
   }
 
-  void _onPlayerTimelinePositionChanged(VideoPlayerController videoController) async {
+  void _onPlayerTimelinePositionChanged(
+    VideoPlayerController videoController,
+  ) async {
     //TODO here should judge by preference
     //auto scroll subtitle sentences
-    final newState = await widget._logic.playerPositionChanged(_state, videoController);
+    final newState = await widget._logic.playerPositionChanged(
+      _state,
+      videoController,
+    );
     _updateState(newState);
   }
 

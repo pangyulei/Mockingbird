@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_interface_ui_events.dart';
 import 'package:mockingbird/app/app_state.dart';
-import 'package:mockingbird/tab_albums/albums_nav/albums_nav_widget.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_logic.dart';
+import 'package:mockingbird/tab_albums/albums_nav/ui_albums_nav.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
-import '../tab_albums/albums_nav/albums_nav_logic.dart';
 import '../tool/global_broadcaster.dart';
 
 class AppWidget extends StatefulWidget {
@@ -27,11 +27,13 @@ class _State extends State<AppWidget> {
   @override
   void initState() {
     super.initState();
-    _subs.add(GlobalBroadcaster.instance.on<GlobalEventPlayMedia>((event) {
-      _updateState(widget._logic.appSwitchToTab(_state, .player));
-    }));
+    _subs.add(
+      Broadcaster().on<GlobalEventPlayMedia>((event) {
+        _updateState(widget._logic.appSwitchToTab(_state, .player));
+      }),
+    );
   }
-  
+
   @override
   void dispose() {
     for (final sub in _subs) {
@@ -60,7 +62,7 @@ class _State extends State<AppWidget> {
       body: IndexedStack(
         index: _state.selectedTab.raw,
         children: const [
-          AlbumsNavWidget(AlbumsNavLogic()),
+          UIAlbumsNav(),
           PlayerNavWidget(PlayerNavLogic()),
           TabSettingsWidget(),
         ],
@@ -89,7 +91,9 @@ class _State extends State<AppWidget> {
         ),
       ],
       onDestinationSelected: (index) {
-        _updateState(widget._logic.appSwitchToTab(_state, AppTab.fromRaw(index)));
+        _updateState(
+          widget._logic.appSwitchToTab(_state, AppTab.fromRaw(index)),
+        );
       },
       selectedIndex: _state.selectedTab.raw,
     );
@@ -109,8 +113,14 @@ class _State extends State<AppWidget> {
       scaffoldBackgroundColor: Colors.white,
       textTheme: GoogleFonts.interTextTheme(
         const TextTheme(
-          titleLarge: TextStyle(color: Color(0xFF191C1E), fontWeight: FontWeight.bold),
-          titleMedium: TextStyle(color: Color(0xFF191C1E), fontWeight: FontWeight.w600),
+          titleLarge: TextStyle(
+            color: Color(0xFF191C1E),
+            fontWeight: FontWeight.bold,
+          ),
+          titleMedium: TextStyle(
+            color: Color(0xFF191C1E),
+            fontWeight: FontWeight.w600,
+          ),
           bodyLarge: TextStyle(color: Color(0xFF191C1E)),
           bodyMedium: TextStyle(color: Color(0xFF42474E)),
         ),

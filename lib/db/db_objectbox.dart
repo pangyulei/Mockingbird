@@ -9,20 +9,18 @@ class DBObjectBox {
   final Store store;
 
   DBObjectBox._(this.store);
-
-  static DBObjectBox get instance {
-    if (_instance == null) {
-      throw Exception('DB should init at main() and keep open, never null');
-    }
+  // static DBObjectBox get instance {}
+  factory DBObjectBox() {
+    assert(_instance != null, 'You should definitely call await init() method at main.dart, make sure db prepared.');
     return _instance!;
   }
 
   /// Create an instance of ObjectBox to use throughout the app.
-  static Future<DBObjectBox> init() async {
-    final docsDir = await getApplicationDocumentsDirectory();
+  static Future<void> init() async {
+    final appDir = await getApplicationDocumentsDirectory();
     // Future<Store> openStore() {...} is defined in the generated objectbox.g.dart
     final store = await openStore(
-      directory: p.join(docsDir.path, "db_objectbox"),
+      directory: p.join(appDir.path, "db_objectbox"),
     );
     if (kDebugMode) {
       if (Admin.isAvailable()) {
@@ -32,6 +30,5 @@ class DBObjectBox {
       }
     }
     _instance = DBObjectBox._(store);
-    return _instance!;
   }
 }
