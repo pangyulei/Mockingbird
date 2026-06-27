@@ -2,11 +2,11 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:mockingbird/tab_albums/album_detail/media_card/media_card_interface_ui_events.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_interface_ui_events.dart';
 
 import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
-import 'media_card/media_card_widget.dart';
+import '../media_card/media_card_widget.dart';
 
 class AlbumDetailWidget extends StatefulWidget {
   final AlbumDetailInterfaceUIEvents _logic;

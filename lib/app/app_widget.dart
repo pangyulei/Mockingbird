@@ -10,7 +10,7 @@ import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
-import '../tool/global_broadcaster.dart';
+import '../tool/broadcaster.dart';
 
 class AppWidget extends StatefulWidget {
   final AppInterfaceUIEvents _logic;

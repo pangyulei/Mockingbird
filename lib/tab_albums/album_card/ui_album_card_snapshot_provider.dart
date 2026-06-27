@@ -8,17 +8,14 @@ class UIAlbumCardSnapshotProvider implements UIAlbumCardSnapshotProviderITF {
 
   @override
   void albumCardOnTapCancel() {
-    snapshot.animatedScale.value = 1;
   }
 
   @override
   void albumCardOnTapDown() {
-    snapshot.animatedScale.value = 0.96;
   }
 
   @override
   void albumCardOnTapUp() {
-    snapshot.animatedScale.value = 1;
   }
 
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_albums/album_card/ui_album_card.dart';
-import 'package:mockingbird/tab_albums/album_card/ui_album_card_snapshot.dart';
 import 'package:mockingbird/tab_albums/album_card/ui_album_card_snapshot_provider.dart';
+import 'package:mockingbird/tab_albums/album_edit/ui_album_edit.dart';
+import 'package:mockingbird/tab_albums/album_edit/ui_album_edit_snapshot_provider.dart';
 import 'package:mockingbird/tab_albums/albums_grid/ui_albums_grid_snapshot.dart';
+
 import 'ui_albums_grid_snapshot_provider_itf.dart';
 
 class UIAlbumsGrid extends StatefulWidget {
@@ -29,35 +32,47 @@ class _UIAlbumGridState extends State<UIAlbumsGrid> {
         _hideLoading();
       }
     });
-    _snapshot.showUIAlbumEdit.addListener(() {
-      if (_snapshot.showUIAlbumEdit.value) {
-        _showUIAlbumEdit();
+    _snapshot.showEditingAlbumDialog.addListener(() {
+      final Album? album = _snapshot.showEditingAlbumDialog.value;
+      if (album != null) {
+        _showEditingAlbumDialog(album);
+      } else {
+        Navigator.of(context).pop();
+      }
+    });
+    _snapshot.showCreatingAlbumDialog.addListener(() {
+      if (_snapshot.showCreatingAlbumDialog.value) {
+        _showCreatingAlbumDialog();
+      } else {
+        Navigator.of(context).pop();
       }
     });
   }
 
-  void _showUIAlbumEdit() async {
-    //TODO create album/edit album
-    // await showDialog(
-    //   context: context,
-    //   builder: (context) {
-    //     return UIAlbumEdit(
-    //       title: 'Create New Album',
-    //       submitTitle: 'Create',
-    //       onSubmit: (name, cover) async {
-    //         final newAlbum = await DBAlbum(
-    //           DBObjectBox.instance.store,
-    //         ).create(name: name, cover: cover);
-    //         setState(() {
-    //           if (newAlbum != null) {
-    //             _albums.insert(0, newAlbum);
-    //           }
-    //           _showLoading = false;
-    //         });
-    //       },
-    //     );
-    //   },
-    // );
+  void _showCreatingAlbumDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return UIAlbumEdit(
+          title: 'Create New Album',
+          provider: UIAlbumEditSnapshotProvider(null),
+          submitTitle: 'Create',
+        );
+      },
+    );
+  }
+
+  void _showEditingAlbumDialog(Album album) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return UIAlbumEdit(
+          title: 'Edit Album',
+          provider: UIAlbumEditSnapshotProvider(album),
+          submitTitle: 'Save',
+        );
+      },
+    );
   }
 
   @override

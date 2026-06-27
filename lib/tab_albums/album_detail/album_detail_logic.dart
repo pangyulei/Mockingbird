@@ -10,11 +10,11 @@ import 'package:path/path.dart' as p;
 
 import '../../model/album.dart';
 import '../../model/media.dart';
-import '../../tool/global_broadcaster.dart';
+import '../../tool/broadcaster.dart';
 import '../../tool/subtitle_parser.dart';
 import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
-import 'media_card/media_card_state.dart';
+import '../media_card/media_card_state.dart';
 
 
 //TODO move

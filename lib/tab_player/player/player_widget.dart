@@ -9,7 +9,7 @@ import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_widget
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../tool/global_broadcaster.dart';
+import '../../tool/broadcaster.dart';
 import 'player_logic.dart';
 import 'player_state.dart';
 

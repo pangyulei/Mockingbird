@@ -5,9 +5,10 @@ import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_albums/album_card/ui_album_card_events.dart';
 import 'package:mockingbird/tab_albums/album_card/ui_album_card_snapshot.dart';
+import 'package:mockingbird/tab_albums/album_edit/ui_album_edit_events.dart';
 import 'package:mockingbird/tab_albums/albums_grid/ui_albums_grid_snapshot.dart';
 import 'package:mockingbird/tab_albums/albums_grid/ui_albums_grid_snapshot_provider_itf.dart';
-import 'package:mockingbird/tool/global_broadcaster.dart';
+import 'package:mockingbird/tool/broadcaster.dart';
 
 class UIAlbumsGridSnapshotProvider implements UIAlbumsGridSnapshotProviderITF {
   @override
@@ -20,10 +21,42 @@ class UIAlbumsGridSnapshotProvider implements UIAlbumsGridSnapshotProviderITF {
       Broadcaster().on<UIAlbumsCardEventOnEdit>(_albumsGridOnEditAlbum),
       Broadcaster().on<UIAlbumsCardEventOnDelete>(_albumsGridOnDeleteAlbum),
       Broadcaster().on<UIAlbumsCardEventOnTap>(_albumsGridOnTapAlbum),
+      Broadcaster().on<UIAlbumEditEventOnSubmit>(_albumEditDialogOnSubmit),
+      Broadcaster().on<UIAlbumEditEventOnCancel>(_albumEditDialogOnCancel),
     ]);
   }
 
-  void _albumsGridOnEditAlbum(UIAlbumsCardEventOnEdit event) {}
+  void _albumEditDialogOnCancel(UIAlbumEditEventOnCancel event) async {
+    snapshot.showCreatingAlbumDialog.value = false;
+    snapshot.showEditingAlbumDialog.value = null;
+  }
+
+  void _albumEditDialogOnSubmit(UIAlbumEditEventOnSubmit event) async {
+    final dbAlbum = DBAlbum(DBObjectBox().store);
+    final Album? album = event.album;
+    if (album == null) {
+      //creating
+      snapshot.showCreatingAlbumDialog.value = false;
+      snapshot.showLoading.value = true;
+      await dbAlbum.create(name: event.name, cover: event.cover);
+      snapshot.showLoading.value = false;
+    } else {
+      //editing
+      snapshot.showEditingAlbumDialog.value = null;
+      snapshot.showLoading.value = true;
+      await dbAlbum.update(
+        album: album,
+        name: event.name,
+        coverFunc: () => event.cover,
+      );
+      snapshot.showLoading.value = false;
+    }
+  }
+
+  void _albumsGridOnEditAlbum(UIAlbumsCardEventOnEdit event) {
+    final Album album = _albums[event.index];
+    snapshot.showEditingAlbumDialog.value = album;
+  }
 
   void _albumsGridOnDeleteAlbum(UIAlbumsCardEventOnDelete event) {}
 
@@ -84,48 +117,11 @@ class UIAlbumsGridSnapshotProvider implements UIAlbumsGridSnapshotProviderITF {
 
   @override
   void albumsGridOnAddAlbum() {
-    snapshot.showUIAlbumEdit.value = true;
+    snapshot.showCreatingAlbumDialog.value = true;
   }
 
   // void _onTapAlbum(Album album) {
   //   Navigator.pushNamed(context, RouteAlbums.albumDetail(album.id));
-  // }
-
-  // Future<void> _onEditAlbum(Album album) async {
-  //   await showDialog(
-  //     context: context,
-  //     builder: (context) {
-  //       return AlbumEdit(
-  //         name: album.name,
-  //         cover: album.cover != null ? File(album.cover!) : null,
-  //         title: 'Edit Album',
-  //         submitTitle: 'Save',
-  //         onSubmit: (name, cover) async {
-  //           bool isIdentical() {
-  //             if (name.trim() != album.name) return false;
-  //             if (cover == null && album.cover == null) return true;
-  //             return cover != null &&
-  //                 album.cover != null &&
-  //                 cover.path == album.cover;
-  //           }
-
-  //           if (!isIdentical()) {
-  //             setState(() {
-  //               _showLoading = true;
-  //             });
-  //             final updatedAlbum = await DBAlbum(
-  //               DBObjectBox.instance.store,
-  //             ).update(album: album, name: name, cover: cover);
-  //             setState(() {
-  //               int index = _albums.indexOf(album);
-  //               _albums[index] = updatedAlbum;
-  //               _showLoading = false;
-  //             });
-  //           }
-  //         },
-  //       );
-  //     },
-  //   );
   // }
 
   // Future<void> _onDeleteAlbum(Album album) async {

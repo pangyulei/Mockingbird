@@ -1,4 +1,4 @@
-import 'package:mockingbird/tool/global_broadcaster.dart';
+import 'package:mockingbird/tool/broadcaster.dart';
 
 class UIAlbumsCardEvent extends BroadcastEvent {
   const UIAlbumsCardEvent();
