@@ -77,7 +77,6 @@ class DBAlbum {
       if (cover == null) {
         //remove cover
         updateAlbum = await _removeCoverFile(updateAlbum);
-      
       } else if (cover.path != album.cover) {
         //replace old cover to new cover
         updateAlbum = await _removeCoverFile(updateAlbum);
@@ -128,13 +127,13 @@ class DBAlbum {
     return (aAlbum, bAlbum);
   }
 
-  Future<void> remove(Album playlist) async {
-    await removeMany([playlist]);
+  Future<void> remove(Album album) async {
+    await removeMany([album]);
   }
 
-  Future<void> removeMany(Iterable<Album> albums) async {
+  Future<void> removeMany(List<Album> albums) async {
     if (albums.isEmpty) return;
-    assert(albums.every((a) => a.id != 0), 'try to remove albums without id');
+    albums = albums.where((a) => a.id > 0).toList();
 
     await _store.runInTransactionAsync(TxMode.write, (
       Store store,
@@ -169,7 +168,7 @@ class DBAlbum {
       mediaBox.removeMany(mediaIds);
       subtitleBox.removeMany(subtitleIds);
       sentenceBox.removeMany(sentenceIds);
-    }, albums.map((a) => a.id).toList());
+    }, [for(final a in albums) a.id]);
 
     // Delete cover files for removed playlists
     final uselessCovers = albums

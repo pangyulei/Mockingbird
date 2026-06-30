@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_logic.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_widget.dart';
-import 'package:mockingbird/tab_albums/albums_grid/ui_albums_grid.dart';
-import 'package:mockingbird/tab_albums/albums_grid/ui_albums_grid_snapshort_provider.dart';
+import 'package:mockingbird/tab_albums/albums_grid/albums_grid_logic.dart';
+import 'package:mockingbird/tab_albums/albums_grid/albums_grid_ui.dart';
+
 import 'route_albums.dart';
 
 class UIAlbumsNav extends StatelessWidget {
   const UIAlbumsNav({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
     return Navigator(
@@ -48,8 +49,7 @@ class UIAlbumsNav extends StatelessWidget {
         // ['albums', '42']
         final segments = uri.pathSegments;
         if (segments.length == 1 && segments.first == RouteAlbums.kAlbums) {
-          return UIAlbumsGrid(UIAlbumsGridSnapshotProvider());
-          
+          return AlbumsGridUI(AlbumsGridLogic());
         } else if (segments.length == 2 &&
             segments.first == RouteAlbums.kAlbums) {
           final albumIdStr = segments.last;

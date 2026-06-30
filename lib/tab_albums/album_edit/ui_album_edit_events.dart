@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tool/broadcaster.dart';
 
-class UIAlbumEditEvent extends BroadcastEvent {
+sealed class UIAlbumEditEvent extends BroadcastEvent {
   const UIAlbumEditEvent();
 }
 
