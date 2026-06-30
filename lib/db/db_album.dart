@@ -60,11 +60,10 @@ class DBAlbum {
     );
   }
 
-  Future<Album> update({
-    required Album album,
-    required String name,
-    File? cover,
-  }) async {
+  /*
+  cover = null means you want to remove cover
+   */
+  Future<Album> update(Album album, String name, File? cover) async {
     Album updateAlbum = album.copyWith();
     final trimmedName = name.trim();
     if (trimmedName.isNotEmpty) {

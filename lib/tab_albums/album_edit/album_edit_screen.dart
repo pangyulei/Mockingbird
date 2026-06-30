@@ -135,11 +135,7 @@ class _AlbumEditScreenState extends State<AlbumEditScreen>
       await dbAlbum.create(name: _nameController.text, cover: _state.cover);
     } else {
       //editing
-      await dbAlbum.update(
-        album: album,
-        name: _nameController.text,
-        cover: _state.cover,
-      );
+      await dbAlbum.update(album, _nameController.text, _state.cover);
     }
     setState(() {
       _state = _state.copyWith(showLoading: false);
