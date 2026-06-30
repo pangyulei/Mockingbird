@@ -63,27 +63,22 @@ class DBAlbum {
   Future<Album> update({
     required Album album,
     required String name,
-    File? Function()? coverFunc,
+    File? cover,
   }) async {
     Album updateAlbum = album.copyWith();
     final trimmedName = name.trim();
     if (trimmedName.isNotEmpty) {
       updateAlbum = updateAlbum.copyWith(name: trimmedName);
     }
-    if (coverFunc == null) {
-      //dont update album's cover
-    } else {
-      final File? cover = coverFunc();
-      if (cover == null) {
-        //remove cover
-        updateAlbum = await _removeCoverFile(updateAlbum);
-      } else if (cover.path != album.cover) {
-        //replace old cover to new cover
-        updateAlbum = await _removeCoverFile(updateAlbum);
-        final coverPath = await _newCoverPath;
-        await cover.copy(coverPath);
-        updateAlbum = updateAlbum.copyWith(cover: () => coverPath);
-      }
+    if (cover == null) {
+      //remove cover
+      updateAlbum = await _removeCoverFile(updateAlbum);
+    } else if (cover.path != album.cover) {
+      //replace old cover to new cover
+      updateAlbum = await _removeCoverFile(updateAlbum);
+      final coverPath = await _newCoverPath;
+      await cover.copy(coverPath);
+      updateAlbum = updateAlbum.copyWith(cover: () => coverPath);
     }
     if (updateAlbum.cover != album.cover || updateAlbum.name != album.name) {
       return await _store.box<Album>().putAndGetAsync(updateAlbum);

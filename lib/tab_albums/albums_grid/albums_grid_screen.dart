@@ -5,8 +5,7 @@ import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
-import 'package:mockingbird/tab_albums/album_edit/ui_album_edit.dart';
-import 'package:mockingbird/tab_albums/album_edit/ui_album_edit_snapshot_provider.dart';
+import 'package:mockingbird/tab_albums/album_edit/album_edit_screen.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_state.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_ui.dart';
 
@@ -19,20 +18,15 @@ class AlbumsGridScreen extends StatefulWidget {
 
 class _AlbumsGridScreenState extends State<AlbumsGridScreen>
     implements AlbumsGridUIOutputITF {
-  AlbumsGridState _state = const AlbumsGridState(
-    albumStates: [],
-    albumsCount: 0,
-    showLoading: false,
-  );
+  var _state = const AlbumsGridState.empty();
   var _albums = <Album>[];
   final _subs = <StreamSubscription>[];
 
   @override
   void initState() {
     super.initState();
-    setState(() {
-      _state = _state.copyWith(showLoading: true);
-    });
+
+    _state = _state.copyWith(showLoading: true);
     //observe Album DB
     final albumsStream = DBObjectBox().store
         .box<Album>()
@@ -76,11 +70,7 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
     await showDialog(
       context: context,
       builder: (context) {
-        return UIAlbumEdit(
-          title: 'Create New Album',
-          provider: UIAlbumEditSnapshotProvider(null),
-          submitTitle: 'Create',
-        );
+        return const AlbumEditScreen(null);
       },
     );
   }
@@ -89,11 +79,7 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
     await showDialog(
       context: context,
       builder: (context) {
-        return UIAlbumEdit(
-          title: 'Edit Album',
-          provider: UIAlbumEditSnapshotProvider(album),
-          submitTitle: 'Save',
-        );
+        return AlbumEditScreen(album);
       },
     );
   }

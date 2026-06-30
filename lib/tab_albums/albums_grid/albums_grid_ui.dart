@@ -1,11 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mockingbird/model/album.dart';
-import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
-import 'package:mockingbird/tab_albums/album_edit/ui_album_edit.dart';
-import 'package:mockingbird/tab_albums/album_edit/ui_album_edit_snapshot_provider.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_state.dart';
 
 abstract interface class AlbumsGridUIOutputITF implements AlbumCardUIOutputITF {
@@ -54,7 +50,7 @@ class AlbumsGridUI extends StatelessWidget {
 
   Widget _loading() {
     return ColoredBox(
-      color: Colors.black.withAlpha(50),
+      color: Colors.black.withAlpha(20),
       child: const Center(child: CircularProgressIndicator()),
     );
   }
