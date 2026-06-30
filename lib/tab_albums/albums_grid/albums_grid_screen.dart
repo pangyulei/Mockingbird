@@ -10,12 +10,14 @@ import 'package:mockingbird/tab_albums/album_edit/ui_album_edit_snapshot_provide
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_state.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_ui.dart';
 
-class AlbumsGridContainer extends StatefulWidget {
+class AlbumsGridScreen extends StatefulWidget {
+  const AlbumsGridScreen({super.key});
+
   @override
-  State<StatefulWidget> createState() => _AlbumsGridContainerState();
+  State<StatefulWidget> createState() => _AlbumsGridScreenState();
 }
 
-class _AlbumsGridContainerState extends State<AlbumsGridContainer>
+class _AlbumsGridScreenState extends State<AlbumsGridScreen>
     implements AlbumsGridUIOutputITF {
   AlbumsGridState _state = const AlbumsGridState(
     albumStates: [],
@@ -105,7 +107,7 @@ class _AlbumsGridContainerState extends State<AlbumsGridContainer>
   void albumsGrid_onAddAlbum() async {
     await _showCreatingAlbumDialog();
   }
-  
+
   @override
   void albumCard_onDelete(int index) async {
     Album album = _albums[index];
@@ -141,16 +143,15 @@ class _AlbumsGridContainerState extends State<AlbumsGridContainer>
     });
     await DBAlbum(DBObjectBox().store).remove(album);
   }
-  
+
   @override
   void albumCard_onEdit(int index) async {
     Album album = _albums[index];
     await _showEditingAlbumDialog(album);
   }
-  
+
   @override
   void albumCard_onTap(int index) {
     // TODO: implement albumCard_onTap
   }
-
 }
