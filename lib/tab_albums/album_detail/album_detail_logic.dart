@@ -26,13 +26,13 @@ class GlobalEventPlayMedia extends BroadcastEvent {
 
 class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
   Album? _album;
-  final int _albumId;
-  AlbumDetailLogic({required this._albumId});
+  final int albumId;
+  AlbumDetailLogic({required this.albumId});
 
   @override
   Stream<AlbumDetailState> albumDetailInitState() async* {
     yield const AlbumDetailState(showLoading: true);
-    _album = await DBAlbum(DBObjectBox().store).get(_albumId);
+    _album = await DBAlbum(DBObjectBox().store).get(albumId);
     if (_album == null) {
       yield const AlbumDetailState(showLoading: false);
       return;
@@ -123,7 +123,7 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
         (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
       );
 
-      _album = await DBAlbum(DBObjectBox().store).get(_albumId);
+      _album = await DBAlbum(DBObjectBox().store).get(albumId);
       yield _albumDetailState(_album!);
     } catch (e) {
       debugPrint('Error importing media files: $e');
@@ -174,7 +174,7 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
       media.subtitles.add(subtitle);
       await DBMedia(DBObjectBox().store).update(media);
 
-      _album = await DBAlbum(DBObjectBox().store).get(_albumId);
+      _album = await DBAlbum(DBObjectBox().store).get(albumId);
       yield _albumDetailState(_album!);
     } catch (e) {
       debugPrint('Error adding subtitle: $e');
@@ -188,7 +188,7 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
     final media = _album!.medias[index];
     yield _albumDetailState(_album!).copyWith(showLoading: true);
     await DBMedia(DBObjectBox().store).removeSubtitle(media);
-    _album = await DBAlbum(DBObjectBox().store).get(_albumId);
+    _album = await DBAlbum(DBObjectBox().store).get(albumId);
     yield _albumDetailState(_album!);
   }
 
@@ -198,7 +198,7 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
     final media = _album!.medias[index];
     yield _albumDetailState(_album!).copyWith(showLoading: true);
     await DBMedia(DBObjectBox().store).remove(media);
-    _album = await DBAlbum(DBObjectBox().store).get(_albumId);
+    _album = await DBAlbum(DBObjectBox().store).get(albumId);
     yield _albumDetailState(_album!);
   }
 }

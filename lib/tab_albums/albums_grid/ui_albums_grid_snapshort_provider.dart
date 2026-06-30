@@ -42,10 +42,7 @@
 //     }
 //   }
 
-//   void _albumsGridOnEditAlbum(UIAlbumsCardEventOnEdit event) {
-//     final Album album = _albums[event.index];
-//     snapshot.showEditingAlbumDialog.value = album;
-//   }
+
 
 
 //   @override
@@ -78,54 +75,7 @@
 
 
 
-//   @override
-//   void albumsGridOnAddAlbum() {
-//     snapshot.showCreatingAlbumDialog.value = true;
-//   }
-
 //   // void _onTapAlbum(Album album) {
 //   //   Navigator.pushNamed(context, RouteAlbums.albumDetail(album.id));
 //   // }
 
-//   // Future<void> _onDeleteAlbum(Album album) async {
-//   //   final confirmed = await showDialog<bool>(
-//   //     context: context,
-//   //     builder: (context) => AlertDialog(
-//   //       title: const Text('Delete Album'),
-//   //       content: Text(
-//   //         'Are you sure you want to delete "${album.name}"? This action cannot be undone.',
-//   //       ),
-//   //       actions: [
-//   //         TextButton(
-//   //           onPressed: () => Navigator.pop(context, false),
-//   //           child: const Text('Cancel'),
-//   //         ),
-//   //         FilledButton(
-//   //           onPressed: () => Navigator.pop(context, true),
-//   //           style: FilledButton.styleFrom(
-//   //             backgroundColor: Theme.of(context).colorScheme.error,
-//   //           ),
-//   //           child: const Text('Delete'),
-//   //         ),
-//   //       ],
-//   //     ),
-//   //   );
-
-//   //   if (confirmed == null || !confirmed) {
-//   //     return;
-//   //   }
-
-//   //   setState(() {
-//   //     _showLoading = true;
-//   //   });
-
-//   //   // Remove from database
-//   //   await DBAlbum(DBObjectBox.instance.store).remove(album);
-
-//   //   // Update state with remaining albums
-//   //   setState(() {
-//   //     _albums.remove(album);
-//   //     _showLoading = false;
-//   //   });
-//   // }
-// }

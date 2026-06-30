@@ -18,27 +18,16 @@ abstract interface class AlbumCardUIOutputITF {
 }
 
 
-abstract interface class AlbumCardLogicITF implements AlbumCardUIOutputITF {
 
-}
-
-class AlbumCardUI extends StatefulWidget {
-  final AlbumCardLogicITF _logic;
+class AlbumCardUI extends StatelessWidget {
+  final AlbumCardUIOutputITF _logic;
   final AlbumCardState _state;
-  const AlbumCardUI({required this._logic, required this._state, super.key});
-
-  @override
-  State<StatefulWidget> createState() => _AlbumCardUIState();
-}
-
-class _AlbumCardUIState extends State<AlbumCardUI> {
+  const AlbumCardUI(this._state, this._logic, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    AlbumCardState state = widget._state;
-    AlbumCardLogicITF logic = widget._logic;
     return InkWell(
-      onTap: () => logic.albumCard_onTap(state.index),
+      onTap: () => _logic.albumCard_onTap(_state.index),
       child: Column(
         children: [
           // Cover image area
@@ -60,8 +49,8 @@ class _AlbumCardUIState extends State<AlbumCardUI> {
                 borderRadius: BorderRadius.circular(20),
                 child: Stack(
                   children: [
-                    Positioned.fill(child: _cover()),
-                    Positioned(top: 4, right: 4, child: _menu()),
+                    Positioned.fill(child: _cover(context)),
+                    Positioned(top: 4, right: 4, child: _menu(context)),
                   ],
                 ),
               ),
@@ -74,7 +63,7 @@ class _AlbumCardUIState extends State<AlbumCardUI> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  state.name,
+                  _state.name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: const Color(0xFF191C1E),
                     fontWeight: FontWeight.bold,
@@ -84,7 +73,7 @@ class _AlbumCardUIState extends State<AlbumCardUI> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${state.mediasCount} Medias',
+                  '${_state.mediasCount} Medias',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: const Color(0xFF42474E),
                     fontWeight: FontWeight.w500,
@@ -98,14 +87,14 @@ class _AlbumCardUIState extends State<AlbumCardUI> {
     );
   }
 
-  Widget _menu() {
+  Widget _menu(BuildContext context) {
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert, size: 20),
       onSelected: (value) {
         if (value == _MoreItem.edit.raw) {
-          widget._logic.albumCard_onEdit(widget._state.index);
+          _logic.albumCard_onEdit(_state.index);
         } else if (value == _MoreItem.delete.raw) {
-          widget._logic.albumCard_onDelete(widget._state.index);
+          _logic.albumCard_onDelete(_state.index);
         }
       },
       itemBuilder: (context) => [
@@ -139,8 +128,8 @@ class _AlbumCardUIState extends State<AlbumCardUI> {
     );
   }
 
-  Widget _cover() {
-    String? cover = widget._state.cover;
+  Widget _cover(BuildContext context) {
+    String? cover = _state.cover;
     if (cover != null) {
       return Opacity(
         opacity: 1, //widget._state.isPressed ? 0.7 : 1.0,
@@ -155,10 +144,5 @@ class _AlbumCardUIState extends State<AlbumCardUI> {
         ),
       );
     }
-  }
-
-  @override
-  void handleNewState(AlbumCardState newState) {
-   
   }
 }

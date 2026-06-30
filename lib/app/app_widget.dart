@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_interface_ui_events.dart';
 import 'package:mockingbird/app/app_state.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_logic.dart';
-import 'package:mockingbird/tab_albums/albums_nav/ui_albums_nav.dart';
+import 'package:mockingbird/tab_albums/albums_nav/albums_nav.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
@@ -62,7 +62,7 @@ class _State extends State<AppWidget> {
       body: IndexedStack(
         index: _state.selectedTab.raw,
         children: const [
-          UIAlbumsNav(),
+          AlbumsNav(),
           PlayerNavWidget(PlayerNavLogic()),
           TabSettingsWidget(),
         ],

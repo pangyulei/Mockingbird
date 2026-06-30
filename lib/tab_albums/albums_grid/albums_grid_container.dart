@@ -1,0 +1,156 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:mockingbird/db/db_album.dart';
+import 'package:mockingbird/db/db_objectbox.dart';
+import 'package:mockingbird/model/album.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
+import 'package:mockingbird/tab_albums/album_edit/ui_album_edit.dart';
+import 'package:mockingbird/tab_albums/album_edit/ui_album_edit_snapshot_provider.dart';
+import 'package:mockingbird/tab_albums/albums_grid/albums_grid_state.dart';
+import 'package:mockingbird/tab_albums/albums_grid/albums_grid_ui.dart';
+
+class AlbumsGridContainer extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() => _AlbumsGridContainerState();
+}
+
+class _AlbumsGridContainerState extends State<AlbumsGridContainer>
+    implements AlbumsGridUIOutputITF {
+  AlbumsGridState _state = const AlbumsGridState(
+    albumStates: [],
+    albumsCount: 0,
+    showLoading: false,
+  );
+  var _albums = <Album>[];
+  final _subs = <StreamSubscription>[];
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _state = _state.copyWith(showLoading: true);
+    });
+    //observe Album DB
+    final albumsStream = DBObjectBox().store
+        .box<Album>()
+        .query()
+        .watch(triggerImmediately: true)
+        .map((q) => q.find());
+    final sub = albumsStream.listen((albums) {
+      _albums = albums;
+      final albumStates = _albums.map((a) {
+        return AlbumCardState(
+          index: 0,
+          mediasCount: a.medias.length,
+          name: a.name,
+          cover: a.cover,
+        );
+      }).toList();
+      setState(() {
+        _state = _state.copyWith(
+          showLoading: false,
+          albumStates: albumStates,
+          albumsCount: _albums.length,
+        );
+      });
+    });
+    _subs.add(sub);
+  }
+
+  @override
+  void dispose() {
+    _cancelAllSubs();
+    super.dispose();
+  }
+
+  void _cancelAllSubs() {
+    for (final sub in _subs) {
+      sub.cancel();
+    }
+  }
+
+  Future<void> _showCreatingAlbumDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return UIAlbumEdit(
+          title: 'Create New Album',
+          provider: UIAlbumEditSnapshotProvider(null),
+          submitTitle: 'Create',
+        );
+      },
+    );
+  }
+
+  Future<void> _showEditingAlbumDialog(Album album) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return UIAlbumEdit(
+          title: 'Edit Album',
+          provider: UIAlbumEditSnapshotProvider(album),
+          submitTitle: 'Save',
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlbumsGridUI(_state, this);
+  }
+
+  @override
+  void albumsGrid_onAddAlbum() async {
+    await _showCreatingAlbumDialog();
+  }
+  
+  @override
+  void albumCard_onDelete(int index) async {
+    Album album = _albums[index];
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Album'),
+        content: Text(
+          'Are you sure you want to delete "${album.name}"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == null || !confirmed) {
+      return;
+    }
+
+    setState(() {
+      _state = _state.copyWith(showLoading: true);
+    });
+    await DBAlbum(DBObjectBox().store).remove(album);
+  }
+  
+  @override
+  void albumCard_onEdit(int index) async {
+    Album album = _albums[index];
+    await _showEditingAlbumDialog(album);
+  }
+  
+  @override
+  void albumCard_onTap(int index) {
+    // TODO: implement albumCard_onTap
+  }
+
+}
