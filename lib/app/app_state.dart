@@ -1,9 +1,4 @@
 
-class AppState {
-  final AppTab selectedTab;
-
-  const AppState(this.selectedTab);
-}
 
 enum AppTab {
   albums(0),
@@ -11,11 +6,12 @@ enum AppTab {
   settings(2);
 
   final int raw;
+
   const AppTab(this.raw);
 
-  static AppTab fromRaw(int raw) {
+  factory AppTab.fromRaw(int raw) {
     return AppTab.values.firstWhere(
-          (v) => v.raw == raw,
+      (e) => e.raw == raw,
       orElse: () => AppTab.albums,
     );
   }

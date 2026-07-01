@@ -9,7 +9,7 @@ import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_widget
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../tool/broadcaster.dart';
+import '../../tool/hub.dart';
 import 'player_logic.dart';
 import 'player_state.dart';
 
@@ -30,25 +30,14 @@ class PlayerWidget extends StatefulWidget {
 class _WidgetFactory extends State<PlayerWidget>
     implements SentenceCardInterfaceUIEvents {
   PlayerState _state = const PlayerState(showEmpty: true, showLoading: false);
-  final _subs = <StreamSubscription>[];
 
   @override
   void initState() {
     super.initState();
-    _subs.add(
-      Broadcaster().on<GlobalEventPlayMedia>((event) {
-        _updateStateByStream(
-          widget._logic.playerPlayMedia(_state, event.media),
-        );
-      }),
-    );
   }
 
   @override
   void dispose() {
-    for (final sub in _subs) {
-      sub.cancel();
-    }
     _state.videoController?.dispose();
     super.dispose();
   }

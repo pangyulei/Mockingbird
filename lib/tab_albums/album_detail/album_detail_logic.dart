@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_media.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
@@ -10,19 +12,11 @@ import 'package:path/path.dart' as p;
 
 import '../../model/album.dart';
 import '../../model/media.dart';
-import '../../tool/broadcaster.dart';
+import '../../tool/hub.dart';
 import '../../tool/subtitle_parser.dart';
+import '../media_card/media_card_state.dart';
 import 'album_detail_interface_ui_events.dart';
 import 'album_detail_state.dart';
-import '../media_card/media_card_state.dart';
-
-
-//TODO move
-class GlobalEventPlayMedia extends BroadcastEvent {
-  final Media media;
-  const GlobalEventPlayMedia(this.media);
-}
-
 
 class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
   Album? _album;
@@ -135,7 +129,7 @@ class AlbumDetailLogic implements AlbumDetailInterfaceUIEvents {
   void albumDetailPlayMedia(int index, BuildContext context) {
     if (_album == null) return;
     final media = _album!.medias[index];
-    Broadcaster().emit(GlobalEventPlayMedia(media));
+    context.go(AppRoute.playerById(media.id));
   }
 
   @override
