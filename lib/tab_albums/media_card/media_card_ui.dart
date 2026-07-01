@@ -3,7 +3,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'media_card_state.dart';
-import 'media_card_interface_ui_events.dart';
 
 enum _MoreItem {
   addSubtitle('add subtitle'),
@@ -14,10 +13,19 @@ enum _MoreItem {
   const _MoreItem(this.raw);
 }
 
-class MediaCardWidget extends StatelessWidget {
+abstract interface class MediaCardUIOutputITF {
+  void mediaCard_play(int index);
+  void mediaCard_addSubtitle(int index);
+  void mediaCard_removeSubtitle(int index);
+  void mediaCard_deleteMedia(int index);
+}
+
+
+class MediaCardUI extends StatelessWidget {
   final MediaCardState _state;
-  final MediaCardInterfaceUIEvents _logic;
-  const MediaCardWidget({
+  final MediaCardUIOutputITF _logic;
+
+  const MediaCardUI({
     required this._state,
     required this._logic,
     super.key
@@ -99,7 +107,7 @@ class MediaCardWidget extends StatelessWidget {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  _logic.mediaCardClickPlay(_state.index);
+                  _logic.mediaCard_play(_state.index);
                 },
               ),
             ),
@@ -111,13 +119,13 @@ class MediaCardWidget extends StatelessWidget {
               icon: const Icon(Icons.more_vert, size: 20),
               onSelected: (value) {
                 if (value == _MoreItem.addSubtitle.raw) {
-                  _logic.mediaCardClickAddSubtitle(_state.index);
+                  _logic.mediaCard_addSubtitle(_state.index);
 
                 } else if (value == _MoreItem.deleteSubtitle.raw) {
-                  _logic.mediaCardClickRemoveSubtitle(_state.index);
+                  _logic.mediaCard_removeSubtitle(_state.index);
 
                 } else if (value == _MoreItem.deleteMedia.raw) {
-                  _logic.mediaCardClickDeleteMedia(_state.index);
+                  _logic.mediaCard_deleteMedia(_state.index);
                 }
               },
               itemBuilder: (context) => [

@@ -5,24 +5,38 @@ class AlbumDetailState {
   final String name;
   final File? cover;
   final bool showLoading;
+  final bool showImport;
   final List<MediaCardState> mediaStates;
 
   const AlbumDetailState({
-    this.name = '',
-    this.cover,
-    this.showLoading = false,
-    this.mediaStates = const [],
+    required this.showImport,
+    required this.name,
+    required this.cover,
+    required this.showLoading,
+    required this.mediaStates,
   });
 
+  factory AlbumDetailState.empty() {
+    return const AlbumDetailState(
+      name: '',
+      cover: null,
+      showLoading: false,
+      mediaStates: [],
+      showImport: false,
+    );
+  }
+
   AlbumDetailState copyWith({
+    bool? showImport,
     String? name,
-    File? cover,
+    File? Function()? cover,
     bool? showLoading,
     List<MediaCardState>? mediaStates,
   }) {
     return AlbumDetailState(
+      showImport: showImport ?? this.showImport,
       name: name ?? this.name,
-      cover: cover ?? this.cover,
+      cover: cover == null ? this.cover : cover(),
       showLoading: showLoading ?? this.showLoading,
       mediaStates: mediaStates ?? this.mediaStates,
     );

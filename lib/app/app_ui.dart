@@ -2,17 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/app/app_state.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_logic.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_widget.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_screen.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_screen.dart';
-import 'package:mockingbird/tab_player/player/player_widget.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
 import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
 abstract interface class AppUIOutputITF {
-  void app_selectedTab(AppTab tab, StatefulNavigationShell shell);
+  void app_selectedIndex(int index, StatefulNavigationShell shell);
 }
 
 class AppUI extends StatelessWidget {
@@ -65,7 +62,7 @@ class AppUI extends StatelessWidget {
             final albumIdStr = state.pathParameters['id']!;
             final albumId = int.tryParse(albumIdStr);
             if (albumId != null) {
-              return AlbumDetailWidget(AlbumDetailLogic(albumId: albumId));
+              return AlbumDetailScreen(albumId);
             }
             return const AlbumsGridScreen();
           },
@@ -90,7 +87,7 @@ class AppUI extends StatelessWidget {
               return const PlayerNavWidget(PlayerNavLogic());
             }
             return const PlayerNavWidget(PlayerNavLogic());
-          },          
+          },
         ),
       ],
     );
@@ -112,7 +109,7 @@ class AppUI extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: shell.currentIndex,
         onTap: (index) {
-          _logic.app_selectedTab(AppTab.fromRaw(index), shell);
+          _logic.app_selectedIndex(index, shell);
         },
         items: const [
           BottomNavigationBarItem(

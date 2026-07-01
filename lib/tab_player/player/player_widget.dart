@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_logic.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_interface_ui_events.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_widget.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
-
-import '../../tool/hub.dart';
 import 'player_logic.dart';
 import 'player_state.dart';
 

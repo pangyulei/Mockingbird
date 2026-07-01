@@ -14,16 +14,15 @@ class AlbumsGridUI extends StatelessWidget {
   const AlbumsGridUI(this._state, this._logic, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(appBar: _appBar(context), body: _grid()),
-        if (_state.showLoading) _loading(),
-      ],
-    );
+  Widget build(BuildContext ctx) {
+    return Stack(children: [_page(ctx), if (_state.showLoading) _loading()]);
   }
 
-  AppBar _appBar(BuildContext context) {
+  Widget _page(BuildContext ctx) {
+    return Scaffold(appBar: _appBar(ctx), body: _grid());
+  }
+
+  AppBar _appBar(BuildContext ctx) {
     return AppBar(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,8 +30,8 @@ class AlbumsGridUI extends StatelessWidget {
           const Text('Albums'),
           Text(
             '${_state.albumsCount} created albums',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.outline,
+            style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+              color: Theme.of(ctx).colorScheme.outline,
             ),
           ),
         ],
@@ -65,11 +64,10 @@ class AlbumsGridUI extends StatelessWidget {
         crossAxisSpacing: 4,
         childAspectRatio: 1,
       ),
-      itemBuilder: (context, index) {
+      itemBuilder: (ctx, index) {
         final albumState = _state.albumStates[index].copyWith(index: index);
         return AlbumCardUI(albumState, _logic);
       },
     );
   }
 }
-

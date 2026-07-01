@@ -22,11 +22,6 @@ class DBMedia {
     if (!await mediaDir.exists()) {
       await mediaDir.create(recursive: true);
     }
-    // Ensure directories exist in parallel
-    // await Future.wait([
-    //   if (!await mediaDir.exists()) mediaDir.create(recursive: true),
-      // if (!await subtitleDir.exists()) subtitleDir.create(recursive: true),
-    // ]);
 
     // save read media files to app dir
     final saveReadMediasToDir = readFiles.asMap().entries.map((e) {
@@ -53,14 +48,6 @@ class DBMedia {
     }).toList();
     final mediasWithoutId = await Future.wait(constructMedias);
     final medias = await _store.box<Media>().putAndGetManyAsync(mediasWithoutId);
-    //update subtitles ToOne relations
-    // final subtitles = medias.where((m) => m.subtitle.target != null && m.id != 0).map((m) {
-    //   Subtitle subtitle = m.subtitle.target!;
-    //   subtitle.media.targetId = m.id;
-    //   return subtitle;
-    // }).toList();
-    // await _store.box<Subtitle>().putManyAsync(subtitles);
-    album.medias.addAll(medias);
     return medias;
   }
 

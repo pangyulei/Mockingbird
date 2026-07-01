@@ -25,16 +25,19 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
   @override
   void initState() {
     super.initState();
+    _observeAlbums();
+  }
 
+  void _observeAlbums() {
     _state = _state.copyWith(showLoading: true);
     //observe Album DB
     final albumsStream = DBObjectBox().store
         .box<Album>()
         .query()
         .watch(triggerImmediately: true)
-        .map((q) => q.find());
-    final sub = albumsStream.listen((albums) {
-      _albums = albums;
+        .map((q) async => await q.findAsync());
+    final sub = albumsStream.listen((event) async {
+      _albums = await event;
       final albumStates = _albums.map((a) {
         return AlbumCardState(
           index: 0,
