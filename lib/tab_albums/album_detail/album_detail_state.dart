@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import '../media_card/media_card_state.dart';
 
 class AlbumDetailState {
@@ -16,15 +17,14 @@ class AlbumDetailState {
     required this.mediaStates,
   });
 
-  factory AlbumDetailState.empty() {
-    return const AlbumDetailState(
-      name: '',
-      cover: null,
-      showLoading: false,
-      mediaStates: [],
-      showImport: false,
-    );
-  }
+  const AlbumDetailState.empty()
+    : this(
+        cover: null,
+        name: '',
+        showLoading: false,
+        mediaStates: const [],
+        showImport: false,
+      );
 
   AlbumDetailState copyWith({
     bool? showImport,

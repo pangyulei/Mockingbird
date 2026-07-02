@@ -1,30 +1,30 @@
-
-
 class SentenceCardState {
-  final bool isPlaying;
+  final bool isFocused;
   final String text;
   final String period;
   final int index;
 
   const SentenceCardState({
-    this.text = '',
-    this.period = '',
-    this.isPlaying = false,
-    this.index = 0,
+    required this.text,
+    required this.period,
+    required this.isFocused,
+    required this.index,
   });
 
+  const SentenceCardState.empty()
+    : this(text: '', period: '', isFocused: false, index: 0);
+
   SentenceCardState copyWith({
-    bool? isPlaying,
+    bool? isHighlighted,
     String? text,
     String? period,
     int? index,
   }) {
     return SentenceCardState(
-      isPlaying: isPlaying ?? this.isPlaying,
+      isFocused: isHighlighted ?? this.isFocused,
       text: text ?? this.text,
       period: period ?? this.period,
       index: index ?? this.index,
     );
   }
-
 }

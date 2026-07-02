@@ -15,6 +15,7 @@ import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
+
 import 'album_detail_state.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
@@ -25,7 +26,8 @@ class AlbumDetailScreen extends StatefulWidget {
   State<AlbumDetailScreen> createState() => _AlbumDetailScreenState();
 }
 
-class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumDetailUIOutputITF {
+class _AlbumDetailScreenState extends State<AlbumDetailScreen>
+    implements AlbumDetailUIOutputITF {
   var _state = AlbumDetailState.empty();
   Album? _album;
   final _subs = <StreamSubscription>[];
@@ -50,7 +52,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
   @override
   void initState() {
     super.initState();
-    _observeAlbum();    
+    _observeAlbum();
   }
 
   void _observeAlbum() {
@@ -89,9 +91,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
     });
     _subs.add(sub);
   }
-  
+
   @override
-  void albumDetail_importMedias() async {
+  void albumDetail_onImportMedias() async {
     final album = _album;
     if (album == null) {
       debugPrint('album==null, can NOT import medias');
@@ -156,9 +158,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
       debugPrint('Error importing media files: $e');
     }
   }
-  
+
   @override
-  void mediaCard_addSubtitle(int index) async {
+  void mediaCard_onAddSubtitle(int index) async {
     final album = _album;
     if (album == null) {
       debugPrint('album == null, can NOT add any subtitle');
@@ -180,10 +182,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
           pickedFiles.files.first.path == null) {
         return;
       }
-      final platformFile = pickedFiles.files
-          .firstWhereOrNull(
-            (f) => kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? '')
-          );
+      final platformFile = pickedFiles.files.firstWhereOrNull(
+        (f) => kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+      );
       String? subtitlePath = platformFile?.path;
       if (subtitlePath == null) {
         debugPrint('no subtitle files picked');
@@ -197,14 +198,13 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
       // ObjectBox will handle the relation update.
       media.subtitles.add(subtitle);
       await DBMedia(DBObjectBox().store).update(media);
-
     } catch (e) {
       debugPrint('Error adding subtitle: $e');
     }
   }
-  
+
   @override
-  void mediaCard_deleteMedia(int index) async {
+  void mediaCard_onDeleteMedia(int index) async {
     final album = _album;
     if (album == null) {
       debugPrint('album==null');
@@ -220,9 +220,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
     });
     await DBMedia(DBObjectBox().store).remove(media);
   }
-  
+
   @override
-  void mediaCard_play(int index) {
+  void mediaCard_onPlayMedia(int index) {
     final album = _album;
     if (album == null) {
       debugPrint('album==null');
@@ -235,9 +235,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
     }
     context.go(AppRoute.playerById(media.id));
   }
-  
+
   @override
-  void mediaCard_removeSubtitle(int index) async {
+  void mediaCard_onRemoveSubtitle(int index) async {
     final album = _album;
     if (album == null) {
       debugPrint('album==null');
@@ -250,7 +250,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen> implements AlbumD
     }
     setState(() {
       _state = _state.copyWith(showLoading: true);
-    });    
+    });
     await DBMedia(DBObjectBox().store).removeSubtitle(media);
   }
 }

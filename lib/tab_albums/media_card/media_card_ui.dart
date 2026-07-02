@@ -1,7 +1,5 @@
-
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 import 'media_card_state.dart';
 
 enum _MoreItem {
@@ -14,22 +12,17 @@ enum _MoreItem {
 }
 
 abstract interface class MediaCardUIOutputITF {
-  void mediaCard_play(int index);
-  void mediaCard_addSubtitle(int index);
-  void mediaCard_removeSubtitle(int index);
-  void mediaCard_deleteMedia(int index);
+  void mediaCard_onPlayMedia(int index);
+  void mediaCard_onAddSubtitle(int index);
+  void mediaCard_onRemoveSubtitle(int index);
+  void mediaCard_onDeleteMedia(int index);
 }
-
 
 class MediaCardUI extends StatelessWidget {
   final MediaCardState _state;
   final MediaCardUIOutputITF _logic;
 
-  const MediaCardUI({
-    required this._state,
-    required this._logic,
-    super.key
-  });
+  const MediaCardUI({required this._state, required this._logic, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -39,14 +32,21 @@ class MediaCardUI extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.4),
+          color: Theme.of(
+            context,
+          ).colorScheme.outlineVariant.withValues(alpha: 0.4),
           width: 1,
         ),
       ),
       child: Stack(
         children: [
           ListTile(
-            contentPadding: const EdgeInsets.only(left: 16, top: 8, bottom: 8, right: 38),
+            contentPadding: const EdgeInsets.only(
+              left: 16,
+              top: 8,
+              bottom: 8,
+              right: 38,
+            ),
             // leading: Container(
             //   width: 52,
             //   height: 52,
@@ -102,12 +102,9 @@ class MediaCardUI extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: IconButton(
-                icon: const Icon(
-                  Icons.play_arrow_rounded,
-                  color: Colors.white,
-                ),
+                icon: const Icon(Icons.play_arrow_rounded, color: Colors.white),
                 onPressed: () {
-                  _logic.mediaCard_play(_state.index);
+                  _logic.mediaCard_onPlayMedia(_state.index);
                 },
               ),
             ),
@@ -119,13 +116,11 @@ class MediaCardUI extends StatelessWidget {
               icon: const Icon(Icons.more_vert, size: 20),
               onSelected: (value) {
                 if (value == _MoreItem.addSubtitle.raw) {
-                  _logic.mediaCard_addSubtitle(_state.index);
-
+                  _logic.mediaCard_onAddSubtitle(_state.index);
                 } else if (value == _MoreItem.deleteSubtitle.raw) {
-                  _logic.mediaCard_removeSubtitle(_state.index);
-
+                  _logic.mediaCard_onRemoveSubtitle(_state.index);
                 } else if (value == _MoreItem.deleteMedia.raw) {
-                  _logic.mediaCard_deleteMedia(_state.index);
+                  _logic.mediaCard_onDeleteMedia(_state.index);
                 }
               },
               itemBuilder: (context) => [
@@ -135,12 +130,14 @@ class MediaCardUI extends StatelessWidget {
                     children: [
                       const Icon(Icons.subtitles_rounded, size: 18),
                       const SizedBox(width: 8),
-                      Text(_state.hasSubtitle ? 'Change Subtitle' : 'Add Subtitle'),
+                      Text(
+                        _state.hasSubtitle ? 'Change Subtitle' : 'Add Subtitle',
+                      ),
                     ],
                   ),
                 ),
                 if (_state.hasSubtitle)
-                   PopupMenuItem(
+                  PopupMenuItem(
                     value: _MoreItem.deleteSubtitle.raw,
                     child: const Row(
                       children: [
@@ -172,5 +169,4 @@ class MediaCardUI extends StatelessWidget {
       ),
     );
   }
-
 }
