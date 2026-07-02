@@ -1,6 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
@@ -135,12 +136,11 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
 
   @override
   void albumCard_onEdit(int index) async {
-    Album album = _albums[index];
-    await _showEditingAlbumDialog(album);
+    await _showEditingAlbumDialog(_albums[index]);
   }
 
   @override
   void albumCard_onTap(int index) {
-    // TODO: implement albumCard_onTap
+    context.go(AppRoute.albumById(_albums[index].id));
   }
 }

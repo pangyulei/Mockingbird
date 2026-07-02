@@ -15,13 +15,13 @@ class SentenceCardState {
     : this(text: '', period: '', isFocused: false, index: 0);
 
   SentenceCardState copyWith({
-    bool? isHighlighted,
+    bool? isFocused,
     String? text,
     String? period,
     int? index,
   }) {
     return SentenceCardState(
-      isFocused: isHighlighted ?? this.isFocused,
+      isFocused: isFocused ?? this.isFocused,
       text: text ?? this.text,
       period: period ?? this.period,
       index: index ?? this.index,

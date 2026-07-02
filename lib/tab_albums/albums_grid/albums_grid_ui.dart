@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_state.dart';

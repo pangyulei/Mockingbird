@@ -4,8 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_screen.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_screen.dart';
-import 'package:mockingbird/tab_player/player_nav/player_nav_logic.dart';
-import 'package:mockingbird/tab_player/player_nav/player_nav_widget.dart';
+import 'package:mockingbird/tab_player/player/player_screen.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
 abstract interface class AppUIOutputITF {
@@ -75,7 +74,7 @@ class AppUI extends StatelessWidget {
     return GoRoute(
       path: AppRoute.player,
       builder: (BuildContext context, GoRouterState state) {
-        return const PlayerNavWidget(PlayerNavLogic());
+        return const PlayerScreen(null);
       },
       routes: <RouteBase>[
         GoRoute(
@@ -84,9 +83,9 @@ class AppUI extends StatelessWidget {
             final mediaIdStr = state.pathParameters['id']!;
             final mediaId = int.tryParse(mediaIdStr);
             if (mediaId != null) {
-              return const PlayerNavWidget(PlayerNavLogic());
+              return PlayerScreen(mediaId);
             }
-            return const PlayerNavWidget(PlayerNavLogic());
+            return const PlayerScreen(null);
           },
         ),
       ],

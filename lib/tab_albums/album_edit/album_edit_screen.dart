@@ -110,7 +110,7 @@ class _AlbumEditScreenState extends State<AlbumEditScreen>
 
   @override
   void albumEdit_onRemoveCover() {
-    File? newCover = null;
+    File? newCover;
     setState(() {
       _state = _state.copyWith(
         cover: () => newCover,

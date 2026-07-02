@@ -1,5 +1,3 @@
-import 'dart:io';
-
 class AlbumCardState {
   final int index;
   final int mediasCount;

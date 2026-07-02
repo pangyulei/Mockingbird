@@ -119,7 +119,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     final mediaEnd = videoController.value.duration;
 
     final repeatIndex = _state.repeatIndex;
-    debugPrint('positon changed: loop index: ${repeatIndex}');
+    debugPrint('positon changed: loop index: $repeatIndex');
     if (repeatIndex != null) {
       final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
       final bool needToSeekToBeginning;
@@ -146,13 +146,9 @@ class _PlayerScreenState extends State<PlayerScreen>
       final range1 = allRange.sublist(focusedIndex);
       final range2 = allRange.sublist(0, focusedIndex);
       final searchRange = [...range1, ...range2];
-      playingIndex = searchRange
-          .asMap()
-          .entries
-          .firstWhereOrNull(
-            (e) => _isSentencePlaying(e.key, position, mediaEnd),
-          )
-          ?.key;
+      playingIndex = searchRange.firstWhereOrNull(
+        (idx) => _isSentencePlaying(idx, position, mediaEnd),
+      );
       if (playingIndex == null) {
         debugPrint('playing index not found');
         return;
@@ -185,7 +181,9 @@ class _PlayerScreenState extends State<PlayerScreen>
     final sentence = sentences.elementAtOrNull(sentenceIndex);
     if (sentence == null) return false;
     final nextSentence = sentences.elementAtOrNull(sentenceIndex + 1);
-    final prevSentence = sentences.elementAtOrNull(sentenceIndex - 1);
+    final prevSentence = sentenceIndex == 0
+        ? null
+        : sentences[sentenceIndex - 1];
     //刚开始的时候position=0,但是第一句话的start不一定是0
     //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
     final start = prevSentence == null
@@ -235,28 +233,30 @@ class _PlayerScreenState extends State<PlayerScreen>
   @override
   void player_onInOrder() {
     setState(() {
-      _state = _state.copyWith(repeatIndex: ()=>null);
+      _state = _state.copyWith(repeatIndex: () => _state.focusedIndex);
     });
   }
 
   @override
-  void player_onPause() {
+  void player_onPause() async {
     setState(() {
       _state = _state.copyWith(isPlaying: false);
     });
+    await _videoController?.pause();
   }
 
   @override
-  void player_onPlay() {
+  void player_onPlay() async {
     setState(() {
       _state = _state.copyWith(isPlaying: true);
     });
+    await _videoController?.play();
   }
 
   @override
   void player_onRepeatOne() {
     setState(() {
-      _state = _state.copyWith(repeatIndex: ()=>_state.focusedIndex);
+      _state = _state.copyWith(repeatIndex: () => null);
     });
   }
 
@@ -298,18 +298,19 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('videoController==null, nothing to control');
       return;
     }
+    _scrollController.jumpTo(index: index, alignment: 0.3);
     final toPosition = _startPositionForPlayingSentence(index);
     debugPrint('seeked to $toPosition');
-    await videoController.seekTo(toPosition);
-    await videoController.play();
-    _scrollController.jumpTo(index: index, alignment: 0.3);
     final repeatIndex = _state.repeatIndex == null ? null : index;
     setState(() {
       _state = _state.copyWith(
         focusedIndex: () => index,
         repeatIndex: () => repeatIndex,
+        isPlaying: true,
       );
     });
+    await videoController.seekTo(toPosition);
+    await videoController.play();
   }
 
   Duration _startPositionForPlayingSentence(int sentenceIndex) {

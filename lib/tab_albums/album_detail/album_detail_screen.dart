@@ -28,7 +28,7 @@ class AlbumDetailScreen extends StatefulWidget {
 
 class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     implements AlbumDetailUIOutputITF {
-  var _state = AlbumDetailState.empty();
+  var _state = const AlbumDetailState.empty();
   Album? _album;
   final _subs = <StreamSubscription>[];
 

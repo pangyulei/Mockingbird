@@ -58,7 +58,7 @@ class PlayerUI extends StatelessWidget {
             aspectRatio: videoController.value.aspectRatio,
             child: VideoPlayer(videoController),
           ),
-          _playerControlBar(ctx),
+          _controlBar(ctx),
           if (_state.sentenceStates.isNotEmpty) _sentencesList(),
         ],
       ),
@@ -85,7 +85,7 @@ class PlayerUI extends StatelessWidget {
         itemBuilder: (context, index) {
           final sentenceState = _state.sentenceStates[index];
           return SentenceCardUI(
-            sentenceState.copyWith(isHighlighted: index == _state.focusedIndex),
+            sentenceState.copyWith(isFocused: index == _state.focusedIndex),
             _logic,
           );
         },
@@ -93,7 +93,7 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _playerControlBar(BuildContext ctx) {
+  Widget _controlBar(BuildContext ctx) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: SizedBox(
@@ -139,9 +139,9 @@ class PlayerUI extends StatelessWidget {
   Widget _playOrPauseButton() {
     return _controlButton(() {
       if (_state.isPlaying) {
-        _logic.player_onPlay();
-      } else {
         _logic.player_onPause();
+      } else {
+        _logic.player_onPlay();
       }
     }, Icon(_state.isPlaying ? Icons.pause_circle : Icons.play_circle));
   }
