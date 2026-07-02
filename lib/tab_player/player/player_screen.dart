@@ -69,8 +69,8 @@ class _PlayerScreenState extends State<PlayerScreen>
         _videoController?.addListener(
           () => _onPositionChanged(newVideoController),
         );
-        await _videoController?.play();
         _state = _state.copyWith(isPlaying: true, speed: 1.0);
+        await _videoController?.play();
       }
 
       final sentences = media.subtitles.firstOrNull?.sentences;
