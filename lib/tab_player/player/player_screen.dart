@@ -198,7 +198,11 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('videoController==null, nothing to control');
       return;
     }
-    _scrollController.jumpTo(index: index, alignment: 0.3);
+    _scrollController.scrollTo(
+      index: index,
+      alignment: 0.3,
+      duration: const Duration(milliseconds: 250),
+    );
     final toPosition = _startPositionOfSentence(index);
     debugPrint('seeked to $toPosition');
     final repeatIndex = _state.repeatIndex == null ? null : index;
@@ -243,7 +247,11 @@ class _PlayerScreenState extends State<PlayerScreen>
       //scroll to playingIndex and focus it
       if (playingIndex != _state.focusedIndex) {
         //只有循環的時候，才需要持續自動滾動到當前句
-        _scrollController.jumpTo(index: playingIndex, alignment: 0.3);
+        _scrollController.scrollTo(
+          index: playingIndex,
+          alignment: 0.3,
+          duration: const Duration(milliseconds: 250),
+        );
         setState(() {
           _state = _state.copyWith(focusedIndex: () => playingIndex);
         });
@@ -409,9 +417,39 @@ class _PlayerScreenState extends State<PlayerScreen>
   @override
   void player_onScrollToFocusedSentence() {
     final focusedIndex = _state.focusedIndex;
-    if (focusedIndex != null) {
-      _scrollController.jumpTo(index: focusedIndex, alignment: 0.3);
+    if (focusedIndex != null &&
+        focusedIndex >= 0 &&
+        focusedIndex < _state.sentenceStates.length) {
+      _scrollController.scrollTo(
+        index: focusedIndex,
+        alignment: 0.3,
+        duration: const Duration(milliseconds: 250),
+      );
     }
+  }
+
+  @override
+  void player_onScrollToTop() {
+    if (_state.sentenceStates.isEmpty) {
+      debugPrint('no sentence list to scroll');
+      return;
+    }
+    _scrollController.scrollTo(
+      index: 0,
+      duration: const Duration(milliseconds: 250),
+    );
+  }
+
+  @override
+  void player_onScrollToBottom() {
+    if (_state.sentenceStates.isEmpty) {
+      debugPrint('no sentence list to scroll');
+      return;
+    }
+    _scrollController.scrollTo(
+      index: _state.sentenceStates.length - 1,
+      duration: const Duration(milliseconds: 250),
+    );
   }
 
   @override

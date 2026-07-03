@@ -20,6 +20,8 @@ abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
   void player_onVideoSliderEndChanged(double microValue);
   void player_onVideoSliderChanging(double microValue);
   void player_onScrollToFocusedSentence();
+  void player_onScrollToTop();
+  void player_onScrollToBottom();
   void player_onVolumeChanging(double newVolume);
   void player_onVolumeTap();
 }
@@ -91,10 +93,28 @@ class PlayerUI extends StatelessWidget {
           if (_state.sentenceStates.isNotEmpty) _sentencesList(),
         ],
       ),
-      floatingActionButton: FloatingActionButton.small(
-        onPressed: _logic.player_onScrollToFocusedSentence,
-        child: const Icon(Icons.my_location),
-      ),
+      floatingActionButton: _floatingButtons(),
+    );
+  }
+
+  Widget? _floatingButtons() {
+    if (_state.sentenceStates.isEmpty) return null;
+    return Column(
+      mainAxisAlignment: .end,
+      children: [
+        FloatingActionButton.small(
+          onPressed: _logic.player_onScrollToTop,
+          child: const Icon(Icons.vertical_align_top),
+        ),
+        FloatingActionButton.small(
+          onPressed: _logic.player_onScrollToFocusedSentence,
+          child: const Icon(Icons.my_location),
+        ),
+        FloatingActionButton.small(
+          onPressed: _logic.player_onScrollToBottom,
+          child: const Icon(Icons.vertical_align_bottom),
+        ),
+      ],
     );
   }
 
