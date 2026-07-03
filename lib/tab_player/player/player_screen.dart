@@ -46,6 +46,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     final mediaId = widget._mediaId;
     if (mediaId == null) {
       debugPrint('no mediaId');
+      _state = _state.copyWith(showLoading: false, showEmpty: true);
       return;
     }
     _state = _state.copyWith(showLoading: true, showEmpty: true);
