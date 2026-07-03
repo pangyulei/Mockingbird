@@ -232,36 +232,36 @@ class _PlayerScreenState extends State<PlayerScreen>
     final sentences = subtitle.sentences;
     final mediaEnd = videoController.value.duration;
     final repeatIndex = _state.repeatIndex;
-    //according to position, find current matched sentence index, marked as playingIndex
-    final playingIndex = _sentenceIndexByPosition(position);
-    if (playingIndex == null) {
-      debugPrint('playing index not found');
-      return;
-    }
-    //scroll to playingIndex and focus it
-    if (playingIndex != _state.focusedIndex) {
-      if (repeatIndex == null) {
+    if (repeatIndex == null) {
+      //according to position, find current matched sentence index, marked as playingIndex
+      final playingIndex = _sentenceIndexByPosition(position);
+      if (playingIndex == null) {
+        debugPrint('playing index not found');
+        return;
+      }
+      //scroll to playingIndex and focus it
+      if (playingIndex != _state.focusedIndex) {
         //只有循環的時候，才需要持續自動滾動到當前句
         _scrollController.jumpTo(index: playingIndex, alignment: 0.3);
+        setState(() {
+          _state = _state.copyWith(focusedIndex: () => playingIndex);
+        });
       }
-      setState(() {
-        _state = _state.copyWith(focusedIndex: () => playingIndex);
-      });
-    }
-
-    //if repeat one is turn on, while sentence finished, seek to beginning
-    final isDraggingSlider = _state.videoSliderDraggingValue != null;
-    if (repeatIndex != null && !isDraggingSlider) {
-      debugPrint('positon changed, repeat index: $repeatIndex');
-      final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
-      final bool needToSeekToBeginning;
-      if (nextSentence != null) {
-        needToSeekToBeginning = position >= nextSentence.start;
-      } else {
-        needToSeekToBeginning = position >= mediaEnd;
-      }
-      if (needToSeekToBeginning) {
-        await videoController.seekTo(_startPositionOfSentence(repeatIndex));
+    } else {
+      //if repeat one is turn on, while sentence finished, seek to beginning
+      final isDraggingSlider = _state.videoSliderDraggingValue != null;
+      if (!isDraggingSlider) {
+        debugPrint('positon changed, repeat index: $repeatIndex');
+        final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
+        final bool needToSeekToBeginning;
+        if (nextSentence != null) {
+          needToSeekToBeginning = position >= nextSentence.start;
+        } else {
+          needToSeekToBeginning = position >= mediaEnd;
+        }
+        if (needToSeekToBeginning) {
+          await videoController.seekTo(_startPositionOfSentence(repeatIndex));
+        }
       }
     }
   }
@@ -369,10 +369,20 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   void player_onVideoSliderChanging(double microValue) async {
+    final position = Duration(microseconds: microValue.toInt());
+    final index = _sentenceIndexByPosition(position);
+    if (index == null) {
+      debugPrint('index of sentence not found');
+      return;
+    }
     setState(() {
-      _state = _state.copyWith(videoSliderDraggingValue: () => microValue);
+      _state = _state.copyWith(
+        videoSliderDraggingValue: () => microValue,
+        focusedIndex: () => index,
+      );
     });
-    await _videoController?.seekTo(Duration(microseconds: microValue.toInt()));
+    _scrollController.jumpTo(index: index, alignment: 0.3);
+    await _videoController?.seekTo(position);
   }
 
   @override
