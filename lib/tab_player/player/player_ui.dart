@@ -19,6 +19,7 @@ abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
   void player_onVideoSliderStartChanged(double microValue);
   void player_onVideoSliderEndChanged(double microValue);
   void player_onVideoSliderChanging(double microValue);
+  void player_onScrollToFocusedSentence();
 }
 
 class PlayerUI extends StatelessWidget {
@@ -68,32 +69,7 @@ class PlayerUI extends StatelessWidget {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: ValueListenableBuilder(
-                  valueListenable: videoController,
-                  builder: (ctx, videoValue, child) {
-                    final int position = videoValue.position.inMicroseconds;
-                    final int duration = videoValue.duration.inMicroseconds;
-                    final draggingValue = _state.videoSliderDraggingValue;
-                    return Slider(
-                      value:
-                          draggingValue ??
-                          position.clamp(0, duration).toDouble(),
-                      min: 0.0,
-                      max: duration.toDouble(),
-                      activeColor: Colors.blue,
-                      inactiveColor: Colors.blueGrey,
-                      onChangeStart: (sliderValue) {
-                        _logic.player_onVideoSliderStartChanged(sliderValue);
-                      },
-                      onChangeEnd: (sliderValue) {
-                        _logic.player_onVideoSliderEndChanged(sliderValue);
-                      },
-                      onChanged: (sliderValue) {
-                        _logic.player_onVideoSliderChanging(sliderValue);
-                      },
-                    );
-                  },
-                ),
+                child: _videoSlider(videoController),
               ),
             ],
           ),
@@ -101,6 +77,37 @@ class PlayerUI extends StatelessWidget {
           if (_state.sentenceStates.isNotEmpty) _sentencesList(),
         ],
       ),
+      floatingActionButton: FloatingActionButton.small(
+        onPressed: _logic.player_onScrollToFocusedSentence,
+        child: const Icon(Icons.my_location),
+      ),
+    );
+  }
+
+  Widget _videoSlider(VideoPlayerController videoController) {
+    return ValueListenableBuilder(
+      valueListenable: videoController,
+      builder: (ctx, videoValue, child) {
+        final int position = videoValue.position.inMicroseconds;
+        final int duration = videoValue.duration.inMicroseconds;
+        final draggingValue = _state.videoSliderDraggingValue;
+        return Slider(
+          value: draggingValue ?? position.clamp(0, duration).toDouble(),
+          min: 0.0,
+          max: duration.toDouble(),
+          activeColor: Colors.blue,
+          inactiveColor: Colors.blueGrey,
+          onChangeStart: (sliderValue) {
+            _logic.player_onVideoSliderStartChanged(sliderValue);
+          },
+          onChangeEnd: (sliderValue) {
+            _logic.player_onVideoSliderEndChanged(sliderValue);
+          },
+          onChanged: (sliderValue) {
+            _logic.player_onVideoSliderChanging(sliderValue);
+          },
+        );
+      },
     );
   }
 
@@ -215,13 +222,13 @@ class PlayerUI extends StatelessWidget {
         style: TextButton.styleFrom(
           // 1. Define the inner padding (This directly dictates the extra width)
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-          
+
           // 2. Set minimumSize to 0 so it doesn't enforce a default minimum width
-          minimumSize: Size.zero, 
-          
+          minimumSize: Size.zero,
+
           // 3. Keep visual bounds tight to the child
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap, 
-          
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+
           backgroundColor: Colors.blue,
           foregroundColor: Theme.of(ctx).colorScheme.primaryContainer,
           shape: RoundedRectangleBorder(

@@ -394,4 +394,12 @@ class _PlayerScreenState extends State<PlayerScreen>
     await _videoController?.seekTo(_startPositionOfSentence(index));
     await _videoController?.play();
   }
+
+  @override
+  void player_onScrollToFocusedSentence() {
+    final focusedIndex = _state.focusedIndex;
+    if (focusedIndex != null) {
+      _scrollController.jumpTo(index: focusedIndex, alignment: 0.3);
+    }
+  }
 }
