@@ -242,6 +242,7 @@ class PlayerUI extends StatelessWidget {
 
   AppBar _appBar() {
     return AppBar(
+      automaticallyImplyLeading: false,
       title: SizedBox(
         width: double.infinity,
         height: kToolbarHeight,
