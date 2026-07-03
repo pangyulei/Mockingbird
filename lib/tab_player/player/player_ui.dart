@@ -188,9 +188,12 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _empty() {
-    //TODO make it a real empty shit
     return Scaffold(
-      appBar: AppBar(title: const Text('No title')),
+      appBar: AppBar(
+        title: const Text('No title'),
+        automaticallyImplyLeading: false,
+        // centerTitle: true,
+      ),
       body: const Center(child: Text('No media selected')),
     );
   }
