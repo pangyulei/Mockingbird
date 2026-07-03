@@ -61,18 +61,6 @@ class _PlayerScreenState extends State<PlayerScreen>
         return;
       }
 
-      if (media.path != prevMedia?.path) {
-        final newVideoController = VideoPlayerController.file(File(media.path));
-        await newVideoController.initialize();
-        await _videoController?.dispose();
-        _videoController = newVideoController;
-        _videoController?.addListener(
-          () => _onPositionChanged(newVideoController),
-        );
-        _state = _state.copyWith(isPlaying: true, speed: 1.0);
-        await _videoController?.play();
-      }
-
       final sentences = media.subtitles.firstOrNull?.sentences;
       final sentenceStates =
           sentences?.asMap().entries.map((e) {
@@ -86,80 +74,32 @@ class _PlayerScreenState extends State<PlayerScreen>
             );
           }).toList() ??
           const [];
-      setState(() {
-        _state = _state.copyWith(
-          showLoading: false,
-          showEmpty: false,
-          title: media.name,
-          sentenceStates: sentenceStates,
-          focusedIndex: () => sentenceStates.isEmpty ? null : 0,
-        );
-      });
-    });
-    _subs.add(sub);
-  }
-
-  void _onPositionChanged(VideoPlayerController videoController) async {
-    final media = _media;
-    if (media == null) {
-      debugPrint('media not found');
-      return;
-    }
-    final subtitle = media.subtitles.firstOrNull;
-    if (subtitle == null) {
-      debugPrint('no subtitle to spot');
-      return;
-    }
-    if (subtitle.sentences.isEmpty) {
-      debugPrint('no sentence to spot');
-      return;
-    }
-    final position = videoController.value.position;
-    final sentences = subtitle.sentences;
-    final mediaEnd = videoController.value.duration;
-
-    final repeatIndex = _state.repeatIndex;
-    debugPrint('positon changed: loop index: $repeatIndex');
-    if (repeatIndex != null) {
-      final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
-      final bool needToSeekToBeginning;
-      if (nextSentence != null) {
-        needToSeekToBeginning = position >= nextSentence.start;
-      } else {
-        needToSeekToBeginning = position >= mediaEnd;
-      }
-      if (needToSeekToBeginning) {
-        await videoController.seekTo(
-          _startPositionForPlayingSentence(repeatIndex),
-        );
-      }
-    } else {
-      final focusedIndex = _state.focusedIndex;
-      if (focusedIndex == null) {
-        debugPrint('focus index not found');
-        return;
-      }
-      final int? playingIndex;
-      //从当前sentence开始判断这句是不是真的在播放中
-      //从现在的 index，判断到最后，再从最前的index，判断到现在的index
-      final allRange = List.generate(sentences.length, (index) => index);
-      final range1 = allRange.sublist(focusedIndex);
-      final range2 = allRange.sublist(0, focusedIndex);
-      final searchRange = [...range1, ...range2];
-      playingIndex = searchRange.firstWhereOrNull(
-        (idx) => _isSentencePlaying(idx, position, mediaEnd),
+      _state = _state.copyWith(
+        showLoading: false,
+        showEmpty: false,
+        title: media.name,
+        sentenceStates: sentenceStates,
+        focusedIndex: () => sentenceStates.isEmpty ? null : 0,
       );
-      if (playingIndex == null) {
-        debugPrint('playing index not found');
-        return;
-      }
-      if (playingIndex != focusedIndex) {
-        _scrollController.jumpTo(index: playingIndex, alignment: 0.3);
+      if (media.path != prevMedia?.path) {
+        final newVideoController = VideoPlayerController.file(File(media.path));
+        await newVideoController.initialize();
+        await _videoController?.dispose();
+        _videoController = newVideoController;
+        _videoController?.addListener(
+          () => _onPositionChanged(newVideoController),
+        );
         setState(() {
-          _state = _state.copyWith(focusedIndex: () => playingIndex);
+          _state = _state.copyWith(isPlaying: true, speed: 1.0);
+        });
+        await _videoController?.play();
+      } else {
+        setState(() {
+          _state = _state.copyWith();
         });
       }
-    }
+    });
+    _subs.add(sub);
   }
 
   String _formatDuration(Duration d) {
@@ -167,49 +107,6 @@ class _PlayerScreenState extends State<PlayerScreen>
     final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
     final milliseconds = (d.inMilliseconds.remainder(1000) ~/ 100).toString();
     return '$minutes:$seconds.$milliseconds';
-  }
-
-  bool _isSentencePlaying(
-    int sentenceIndex,
-    Duration position,
-    Duration mediaEnd,
-  ) {
-    final sentences = _media?.subtitles.firstOrNull?.sentences;
-    if (sentences == null || sentences.isEmpty) return false;
-    if (sentences.length == 1) return true;
-
-    final sentence = sentences.elementAtOrNull(sentenceIndex);
-    if (sentence == null) return false;
-    final nextSentence = sentences.elementAtOrNull(sentenceIndex + 1);
-    final prevSentence = sentenceIndex == 0
-        ? null
-        : sentences[sentenceIndex - 1];
-    //刚开始的时候position=0,但是第一句话的start不一定是0
-    //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
-    final start = prevSentence == null
-        ? const Duration(microseconds: 0)
-        : sentence.start;
-    if (nextSentence == null) {
-      return start <= position && position <= mediaEnd;
-    } else {
-      return start <= position && position < nextSentence.start;
-    }
-    // if (sentenceIndex == 0) {
-    //   if (nextSentence == null) {
-    //     return true;
-    //   } else {
-    //     return const Duration(microseconds: 0) <= position &&
-    //         position < nextSentence.start;
-    //   }
-    // } else if (sentenceIndex == sentences.length - 1) {
-    //   return sentence.start <= position && position <= mediaEnd;
-    // } else {
-    //   if (nextSentence == null) {
-    //     return sentence.start <= position && position < mediaEnd;
-    //   } else {
-    //     return sentence.start <= position && position < nextSentence.start;
-    //   }
-    // }
   }
 
   @override
@@ -299,7 +196,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       return;
     }
     _scrollController.jumpTo(index: index, alignment: 0.3);
-    final toPosition = _startPositionForPlayingSentence(index);
+    final toPosition = _startPositionOfSentence(index);
     debugPrint('seeked to $toPosition');
     final repeatIndex = _state.repeatIndex == null ? null : index;
     setState(() {
@@ -313,12 +210,129 @@ class _PlayerScreenState extends State<PlayerScreen>
     await videoController.play();
   }
 
-  Duration _startPositionForPlayingSentence(int sentenceIndex) {
-    final sentences = _media!.subtitles.first.sentences;
-    if (sentenceIndex == 0) {
+  void _onPositionChanged(VideoPlayerController videoController) async {
+    if (_state.sentenceStates.isEmpty) {
+      //prevent videoController.play() but _state not setuped fully.
+      debugPrint('no sentence on screen yet');
+      return;
+    }
+    final media = _media;
+    if (media == null) {
+      debugPrint('media not found');
+      return;
+    }
+    final subtitle = media.subtitles.firstOrNull;
+    if (subtitle == null || subtitle.sentences.isEmpty) {
+      debugPrint('no subtitle to spot');
+      return;
+    }
+    final position = videoController.value.position;
+    final sentences = subtitle.sentences;
+    final mediaEnd = videoController.value.duration;
+    //according to position, find current matched sentence index, marked as playingIndex
+    final playingIndex = _playingIndex(position);
+    if (playingIndex == null) {
+      debugPrint('playing index not found');
+      return;
+    }
+    //scroll to playingIndex and focus it
+    if (playingIndex != _state.focusedIndex) {
+      _scrollController.jumpTo(index: playingIndex, alignment: 0.3);
+      setState(() {
+        _state = _state.copyWith(focusedIndex: () => playingIndex);
+      });
+    }
+
+    //if repeat one is turn on, while sentence finished, seek to beginning
+    final repeatIndex = _state.repeatIndex;
+    if (repeatIndex != null) {
+      debugPrint('positon changed, repeat index: $repeatIndex');
+      final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
+      final bool needToSeekToBeginning;
+      if (nextSentence != null) {
+        needToSeekToBeginning = position >= nextSentence.start;
+      } else {
+        needToSeekToBeginning = position >= mediaEnd;
+      }
+      if (needToSeekToBeginning) {
+        await videoController.seekTo(_startPositionOfSentence(repeatIndex));
+      }
+    }
+  }
+
+  int? _playingIndex(Duration position) {
+    final sentences = _media?.subtitles.firstOrNull?.sentences;
+    if (sentences == null || sentences.isEmpty) return null;
+    final mediaEnd = _videoController?.value.duration;
+    if (mediaEnd == null) return null;
+
+    final int? playingIndex;
+    //从当前sentence开始判断这句是不是真的在播放中
+    //从现在的 index，判断到最后，再从最前的index，判断到现在的index
+    final allRange = List.generate(sentences.length, (index) => index);
+    final focusedIndex = _state.focusedIndex;
+    final List<int> searchRange;
+    if (focusedIndex == null) {
+      debugPrint('focus index not found');
+      searchRange = allRange;
+    } else {
+      final range1 = allRange.sublist(focusedIndex);
+      final range2 = allRange.sublist(0, focusedIndex);
+      searchRange = [...range1, ...range2];
+    }
+    playingIndex = searchRange.firstWhereOrNull(
+      (idx) => _isSentencePlaying(idx, position, mediaEnd),
+    );
+    return playingIndex;
+  }
+
+  bool _isSentencePlaying(int index, Duration position, Duration mediaEnd) {
+    final sentences = _media?.subtitles.firstOrNull?.sentences;
+    if (sentences == null || sentences.isEmpty) return false;
+    if (sentences.length == 1) return true;
+
+    final sentence = sentences[index];
+    final nextSentence = sentences.elementAtOrNull(index + 1);
+    final prevSentence = index == 0 ? null : sentences[index - 1];
+    //刚开始的时候position=0,但是第一句话的start不一定是0
+    //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
+    final start = prevSentence == null
+        ? const Duration(microseconds: 0)
+        : sentence.start;
+    if (nextSentence == null) {
+      return start <= position && position <= mediaEnd;
+    } else {
+      return start <= position && position < nextSentence.start;
+    }
+    // if (sentenceIndex == 0) {
+    //   if (nextSentence == null) {
+    //     return true;
+    //   } else {
+    //     return const Duration(microseconds: 0) <= position &&
+    //         position < nextSentence.start;
+    //   }
+    // } else if (sentenceIndex == sentences.length - 1) {
+    //   return sentence.start <= position && position <= mediaEnd;
+    // } else {
+    //   if (nextSentence == null) {
+    //     return sentence.start <= position && position < mediaEnd;
+    //   } else {
+    //     return sentence.start <= position && position < nextSentence.start;
+    //   }
+    // }
+  }
+
+  Duration _startPositionOfSentence(int index) {
+    final sentences = _media?.subtitles.firstOrNull?.sentences;
+    if (sentences == null) {
+      debugPrint('no sentences');
+      return const Duration(microseconds: 0);
+    }
+    if (index == 0) {
       return const Duration(microseconds: 0);
     } else {
-      return sentences[sentenceIndex].start;
+      return sentences[index].start;
     }
   }
 }
+
