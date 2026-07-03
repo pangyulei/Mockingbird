@@ -20,6 +20,8 @@ abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
   void player_onVideoSliderEndChanged(double microValue);
   void player_onVideoSliderChanging(double microValue);
   void player_onScrollToFocusedSentence();
+  void player_onVolumeChanging(double newVolume);
+  void player_onVolumeTap();
 }
 
 class PlayerUI extends StatelessWidget {
@@ -65,11 +67,23 @@ class PlayerUI extends StatelessWidget {
                 aspectRatio: videoController.value.aspectRatio,
                 child: VideoPlayer(videoController),
               ),
-              Positioned(
+              Positioned.fill(
+                left: 8,
+                top: 8,
                 bottom: 0,
-                left: 0,
                 right: 0,
-                child: _videoSlider(videoController),
+                child: Row(
+                  crossAxisAlignment: .end,
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 44,
+                        child: _videoSlider(videoController),
+                      ),
+                    ),
+                    _volumeComponent(ctx),
+                  ],
+                ),
               ),
             ],
           ),
@@ -84,6 +98,54 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
+  Widget _volumeComponent(BuildContext ctx) {
+    return Column(
+      mainAxisAlignment: .end,
+      children: [
+        if (_state.showVolumeSlider) Expanded(child: _volumeSlider(ctx)),
+        IconButton(
+          onPressed: _logic.player_onVolumeTap,
+          icon: const Icon(Icons.volume_up),
+          iconSize: 24,
+          style: const ButtonStyle(tapTargetSize: .shrinkWrap),
+          constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+          padding: EdgeInsets.zero,
+        ),
+      ],
+    );
+  }
+
+  Widget _volumeSlider(BuildContext ctx) {
+    return RotatedBox(
+      quarterTurns: 3,
+      child: SliderTheme(
+        data: SliderTheme.of(ctx).copyWith(
+          // 1. 縮小軌道高度
+          trackHeight: 2.0,
+          // 2. 移除周圍的滑塊內邊距（關鍵：將熱區半徑縮小或設為與滑塊相同）
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+          overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+          // 3. 移除滑塊在兩端的空白間距
+          valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
+        ),
+        child: Slider(
+          value: _state.volume,
+          min: 0.0,
+          max: 1.0,
+          divisions: 10, //cut 1 into step 0.1
+          activeColor: Theme.of(ctx).colorScheme.primary,
+          thumbColor: Theme.of(ctx).colorScheme.primary,
+          inactiveColor: Theme.of(
+            ctx,
+          ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+          onChanged: (newVolume) {
+            _logic.player_onVolumeChanging(newVolume);
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _videoSlider(VideoPlayerController videoController) {
     return ValueListenableBuilder(
       valueListenable: videoController,
@@ -91,21 +153,35 @@ class PlayerUI extends StatelessWidget {
         final int position = videoValue.position.inMicroseconds;
         final int duration = videoValue.duration.inMicroseconds;
         final draggingValue = _state.videoSliderDraggingValue;
-        return Slider(
-          value: draggingValue ?? position.clamp(0, duration).toDouble(),
-          min: 0.0,
-          max: duration.toDouble(),
-          activeColor: Colors.blue,
-          inactiveColor: Colors.blueGrey,
-          onChangeStart: (sliderValue) {
-            _logic.player_onVideoSliderStartChanged(sliderValue);
-          },
-          onChangeEnd: (sliderValue) {
-            _logic.player_onVideoSliderEndChanged(sliderValue);
-          },
-          onChanged: (sliderValue) {
-            _logic.player_onVideoSliderChanging(sliderValue);
-          },
+        return SliderTheme(
+          data: SliderTheme.of(ctx).copyWith(
+            // 1. 縮小軌道高度
+            trackHeight: 4.0,
+            // 2. 移除周圍的滑塊內邊距（關鍵：將熱區半徑縮小或設為與滑塊相同）
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+            // 3. 移除滑塊在兩端的空白間距
+            valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
+          ),
+          child: Slider(
+            value: draggingValue ?? position.clamp(0, duration).toDouble(),
+            min: 0.0,
+            max: duration.toDouble(),
+            activeColor: Theme.of(ctx).colorScheme.primary,
+            thumbColor: Theme.of(ctx).colorScheme.primary,
+            inactiveColor: Theme.of(
+              ctx,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            onChangeStart: (sliderValue) {
+              _logic.player_onVideoSliderStartChanged(sliderValue);
+            },
+            onChangeEnd: (sliderValue) {
+              _logic.player_onVideoSliderEndChanged(sliderValue);
+            },
+            onChanged: (sliderValue) {
+              _logic.player_onVideoSliderChanging(sliderValue);
+            },
+          ),
         );
       },
     );

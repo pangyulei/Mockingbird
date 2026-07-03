@@ -12,8 +12,8 @@ class SentenceCardUI extends StatelessWidget {
   const SentenceCardUI(this._state, this._logic, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget build(BuildContext ctx) {
+    final colorScheme = Theme.of(ctx).colorScheme;
 
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 60),
@@ -39,7 +39,7 @@ class SentenceCardUI extends StatelessWidget {
                 children: [
                   Text(
                     _state.text,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
                       color: _state.isFocused
                           ? colorScheme.onPrimary
                           : colorScheme.onSurfaceVariant,
@@ -51,7 +51,7 @@ class SentenceCardUI extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     _state.period,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                       color: _state.isFocused
                           ? colorScheme.onPrimary.withValues(alpha: 0.8)
                           : colorScheme.outline,

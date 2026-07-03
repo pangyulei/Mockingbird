@@ -412,4 +412,19 @@ class _PlayerScreenState extends State<PlayerScreen>
       _scrollController.jumpTo(index: focusedIndex, alignment: 0.3);
     }
   }
+
+  @override
+  void player_onVolumeChanging(double newVolume) async {
+    setState(() {
+      _state = _state.copyWith(volume: newVolume);
+    });
+    await _videoController?.setVolume(newVolume);
+  }
+
+  @override
+  void player_onVolumeTap() {
+    setState(() {
+      _state = _state.copyWith(showVolumeSlider: !_state.showVolumeSlider);
+    });
+  }
 }
