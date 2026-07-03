@@ -15,6 +15,10 @@ abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
   void player_onInOrder();
   void player_onSpeedUp();
   void player_onSpeedDown();
+  void player_onSpeedReset();
+  void player_onVideoSliderStartChanged(double microValue);
+  void player_onVideoSliderEndChanged(double microValue);
+  void player_onVideoSliderChanging(double microValue);
 }
 
 class PlayerUI extends StatelessWidget {
@@ -54,9 +58,44 @@ class PlayerUI extends StatelessWidget {
       appBar: _appBar(),
       body: Column(
         children: [
-          AspectRatio(
-            aspectRatio: videoController.value.aspectRatio,
-            child: VideoPlayer(videoController),
+          Stack(
+            children: [
+              AspectRatio(
+                aspectRatio: videoController.value.aspectRatio,
+                child: VideoPlayer(videoController),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: ValueListenableBuilder(
+                  valueListenable: videoController,
+                  builder: (ctx, videoValue, child) {
+                    final int position = videoValue.position.inMicroseconds;
+                    final int duration = videoValue.duration.inMicroseconds;
+                    final draggingValue = _state.videoSliderDraggingValue;
+                    return Slider(
+                      value:
+                          draggingValue ??
+                          position.clamp(0, duration).toDouble(),
+                      min: 0.0,
+                      max: duration.toDouble(),
+                      activeColor: Colors.blue,
+                      inactiveColor: Colors.blueGrey,
+                      onChangeStart: (sliderValue) {
+                        _logic.player_onVideoSliderStartChanged(sliderValue);
+                      },
+                      onChangeEnd: (sliderValue) {
+                        _logic.player_onVideoSliderEndChanged(sliderValue);
+                      },
+                      onChanged: (sliderValue) {
+                        _logic.player_onVideoSliderChanging(sliderValue);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
           _controlBar(ctx),
           if (_state.sentenceStates.isNotEmpty) _sentencesList(),
@@ -159,34 +198,59 @@ class PlayerUI extends StatelessWidget {
   Widget _speedDownButton() {
     return _controlButton(() {
       _logic.player_onSpeedDown();
-
     }, const Icon(Icons.fast_rewind));
   }
 
   Widget _speedUpButton() {
     return _controlButton(() {
       _logic.player_onSpeedUp();
-
     }, const Icon(Icons.fast_forward));
   }
 
   Widget _speedLabel(BuildContext ctx) {
-    return Container(
+    return SizedBox(
+      // 1. Set explicit outer dimensions
       height: _kPlayerControlBarHeight,
-      alignment: .center,
-      padding: const EdgeInsets.symmetric(
-        vertical: 0,
-        horizontal: 8,
-      ), // 1. Padding inside the box
-      decoration: BoxDecoration(
-        color: Theme.of(ctx).colorScheme.primaryContainer, // 2. Box Color
-        borderRadius: BorderRadius.circular(8.0), // 3. Rounded corners
-      ),
-      child: Text(
-        '${_state.speed.toString()}x',
-        style: const TextStyle(fontWeight: FontWeight.bold),
+      child: TextButton(
+        style: TextButton.styleFrom(
+          // 1. Define the inner padding (This directly dictates the extra width)
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+          
+          // 2. Set minimumSize to 0 so it doesn't enforce a default minimum width
+          minimumSize: Size.zero, 
+          
+          // 3. Keep visual bounds tight to the child
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap, 
+          
+          backgroundColor: Colors.blue,
+          foregroundColor: Theme.of(ctx).colorScheme.primaryContainer,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+        ),
+        onPressed: _logic.player_onSpeedReset,
+        child: Text(
+          '${_state.speed.toString()}x', // The button width will perfectly match this text + 30px padding on each side
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
     );
+    // return Container(
+    //   height: _kPlayerControlBarHeight,
+    //   alignment: .center,
+    //   padding: const EdgeInsets.symmetric(
+    //     vertical: 0,
+    //     horizontal: 8,
+    //   ), // 1. Padding inside the box
+    //   decoration: BoxDecoration(
+    //     color: Theme.of(ctx).colorScheme.primaryContainer, // 2. Box Color
+    //     borderRadius: BorderRadius.circular(8.0), // 3. Rounded corners
+    //   ),
+    //   child: Text(
+    //     '${_state.speed.toString()}x',
+    //     style: const TextStyle(fontWeight: FontWeight.bold),
+    //   ),
+    // );
   }
 
   Widget _controlButton(void Function() onPressed, Widget icon) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
@@ -11,6 +12,7 @@ import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
+
 import 'player_state.dart';
 
 const double _kMaxPlaySpeed = 3.0;
@@ -230,7 +232,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     final sentences = subtitle.sentences;
     final mediaEnd = videoController.value.duration;
     //according to position, find current matched sentence index, marked as playingIndex
-    final playingIndex = _playingIndex(position);
+    final playingIndex = _sentenceIndexByPosition(position);
     if (playingIndex == null) {
       debugPrint('playing index not found');
       return;
@@ -245,7 +247,8 @@ class _PlayerScreenState extends State<PlayerScreen>
 
     //if repeat one is turn on, while sentence finished, seek to beginning
     final repeatIndex = _state.repeatIndex;
-    if (repeatIndex != null) {
+    final isDraggingSlider = _state.videoSliderDraggingValue != null;
+    if (repeatIndex != null && !isDraggingSlider) {
       debugPrint('positon changed, repeat index: $repeatIndex');
       final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
       final bool needToSeekToBeginning;
@@ -260,7 +263,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     }
   }
 
-  int? _playingIndex(Duration position) {
+  int? _sentenceIndexByPosition(Duration position) {
     final sentences = _media?.subtitles.firstOrNull?.sentences;
     if (sentences == null || sentences.isEmpty) return null;
     final mediaEnd = _videoController?.value.duration;
@@ -334,5 +337,58 @@ class _PlayerScreenState extends State<PlayerScreen>
       return sentences[index].start;
     }
   }
-}
 
+  @override
+  void player_onSpeedReset() async {
+    final videoController = _videoController;
+    if (videoController == null) return;
+    final currentSpeed = videoController.value.playbackSpeed;
+    const double nextSpeed = 1.0;
+    if (nextSpeed == currentSpeed) {
+      return;
+    }
+    setState(() {
+      _state = _state.copyWith(speed: nextSpeed);
+    });
+    await videoController.setPlaybackSpeed(nextSpeed);
+  }
+
+  @override
+  void player_onVideoSliderStartChanged(double microValue) async {
+    setState(() {
+      _state = _state.copyWith(
+        videoSliderDraggingValue: () => microValue,
+        isPlaying: false,
+      );
+    });
+    await _videoController?.pause();
+  }
+
+  @override
+  void player_onVideoSliderChanging(double microValue) async {
+    setState(() {
+      _state = _state.copyWith(videoSliderDraggingValue: () => microValue);
+    });
+    await _videoController?.seekTo(Duration(microseconds: microValue.toInt()));
+  }
+
+  @override
+  void player_onVideoSliderEndChanged(double microValue) async {
+    final position = Duration(microseconds: microValue.toInt());
+    final index = _sentenceIndexByPosition(position);
+    if (index == null) {
+      debugPrint('sentence not found');
+      return;
+    }
+    final repeatIndex = _state.repeatIndex == null ? null : index;
+    setState(() {
+      _state = _state.copyWith(
+        videoSliderDraggingValue: () => null,
+        isPlaying: true,
+        repeatIndex: () => repeatIndex,
+      );
+    });
+    await _videoController?.seekTo(_startPositionOfSentence(index));
+    await _videoController?.play();
+  }
+}

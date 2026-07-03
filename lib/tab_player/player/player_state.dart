@@ -9,8 +9,10 @@ class PlayerState {
   final bool showEmpty;
   final bool isPlaying;
   final double speed;
+  final double? videoSliderDraggingValue;
 
   const PlayerState({
+    required this.videoSliderDraggingValue,
     required this.speed,
     required this.isPlaying,
     required this.repeatIndex,
@@ -31,6 +33,7 @@ class PlayerState {
         showLoading: false,
         title: '',
         speed: 1.0,
+        videoSliderDraggingValue: null,
       );
 
   PlayerState copyWith({
@@ -42,8 +45,12 @@ class PlayerState {
     List<SentenceCardState>? sentenceStates,
     int? Function()? focusedIndex,
     int? Function()? repeatIndex,
+    double? Function()? videoSliderDraggingValue,
   }) {
     return PlayerState(
+      videoSliderDraggingValue: videoSliderDraggingValue == null
+          ? this.videoSliderDraggingValue
+          : videoSliderDraggingValue(),
       speed: speed ?? this.speed,
       isPlaying: isPlaying ?? this.isPlaying,
       repeatIndex: repeatIndex == null ? this.repeatIndex : repeatIndex(),
