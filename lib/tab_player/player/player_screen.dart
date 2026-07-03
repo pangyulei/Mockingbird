@@ -231,6 +231,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     final position = videoController.value.position;
     final sentences = subtitle.sentences;
     final mediaEnd = videoController.value.duration;
+    final repeatIndex = _state.repeatIndex;
     //according to position, find current matched sentence index, marked as playingIndex
     final playingIndex = _sentenceIndexByPosition(position);
     if (playingIndex == null) {
@@ -239,14 +240,16 @@ class _PlayerScreenState extends State<PlayerScreen>
     }
     //scroll to playingIndex and focus it
     if (playingIndex != _state.focusedIndex) {
-      _scrollController.jumpTo(index: playingIndex, alignment: 0.3);
+      if (repeatIndex == null) {
+        //只有循環的時候，才需要持續自動滾動到當前句
+        _scrollController.jumpTo(index: playingIndex, alignment: 0.3);
+      }
       setState(() {
         _state = _state.copyWith(focusedIndex: () => playingIndex);
       });
     }
 
     //if repeat one is turn on, while sentence finished, seek to beginning
-    final repeatIndex = _state.repeatIndex;
     final isDraggingSlider = _state.videoSliderDraggingValue != null;
     if (repeatIndex != null && !isDraggingSlider) {
       debugPrint('positon changed, repeat index: $repeatIndex');
