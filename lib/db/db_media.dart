@@ -13,8 +13,9 @@ class DBMedia {
   DBMedia(this._store);
 
   Future<List<Media>> createMany(
-      Album album,
-      List<({File media, File? subtitle})> readFiles) async {
+    Album album,
+    List<({File media, File? subtitle})> readFiles,
+  ) async {
     if (readFiles.isEmpty) return const [];
 
     final appDir = await getApplicationDocumentsDirectory();
@@ -34,7 +35,10 @@ class DBMedia {
       );
     });
     final dirMediaFiles = await Future.wait(saveReadMediasToDir);
-    final constructSubtitles = readFiles.where((rf) => rf.subtitle != null).map((rf) => rf.subtitle!).map((s) => SubtitleParser.parseFile(s));
+    final constructSubtitles = readFiles
+        .where((rf) => rf.subtitle != null)
+        .map((rf) => rf.subtitle!)
+        .map((s) => SubtitleParser.parseFile(s));
     final subtitlesWithoutId = await Future.wait(constructSubtitles);
     //construct media models, prepared for save them to db
     final constructMedias = dirMediaFiles.asMap().entries.map((e) async {
@@ -47,27 +51,68 @@ class DBMedia {
       return media;
     }).toList();
     final mediasWithoutId = await Future.wait(constructMedias);
-    final medias = await _store.box<Media>().putAndGetManyAsync(mediasWithoutId);
+    final medias = await _store.box<Media>().putAndGetManyAsync(
+      mediasWithoutId,
+    );
     return medias;
   }
 
-  Future<void> update(Media media) async {
-    await _store.box<Media>().putAsync(media);
+  Future<Media> update(Media media) async {
+    return await _store.box<Media>().putAndGetAsync(media);
+  }
+
+  Future<Media> addSubtitle(Media media, Subtitle subtitle) async {
+    media = await _store.runInTransactionAsync<Media, int>(TxMode.write, (
+      Store store,
+      int mediaId,
+    ) {
+      final mediaBox = store.box<Media>();
+      final media = mediaBox.get(mediaId);
+      if (media == null) {
+        throw ArgumentError('mediaId $mediaId not existed');
+      }
+      final subtitleBox = store.box<Subtitle>();
+      final sentenceBox = store.box<Sentence>();
+      final sentences = media.subtitles
+          .map((st) => st.sentences)
+          .expand((e) => e)
+          .toList();
+      sentenceBox.removeMany(sentences.map((s) => s.id).toList());
+      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
+      media.subtitles.clear();
+      media.subtitles.add(subtitle);
+      mediaBox.put(media); //will auto update memory media
+      return media;
+      // final mediaAfter = mediaBox.get(mediaId);
+      // if (mediaAfter == null) {
+      //   throw ArgumentError('mediaId $mediaId not existed');
+      // }
+      // return mediaAfter;
+      // media.subtitles.clear();
+      // mediaBox.put(media);
+    }, media.id);
+    return media;
   }
 
   Future<void> remove(Media media) async {
-    await _store.runInTransactionAsync(TxMode.write, (Store store, int mediaId) {
+    await _store.runInTransactionAsync<void, int>(TxMode.write, (
+      Store store,
+      int mediaId,
+    ) {
       final mediaBox = store.box<Media>();
+      final media = mediaBox.get(mediaId);
+      if (media == null) {
+        return;
+      }
       final subtitleBox = store.box<Subtitle>();
       final sentenceBox = store.box<Sentence>();
-
-      final m = mediaBox.get(mediaId);
-      if (m == null) return;
-      final sentences = m.subtitles.map((st) => st.sentences).expand((e) => e).toList();
+      final sentences = media.subtitles
+          .map((st) => st.sentences)
+          .expand((e) => e)
+          .toList();
       mediaBox.remove(mediaId);
-      subtitleBox.removeMany(m.subtitles.map((s) => s.id).toList());
+      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
       sentenceBox.removeMany(sentences.map((s) => s.id).toList());
-
     }, media.id);
 
     // Remove file
@@ -77,21 +122,28 @@ class DBMedia {
     }
   }
 
-  Future<void> removeSubtitle(Media media) async {
-    if (media.subtitles.isEmpty) return;
-
-    await _store.runInTransactionAsync(TxMode.write, (Store store, int mediaId) {
+  Future<Media> removeSubtitle(Media media) async {
+    if (media.subtitles.isEmpty) return media;
+    media = await _store.runInTransactionAsync<Media, int>(TxMode.write, (
+      Store store,
+      int mediaId,
+    ) {
       final mediaBox = store.box<Media>();
+      final media = mediaBox.get(mediaId);
+      if (media == null) {
+        throw ArgumentError('mediaId $mediaId not existed');
+      }
       final subtitleBox = store.box<Subtitle>();
       final sentenceBox = store.box<Sentence>();
-
-      final m = mediaBox.get(mediaId);
-      if (m == null) return;
-      final sentences = m.subtitles.map((st) => st.sentences).expand((e) => e).toList();
+      final sentences = media.subtitles
+          .map((st) => st.sentences)
+          .expand((e) => e)
+          .toList();
       sentenceBox.removeMany(sentences.map((s) => s.id).toList());
-      subtitleBox.removeMany(m.subtitles.map((s) => s.id).toList());
-      m.subtitles.clear();
-      mediaBox.put(m);
+      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
+      media.subtitles.clear();
+      return media;
     }, media.id);
+    return media;
   }
 }

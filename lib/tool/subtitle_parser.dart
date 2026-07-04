@@ -126,7 +126,7 @@ class SubtitleParser {
           );
         }
       } catch (e) {
-        print('Error parsing VTT block: $e');
+        debugPrint('Error parsing VTT block: $e');
       }
     }
     final subtitle = Subtitle();

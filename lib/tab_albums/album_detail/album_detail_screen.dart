@@ -6,11 +6,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
+import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_media.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/model/media.dart';
-import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
@@ -52,44 +52,52 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   @override
   void initState() {
     super.initState();
-    _observeAlbum();
+    _state = _state.copyWith(showLoading: true);
+    _reloadAlbumById();
   }
 
-  void _observeAlbum() {
-    _state = _state.copyWith(showLoading: true);
-    final albumBox = DBObjectBox().store.box<Album>();
-    final albumStream = albumBox
-        .query(Album_.id.equals(widget._albumId))
-        .watch(triggerImmediately: true)
-        .map((q) async => await q.findFirstAsync());
-    final sub = albumStream.listen((event) async {
-      _album = await event;
-      final album = _album;
-      if (album != null) {
-        album.medias.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
-        final mediaStates = album.medias.asMap().entries.map((e) {
-          final index = e.key;
-          final media = e.value;
-          return MediaCardState(
-            name: media.name,
-            type: media.type,
-            hasSubtitle: media.subtitles.isNotEmpty,
-            index: index,
-          );
-        }).toList();
-        setState(() {
-          _state = _state.copyWith(
-            showLoading: false,
-            name: album.name,
-            cover: () => album.cover == null ? null : File(album.cover!),
-            mediaStates: mediaStates,
-          );
-        });
-      }
+  // void _observeAlbum() {
+  // final albumBox = DBObjectBox().store.box<Album>();
+  // final albumStream = albumBox
+  //     .query(Album_.id.equals(widget._albumId))
+  //     .watch(triggerImmediately: true)
+  //     .map((q) async => await q.findFirstAsync());
+  // final sub = albumStream.listen((event) async {
+  //   final album = await event;
+  //   _reloadAlbum(album);
+  // });
+  // _subs.add(sub);
+  // }
+
+  Future<void> _reloadAlbumById() async {
+    _album = await DBAlbum(DBObjectBox().store).get(widget._albumId);
+    setState(() {
+      _state = _createStateByAlbum(_album);
     });
-    _subs.add(sub);
+  }
+
+  AlbumDetailState _createStateByAlbum(Album? album) {
+    if (album == null) return const AlbumDetailState.empty();
+    album.medias.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+    final mediaStates = album.medias.asMap().entries.map((e) {
+      final index = e.key;
+      final media = e.value;
+      return MediaCardState(
+        name: media.name,
+        type: media.type,
+        hasSubtitle: media.subtitles.isNotEmpty,
+        index: index,
+      );
+    }).toList();
+    return AlbumDetailState(
+      showImport: true,
+      showLoading: false,
+      name: album.name,
+      cover: album.cover == null ? null : File(album.cover!),
+      mediaStates: mediaStates,
+    );
   }
 
   @override
@@ -154,6 +162,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
         _state = _state.copyWith(showLoading: true);
       });
       await DBMedia(DBObjectBox().store).createMany(album, readFiles);
+      await _reloadAlbumById();
     } catch (e) {
       debugPrint('Error importing media files: $e');
     }
@@ -195,9 +204,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       });
       final subtitleFile = File(subtitlePath);
       final subtitle = await SubtitleParser.parseFile(subtitleFile);
-      // ObjectBox will handle the relation update.
-      media.subtitles.add(subtitle);
-      await DBMedia(DBObjectBox().store).update(media);
+      await DBMedia(DBObjectBox().store).addSubtitle(media, subtitle);
+      await _reloadAlbumById();
     } catch (e) {
       debugPrint('Error adding subtitle: $e');
     }
@@ -219,6 +227,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       _state = _state.copyWith(showLoading: true);
     });
     await DBMedia(DBObjectBox().store).remove(media);
+    await _reloadAlbumById();
   }
 
   @override
@@ -252,5 +261,6 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       _state = _state.copyWith(showLoading: true);
     });
     await DBMedia(DBObjectBox().store).removeSubtitle(media);
+    await _reloadAlbumById();
   }
 }
