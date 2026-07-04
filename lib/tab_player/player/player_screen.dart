@@ -198,13 +198,18 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('videoController==null, nothing to control');
       return;
     }
+    final sentence = _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(
+      index,
+    );
+    if (sentence == null) {
+      debugPrint('sentence not found');
+      return;
+    }
     _scrollController.scrollTo(
       index: index,
       alignment: 0.3,
       duration: const Duration(milliseconds: 250),
     );
-    final toPosition = _startPositionOfSentence(index);
-    debugPrint('seeked to $toPosition');
     final repeatIndex = _state.repeatIndex == null ? null : index;
     setState(() {
       _state = _state.copyWith(
@@ -213,7 +218,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         isPlaying: true,
       );
     });
-    await videoController.seekTo(toPosition);
+    await videoController.seekTo(sentence.start);
     await videoController.play();
   }
 
@@ -260,17 +265,22 @@ class _PlayerScreenState extends State<PlayerScreen>
       //if repeat one is turn on, while sentence finished, seek to beginning
       final isDraggingSlider = _state.videoSliderDraggingValue != null;
       if (!isDraggingSlider) {
-        debugPrint('positon changed, repeat index: $repeatIndex');
-        final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
-        final bool needToSeekToBeginning;
-        if (nextSentence != null) {
-          needToSeekToBeginning = position >= nextSentence.start;
-        } else {
-          needToSeekToBeginning = position >= mediaEnd;
+        final sentence = sentences[repeatIndex];
+        if (position > sentence.end) {
+          debugPrint('positon changed, repeat index: $repeatIndex');
+          await videoController.seekTo(sentence.start);
         }
-        if (needToSeekToBeginning) {
-          await videoController.seekTo(_startPositionOfSentence(repeatIndex));
-        }
+        // final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
+        // final bool needToSeekToBeginning;
+        // if (nextSentence != null) {
+        //   needToSeekToBeginning = position >= nextSentence.start;
+        // } else {
+        //   needToSeekToBeginning = position >= mediaEnd;
+        // }
+        // if (needToSeekToBeginning) {
+        //   debugPrint('positon changed, repeat index: $repeatIndex');
+        //   await videoController.seekTo(_startPositionOfSentence(repeatIndex));
+        // }
       }
     }
   }
@@ -337,18 +347,18 @@ class _PlayerScreenState extends State<PlayerScreen>
     // }
   }
 
-  Duration _startPositionOfSentence(int index) {
-    final sentences = _media?.subtitles.firstOrNull?.sentences;
-    if (sentences == null) {
-      debugPrint('no sentences');
-      return const Duration(microseconds: 0);
-    }
-    if (index == 0) {
-      return const Duration(microseconds: 0);
-    } else {
-      return sentences[index].start;
-    }
-  }
+  // Duration _startPositionOfSentence(int index) {
+  //   final sentences = _media?.subtitles.firstOrNull?.sentences;
+  //   if (sentences == null) {
+  //     debugPrint('no sentences');
+  //     return const Duration(microseconds: 0);
+  //   }
+  //   if (index == 0) {
+  //     return const Duration(microseconds: 0);
+  //   } else {
+  //     return sentences[index].start;
+  //   }
+  // }
 
   @override
   void player_onSpeedReset() async {
@@ -402,6 +412,13 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('sentence not found');
       return;
     }
+    final sentence = _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(
+      index,
+    );
+    if (sentence == null) {
+      debugPrint('sentence not found');
+      return;
+    }
     final repeatIndex = _state.repeatIndex == null ? null : index;
     setState(() {
       _state = _state.copyWith(
@@ -410,7 +427,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         repeatIndex: () => repeatIndex,
       );
     });
-    await _videoController?.seekTo(_startPositionOfSentence(index));
+    await _videoController?.seekTo(sentence.start);
     await _videoController?.play();
   }
 
