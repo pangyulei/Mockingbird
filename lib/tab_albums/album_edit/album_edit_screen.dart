@@ -47,10 +47,10 @@ class _AlbumEditScreenState extends State<AlbumEditScreen>
       );
     }
     _nameController.addListener(() {
-      final trimmedName = _nameController.text.trim();
-      if (_nameController.text != trimmedName) {
-        _nameController.text = trimmedName;
-      }
+      // final trimmedName = _nameController.text.trim();
+      // if (_nameController.text != trimmedName) {
+      //   _nameController.text = trimmedName;
+      // }
       final enableSubmit = _isSubmitEnable(
         _nameController.text,
         _state.cover,
