@@ -14,9 +14,9 @@ class DBMedia {
 
   Future<List<Media>> createMany(
     Album album,
-    List<({File media, File? subtitle})> readFiles,
+    List<({File media, File? subtitle})> matchedFiles,
   ) async {
-    if (readFiles.isEmpty) return const [];
+    if (matchedFiles.isEmpty) return const [];
 
     final appDir = await getApplicationDocumentsDirectory();
     final mediaDir = Directory(p.join(appDir.path, 'medias'));
@@ -25,7 +25,7 @@ class DBMedia {
     }
 
     // save read media files to app dir
-    final saveReadMediasToDir = readFiles.asMap().entries.map((e) {
+    final saveMediasToDir = matchedFiles.asMap().entries.map((e) {
       final i = e.key;
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final uniqueName = "${timestamp}_$i";
@@ -34,20 +34,24 @@ class DBMedia {
         p.join(mediaDir.path, "$uniqueName${p.extension(memMedia.path)}"),
       );
     });
-    final dirMediaFiles = await Future.wait(saveReadMediasToDir);
-    final constructSubtitles = readFiles
-        .where((rf) => rf.subtitle != null)
-        .map((rf) => rf.subtitle!)
-        .map((s) => SubtitleParser.parseFile(s));
+    final dirMediaFiles = await Future.wait(saveMediasToDir);
+    final constructSubtitles = matchedFiles.map(
+      (mf) => mf.subtitle == null
+          ? Future.value(null)
+          : SubtitleParser.parseFile(mf.subtitle!),
+    );
     final subtitlesWithoutId = await Future.wait(constructSubtitles);
     //construct media models, prepared for save them to db
     final constructMedias = dirMediaFiles.asMap().entries.map((e) async {
       int i = e.key;
       final dirMedia = e.value;
-      final mediaName = p.basenameWithoutExtension(readFiles[i].media.path);
+      final mediaName = p.basenameWithoutExtension(matchedFiles[i].media.path);
       final media = Media(path: dirMedia.path, name: mediaName);
+      final subtitle = subtitlesWithoutId[i];
       media.albums.add(album);
-      media.subtitles.addAll(subtitlesWithoutId);
+      if ((subtitle != null)) {
+        media.subtitles.add(subtitle);
+      }
       return media;
     }).toList();
     final mediasWithoutId = await Future.wait(constructMedias);

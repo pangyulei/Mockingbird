@@ -16,7 +16,7 @@ import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
-
+import 'package:collection/collection.dart';
 import 'album_detail_state.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
@@ -137,40 +137,36 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
 
     final List<File> videoFiles = [];
     final List<File> audioFiles = [];
-    final List<File> subFiles = [];
+    final List<File> subtitleFiles = [];
     final files = await pickFiles();
     for (var f in files) {
       final ext = p.extension(f.path).replaceFirst('.', '').toLowerCase();
       if (kVideoExtensions.contains(ext)) videoFiles.add(f);
       if (kAudioExtensions.contains(ext)) audioFiles.add(f);
-      if (kSubtitleExtensions.contains(ext)) subFiles.add(f);
+      if (kSubtitleExtensions.contains(ext)) subtitleFiles.add(f);
     }
 
     // Match subtitles to medias
     final subtitleMap = {
-      for (final f in subFiles) p.basenameWithoutExtension(f.path): f,
+      for (final f in subtitleFiles) p.basenameWithoutExtension(f.path): f,
     };
-    final readFiles = <({File media, File? subtitle})>[];
+    final matchedFiles = <({File media, File? subtitle})>[];
     for (File mediaFile in [...videoFiles, ...audioFiles]) {
       final mediaName = p.basenameWithoutExtension(mediaFile.path);
       // Find a subtitle file that contains the media name
-      final matchedSubName = subtitleMap.keys.firstWhere(
-        (name) => name.contains(mediaName),
-        orElse: () => '',
-      );
-      final subFile = matchedSubName.isEmpty
-          ? null
-          : subtitleMap[matchedSubName];
-      readFiles.add((media: mediaFile, subtitle: subFile));
+      final matchedSubtitleName = subtitleMap.keys.firstWhereOrNull(
+        (subtitleName) => subtitleName.contains(mediaName));
+      final subtitleFile = matchedSubtitleName == null ? null : subtitleMap[matchedSubtitleName];
+      matchedFiles.add((media: mediaFile, subtitle: subtitleFile));
     }
-    if (readFiles.isEmpty) {
+    if (matchedFiles.isEmpty) {
       debugPrint('no picked videos, no picked audios');
       return;
     }
     setState(() {
       _state = _state.copyWith(showLoading: true);
     });
-    await DBMedia(DBObjectBox().store).createMany(album, readFiles);
+    await DBMedia(DBObjectBox().store).createMany(album, matchedFiles);
     await _reloadAlbumById();
   }
 
