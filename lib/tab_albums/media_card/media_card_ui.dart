@@ -28,7 +28,7 @@ class MediaCardUI extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
@@ -41,39 +41,25 @@ class MediaCardUI extends StatelessWidget {
       child: Stack(
         children: [
           ListTile(
+            horizontalTitleGap: 0,
             contentPadding: const EdgeInsets.only(
-              left: 16,
-              top: 8,
-              bottom: 8,
-              right: 38,
+              left: 8,
+              top: 0,
+              bottom: 0,
+              right: 34,
             ),
-            // leading: Container(
-            //   width: 52,
-            //   height: 52,
-            //   decoration: BoxDecoration(
-            //     color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.7),
-            //     borderRadius: BorderRadius.circular(12),
-            //   ),
-            //   child: Icon(
-            //     _state.type == MediaType.video
-            //         ? Icons.videocam_rounded
-            //         : Icons.audiotrack_rounded,
-            //     color: Theme.of(context).colorScheme.primary,
-            //     size: 28,
-            //   ),
-            // ),
             title: Text(
               _state.name,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF191C1E),
-                fontSize: 16,
+                fontSize: 14,
               ),
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.only(top: 2),
               child: Row(
                 children: [
                   if (_state.hasSubtitle) ...[
