@@ -29,19 +29,13 @@ abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
 class PlayerUI extends StatelessWidget {
   final PlayerState _state;
   final PlayerUIOutputITF _logic;
-  final VideoPlayerController? _videoController;
   final ItemScrollController _scrollController;
-  const PlayerUI(
-    this._state,
-    this._logic,
-    this._videoController,
-    this._scrollController, {
-    super.key,
-  });
+
+  const PlayerUI(this._state, this._logic, this._scrollController, {super.key});
 
   @override
   Widget build(BuildContext ctx) {
-    final videoController = _videoController;
+    final videoController = _state.videoController;
     return Stack(
       children: [
         if (videoController != null) _page(ctx, videoController),
@@ -118,11 +112,15 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _volumeComponent(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _volumeComponent(
+    BuildContext ctx,
+    VideoPlayerController videoController,
+  ) {
     return Column(
       mainAxisAlignment: .end,
       children: [
-        if (_state.showVolumeSlider) Expanded(child: _volumeSlider(ctx, videoController)),
+        if (_state.showVolumeSlider)
+          Expanded(child: _volumeSlider(ctx, videoController)),
         IconButton(
           onPressed: _logic.player_onVolumeTap,
           icon: const Icon(Icons.volume_up),
@@ -135,7 +133,10 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _volumeSlider(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _volumeSlider(
+    BuildContext ctx,
+    VideoPlayerController videoController,
+  ) {
     return RotatedBox(
       quarterTurns: 3,
       child: SliderTheme(
@@ -219,10 +220,6 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _sentencesList() {
-    assert(
-      _state.sentenceStates.isNotEmpty,
-      'empty subtitle should not show sentences list',
-    );
     return Expanded(
       child: ScrollablePositionedList.builder(
         itemCount: _state.sentenceStates.length,

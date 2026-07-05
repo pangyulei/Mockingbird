@@ -20,7 +20,6 @@ const double _kMinPlaySpeed = 0.25;
 const double _kStepPlaySpeed = 0.25;
 
 class PlayerScreen extends StatefulWidget {
-  //if no mediaId passed, means empty
   final int? _mediaId;
   const PlayerScreen(this._mediaId, {super.key});
 
@@ -34,7 +33,6 @@ class _PlayerScreenState extends State<PlayerScreen>
   final _subs = <StreamSubscription>[];
   Media? _media;
   VideoPlayerController? _videoController;
-  //TODO move scroll into state itself
   final _scrollController = ItemScrollController();
 
   @override
@@ -46,53 +44,11 @@ class _PlayerScreenState extends State<PlayerScreen>
       _state = _state.copyWith(showLoading: false, showEmpty: true);
     } else {
       _state = _state.copyWith(showLoading: true, showEmpty: true);
-      _observeMedia(mediaId);
+      _subscribeMedia(mediaId);
     }
   }
 
-  void _observeMedia(int mediaId) async {
-    _listenToMedia(mediaId, (newMedia) async {
-      final oldMedia = _media?.copyWith();
-      _media = newMedia;
-      if (newMedia == null) {
-        await _videoController?.dispose();
-      } else {
-        final isSubtitleChanged =
-            oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
-        if (isSubtitleChanged) {
-          final sentenceStates = _sentenceStates(newMedia);
-          _state = _state.copyWith(
-            sentenceStates: sentenceStates,
-            focusedIndex: () => sentenceStates.isEmpty ? null : 0,
-            repeatIndex: () => null,
-          );
-        }
-        _state = _state.copyWith(title: newMedia.name);
-        final isVideoChanged = oldMedia?.path != newMedia.path;
-        if (isVideoChanged) {
-          final newVideoController = VideoPlayerController.file(
-            File(newMedia.path),
-          );
-          await newVideoController.initialize();
-          newVideoController.addListener(
-            () => _onPositionChanged(newVideoController),
-          );
-          await _videoController?.dispose();
-          _videoController = newVideoController;
-          _state = _state.copyWith(videoController: () => newVideoController);
-          await _videoController?.play();
-        }
-      }
-      setState(() {
-        _state = _state.copyWith(
-          showLoading: false,
-          showEmpty: newMedia == null,
-        );
-      });
-    });
-  }
-
-  void _listenToMedia(int mediaId, void Function(Media?) f) {
+  void _subscribeMedia(int mediaId) async {
     final mediaBox = DBObjectBox().store.box<Media>();
     final mediaStream = mediaBox
         .query(Media_.id.equals(mediaId))
@@ -100,9 +56,46 @@ class _PlayerScreenState extends State<PlayerScreen>
         .map((q) async => await q.findAsync());
     final sub = mediaStream.listen((event) async {
       final newMedia = (await event).firstOrNull;
-      f(newMedia);
+      _receiveMedia(newMedia);
     });
     _subs.add(sub);
+  }
+
+  void _receiveMedia(Media? newMedia) async {
+    final oldMedia = _media?.copyWith();
+    _media = newMedia;
+    if (newMedia == null) {
+      await _videoController?.dispose();
+    } else {
+      final isSubtitleChanged =
+          oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
+      if (isSubtitleChanged) {
+        final sentenceStates = _sentenceStates(newMedia);
+        _state = _state.copyWith(
+          sentenceStates: sentenceStates,
+          focusedIndex: () => sentenceStates.isEmpty ? null : 0,
+          repeatIndex: () => null,
+        );
+      }
+      _state = _state.copyWith(title: newMedia.name);
+      final isVideoChanged = oldMedia?.path != newMedia.path;
+      if (isVideoChanged) {
+        final newVideoController = VideoPlayerController.file(
+          File(newMedia.path),
+        );
+        await newVideoController.initialize();
+        newVideoController.addListener(
+          () => _onPositionChanged(newVideoController),
+        );
+        await _videoController?.dispose();
+        _videoController = newVideoController;
+        _state = _state.copyWith(videoController: () => newVideoController);
+        await _videoController?.play();
+      }
+    }
+    setState(() {
+      _state = _state.copyWith(showLoading: false, showEmpty: newMedia == null);
+    });
   }
 
   @override
@@ -111,7 +104,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (widget._mediaId != oldWidget._mediaId) {
       debugPrint('player mediaId:${oldWidget._mediaId} => ${widget._mediaId}');
       final mediaId = widget._mediaId;
-      _cancelDBSubs();
+      _unsubscribeMedia();
       if (mediaId == null) {
         _videoController?.dispose();
         _media = null;
@@ -122,7 +115,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         setState(() {
           _state = _state.copyWith(showLoading: true, showEmpty: false);
         });
-        _observeMedia(mediaId);
+        _subscribeMedia(mediaId);
       }
     }
   }
@@ -156,12 +149,12 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   void dispose() async {
-    _cancelDBSubs();
+    _unsubscribeMedia();
     await _videoController?.dispose();
     super.dispose();
   }
 
-  void _cancelDBSubs() {
+  void _unsubscribeMedia() {
     for (final sub in _subs) {
       sub.cancel();
     }
@@ -169,7 +162,7 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   Widget build(BuildContext context) {
-    return PlayerUI(_state, this, _videoController, _scrollController);
+    return PlayerUI(_state, this, _scrollController);
   }
 
   @override
