@@ -1,14 +1,16 @@
+import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
 import 'media.dart';
 
 @Entity()
-class Album {
+class Album extends Equatable {
   @Id()
   int id;
 
   final String name;
   final String? cover;
-  
+  final int versionId;
+
   @Backlink('albums')
   final medias = ToMany<Media>();
 
@@ -18,18 +20,21 @@ class Album {
   Album({
     required this.name,
     required this.sortOrder,
-    this.id = 0,
-    this.cover,
+    required this.id,
+    required this.cover,
+    required this.versionId,
   });
 
   Album copyWith({
     int? id,
+    int? versionId,
     String? name,
     String? Function()? cover,
     int? sortOrder,
     Iterable<Media>? medias,
   }) {
     final p = Album(
+      versionId: versionId ?? this.versionId,
       id: id ?? this.id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -42,4 +47,7 @@ class Album {
     }
     return p;
   }
+
+  @override
+  List<Object?> get props => [id, versionId];
 }

@@ -34,75 +34,117 @@ class _PlayerScreenState extends State<PlayerScreen>
   final _subs = <StreamSubscription>[];
   Media? _media;
   VideoPlayerController? _videoController;
+  //TODO move scroll into state itself
   final _scrollController = ItemScrollController();
 
   @override
   void initState() {
     super.initState();
-    _observeMedia();
+    final mediaId = widget._mediaId;
+    debugPrint('player initState mediaId: $mediaId');
+    if (mediaId == null) {
+      _state = _state.copyWith(showLoading: false, showEmpty: true);
+    } else {
+      _state = _state.copyWith(showLoading: true, showEmpty: true);
+      _observeMedia(mediaId);
+    }
   }
 
-  void _observeMedia() {
-    final mediaId = widget._mediaId;
-    if (mediaId == null) {
-      debugPrint('no mediaId');
-      _state = _state.copyWith(showLoading: false, showEmpty: true);
-      return;
-    }
-    _state = _state.copyWith(showLoading: true, showEmpty: true);
+  void _observeMedia(int mediaId) async {
+    _listenToMedia(mediaId, (newMedia) async {
+      final oldMedia = _media?.copyWith();
+      _media = newMedia;
+      if (newMedia == null) {
+        await _videoController?.dispose();
+      } else {
+        final isSubtitleChanged =
+            oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
+        if (isSubtitleChanged) {
+          final sentenceStates = _sentenceStates(newMedia);
+          _state = _state.copyWith(
+            sentenceStates: sentenceStates,
+            focusedIndex: () => sentenceStates.isEmpty ? null : 0,
+            repeatIndex: () => null,
+          );
+        }
+        _state = _state.copyWith(title: newMedia.name);
+        final isVideoChanged = oldMedia?.path != newMedia.path;
+        if (isVideoChanged) {
+          final newVideoController = VideoPlayerController.file(
+            File(newMedia.path),
+          );
+          await newVideoController.initialize();
+          newVideoController.addListener(
+            () => _onPositionChanged(newVideoController),
+          );
+          await _videoController?.dispose();
+          _videoController = newVideoController;
+          _state = _state.copyWith(videoController: () => newVideoController);
+          await _videoController?.play();
+        }
+      }
+      setState(() {
+        _state = _state.copyWith(
+          showLoading: false,
+          showEmpty: newMedia == null,
+        );
+      });
+    });
+  }
+
+  void _listenToMedia(int mediaId, void Function(Media?) f) {
     final mediaBox = DBObjectBox().store.box<Media>();
     final mediaStream = mediaBox
         .query(Media_.id.equals(mediaId))
         .watch(triggerImmediately: true)
-        .map((q) async => await q.findFirstAsync());
+        .map((q) async => await q.findAsync());
     final sub = mediaStream.listen((event) async {
-      final prevMedia = _media?.copyWith();
-      _media = await event;
-      final media = _media;
-      if (media == null) {
-        debugPrint('no media found');
-        return;
-      }
-
-      final sentences = media.subtitles.firstOrNull?.sentences;
-      final sentenceStates =
-          sentences?.asMap().entries.map((e) {
-            int i = e.key;
-            Sentence s = e.value;
-            return SentenceCardState(
-              isFocused: i == 0,
-              text: s.text,
-              period: '${_formatDuration(s.start)} - ${_formatDuration(s.end)}',
-              index: i,
-            );
-          }).toList() ??
-          const [];
-      _state = _state.copyWith(
-        showLoading: false,
-        showEmpty: false,
-        title: media.name,
-        sentenceStates: sentenceStates,
-        focusedIndex: () => sentenceStates.isEmpty ? null : 0,
-      );
-      if (media.path != prevMedia?.path) {
-        final newVideoController = VideoPlayerController.file(File(media.path));
-        await newVideoController.initialize();
-        await _videoController?.dispose();
-        _videoController = newVideoController;
-        _videoController?.addListener(
-          () => _onPositionChanged(newVideoController),
-        );
-        setState(() {
-          _state = _state.copyWith(isPlaying: true, speed: 1.0);
-        });
-        await _videoController?.play();
-      } else {
-        setState(() {
-          _state = _state.copyWith();
-        });
-      }
+      final newMedia = (await event).firstOrNull;
+      f(newMedia);
     });
     _subs.add(sub);
+  }
+
+  @override
+  void didUpdateWidget(covariant PlayerScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget._mediaId != oldWidget._mediaId) {
+      debugPrint('player mediaId:${oldWidget._mediaId} => ${widget._mediaId}');
+      final mediaId = widget._mediaId;
+      _cancelDBSubs();
+      if (mediaId == null) {
+        _videoController?.dispose();
+        _media = null;
+        setState(() {
+          _state = _state.copyWith(showLoading: false, showEmpty: true);
+        });
+      } else {
+        setState(() {
+          _state = _state.copyWith(showLoading: true, showEmpty: false);
+        });
+        _observeMedia(mediaId);
+      }
+    }
+  }
+
+  List<SentenceCardState> _sentenceStates(Media? media) {
+    if (media == null) {
+      return const [];
+    }
+    final sentences = media.subtitles.firstOrNull?.sentences;
+    final sentenceStates =
+        sentences?.asMap().entries.map((e) {
+          int i = e.key;
+          Sentence s = e.value;
+          return SentenceCardState(
+            isFocused: i == 0,
+            text: s.text,
+            period: '${_formatDuration(s.start)} - ${_formatDuration(s.end)}',
+            index: i,
+          );
+        }).toList() ??
+        const [];
+    return sentenceStates;
   }
 
   String _formatDuration(Duration d) {
@@ -113,13 +155,13 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   @override
-  void dispose() {
-    _cancelAllSubs();
-    _videoController?.dispose();
+  void dispose() async {
+    _cancelDBSubs();
+    await _videoController?.dispose();
     super.dispose();
   }
 
-  void _cancelAllSubs() {
+  void _cancelDBSubs() {
     for (final sub in _subs) {
       sub.cancel();
     }
@@ -139,18 +181,14 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   void player_onPause() async {
-    setState(() {
-      _state = _state.copyWith(isPlaying: false);
-    });
     await _videoController?.pause();
+    setState(() {});
   }
 
   @override
   void player_onPlay() async {
-    setState(() {
-      _state = _state.copyWith(isPlaying: true);
-    });
     await _videoController?.play();
+    setState(() {});
   }
 
   @override
@@ -169,10 +207,8 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (nextSpeed == currentSpeed) {
       return;
     }
-    setState(() {
-      _state = _state.copyWith(speed: nextSpeed);
-    });
     await videoController.setPlaybackSpeed(nextSpeed);
+    setState(() {});
   }
 
   @override
@@ -184,10 +220,8 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (nextSpeed == currentSpeed) {
       return;
     }
-    setState(() {
-      _state = _state.copyWith(speed: nextSpeed);
-    });
     await videoController.setPlaybackSpeed(nextSpeed);
+    setState(() {});
   }
 
   @override
@@ -211,15 +245,13 @@ class _PlayerScreenState extends State<PlayerScreen>
       duration: const Duration(milliseconds: 250),
     );
     final repeatIndex = _state.repeatIndex == null ? null : index;
-    setState(() {
-      _state = _state.copyWith(
-        focusedIndex: () => index,
-        repeatIndex: () => repeatIndex,
-        isPlaying: true,
-      );
-    });
+    _state = _state.copyWith(
+      focusedIndex: () => index,
+      repeatIndex: () => repeatIndex,
+    );
     await videoController.seekTo(sentence.start);
     await videoController.play();
+    setState(() {});
   }
 
   void _onPositionChanged(VideoPlayerController videoController) async {
@@ -240,7 +272,6 @@ class _PlayerScreenState extends State<PlayerScreen>
     }
     final position = videoController.value.position;
     final sentences = subtitle.sentences;
-    final mediaEnd = videoController.value.duration;
     final repeatIndex = _state.repeatIndex;
     if (repeatIndex == null) {
       //according to position, find current matched sentence index, marked as playingIndex
@@ -270,17 +301,6 @@ class _PlayerScreenState extends State<PlayerScreen>
           debugPrint('positon changed, repeat index: $repeatIndex');
           await videoController.seekTo(sentence.start);
         }
-        // final nextSentence = sentences.elementAtOrNull(repeatIndex + 1);
-        // final bool needToSeekToBeginning;
-        // if (nextSentence != null) {
-        //   needToSeekToBeginning = position >= nextSentence.start;
-        // } else {
-        //   needToSeekToBeginning = position >= mediaEnd;
-        // }
-        // if (needToSeekToBeginning) {
-        //   debugPrint('positon changed, repeat index: $repeatIndex');
-        //   await videoController.seekTo(_startPositionOfSentence(repeatIndex));
-        // }
       }
     }
   }
@@ -329,36 +349,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     } else {
       return start <= position && position < nextSentence.start;
     }
-    // if (sentenceIndex == 0) {
-    //   if (nextSentence == null) {
-    //     return true;
-    //   } else {
-    //     return const Duration(microseconds: 0) <= position &&
-    //         position < nextSentence.start;
-    //   }
-    // } else if (sentenceIndex == sentences.length - 1) {
-    //   return sentence.start <= position && position <= mediaEnd;
-    // } else {
-    //   if (nextSentence == null) {
-    //     return sentence.start <= position && position < mediaEnd;
-    //   } else {
-    //     return sentence.start <= position && position < nextSentence.start;
-    //   }
-    // }
   }
-
-  // Duration _startPositionOfSentence(int index) {
-  //   final sentences = _media?.subtitles.firstOrNull?.sentences;
-  //   if (sentences == null) {
-  //     debugPrint('no sentences');
-  //     return const Duration(microseconds: 0);
-  //   }
-  //   if (index == 0) {
-  //     return const Duration(microseconds: 0);
-  //   } else {
-  //     return sentences[index].start;
-  //   }
-  // }
 
   @override
   void player_onSpeedReset() async {
@@ -369,66 +360,47 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (nextSpeed == currentSpeed) {
       return;
     }
-    setState(() {
-      _state = _state.copyWith(speed: nextSpeed);
-    });
     await videoController.setPlaybackSpeed(nextSpeed);
+    setState(() {});
   }
 
   @override
   void player_onVideoSliderStartChanged(double microValue) async {
-    setState(() {
-      _state = _state.copyWith(
-        videoSliderDraggingValue: () => microValue,
-        isPlaying: false,
-      );
-    });
+    _state = _state.copyWith(videoSliderDraggingValue: () => microValue);
     await _videoController?.pause();
+    setState(() {});
   }
 
   @override
   void player_onVideoSliderChanging(double microValue) async {
     final position = Duration(microseconds: microValue.toInt());
     final index = _sentenceIndexByPosition(position);
-    if (index == null) {
-      debugPrint('index of sentence not found');
-      return;
+    _state = _state.copyWith(
+      videoSliderDraggingValue: () => microValue,
+      focusedIndex: () => index,
+    );
+    if (index != null) {
+      _scrollController.jumpTo(index: index, alignment: 0.3);
     }
-    setState(() {
-      _state = _state.copyWith(
-        videoSliderDraggingValue: () => microValue,
-        focusedIndex: () => index,
-      );
-    });
-    _scrollController.jumpTo(index: index, alignment: 0.3);
     await _videoController?.seekTo(position);
+    setState(() {});
   }
 
   @override
   void player_onVideoSliderEndChanged(double microValue) async {
     final position = Duration(microseconds: microValue.toInt());
+    final sentences = _media?.subtitles.firstOrNull?.sentences;
     final index = _sentenceIndexByPosition(position);
-    if (index == null) {
-      debugPrint('sentence not found');
-      return;
+    final sentence = index == null ? null : sentences?.elementAtOrNull(index);
+
+    if (index != null && sentence != null) {
+      final repeatIndex = _state.repeatIndex == null ? null : index;
+      _state = _state.copyWith(repeatIndex: () => repeatIndex);
+      await _videoController?.seekTo(sentence.start);
     }
-    final sentence = _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(
-      index,
-    );
-    if (sentence == null) {
-      debugPrint('sentence not found');
-      return;
-    }
-    final repeatIndex = _state.repeatIndex == null ? null : index;
-    setState(() {
-      _state = _state.copyWith(
-        videoSliderDraggingValue: () => null,
-        isPlaying: true,
-        repeatIndex: () => repeatIndex,
-      );
-    });
-    await _videoController?.seekTo(sentence.start);
+    _state = _state.copyWith(videoSliderDraggingValue: () => null);
     await _videoController?.play();
+    setState(() {});
   }
 
   @override
@@ -471,10 +443,8 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   void player_onVolumeChanging(double newVolume) async {
-    setState(() {
-      _state = _state.copyWith(volume: newVolume);
-    });
     await _videoController?.setVolume(newVolume);
+    setState(() {});
   }
 
   @override

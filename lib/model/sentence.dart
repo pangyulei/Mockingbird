@@ -15,7 +15,7 @@ class Sentence {
     required this.startMicroseconds,
     required this.endMicroseconds,
     required this.text,
-    this.id = 0,
+    required this.id,
   });
 
   Duration get start => Duration(microseconds: startMicroseconds);

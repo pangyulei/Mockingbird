@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:7561125612899362134",
-      "lastPropertyId": "6:7208765820015052498",
+      "lastPropertyId": "7:7465676661070110386",
       "name": "Media",
       "properties": [
         {
@@ -23,6 +23,11 @@
           "id": "6:7208765820015052498",
           "name": "path",
           "type": 9
+        },
+        {
+          "id": "7:7465676661070110386",
+          "name": "versionId",
+          "type": 6
         }
       ],
       "relations": [
@@ -94,7 +99,7 @@
     },
     {
       "id": "6:6109400686112909804",
-      "lastPropertyId": "5:4265347287920386890",
+      "lastPropertyId": "6:7489107421856279092",
       "name": "Album",
       "properties": [
         {
@@ -119,6 +124,11 @@
           "id": "5:4265347287920386890",
           "name": "cover",
           "type": 9
+        },
+        {
+          "id": "6:7489107421856279092",
+          "name": "versionId",
+          "type": 6
         }
       ],
       "relations": []

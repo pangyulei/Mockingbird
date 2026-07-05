@@ -16,7 +16,6 @@ import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
-import 'package:collection/collection.dart';
 import 'album_detail_state.dart';
 
 class AlbumDetailScreen extends StatefulWidget {

@@ -25,7 +25,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(1, 7561125612899362134),
     name: 'Media',
-    lastPropertyId: const obx_int.IdUid(6, 7208765820015052498),
+    lastPropertyId: const obx_int.IdUid(7, 7465676661070110386),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -44,6 +44,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(6, 7208765820015052498),
         name: 'path',
         type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 7465676661070110386),
+        name: 'versionId',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -139,7 +145,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(6, 6109400686112909804),
     name: 'Album',
-    lastPropertyId: const obx_int.IdUid(5, 4265347287920386890),
+    lastPropertyId: const obx_int.IdUid(6, 7489107421856279092),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -165,6 +171,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(5, 4265347287920386890),
         name: 'cover',
         type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 7489107421856279092),
+        name: 'versionId',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -272,10 +284,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectToFB: (Media object, fb.Builder fbb) {
         final nameOffset = fbb.writeString(object.name);
         final pathOffset = fbb.writeString(object.path);
-        fbb.startTable(7);
+        fbb.startTable(8);
         fbb.addInt64(0, object.id);
         fbb.addOffset(3, nameOffset);
         fbb.addOffset(5, pathOffset);
+        fbb.addInt64(6, object.versionId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -294,7 +307,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final object = Media(path: pathParam, name: nameParam, id: idParam);
+        final versionIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          16,
+          0,
+        );
+        final object = Media(
+          path: pathParam,
+          name: nameParam,
+          id: idParam,
+          versionId: versionIdParam,
+        );
         obx_int.InternalToManyAccess.setRelInfo<Media>(
           object.albums,
           store,
@@ -436,11 +460,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final coverOffset = object.cover == null
             ? null
             : fbb.writeString(object.cover!);
-        fbb.startTable(6);
+        fbb.startTable(7);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, nameOffset);
         fbb.addInt64(3, object.sortOrder);
         fbb.addOffset(4, coverOffset);
+        fbb.addInt64(5, object.versionId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -465,11 +490,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final coverParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 12);
+        final versionIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
         final object = Album(
           name: nameParam,
           sortOrder: sortOrderParam,
           id: idParam,
           cover: coverParam,
+          versionId: versionIdParam,
         );
         obx_int.InternalToManyAccess.setRelInfo<Album>(
           object.medias,
@@ -497,6 +529,11 @@ class Media_ {
   /// See [Media.path].
   static final path = obx.QueryStringProperty<Media>(
     _entities[0].properties[2],
+  );
+
+  /// See [Media.versionId].
+  static final versionId = obx.QueryIntegerProperty<Media>(
+    _entities[0].properties[3],
   );
 
   /// see [Media.albums]
@@ -574,5 +611,10 @@ class Album_ {
   /// See [Album.cover].
   static final cover = obx.QueryStringProperty<Album>(
     _entities[3].properties[3],
+  );
+
+  /// See [Album.versionId].
+  static final versionId = obx.QueryIntegerProperty<Album>(
+    _entities[3].properties[4],
   );
 }

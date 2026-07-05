@@ -8,7 +8,7 @@ class DBObjectBox {
   static DBObjectBox? _instance;
   final Store store;
 
-  DBObjectBox._(this.store);
+  const DBObjectBox._(this.store);
   // static DBObjectBox get instance {}
   factory DBObjectBox() {
     assert(_instance != null, 'You should definitely call await init() method at main.dart, make sure db prepared.');

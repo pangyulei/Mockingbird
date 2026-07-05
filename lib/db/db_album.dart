@@ -56,7 +56,13 @@ class DBAlbum {
         ? maxSortOrderAlbum.sortOrder + 1
         : 0;
     return await _store.box<Album>().putAndGetAsync(
-      Album(name: trimmedName, sortOrder: sortOrder, cover: coverPath),
+      Album(
+        name: trimmedName,
+        sortOrder: sortOrder,
+        cover: coverPath,
+        id: 0,
+        versionId: 0,
+      ),
     );
   }
 

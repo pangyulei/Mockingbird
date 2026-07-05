@@ -83,13 +83,13 @@ class PlayerUI extends StatelessWidget {
                         child: _videoSlider(videoController),
                       ),
                     ),
-                    _volumeComponent(ctx),
+                    _volumeComponent(ctx, videoController),
                   ],
                 ),
               ),
             ],
           ),
-          _controlBar(ctx),
+          _controlBar(ctx, videoController),
           if (_state.sentenceStates.isNotEmpty) _sentencesList(),
         ],
       ),
@@ -118,11 +118,11 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _volumeComponent(BuildContext ctx) {
+  Widget _volumeComponent(BuildContext ctx, VideoPlayerController videoController) {
     return Column(
       mainAxisAlignment: .end,
       children: [
-        if (_state.showVolumeSlider) Expanded(child: _volumeSlider(ctx)),
+        if (_state.showVolumeSlider) Expanded(child: _volumeSlider(ctx, videoController)),
         IconButton(
           onPressed: _logic.player_onVolumeTap,
           icon: const Icon(Icons.volume_up),
@@ -135,7 +135,7 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _volumeSlider(BuildContext ctx) {
+  Widget _volumeSlider(BuildContext ctx, VideoPlayerController videoController) {
     return RotatedBox(
       quarterTurns: 3,
       child: SliderTheme(
@@ -149,7 +149,7 @@ class PlayerUI extends StatelessWidget {
           valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
         ),
         child: Slider(
-          value: _state.volume,
+          value: videoController.value.volume,
           min: 0.0,
           max: 1.0,
           divisions: 10, //cut 1 into step 0.1
@@ -238,7 +238,7 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _controlBar(BuildContext ctx) {
+  Widget _controlBar(BuildContext ctx, VideoPlayerController videoController) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: SizedBox(
@@ -249,13 +249,13 @@ class PlayerUI extends StatelessWidget {
           children: [
             // _playerButton((){}, const Icon(Icons.skip_previous)),
             // _playerButton((){}, const Icon(Icons.replay)),
-            _playOrPauseButton(),
+            _playOrPauseButton(videoController),
             // _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
             // _playerButton((){}, const Icon(Icons.skip_next)),
             const Spacer(),
             if (_state.sentenceStates.isNotEmpty) _repeatOneButton(),
             _speedDownButton(),
-            _speedLabel(ctx),
+            _speedLabel(ctx, videoController),
             _speedUpButton(),
           ],
         ),
@@ -282,14 +282,15 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _playOrPauseButton() {
+  Widget _playOrPauseButton(VideoPlayerController videoController) {
+    final isPlaying = videoController.value.isPlaying;
     return _controlButton(() {
-      if (_state.isPlaying) {
+      if (isPlaying) {
         _logic.player_onPause();
       } else {
         _logic.player_onPlay();
       }
-    }, Icon(_state.isPlaying ? Icons.pause_circle : Icons.play_circle));
+    }, Icon(isPlaying ? Icons.pause_circle : Icons.play_circle));
   }
 
   Widget _repeatOneButton() {
@@ -314,7 +315,7 @@ class PlayerUI extends StatelessWidget {
     }, const Icon(Icons.fast_forward));
   }
 
-  Widget _speedLabel(BuildContext ctx) {
+  Widget _speedLabel(BuildContext ctx, VideoPlayerController videoController) {
     return SizedBox(
       // 1. Set explicit outer dimensions
       height: _kPlayerControlBarHeight,
@@ -337,7 +338,7 @@ class PlayerUI extends StatelessWidget {
         ),
         onPressed: _logic.player_onSpeedReset,
         child: Text(
-          '${_state.speed.toString()}x', // The button width will perfectly match this text + 30px padding on each side
+          '${videoController.value.playbackSpeed.toString()}x', // The button width will perfectly match this text + 30px padding on each side
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),

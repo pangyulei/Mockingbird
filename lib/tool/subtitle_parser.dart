@@ -56,6 +56,7 @@ class SubtitleParser {
             text: text,
             startMicroseconds: start.inMicroseconds,
             endMicroseconds: end.inMicroseconds,
+            id: 0,
           ));
         }
       } catch (e) {
@@ -63,7 +64,7 @@ class SubtitleParser {
         debugPrint('Error parsing SRT block: $e');
       }
     }
-    final subtitle = Subtitle();
+    final subtitle = Subtitle(id: 0);
     subtitle.sentences.addAll(sentences);
     return subtitle;
   }
@@ -121,7 +122,8 @@ class SubtitleParser {
               Sentence(
                 startMicroseconds: start.inMicroseconds,
                 endMicroseconds: end.inMicroseconds,
-                text: text
+                text: text,
+                id: 0,
               )
           );
         }
@@ -129,7 +131,7 @@ class SubtitleParser {
         debugPrint('Error parsing VTT block: $e');
       }
     }
-    final subtitle = Subtitle();
+    final subtitle = Subtitle(id: 0);
     subtitle.sentences.addAll(sentences);
     return subtitle;
   }

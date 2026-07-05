@@ -1,17 +1,20 @@
 
+import 'package:equatable/equatable.dart';
+
 import 'album.dart';
 import 'subtitle.dart';
 import 'package:objectbox/objectbox.dart';
 import 'package:path/path.dart' as p;
 
 @Entity()
-class Media {
+class Media extends Equatable {
   @Id()
   int id;
 
   final albums = ToMany<Album>();
   final String path; // Full path to the media file
   final String name;
+  final int versionId;
   @Backlink('media')
   final subtitles = ToMany<Subtitle>();
 
@@ -19,13 +22,15 @@ class Media {
   Media({
     required this.path,
     required this.name,
-    this.id = 0,
+    required this.id,
+    required this.versionId,
   });
 
   MediaType get type => MediaType.fromExtension(p.extension(path));
 
   Media copyWith({
     int? id,
+    int? versionId,
     String? path,
     String? name,
     List<Subtitle>? Function()? subtitles,
@@ -33,6 +38,7 @@ class Media {
   }) {
     final media = Media(
       id: id ?? this.id,
+      versionId: versionId ?? this.versionId,
       path: path ?? this.path,
       name: name ?? this.name,
     );
@@ -47,6 +53,9 @@ class Media {
     media.albums.addAll(albums ?? this.albums);
     return media;
   }
+
+  @override
+  List<Object?> get props => [id, versionId];
 }
 
 enum MediaType {
