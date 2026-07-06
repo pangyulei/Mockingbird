@@ -1,18 +1,20 @@
 import 'dart:io';
+
+import 'package:mockingbird/model/sentence.dart';
+import 'package:mockingbird/model/subtitle.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
-import 'package:mockingbird/model/subtitle.dart';
-import 'package:mockingbird/model/sentence.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import '../model/media.dart';
+
 import '../model/album.dart';
+import '../model/media.dart';
 
 class DBMedia {
   final Store _store;
   DBMedia(this._store);
 
-  Future<List<Media>> createMany(
+  Future<List<Media>> importMediasWithSubtitles(
     Album album,
     List<({File media, File? subtitle})> matchedFiles,
   ) async {

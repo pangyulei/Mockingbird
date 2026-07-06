@@ -4,7 +4,7 @@ import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 
 abstract interface class AlbumDetailUIOutputITF
     implements MediaCardUIOutputITF {
-  void albumDetail_onImportMedias();
+  void albumDetail_onImport();
 }
 
 class AlbumDetailUI extends StatelessWidget {
@@ -110,7 +110,7 @@ class AlbumDetailUI extends StatelessWidget {
         if (_state.showImport)
           IconButton.filledTonal(
             icon: const Icon(Icons.download),
-            onPressed: _logic.albumDetail_onImportMedias,
+            onPressed: _logic.albumDetail_onImport,
           ),
       ],
     );

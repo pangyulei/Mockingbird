@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:collection/collection.dart'; // 👈 确保顶部导了这个包
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
@@ -16,6 +15,7 @@ import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
+
 import 'album_detail_state.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
@@ -100,44 +100,46 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     );
   }
 
+  Future<List<File>> _pickMediasAndSubtitleFiles() async {
+    try {
+      final allowedExtensions = [
+        ...kAudioExtensions,
+        ...kVideoExtensions,
+        ...kSubtitleExtensions,
+      ];
+      final pickedFiles = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: allowedExtensions,
+        allowMultiple: true,
+      );
+
+      if (pickedFiles == null || pickedFiles.files.isEmpty) {
+        return [];
+      }
+      final files = pickedFiles.files
+          .map((f) => f.path)
+          .whereType<String>()
+          .map((p) => File(p))
+          .toList();
+      return files;
+    } catch (e) {
+      debugPrint('Error importing media files: $e');
+      return [];
+    }
+  }
+
   @override
-  void albumDetail_onImportMedias() async {
+  void albumDetail_onImport() async {
     final album = _album;
     if (album == null) {
       debugPrint('album==null, can NOT import medias');
       return;
     }
-    Future<List<File>> pickFiles() async {
-      try {
-        final allowedExtensions = [
-          ...kAudioExtensions,
-          ...kVideoExtensions,
-          ...kSubtitleExtensions,
-        ];
-        final pickedFiles = await FilePicker.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: allowedExtensions,
-          allowMultiple: true,
-        );
-
-        if (pickedFiles == null || pickedFiles.files.isEmpty) {
-          return [];
-        }
-        final files = pickedFiles.files
-            .where((f) => f.path != null)
-            .map((f) => File(f.path!))
-            .toList();
-        return files;
-      } catch (e) {
-        debugPrint('Error importing media files: $e');
-        return [];
-      }
-    }
 
     final List<File> videoFiles = [];
     final List<File> audioFiles = [];
     final List<File> subtitleFiles = [];
-    final files = await pickFiles();
+    final files = await _pickMediasAndSubtitleFiles();
     for (var f in files) {
       final ext = p.extension(f.path).replaceFirst('.', '').toLowerCase();
       if (kVideoExtensions.contains(ext)) videoFiles.add(f);
@@ -154,8 +156,11 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       final mediaName = p.basenameWithoutExtension(mediaFile.path);
       // Find a subtitle file that contains the media name
       final matchedSubtitleName = subtitleMap.keys.firstWhereOrNull(
-        (subtitleName) => subtitleName.contains(mediaName));
-      final subtitleFile = matchedSubtitleName == null ? null : subtitleMap[matchedSubtitleName];
+        (subtitleName) => subtitleName.contains(mediaName),
+      );
+      final subtitleFile = matchedSubtitleName == null
+          ? null
+          : subtitleMap[matchedSubtitleName];
       matchedFiles.add((media: mediaFile, subtitle: subtitleFile));
     }
     if (matchedFiles.isEmpty) {
@@ -165,8 +170,79 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     setState(() {
       _state = _state.copyWith(showLoading: true);
     });
-    await DBMedia(DBObjectBox().store).createMany(album, matchedFiles);
+
+    await DBMedia(
+      DBObjectBox().store,
+    ).importMediasWithSubtitles(album, matchedFiles);
+
+    //deal with unmatched subtitles
+    final matchedSubtitleNames = matchedFiles
+        .map((mf) => mf.subtitle)
+        .whereType<File>()
+        .map((sf) => p.basenameWithoutExtension(sf.path))
+        .toSet();
+    final unmatchedSubtitleFiles = subtitleFiles.where(
+      (sf) =>
+          !matchedSubtitleNames.contains(p.basenameWithoutExtension(sf.path)),
+    );
+    final noSubtitleMedias =
+        _album?.medias.where((m) => m.subtitles.isEmpty).toList() ?? const [];
+    final mediaMap = {for (final m in noSubtitleMedias) m.name: m};
+    final List<(Media media, File subtitleFile)> matchedMediaSubtitles = [];
+    for (final e in mediaMap.entries) {
+      final mediaName = e.key;
+      final media = e.value;
+      final subtitleFile = unmatchedSubtitleFiles.firstWhereOrNull(
+        (sf) => p.basenameWithoutExtension(sf.path).contains(mediaName),
+      );
+      if (subtitleFile != null) {
+        matchedMediaSubtitles.add((media, subtitleFile));
+      }
+    }
+    if (matchedMediaSubtitles.isNotEmpty) {
+      final makeSubtitlesTasks = matchedMediaSubtitles
+          .map((e) => e.$2)
+          .map((sf) => SubtitleParser.parseFile(sf));
+      final subtitlesWithoutId = await Future.wait(makeSubtitlesTasks);
+      final mediasFilledWithSubtitle = matchedMediaSubtitles
+          .asMap()
+          .entries
+          .map((e) {
+            final media = e.value.$1;
+            media.subtitles.add(subtitlesWithoutId[e.key]);
+            return media;
+          })
+          .toList();
+      final medias = await DBObjectBox().store.box<Media>().putAndGetManyAsync(
+        mediasFilledWithSubtitle,
+      );
+    }
     await _reloadAlbumById();
+  }
+
+  Future<String?> _pickASubtitle() async {
+    try {
+      final pickedFiles = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [...kSubtitleExtensions],
+        allowMultiple: false,
+      );
+      // if (pickedFiles == null ||
+      //     pickedFiles.files.isEmpty ||
+      //     pickedFiles.files.first.path == null) {
+      //   return;
+      // }
+      final subtitlePath = pickedFiles?.files
+          .firstWhereOrNull(
+            (f) =>
+                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+          )
+          ?.path;
+      return subtitlePath;
+    } catch (e) {
+      debugPrint('Error adding subtitle: $e');
+      return null;
+    }
   }
 
   @override
@@ -181,28 +257,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       debugPrint('no media at index $index, can NOT add any subtitle');
       return;
     }
-    Future<String?> pickSubtitle() async {
-      try {
-        final pickedFiles = await FilePicker.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: [...kSubtitleExtensions],
-          allowMultiple: false,
-        );
-        // if (pickedFiles == null ||
-        //     pickedFiles.files.isEmpty ||
-        //     pickedFiles.files.first.path == null) {
-        //   return;
-        // }
-        final subtitlePath = pickedFiles?.files.firstWhereOrNull(
-          (f) => kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
-        )?.path;
-        return subtitlePath;
-      } catch (e) {
-        debugPrint('Error adding subtitle: $e');
-        return null;
-      }
-    }
-    final subtitlePath = await pickSubtitle();
+
+    final subtitlePath = await _pickASubtitle();
     if (subtitlePath == null) {
       debugPrint('no subtitle files picked');
       return;
@@ -214,7 +270,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     final subtitle = await SubtitleParser.parseFile(subtitleFile);
     await DBMedia(DBObjectBox().store).addSubtitle(media, subtitle);
     await _reloadAlbumById();
-}
+  }
 
   @override
   void mediaCard_onDeleteMedia(int index) async {
