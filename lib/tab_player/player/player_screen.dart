@@ -63,6 +63,13 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   void _receiveMedia(Media? newMedia) async {
     final oldMedia = _media?.copyWith();
+    if (oldMedia == newMedia) {
+      debugPrint('same media notified');
+      setState(() {
+        _state = _state.copyWith(showLoading: false);
+      });
+      return;
+    }
     _media = newMedia;
     if (newMedia != null) {
       final isVideoChanged = oldMedia?.path != newMedia.path;
@@ -307,9 +314,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       return;
     }
     _scrollController._scrollTo(index);
-    _state = _state.copyWith(
-      focusedIndex: () => index,
-    );
+    _state = _state.copyWith(focusedIndex: () => index);
     await videoController.seekTo(sentence.start);
     await videoController.play();
     setState(() {});
