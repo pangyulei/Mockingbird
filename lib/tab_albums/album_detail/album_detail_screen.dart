@@ -165,15 +165,14 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     }
     if (matchedFiles.isEmpty) {
       debugPrint('no picked videos, no picked audios');
-      return;
+      
+    } else {
+      
+      await DBMedia(
+        DBObjectBox().store,
+      ).importMediasWithSubtitles(album, matchedFiles);
     }
-    setState(() {
-      _state = _state.copyWith(showLoading: true);
-    });
-
-    await DBMedia(
-      DBObjectBox().store,
-    ).importMediasWithSubtitles(album, matchedFiles);
+ 
 
     //deal with unmatched subtitles
     final matchedSubtitleNames = matchedFiles

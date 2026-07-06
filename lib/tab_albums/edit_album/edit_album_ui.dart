@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_albums/album_edit/album_edit_state.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 
-abstract interface class AlbumEditUIOutputITF {
-  void albumEdit_onSubmit();
-  void albumEdit_onCancel();
-  void albumEdit_onPickCover();
-  void albumEdit_onRemoveCover();
+abstract interface class EditAlbumUIOutputITF {
+  void editAlbum_onSubmit();
+  void editAlbum_onCancel();
+  void editAlbum_onPickCover();
+  void editAlbum_onRemoveCover();
 }
 
-class AlbumEditUI extends StatelessWidget {
-  final AlbumEditState _state;
+class EditAlbumUI extends StatelessWidget {
+  final EditAlbumState _state;
   final TextEditingController _nameController;
-  final AlbumEditUIOutputITF _logic;
-  const AlbumEditUI(
+  final EditAlbumUIOutputITF _logic;
+  const EditAlbumUI(
     this._state,
     this._nameController,
     this._logic, {
@@ -56,11 +56,11 @@ class AlbumEditUI extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: _logic.albumEdit_onCancel,
+          onPressed: _logic.editAlbum_onCancel,
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: _state.enableSubmit ? _logic.albumEdit_onSubmit : null,
+          onPressed: _state.enableSubmit ? _logic.editAlbum_onSubmit : null,
 
           child: Text(_state.submitTitle),
         ),
@@ -75,7 +75,7 @@ class AlbumEditUI extends StatelessWidget {
           // onTapDown: (_) => _updateState(_state.copyWith(isCoverPressed: true)),
           // onTapUp: (_) => _updateState(_state.copyWith(isCoverPressed: false)),
           // onTapCancel: () => _updateState(_state.copyWith(isCoverPressed: false)),
-          onTap: _logic.albumEdit_onPickCover,
+          onTap: _logic.editAlbum_onPickCover,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 100),
             width: double.infinity,
@@ -134,7 +134,7 @@ class AlbumEditUI extends StatelessWidget {
 
   Widget _removeButton(BuildContext ctx) {
     return TextButton.icon(
-      onPressed: _logic.albumEdit_onRemoveCover,
+      onPressed: _logic.editAlbum_onRemoveCover,
       icon: const Icon(Icons.delete_outline, size: 18),
       label: const Text('Remove Cover'),
       style: TextButton.styleFrom(

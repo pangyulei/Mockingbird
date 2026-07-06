@@ -5,21 +5,21 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
-import 'package:mockingbird/tab_albums/album_edit/album_edit_state.dart';
-import 'package:mockingbird/tab_albums/album_edit/album_edit_ui.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
-class AlbumEditScreen extends StatefulWidget {
+class EditAlbumScreen extends StatefulWidget {
   final Album? _album;
 
-  const AlbumEditScreen(this._album, {super.key});
+  const EditAlbumScreen(this._album, {super.key});
 
   @override
-  State<AlbumEditScreen> createState() => _AlbumEditScreenState();
+  State<EditAlbumScreen> createState() => _EditAlbumScreenState();
 }
 
-class _AlbumEditScreenState extends State<AlbumEditScreen>
-    implements AlbumEditUIOutputITF {
-  var _state = const AlbumEditState.empty();
+class _EditAlbumScreenState extends State<EditAlbumScreen>
+    implements EditAlbumUIOutputITF {
+  var _state = const EditAlbumState.empty();
   final _nameController = TextEditingController();
   final _picker = ImagePicker();
 
@@ -84,11 +84,11 @@ class _AlbumEditScreenState extends State<AlbumEditScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AlbumEditUI(_state, _nameController, this);
+    return EditAlbumUI(_state, _nameController, this);
   }
 
   @override
-  void albumEdit_onPickCover() async {
+  void editAlbum_onPickCover() async {
     final XFile? xImage = await _picker.pickImage(
       source: ImageSource.gallery,
       maxWidth: 512,
@@ -113,7 +113,7 @@ class _AlbumEditScreenState extends State<AlbumEditScreen>
   }
 
   @override
-  void albumEdit_onRemoveCover() {
+  void editAlbum_onRemoveCover() {
     File? newCover;
     setState(() {
       _state = _state.copyWith(
@@ -128,7 +128,7 @@ class _AlbumEditScreenState extends State<AlbumEditScreen>
   }
 
   @override
-  void albumEdit_onSubmit() async {
+  void editAlbum_onSubmit() async {
     final dbAlbum = DBAlbum(DBObjectBox().store);
     final Album? album = widget._album;
     setState(() {
@@ -148,7 +148,7 @@ class _AlbumEditScreenState extends State<AlbumEditScreen>
   }
 
   @override
-  void albumEdit_onCancel() {
+  void editAlbum_onCancel() {
     _pop();
   }
 

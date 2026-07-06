@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
@@ -6,9 +7,9 @@ import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
-import 'package:mockingbird/tab_albums/album_edit/album_edit_screen.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_state.dart';
 import 'package:mockingbird/tab_albums/albums_grid/albums_grid_ui.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_screen.dart';
 
 class AlbumsGridScreen extends StatefulWidget {
   const AlbumsGridScreen({super.key});
@@ -74,7 +75,7 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
     await showDialog(
       context: context,
       builder: (context) {
-        return const AlbumEditScreen(null);
+        return const EditAlbumScreen(null);
       },
     );
   }
@@ -83,7 +84,7 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
     await showDialog(
       context: context,
       builder: (context) {
-        return AlbumEditScreen(album);
+        return EditAlbumScreen(album);
       },
     );
   }
