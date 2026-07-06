@@ -1,7 +1,5 @@
 import 'dart:io';
-
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/model/media.dart';
