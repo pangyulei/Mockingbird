@@ -460,7 +460,7 @@ extension on ItemScrollController {
     if (isAttached) {
       jumpTo(index: index, alignment: alignment);
     } else {
-      debugPrint('${identityHashCode(this)} is not attached');
+      debugPrint('${identityHashCode(this)} scroll is not attached');
     }
   }
 
@@ -472,7 +472,7 @@ extension on ItemScrollController {
     if (isAttached) {
       scrollTo(index: index, duration: duration, alignment: alignment);
     } else {
-      debugPrint('${identityHashCode(this)} is not attached');
+      debugPrint('${identityHashCode(this)} scroll is not attached');
     }
   }
 }
