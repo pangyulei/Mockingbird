@@ -85,7 +85,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         );
         await newVideoController.initialize();
         newVideoController.addListener(
-          () => _onPositionChanged(newVideoController),
+          () => _onPositionChanging(newVideoController),
         );
         await _videoController?.dispose();
         _videoController = newVideoController;
@@ -247,7 +247,13 @@ class _PlayerScreenState extends State<PlayerScreen>
     setState(() {});
   }
 
-  void _onPositionChanged(VideoPlayerController videoController) async {
+  void _onPositionChanging(VideoPlayerController videoController) async {
+    final position = videoController.value.position;
+    final mediaEnd = videoController.value.duration;
+    if (position >= mediaEnd) {
+      //if video end of duration, play/pause button should update
+      setState(() {});
+    }
     if (_state.sentenceStates.isEmpty) {
       //prevent videoController.play() but _state not setuped fully.
       debugPrint('no sentence on screen yet');
@@ -263,7 +269,6 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('no subtitle to spot');
       return;
     }
-    final position = videoController.value.position;
     final sentences = subtitle.sentences;
     final repeatIndex = _state.repeatIndex;
     if (repeatIndex == null) {
