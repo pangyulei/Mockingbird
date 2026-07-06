@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 import 'album.dart';
@@ -54,6 +53,10 @@ class Media extends Equatable {
     return media;
   }
 
+  Media incVersion() {
+    return copyWith(versionId: versionId + 1);
+  }
+
   @override
   List<Object?> get props => [id, versionId];
 }
@@ -74,6 +77,15 @@ enum MediaType {
   }
 }
 
-const kAudioExtensions = {'mp3', 'm4a', 'aac', 'wav', 'ogg', 'oga', 'flac', 'amr'};
+const kAudioExtensions = {
+  'mp3',
+  'm4a',
+  'aac',
+  'wav',
+  'ogg',
+  'oga',
+  'flac',
+  'amr',
+};
 const kVideoExtensions = {'mp4', 'm4v', 'mkv', 'webm', '3gp', 'ts', 'flv'};
 const kSubtitleExtensions = {'srt', 'vtt'};

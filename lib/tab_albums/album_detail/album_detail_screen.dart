@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_album.dart';
+import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/db_media.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
@@ -14,7 +15,6 @@ import 'package:mockingbird/model/media.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
-import 'package:path/path.dart' as p;
 
 import 'album_detail_state.dart';
 
@@ -135,87 +135,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       debugPrint('album==null, can NOT import medias');
       return;
     }
-
-    final List<File> videoFiles = [];
-    final List<File> audioFiles = [];
-    final List<File> subtitleFiles = [];
     final files = await _pickMediasAndSubtitleFiles();
-    for (var f in files) {
-      final ext = p.extension(f.path).replaceFirst('.', '').toLowerCase();
-      if (kVideoExtensions.contains(ext)) videoFiles.add(f);
-      if (kAudioExtensions.contains(ext)) audioFiles.add(f);
-      if (kSubtitleExtensions.contains(ext)) subtitleFiles.add(f);
-    }
-
-    // Match subtitles to medias
-    final subtitleMap = {
-      for (final f in subtitleFiles) p.basenameWithoutExtension(f.path): f,
-    };
-    final matchedFiles = <({File media, File? subtitle})>[];
-    for (File mediaFile in [...videoFiles, ...audioFiles]) {
-      final mediaName = p.basenameWithoutExtension(mediaFile.path);
-      // Find a subtitle file that contains the media name
-      final matchedSubtitleName = subtitleMap.keys.firstWhereOrNull(
-        (subtitleName) => subtitleName.contains(mediaName),
-      );
-      final subtitleFile = matchedSubtitleName == null
-          ? null
-          : subtitleMap[matchedSubtitleName];
-      matchedFiles.add((media: mediaFile, subtitle: subtitleFile));
-    }
-    if (matchedFiles.isEmpty) {
-      debugPrint('no picked videos, no picked audios');
-      
-    } else {
-      
-      await DBMedia(
-        DBObjectBox().store,
-      ).importMediasWithSubtitles(album, matchedFiles);
-    }
- 
-
-    //deal with unmatched subtitles
-    final matchedSubtitleNames = matchedFiles
-        .map((mf) => mf.subtitle)
-        .whereType<File>()
-        .map((sf) => p.basenameWithoutExtension(sf.path))
-        .toSet();
-    final unmatchedSubtitleFiles = subtitleFiles.where(
-      (sf) =>
-          !matchedSubtitleNames.contains(p.basenameWithoutExtension(sf.path)),
-    );
-    final noSubtitleMedias =
-        _album?.medias.where((m) => m.subtitles.isEmpty).toList() ?? const [];
-    final mediaMap = {for (final m in noSubtitleMedias) m.name: m};
-    final List<(Media media, File subtitleFile)> matchedMediaSubtitles = [];
-    for (final e in mediaMap.entries) {
-      final mediaName = e.key;
-      final media = e.value;
-      final subtitleFile = unmatchedSubtitleFiles.firstWhereOrNull(
-        (sf) => p.basenameWithoutExtension(sf.path).contains(mediaName),
-      );
-      if (subtitleFile != null) {
-        matchedMediaSubtitles.add((media, subtitleFile));
-      }
-    }
-    if (matchedMediaSubtitles.isNotEmpty) {
-      final makeSubtitlesTasks = matchedMediaSubtitles
-          .map((e) => e.$2)
-          .map((sf) => SubtitleParser.parseFile(sf));
-      final subtitlesWithoutId = await Future.wait(makeSubtitlesTasks);
-      final mediasFilledWithSubtitle = matchedMediaSubtitles
-          .asMap()
-          .entries
-          .map((e) {
-            final media = e.value.$1;
-            media.subtitles.add(subtitlesWithoutId[e.key]);
-            return media;
-          })
-          .toList();
-      final medias = await DBObjectBox().store.box<Media>().putAndGetManyAsync(
-        mediasFilledWithSubtitle,
-      );
-    }
+    await DBLogic().importMediaAndSubtitles(album, files);
     await _reloadAlbumById();
   }
 

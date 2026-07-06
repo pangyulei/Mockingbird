@@ -8,6 +8,7 @@ analyzer:
     prefer_const_constructors_in_immutables: warning
     prefer_const_literals_to_create_immutables: warning
     non_constant_identifier_names: ignore
+    camel_case_types: ignore
 
 linter:
   rules:

@@ -14,59 +14,6 @@ class DBMedia {
   final Store _store;
   DBMedia(this._store);
 
-  Future<List<Media>> importMediasWithSubtitles(
-    Album album,
-    List<({File media, File? subtitle})> matchedFiles,
-  ) async {
-    if (matchedFiles.isEmpty) return const [];
-
-    final appDir = await getApplicationDocumentsDirectory();
-    final mediaDir = Directory(p.join(appDir.path, 'medias'));
-    if (!await mediaDir.exists()) {
-      await mediaDir.create(recursive: true);
-    }
-
-    // save read media files to app dir
-    final saveMediasToDir = matchedFiles.asMap().entries.map((e) {
-      final i = e.key;
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final uniqueName = "${timestamp}_$i";
-      final memMedia = e.value.media;
-      return memMedia.copy(
-        p.join(mediaDir.path, "$uniqueName${p.extension(memMedia.path)}"),
-      );
-    });
-    final dirMediaFiles = await Future.wait(saveMediasToDir);
-    final constructSubtitles = matchedFiles.map(
-      (mf) => mf.subtitle == null
-          ? Future.value(null)
-          : SubtitleParser.parseFile(mf.subtitle!),
-    );
-    final subtitlesWithoutId = await Future.wait(constructSubtitles);
-    //construct media models, prepared for save them to db
-    final constructMedias = dirMediaFiles.asMap().entries.map((e) async {
-      int i = e.key;
-      final dirMedia = e.value;
-      final mediaName = p.basenameWithoutExtension(matchedFiles[i].media.path);
-      final media = Media(
-        path: dirMedia.path,
-        name: mediaName,
-        id: 0,
-        versionId: 0,
-      );
-      final subtitle = subtitlesWithoutId[i];
-      media.albums.add(album);
-      if ((subtitle != null)) {
-        media.subtitles.add(subtitle);
-      }
-      return media;
-    }).toList();
-    final mediasWithoutId = await Future.wait(constructMedias);
-    final medias = await _store.box<Media>().putAndGetManyAsync(
-      mediasWithoutId,
-    );
-    return medias;
-  }
 
   Future<Media> update(Media media) async {
     return await _store.box<Media>().putAndGetAsync(media);
