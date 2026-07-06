@@ -49,7 +49,6 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   void _subscribeMedia(int mediaId) async {
-    await _videoController?.pause();
     final mediaBox = DBObjectBox().store.box<Media>();
     final mediaStream = mediaBox
         .query(Media_.id.equals(mediaId))
@@ -65,30 +64,37 @@ class _PlayerScreenState extends State<PlayerScreen>
   void _receiveMedia(Media? newMedia) async {
     final oldMedia = _media?.copyWith();
     _media = newMedia;
-    if (newMedia == null) {
-      await _videoController?.dispose();
-    } else {
-      final isSubtitleChanged =
-          oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
-      if (isSubtitleChanged) {
-        final sentenceStates = _sentenceStates(newMedia);
-        _state = _state.copyWith(
-          sentenceStates: sentenceStates,
-          focusedIndex: () => sentenceStates.isEmpty ? null : 0,
-          repeatIndex: () => null,
-        );
+    if (newMedia != null) {
+      await _videoController?.pause();
+      final isVideoChanged = oldMedia?.path != newMedia.path;
+      final int? focusIndex;
+      final int? repeatIndex;
+      final subtitle = newMedia.subtitles.firstOrNull;
+      final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
+      if (isVideoChanged) {
+        focusIndex = hasSubtitle ? 0 : null;
+        repeatIndex = null;
+      } else {
+        final videoController = _videoController;
+        if (videoController == null || !hasSubtitle) {
+          focusIndex = null;
+          repeatIndex = null;
+        } else {
+          final position = videoController.value.position;
+          focusIndex = _sentenceIndexByPosition(position);
+          repeatIndex = _state.repeatIndex == null ? null : focusIndex;
+        }
       }
       //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
       setState(() {
-        _state = _state.copyWith(title: newMedia.name);
+        _state = _state.copyWith(
+          sentenceStates: _sentenceStates(newMedia),
+          focusedIndex: () => focusIndex,
+          repeatIndex: () => repeatIndex,
+          title: newMedia.name,
+        );
       });
-      if (isSubtitleChanged && _state.sentenceStates.isNotEmpty) {
-        //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
-        WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-          _scrollController._jumpTo(0);
-        });
-      }
-      final isVideoChanged = oldMedia?.path != newMedia.path;
+
       if (isVideoChanged) {
         final newVideoController = VideoPlayerController.file(
           File(newMedia.path),
@@ -100,12 +106,18 @@ class _PlayerScreenState extends State<PlayerScreen>
         await _videoController?.dispose();
         _videoController = newVideoController;
         _state = _state.copyWith(videoController: () => newVideoController);
-        await _videoController?.play();
       }
+      // //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        if (focusIndex != null) {
+          _scrollController._jumpTo(focusIndex);
+        }
+      });
     }
     setState(() {
       _state = _state.copyWith(showLoading: false, showEmpty: newMedia == null);
     });
+    await _videoController?.play();
   }
 
   @override
@@ -114,9 +126,8 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (widget._mediaId != oldWidget._mediaId) {
       debugPrint('player mediaId:${oldWidget._mediaId} => ${widget._mediaId}');
       final mediaId = widget._mediaId;
-      _unsubscribeMedia();
+      _cancelAllSubs();
       if (mediaId == null) {
-        _videoController?.dispose();
         _media = null;
         setState(() {
           _state = _state.copyWith(showLoading: false, showEmpty: true);
@@ -159,12 +170,12 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   void dispose() async {
-    _unsubscribeMedia();
+    _cancelAllSubs();
     await _videoController?.dispose();
     super.dispose();
   }
 
-  void _unsubscribeMedia() {
+  void _cancelAllSubs() {
     for (final sub in _subs) {
       sub.cancel();
     }
@@ -209,7 +220,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       //scroll to playingIndex and focus it
       if (playingIndex != _state.focusedIndex) {
         //只有循環的時候，才需要持續自動滾動到當前句
-        _scrollController._scrollTo(playingIndex, alignment: 0.3);
+        _scrollController._scrollTo(playingIndex);
         setState(() {
           _state = _state.copyWith(focusedIndex: () => playingIndex);
         });
@@ -294,10 +305,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('sentence not found');
       return;
     }
-    _scrollController._scrollTo(
-      index,
-      alignment: 0.3
-    );
+    _scrollController._scrollTo(index);
     final repeatIndex = _state.repeatIndex == null ? null : index;
     _state = _state.copyWith(
       focusedIndex: () => index,
@@ -383,7 +391,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       focusedIndex: () => index,
     );
     if (index != null) {
-      _scrollController._jumpTo(index, alignment: 0.3);
+      _scrollController._jumpTo(index);
     }
     await _videoController?.seekTo(position);
     setState(() {});
@@ -412,10 +420,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (focusedIndex != null &&
         focusedIndex >= 0 &&
         focusedIndex < _state.sentenceStates.length) {
-      _scrollController._scrollTo(
-        focusedIndex,
-        alignment: 0.3
-      );
+      _scrollController._scrollTo(focusedIndex);
     }
   }
 
@@ -425,9 +430,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('no sentence list to scroll');
       return;
     }
-    _scrollController._scrollTo(
-      0,
-    );
+    _scrollController._scrollTo(0);
   }
 
   @override
@@ -436,9 +439,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       debugPrint('no sentence list to scroll');
       return;
     }
-    _scrollController._scrollTo(
-      _state.sentenceStates.length - 1,
-    );
+    _scrollController._scrollTo(_state.sentenceStates.length - 1);
   }
 
   @override
@@ -456,21 +457,21 @@ class _PlayerScreenState extends State<PlayerScreen>
 }
 
 extension on ItemScrollController {
-  void _jumpTo(int index, {double alignment = 0}) {
+  void _jumpTo(int index) {
     if (isAttached) {
-      jumpTo(index: index, alignment: alignment);
+      jumpTo(index: index, alignment: index == 0 ? 0 : 0.3);
     } else {
       debugPrint('${identityHashCode(this)} scroll is not attached');
     }
   }
 
-  void _scrollTo(
-    int index, {
-    double alignment = 0,
-    Duration duration = const Duration(milliseconds: 250),
-  }) {
+  void _scrollTo(int index) {
     if (isAttached) {
-      scrollTo(index: index, duration: duration, alignment: alignment);
+      scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 250),
+        alignment: index == 0 ? 0 : 0.3,
+      );
     } else {
       debugPrint('${identityHashCode(this)} scroll is not attached');
     }

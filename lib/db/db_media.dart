@@ -9,7 +9,6 @@ class DBMedia {
   final Store _store;
   DBMedia(this._store);
 
-
   Future<Media> update(Media media) async {
     return await _store.box<Media>().putAndGetAsync(media);
   }
@@ -20,7 +19,7 @@ class DBMedia {
       int mediaId,
     ) {
       final mediaBox = store.box<Media>();
-      final media = mediaBox.get(mediaId);
+      final media = mediaBox.get(mediaId)?.incVersion();
       if (media == null) {
         throw ArgumentError('mediaId $mediaId not existed');
       }
@@ -36,13 +35,6 @@ class DBMedia {
       media.subtitles.add(subtitle);
       mediaBox.put(media); //will auto update memory media
       return media;
-      // final mediaAfter = mediaBox.get(mediaId);
-      // if (mediaAfter == null) {
-      //   throw ArgumentError('mediaId $mediaId not existed');
-      // }
-      // return mediaAfter;
-      // media.subtitles.clear();
-      // mediaBox.put(media);
     }, media.id);
     return media;
   }
@@ -82,7 +74,7 @@ class DBMedia {
       int mediaId,
     ) {
       final mediaBox = store.box<Media>();
-      final media = mediaBox.get(mediaId);
+      final media = mediaBox.get(mediaId)?.incVersion();
       if (media == null) {
         throw ArgumentError('mediaId $mediaId not existed');
       }
@@ -95,6 +87,7 @@ class DBMedia {
       sentenceBox.removeMany(sentences.map((s) => s.id).toList());
       subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
       media.subtitles.clear();
+      mediaBox.put(media);
       return media;
     }, media.id);
     return media;
