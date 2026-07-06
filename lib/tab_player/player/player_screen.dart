@@ -83,7 +83,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         } else {
           final position = videoController.value.position;
           focusIndex = _sentenceIndexByPosition(position);
-          repeat = focusIndex == null ? false : true;
+          repeat = focusIndex == null ? false : _state.repeat;
         }
       }
       //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
