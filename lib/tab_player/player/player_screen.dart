@@ -65,24 +65,25 @@ class _PlayerScreenState extends State<PlayerScreen>
     final oldMedia = _media?.copyWith();
     _media = newMedia;
     if (newMedia != null) {
-      await _videoController?.pause();
       final isVideoChanged = oldMedia?.path != newMedia.path;
       final int? focusIndex;
-      final int? repeatIndex;
+      final bool repeat;
       final subtitle = newMedia.subtitles.firstOrNull;
       final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
+
       if (isVideoChanged) {
         focusIndex = hasSubtitle ? 0 : null;
-        repeatIndex = null;
+        repeat = false;
       } else {
+        //video没变，字幕可能变了
         final videoController = _videoController;
         if (videoController == null || !hasSubtitle) {
           focusIndex = null;
-          repeatIndex = null;
+          repeat = false;
         } else {
           final position = videoController.value.position;
           focusIndex = _sentenceIndexByPosition(position);
-          repeatIndex = _state.repeatIndex == null ? null : focusIndex;
+          repeat = focusIndex == null ? false : true;
         }
       }
       //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
@@ -90,7 +91,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         _state = _state.copyWith(
           sentenceStates: _sentenceStates(newMedia),
           focusedIndex: () => focusIndex,
-          repeatIndex: () => repeatIndex,
+          repeat: repeat,
           title: newMedia.name,
         );
       });
@@ -106,9 +107,10 @@ class _PlayerScreenState extends State<PlayerScreen>
         await _videoController?.dispose();
         _videoController = newVideoController;
         _state = _state.copyWith(videoController: () => newVideoController);
+        await _videoController?.play();
       }
       // //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
-      WidgetsBinding.instance.addPostFrameCallback((_){
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         if (focusIndex != null) {
           _scrollController._jumpTo(focusIndex);
         }
@@ -117,7 +119,6 @@ class _PlayerScreenState extends State<PlayerScreen>
     setState(() {
       _state = _state.copyWith(showLoading: false, showEmpty: newMedia == null);
     });
-    await _videoController?.play();
   }
 
   @override
@@ -209,8 +210,18 @@ class _PlayerScreenState extends State<PlayerScreen>
       return;
     }
     final sentences = subtitle.sentences;
-    final repeatIndex = _state.repeatIndex;
-    if (repeatIndex == null) {
+    if (_state.repeat) {
+      //if repeat one is turn on, while sentence finished, seek to beginning
+      final focusIndex = _state.focusedIndex;
+      final isDraggingSlider = _state.videoSliderDraggingValue != null;
+      if (focusIndex != null && !isDraggingSlider) {
+        final sentence = sentences[focusIndex];
+        if (position > sentence.end) {
+          debugPrint('positon changed, repeat index: $focusIndex');
+          await videoController.seekTo(sentence.start);
+        }
+      }
+    } else {
       //according to position, find current matched sentence index, marked as playingIndex
       final playingIndex = _sentenceIndexByPosition(position);
       if (playingIndex == null) {
@@ -225,23 +236,13 @@ class _PlayerScreenState extends State<PlayerScreen>
           _state = _state.copyWith(focusedIndex: () => playingIndex);
         });
       }
-    } else {
-      //if repeat one is turn on, while sentence finished, seek to beginning
-      final isDraggingSlider = _state.videoSliderDraggingValue != null;
-      if (!isDraggingSlider) {
-        final sentence = sentences[repeatIndex];
-        if (position > sentence.end) {
-          debugPrint('positon changed, repeat index: $repeatIndex');
-          await videoController.seekTo(sentence.start);
-        }
-      }
     }
   }
 
   @override
   void player_onInOrder() {
     setState(() {
-      _state = _state.copyWith(repeatIndex: () => _state.focusedIndex);
+      _state = _state.copyWith(repeat: true);
     });
   }
 
@@ -260,7 +261,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   @override
   void player_onRepeatOne() {
     setState(() {
-      _state = _state.copyWith(repeatIndex: () => null);
+      _state = _state.copyWith(repeat: false);
     });
   }
 
@@ -306,10 +307,8 @@ class _PlayerScreenState extends State<PlayerScreen>
       return;
     }
     _scrollController._scrollTo(index);
-    final repeatIndex = _state.repeatIndex == null ? null : index;
     _state = _state.copyWith(
       focusedIndex: () => index,
-      repeatIndex: () => repeatIndex,
     );
     await videoController.seekTo(sentence.start);
     await videoController.play();
@@ -405,8 +404,6 @@ class _PlayerScreenState extends State<PlayerScreen>
     final sentence = index == null ? null : sentences?.elementAtOrNull(index);
 
     if (index != null && sentence != null) {
-      final repeatIndex = _state.repeatIndex == null ? null : index;
-      _state = _state.copyWith(repeatIndex: () => repeatIndex);
       await _videoController?.seekTo(sentence.start);
     }
     _state = _state.copyWith(videoSliderDraggingValue: () => null);

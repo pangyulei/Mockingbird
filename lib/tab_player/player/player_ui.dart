@@ -292,12 +292,12 @@ class PlayerUI extends StatelessWidget {
 
   Widget _repeatOneButton() {
     return _controlButton(() {
-      if (_state.repeatIndex == null) {
-        _logic.player_onInOrder();
-      } else {
+      if (_state.repeat) {
         _logic.player_onRepeatOne();
+      } else {
+        _logic.player_onInOrder();
       }
-    }, Icon(_state.repeatIndex != null ? Icons.repeat_one : Icons.repeat));
+    }, Icon(_state.repeat ? Icons.repeat_one : Icons.repeat));
   }
 
   Widget _speedDownButton() {

@@ -7,7 +7,7 @@ class PlayerState extends Equatable {
   final String title;
   final List<SentenceCardState> sentenceStates;
   final int? focusedIndex;
-  final int? repeatIndex;
+  final bool repeat;
   final bool showEmpty;
   final bool showVolumeSlider;
   final int versionId;
@@ -19,7 +19,7 @@ class PlayerState extends Equatable {
     required this.videoController,
     required this.showVolumeSlider,
     required this.videoSliderDraggingValue,
-    required this.repeatIndex,
+    required this.repeat,
     required this.showEmpty,
     required this.showLoading,
     required this.title,
@@ -33,7 +33,7 @@ class PlayerState extends Equatable {
         videoController: null,
         showVolumeSlider: false,
         focusedIndex: null,
-        repeatIndex: null,
+        repeat: false,
         sentenceStates: const [],
         showEmpty: false,
         showLoading: false,
@@ -50,7 +50,7 @@ class PlayerState extends Equatable {
     bool? showVolumeSlider,
     List<SentenceCardState>? sentenceStates,
     int? Function()? focusedIndex,
-    int? Function()? repeatIndex,
+    bool? repeat,
     double? Function()? videoSliderDraggingValue,
   }) {
     return PlayerState(
@@ -62,7 +62,7 @@ class PlayerState extends Equatable {
       videoSliderDraggingValue: videoSliderDraggingValue == null
           ? this.videoSliderDraggingValue
           : videoSliderDraggingValue(),
-      repeatIndex: repeatIndex == null ? this.repeatIndex : repeatIndex(),
+      repeat: repeat ?? this.repeat,
       showEmpty: showEmpty ?? this.showEmpty,
       showLoading: showLoading ?? this.showLoading,
       title: title ?? this.title,
