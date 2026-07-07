@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+
+import 'package:async/async.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
@@ -11,6 +13,7 @@ import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
+
 import 'player_state.dart';
 
 const double _kMaxPlaySpeed = 3.0;
@@ -36,54 +39,51 @@ class _PlayerScreenState extends State<PlayerScreen>
   @override
   void initState() {
     super.initState();
-    final mediaId = widget._mediaId;
-    debugPrint('player initState mediaId: $mediaId');
-    if (mediaId == null) {
-      _state = _state.copyWith(showLoading: false, showEmpty: true);
-    } else {
-      _state = _state.copyWith(showLoading: true, showEmpty: true);
-      _subscribeMedia(mediaId);
+    debugPrint('player initState mediaId: ${widget._mediaId}');
+    _subs.add(_watchMedia(() {
+      _reload(widget._mediaId);
+    }));
+    _reload(widget._mediaId);
+  }
+
+  void _reload(int? mediaId) async {
+    Future<void> setupNull() async {
+      await _videoController?.dispose();
+      _media = null;
+      _videoController = null;
+      setState(() {
+        _state = const PlayerState.empty().copyWith(
+          showLoading: false,
+          showEmpty: true,
+        );
+      });
     }
-  }
 
-  void _subscribeMedia(int mediaId) async {
-    final mediaBox = DBObjectBox().store.box<Media>();
-    final mediaStream = mediaBox
-        .query(Media_.id.equals(mediaId))
-        .watch(triggerImmediately: true)
-        .map((q) async => await q.findAsync());
-    final sub = mediaStream.listen((event) async {
-      final newMedia = (await event).firstOrNull;
-      final oldMedia = _media?.copyWith();
-      _media = newMedia;
-      if (oldMedia == newMedia) {
-        debugPrint('same media notified');
-        setState(() {
-          _state = _state.copyWith(showLoading: false);
-        });
-        return;
-      }
-      if (newMedia == null) {
-        await _videoController?.dispose();
-        _videoController = null;
-        setState(() {
-          _state = const PlayerState.empty().copyWith(
-            showLoading: false,
-            showEmpty: true,
-          );
-        });
-        return;
-      }
-      _receiveMedia(oldMedia, newMedia);
+    if (mediaId == null) {
+      await setupNull();
+      return;
+    }
+    setState(() {
+      _state = _state.copyWith(showLoading: true, showEmpty: true);
     });
-    _subs.add(sub);
-  }
-
-  void _receiveMedia(Media? oldMedia, Media newMedia) async {
+    final newMedia = await DBObjectBox().store.box<Media>().getAsync(mediaId);
+    if (newMedia == null) {
+      await setupNull();
+      return;
+    }
+    final oldMedia = _media?.copyWith();
+    _media = newMedia;
+    if (oldMedia == newMedia) {
+      debugPrint('same media notified');
+      setState(() {
+        _state = _state.copyWith(showLoading: false);
+      });
+      return;
+    }
     final isVideoChanged = oldMedia?.path != newMedia.path;
     final subtitle = newMedia.subtitles.firstOrNull;
-    final isSubtitleChanged =
-        oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
+    // final isSubtitleChanged =
+    //     oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
 
     if (isVideoChanged) {
       final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
@@ -102,10 +102,12 @@ class _PlayerScreenState extends State<PlayerScreen>
       await _videoController?.dispose();
       _videoController = newVideoController;
       _state = _state.copyWith(speed: 1, volume: 1, isPlaying: true);
-    } else if (isSubtitleChanged) {
+    } else {
       //subtitle changed/ or deleted
       final videoController = _videoController;
-      if (videoController != null) {
+      if (videoController == null) {
+        _state = _state.copyWith(focusedIndex: () => null, repeat: false);
+      } else {
         final position = videoController.value.position;
         final focusedIndex = _sentenceIndexByPosition(position);
         final repeat = focusedIndex == null ? false : _state.repeat;
@@ -138,33 +140,17 @@ class _PlayerScreenState extends State<PlayerScreen>
     }
   }
 
+  StreamSubscription<void> _watchMedia(void Function() f) {
+    final albumStream = DBObjectBox().store.watch<Media>();
+    return albumStream.listen((event) => f());
+  }
+
   @override
   void didUpdateWidget(covariant PlayerScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget._mediaId != oldWidget._mediaId) {
       debugPrint('player mediaId:${oldWidget._mediaId} => ${widget._mediaId}');
-      _handleMediaIdChanged(oldWidget._mediaId, widget._mediaId);
-    }
-  }
-
-  void _handleMediaIdChanged(int? oldMediaId, int? newMediaId) async {
-    final mediaId = widget._mediaId;
-    _cancelAllSubs();
-    if (mediaId == null) {
-      await _videoController?.dispose();
-      _media = null;
-      _videoController = null;
-      setState(() {
-        _state = const PlayerState.empty().copyWith(
-          showLoading: false,
-          showEmpty: true,
-        );
-      });
-    } else {
-      setState(() {
-        _state = _state.copyWith(showLoading: true, showEmpty: false);
-      });
-      _subscribeMedia(mediaId);
+      _reload(widget._mediaId);
     }
   }
 
