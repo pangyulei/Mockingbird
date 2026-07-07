@@ -400,8 +400,9 @@ class _PlayerScreenState extends State<PlayerScreen>
   bool _isSentencePlaying(int index, Duration position) {
     final sentences =
         _media?.subtitles.firstOrNull?.sentences;
-    if (sentences == null || sentences.isEmpty)
+    if (sentences == null || sentences.isEmpty) {
       return false;
+    }
 
     final sentence = sentences[index];
     final nextSentence = sentences.elementAtOrNull(

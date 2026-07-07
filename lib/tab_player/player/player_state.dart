@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 
 class PlayerState {
@@ -56,8 +55,10 @@ class PlayerState {
       isPlaying: isPlaying ?? this.isPlaying,
       speed: speed ?? this.speed,
       volume: volume ?? this.volume,
-      showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
-      videoSliderDraggingValue: videoSliderDraggingValue == null
+      showVolumeSlider:
+          showVolumeSlider ?? this.showVolumeSlider,
+      videoSliderDraggingValue:
+          videoSliderDraggingValue == null
           ? this.videoSliderDraggingValue
           : videoSliderDraggingValue(),
       repeat: repeat ?? this.repeat,
@@ -67,5 +68,4 @@ class PlayerState {
       sentenceStates: sentenceStates ?? this.sentenceStates,
     );
   }
-
 }
