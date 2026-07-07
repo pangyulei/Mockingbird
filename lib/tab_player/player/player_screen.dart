@@ -78,13 +78,13 @@ class _PlayerScreenState extends State<PlayerScreen>
     }
     final isVideoChanged = oldMedia?.path != newMedia.path;
     final subtitle = newMedia.subtitles.firstOrNull;
-    final isSubtitleChanged =
-        oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
+    // final isSubtitleChanged =
+    //     oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
     final sentenceStates = subtitle?.sentences.map((s) => s.toCardState()).toList() ?? const [];
-    _state = _state.copyWith(sentenceStates: sentenceStates);
 
     if (isVideoChanged) {
       _state = const PlayerState.empty().copyWith(
+        sentenceStates: sentenceStates,
         isPlaying: true,
       ).focus(sentenceStates.isEmpty ? null : 0);
 
@@ -110,7 +110,9 @@ class _PlayerScreenState extends State<PlayerScreen>
         final position = videoController.value.position;
         final playingIndex = _playingIndexByPosition(position);
         final repeat = playingIndex == null ? false : _state.repeat;
-        _state = _state.copyWith(repeat: repeat).focus(playingIndex);
+        _state = _state.copyWith(
+            repeat: repeat,
+            sentenceStates: sentenceStates).focus(playingIndex);
       }
     }
     //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
