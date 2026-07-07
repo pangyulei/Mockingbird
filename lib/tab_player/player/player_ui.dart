@@ -144,11 +144,15 @@ class PlayerUI extends StatelessWidget {
                         right: 8,
                         bottom: 0,
                         child: Row(
+                          crossAxisAlignment: .end,
                           children: [
                             Expanded(
-                              child: _videoSlider(
-                                ctx,
-                                videoController,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 8.5),
+                                child: _videoSlider(
+                                  ctx,
+                                  videoController,
+                                ),
                               ),
                             ),
                             _volumeComponent(ctx),
@@ -398,33 +402,6 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _controlBar(
-    BuildContext ctx,
-    VideoPlayerController videoController,
-  ) {
-    final colorScheme = Theme.of(ctx).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: 12,
-        horizontal: 16,
-      ),
-      color: colorScheme.surface,
-      child: Row(
-        children: [
-          _playOrPauseButton(ctx, videoController),
-          const SizedBox(width: 16),
-          if (_state.sentenceStates.isNotEmpty)
-            _repeatOneButton(ctx),
-          const Spacer(),
-          _speedDownButton(ctx),
-          const SizedBox(width: 8),
-          _speedLabel(ctx),
-          const SizedBox(width: 8),
-          _speedUpButton(ctx),
-        ],
-      ),
-    );
-  }
 
   AppBar _appBar(BuildContext ctx) {
     return AppBar(
@@ -452,6 +429,34 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
+  Widget _controlBar(
+    BuildContext ctx,
+    VideoPlayerController videoController,
+  ) {
+    final colorScheme = Theme.of(ctx).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        vertical: 8,
+        horizontal: 16,
+      ),
+      color: colorScheme.surface,
+      child: Row(
+        children: [
+          _playOrPauseButton(ctx, videoController),
+          const SizedBox(width: 16),
+          if (_state.sentenceStates.isNotEmpty)
+            _repeatOneButton(ctx),
+          const Spacer(),
+          _speedDownButton(ctx),
+          const SizedBox(width: 8),
+          _speedLabel(ctx),
+          const SizedBox(width: 8),
+          _speedUpButton(ctx),
+        ],
+      ),
+    );
+  }
+
   Widget _playOrPauseButton(
     BuildContext ctx,
     VideoPlayerController videoController,
@@ -470,12 +475,18 @@ class PlayerUI extends StatelessWidget {
         isPlaying
             ? Icons.pause_rounded
             : Icons.play_arrow_rounded,
-        size: 32,
+        size: 24,
       ),
       style: IconButton.styleFrom(
         backgroundColor: colorScheme.primary,
         foregroundColor: Colors.white,
+        tapTargetSize: .shrinkWrap,
       ),
+      constraints: const BoxConstraints(
+          minWidth: 30,
+          minHeight: 30,
+      ),
+      padding: EdgeInsets.zero,
     );
   }
 
@@ -497,6 +508,14 @@ class PlayerUI extends StatelessWidget {
             ? colorScheme.primary
             : colorScheme.outline,
       ),
+      style: IconButton.styleFrom(
+        tapTargetSize: .shrinkWrap,
+      ),
+      constraints: const BoxConstraints(
+          minWidth: 30,
+          minHeight: 30,
+      ),
+      padding: EdgeInsets.zero,
     );
   }
 
@@ -505,6 +524,14 @@ class PlayerUI extends StatelessWidget {
       onPressed: _logic.player_onSpeedDown,
       icon: const Icon(Icons.remove_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
+      style: IconButton.styleFrom(
+        tapTargetSize: .shrinkWrap,
+      ),
+      constraints: const BoxConstraints(
+          minWidth: 30,
+          minHeight: 30,
+      ),
+      padding: EdgeInsets.zero,
     );
   }
 
@@ -513,6 +540,14 @@ class PlayerUI extends StatelessWidget {
       onPressed: _logic.player_onSpeedUp,
       icon: const Icon(Icons.add_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
+      style: IconButton.styleFrom(
+        tapTargetSize: .shrinkWrap,
+      ),
+      constraints: const BoxConstraints(
+          minWidth: 30,
+          minHeight: 30,
+      ),
+      padding: EdgeInsets.zero,
     );
   }
 
@@ -543,17 +578,17 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _controlButton(
-    void Function() onPressed,
-    Widget icon,
-  ) {
-    return SizedBox(
-      width: _kPlayerControlBarButtonWidth,
-      child: IconButton.filledTonal(
-        onPressed: onPressed,
-        icon: icon,
-        padding: EdgeInsets.zero,
-      ),
-    );
-  }
+  // Widget _controlButton(
+  //   void Function() onPressed,
+  //   Widget icon,
+  // ) {
+  //   return SizedBox(
+  //     width: _kPlayerControlBarButtonWidth,
+  //     child: IconButton.filledTonal(
+  //       onPressed: onPressed,
+  //       icon: icon,
+  //       padding: EdgeInsets.zero,
+  //     ),
+  //   );
+  // }
 }

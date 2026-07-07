@@ -67,10 +67,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       return;
     }
     setState(() {
-      _state = _state.copyWith(
-        showLoading: true,
-        showEmpty: true,
-      );
+      _state = _state.copyWith(showLoading: true);
     });
     final newMedia = await DBObjectBox().store
         .box<Media>()
