@@ -56,75 +56,80 @@ class _PlayerScreenState extends State<PlayerScreen>
         .map((q) async => await q.findAsync());
     final sub = mediaStream.listen((event) async {
       final newMedia = (await event).firstOrNull;
-      _receiveMedia(newMedia);
+      final oldMedia = _media?.copyWith();
+      _media = newMedia;
+      if (oldMedia == newMedia) {
+        debugPrint('same media notified');
+        setState(() {
+          _state = _state.copyWith(showLoading: false);
+        });
+        return;
+      }
+      if (newMedia == null) {
+        await _videoController?.dispose();
+        _videoController = null;
+        setState(() {
+          _state = const PlayerState.empty().copyWith(
+            showLoading: false,
+            showEmpty: true,
+          );
+        });
+        return;
+      }
+      _receiveMedia(oldMedia, newMedia);
     });
     _subs.add(sub);
   }
 
-  void _receiveMedia(Media? newMedia) async {
-    final oldMedia = _media?.copyWith();
-    if (oldMedia == newMedia) {
-      debugPrint('same media notified');
-      setState(() {
-        _state = _state.copyWith(showLoading: false);
-      });
-      return;
-    }
-    _media = newMedia;
-    if (newMedia != null) {
-      final isVideoChanged = oldMedia?.path != newMedia.path;
-      final int? focusIndex;
-      final bool repeat;
-      final subtitle = newMedia.subtitles.firstOrNull;
-      final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
+  void _receiveMedia(Media? oldMedia, Media newMedia) async {
+    final isVideoChanged = oldMedia?.path != newMedia.path;
+    int? focusIndex = _state.focusedIndex;
+    bool repeat = _state.repeat;
+    final subtitle = newMedia.subtitles.firstOrNull;
+    final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
 
-      if (isVideoChanged) {
-        focusIndex = hasSubtitle ? 0 : null;
-        repeat = false;
-      } else {
-        //video没变，字幕可能变了
-        final videoController = _videoController;
-        if (videoController == null || !hasSubtitle) {
-          focusIndex = null;
-          repeat = false;
-        } else {
-          final position = videoController.value.position;
-          focusIndex = _sentenceIndexByPosition(position);
-          repeat = focusIndex == null ? false : _state.repeat;
-        }
-      }
-      //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
-      setState(() {
-        _state = _state.copyWith(
-          sentenceStates: _sentenceStates(newMedia),
-          focusedIndex: () => focusIndex,
-          repeat: repeat,
-          title: newMedia.name,
-        );
-      });
+    if (isVideoChanged) {
+      focusIndex = hasSubtitle ? 0 : null;
+      repeat = false;
 
-      if (isVideoChanged) {
-        final newVideoController = VideoPlayerController.file(
-          File(newMedia.path),
-        );
-        await newVideoController.initialize();
-        newVideoController.addListener(
-          () => _onPositionChanging(newVideoController),
-        );
-        await _videoController?.dispose();
-        _videoController = newVideoController;
-        _state = _state.copyWith(videoController: () => newVideoController);
-        await _videoController?.play();
+      final newVideoController = VideoPlayerController.file(
+        File(newMedia.path),
+      );
+      await newVideoController.initialize();
+      newVideoController.addListener(
+        () => _onPositionChanging(newVideoController),
+      );
+      await _videoController?.dispose();
+      _videoController = newVideoController;
+      _state = _state.copyWith(videoController: () => newVideoController);
+      await _videoController?.play();
+    } else if (oldMedia?.subtitles.firstOrNull !=
+        newMedia.subtitles.firstOrNull) {
+      //subtitle changed/ or deleted
+      final videoController = _videoController;
+      if (videoController != null) {
+        final position = videoController.value.position;
+        focusIndex = _sentenceIndexByPosition(position);
+        repeat = focusIndex == null ? false : _state.repeat;
       }
-      // //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (focusIndex != null) {
-          _scrollController._jumpTo(focusIndex);
-        }
-      });
     }
+    //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
     setState(() {
-      _state = _state.copyWith(showLoading: false, showEmpty: newMedia == null);
+      _state = _state.copyWith(
+        sentenceStates: _sentenceStates(newMedia),
+        focusedIndex: () => focusIndex,
+        repeat: repeat,
+        title: newMedia.name,
+      );
+    });
+    //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (focusIndex != null) {
+        _scrollController._jumpTo(focusIndex);
+      }
+    });
+    setState(() {
+      _state = _state.copyWith(showLoading: false, showEmpty: false);
     });
   }
 
@@ -133,19 +138,28 @@ class _PlayerScreenState extends State<PlayerScreen>
     super.didUpdateWidget(oldWidget);
     if (widget._mediaId != oldWidget._mediaId) {
       debugPrint('player mediaId:${oldWidget._mediaId} => ${widget._mediaId}');
-      final mediaId = widget._mediaId;
-      _cancelAllSubs();
-      if (mediaId == null) {
-        _media = null;
-        setState(() {
-          _state = _state.copyWith(showLoading: false, showEmpty: true);
-        });
-      } else {
-        setState(() {
-          _state = _state.copyWith(showLoading: true, showEmpty: false);
-        });
-        _subscribeMedia(mediaId);
-      }
+      _handleMediaIdChanged(oldWidget._mediaId, widget._mediaId);
+    }
+  }
+
+  void _handleMediaIdChanged(int? oldMediaId, int? newMediaId) async {
+    final mediaId = widget._mediaId;
+    _cancelAllSubs();
+    if (mediaId == null) {
+      await _videoController?.dispose();
+      _media = null;
+      _videoController = null;
+      setState(() {
+        _state = const PlayerState.empty().copyWith(
+          showLoading: false,
+          showEmpty: true,
+        );
+      });
+    } else {
+      setState(() {
+        _state = _state.copyWith(showLoading: true, showEmpty: false);
+      });
+      _subscribeMedia(mediaId);
     }
   }
 
