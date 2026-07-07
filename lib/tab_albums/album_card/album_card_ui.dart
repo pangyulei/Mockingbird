@@ -26,31 +26,49 @@ class AlbumCardUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return InkWell(
       onTap: () => _logic.albumCard_onTap(_index),
+      borderRadius: BorderRadius.circular(20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Cover image area
           Expanded(
-            child: Card(
+            child: Container(
               margin: const EdgeInsets.all(8),
-              elevation: 2, //widget._state.isPressed ? 1 : 2,
-              shadowColor: Colors.black26,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  width: 1,
-                ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 child: Stack(
                   children: [
                     Positioned.fill(child: _cover(context)),
-                    Positioned(top: 4, right: 4, child: _menu(context)),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.3),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(top: 8, right: 8, child: _menu(context)),
                   ],
                 ),
               ),
@@ -58,15 +76,15 @@ class AlbumCardUI extends StatelessWidget {
           ),
           // Name and song count below cover
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _state.name,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: const Color(0xFF191C1E),
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
+                    letterSpacing: -0.2,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -74,8 +92,8 @@ class AlbumCardUI extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${_state.mediasCount} Medias',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF42474E),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.outline,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -88,8 +106,9 @@ class AlbumCardUI extends StatelessWidget {
   }
 
   Widget _menu(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert, size: 20),
+      icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
       onSelected: (value) {
         if (value == _MoreItem.edit.raw) {
           _logic.albumCard_onEdit(_index);
@@ -102,45 +121,53 @@ class AlbumCardUI extends StatelessWidget {
           value: _MoreItem.edit.raw,
           child: const Row(
             children: [
-              Icon(Icons.edit, size: 18),
-              SizedBox(width: 8),
-              Text('Edit'),
+              Icon(Icons.edit_outlined, size: 18),
+              SizedBox(width: 12),
+              Text('Edit Album'),
             ],
           ),
         ),
         PopupMenuItem(
           value: _MoreItem.delete.raw,
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.delete, size: 18),
-              SizedBox(width: 8),
-              Text('Delete'),
+              Icon(
+                Icons.delete_outline,
+                size: 18,
+                color: colorScheme.error,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Delete',
+                style: TextStyle(color: colorScheme.error),
+              ),
             ],
           ),
         ),
       ],
       style: IconButton.styleFrom(
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-        minimumSize: const Size(28, 28),
+        backgroundColor: Colors.black.withValues(alpha: 0.3),
+        minimumSize: const Size(32, 32),
         padding: EdgeInsets.zero,
-        tapTargetSize: .shrinkWrap,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
   }
 
   Widget _cover(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     String? cover = _state.cover;
     if (cover != null) {
-      return Opacity(
-        opacity: 1, //widget._state.isPressed ? 0.7 : 1.0,
-        child: Image.file(File(cover), fit: BoxFit.cover),
-      );
+      return Image.file(File(cover), fit: BoxFit.cover);
     } else {
-      return Center(
-        child: Icon(
-          Icons.video_library_rounded,
-          color: Theme.of(context).colorScheme.primary,
-          size: 40,
+      return Container(
+        color: colorScheme.surfaceContainerHighest,
+        child: Center(
+          child: Icon(
+            Icons.album_rounded,
+            color: colorScheme.primary.withValues(alpha: 0.5),
+            size: 48,
+          ),
         ),
       );
     }

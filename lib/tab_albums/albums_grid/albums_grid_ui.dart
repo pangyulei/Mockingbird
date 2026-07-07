@@ -46,9 +46,13 @@ class AlbumsGridUI extends StatelessWidget {
   }
 
   Widget _loading() {
-    return ColoredBox(
-      color: Colors.black.withAlpha(20),
-      child: const Center(child: CircularProgressIndicator()),
+    return Container(
+      color: Colors.black54,
+      child: const Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 3,
+        ),
+      ),
     );
   }
 

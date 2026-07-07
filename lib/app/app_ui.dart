@@ -103,65 +103,121 @@ class AppUI extends StatelessWidget {
 
   Widget _indexesStackScaffold(StatefulNavigationShell shell) {
     return Scaffold(
-      // ➔ 这里的 navigationShell 会在底层自动渲染出真正的 IndexedStack
       body: shell,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: shell.currentIndex,
-        onTap: (index) {
-          _logic.app_selectedIndex(index, shell);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.album_outlined),
-            activeIcon: Icon(Icons.album),
-            label: 'Albums',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: Colors.white.withValues(alpha: 0.05),
+              width: 0.5,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.play_circle_outline),
-            activeIcon: Icon(Icons.play_circle),
-            label: 'Player',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            activeIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: shell.currentIndex,
+          onTap: (index) {
+            _logic.app_selectedIndex(index, shell);
+          },
+          elevation: 0,
+          backgroundColor: const Color(0xFF17212B),
+          selectedItemColor: const Color(0xFF5288C1),
+          unselectedItemColor: const Color(0xFF7F91A4),
+          selectedFontSize: 12,
+          unselectedFontSize: 12,
+          type: BottomNavigationBarType.fixed,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.album_outlined),
+              activeIcon: Icon(Icons.album),
+              label: 'Albums',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.play_circle_outline),
+              activeIcon: Icon(Icons.play_circle),
+              label: 'Player',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings_outlined),
+              activeIcon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+          ],
+        ),
       ),
     );
   }
 
   ThemeData _theme() {
+    const background = Color(0xFF0E1621);
+    const surface = Color(0xFF17212B);
+    const primary = Color(0xFF5288C1);
+    const textPrimary = Colors.white;
+    const textSecondary = Color(0xFF7F91A4);
+
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color(0xFF005691),
-        brightness: Brightness.light,
-        primary: const Color(0xFF005691),
-        onPrimary: Colors.white,
-        surface: Colors.white,
-        onSurface: const Color(0xFF191C1E),
+      brightness: Brightness.dark,
+      colorScheme: const ColorScheme.dark(
+        primary: primary,
+        onPrimary: textPrimary,
+        surface: surface,
+        onSurface: textPrimary,
+        surfaceContainerHighest: Color(0xFF242F3D),
+        primaryContainer: Color(0xFF1D2A39),
+        onPrimaryContainer: textPrimary,
+        secondary: primary,
+        outline: textSecondary,
+        outlineVariant: Color(0xFF242F3D),
       ),
-      scaffoldBackgroundColor: Colors.white,
+      scaffoldBackgroundColor: background,
+      canvasColor: surface,
       textTheme: GoogleFonts.interTextTheme(
         const TextTheme(
           titleLarge: TextStyle(
-            color: Color(0xFF191C1E),
+            color: textPrimary,
             fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
           ),
           titleMedium: TextStyle(
-            color: Color(0xFF191C1E),
+            color: textPrimary,
             fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
           ),
-          bodyLarge: TextStyle(color: Color(0xFF191C1E)),
-          bodyMedium: TextStyle(color: Color(0xFF42474E)),
+          bodyLarge: TextStyle(color: textPrimary),
+          bodyMedium: TextStyle(color: textSecondary),
+          labelLarge: TextStyle(color: primary, fontWeight: FontWeight.w600),
         ),
       ),
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF191C1E),
+        backgroundColor: surface,
+        foregroundColor: textPrimary,
         elevation: 0,
-        scrolledUnderElevation: 2,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          color: textPrimary,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: surface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: Colors.white.withValues(alpha: 0.05),
+        thickness: 1,
+        space: 1,
+      ),
+      iconTheme: const IconThemeData(
+        color: primary,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: textPrimary,
+        elevation: 4,
       ),
     );
   }

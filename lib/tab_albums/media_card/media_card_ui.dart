@@ -27,92 +27,83 @@ class MediaCardUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      elevation: _state.isPlaying ? 2 : 0,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      shape: RoundedRectangleBorder(
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: _state.isPlaying
+            ? colorScheme.primaryContainer.withValues(alpha: 0.15)
+            : colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
+        border: Border.all(
           color: _state.isPlaying
-              ? colorScheme.primary
-              : colorScheme.outlineVariant.withValues(alpha: 0.4),
-          width: _state.isPlaying ? 2 : 1,
+              ? colorScheme.primary.withValues(alpha: 0.5)
+              : Colors.white.withValues(alpha: 0.05),
+          width: 1,
         ),
       ),
-      color:
-          _state.isPlaying
-              ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-              : null,
       child: Stack(
         children: [
           ListTile(
-            horizontalTitleGap: 0,
-            contentPadding: const EdgeInsets.only(
-              left: 12,
-              top: 4,
-              bottom: 4,
-              right: 34,
+            onTap: () => _logic.mediaCard_onPlayMedia(_index),
+            horizontalTitleGap: 12,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: _state.isPlaying
+                    ? colorScheme.primary
+                    : colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _state.isPlaying
+                    ? Icons.graphic_eq_rounded
+                    : Icons.play_arrow_rounded,
+                color: _state.isPlaying ? Colors.white : colorScheme.primary,
+                size: 28,
+              ),
             ),
             title: Text(
               _state.name,
-              style: TextStyle(
+              style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.w600,
-                color: _state.isPlaying ? colorScheme.primary : const Color(0xFF191C1E),
-                fontSize: 14,
+                color: _state.isPlaying ? colorScheme.primary : colorScheme.onSurface,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Padding(
-              padding: const EdgeInsets.only(top: 4),
+              padding: const EdgeInsets.only(top: 6),
               child: Row(
                 children: [
                   if (_state.hasSubtitle) ...[
                     Icon(
                       Icons.subtitles_rounded,
-                      color: _state.isPlaying ? colorScheme.primary : colorScheme.secondary,
+                      color: colorScheme.outline,
                       size: 14,
                     ),
                     const SizedBox(width: 4),
                   ],
                   Text(
                     _state.type.name.toUpperCase(),
-                    style: TextStyle(
-                      color: _state.isPlaying ? colorScheme.primary.withValues(alpha: 0.8) : const Color(0xFF42474E),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11,
-                      letterSpacing: 0.5,
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: colorScheme.outline,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
                     ),
                   ),
                   if (_state.isPlaying) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     _PlayingIndicator(color: colorScheme.primary),
                   ],
                 ],
-              ),
-            ),
-            trailing: Container(
-              decoration: BoxDecoration(
-                color: _state.isPlaying ? colorScheme.primary : colorScheme.primary.withValues(alpha: 0.9),
-                shape: BoxShape.circle,
-                boxShadow: _state.isPlaying ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                  )
-                ] : null,
-              ),
-              child: IconButton(
-                icon: Icon(
-                  _state.isPlaying ? Icons.graphic_eq_rounded : Icons.play_arrow_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                onPressed: () {
-                  _logic.mediaCard_onPlayMedia(_index);
-                },
               ),
             ),
           ),
@@ -120,7 +111,11 @@ class MediaCardUI extends StatelessWidget {
             top: 4,
             right: 4,
             child: PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: 20),
+              icon: Icon(
+                Icons.more_horiz,
+                size: 20,
+                color: colorScheme.outline,
+              ),
               onSelected: (value) {
                 if (value == _MoreItem.addSubtitle.raw) {
                   _logic.mediaCard_onAddSubtitle(_index);
@@ -136,7 +131,7 @@ class MediaCardUI extends StatelessWidget {
                   child: Row(
                     children: [
                       const Icon(Icons.subtitles_rounded, size: 18),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Text(
                         _state.hasSubtitle ? 'Change Subtitle' : 'Add Subtitle',
                       ),
@@ -146,29 +141,44 @@ class MediaCardUI extends StatelessWidget {
                 if (_state.hasSubtitle)
                   PopupMenuItem(
                     value: _MoreItem.deleteSubtitle.raw,
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.subtitles_off_rounded, size: 18),
-                        SizedBox(width: 8),
-                        Text('Delete Subtitle'),
+                        Icon(
+                          Icons.subtitles_off_rounded,
+                          size: 18,
+                          color: colorScheme.error,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          'Delete Subtitle',
+                          style: TextStyle(color: colorScheme.error),
+                        ),
                       ],
                     ),
                   ),
+                const PopupMenuDivider(),
                 PopupMenuItem(
                   value: _MoreItem.deleteMedia.raw,
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.delete_rounded, size: 18),
-                      SizedBox(width: 8),
-                      Text('Delete Media'),
+                      Icon(
+                        Icons.delete_outline_rounded,
+                        size: 18,
+                        color: colorScheme.error,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Delete Media',
+                        style: TextStyle(color: colorScheme.error),
+                      ),
                     ],
                   ),
                 ),
               ],
               style: IconButton.styleFrom(
-                minimumSize: const Size(28, 28),
+                minimumSize: const Size(32, 32),
                 padding: EdgeInsets.zero,
-                tapTargetSize: .shrinkWrap,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),
           ),

@@ -83,65 +83,135 @@ class PlayerUI extends StatelessWidget {
     BuildContext ctx,
     VideoPlayerController videoController,
   ) {
+    final theme = Theme.of(ctx);
+
     return Scaffold(
-      appBar: _appBar(),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: _appBar(ctx),
       body: Column(
         children: [
-          Stack(
-            children: [
-              AspectRatio(
-                aspectRatio:
-                    videoController.value.aspectRatio,
-                child: VideoPlayer(videoController),
-              ),
-              Positioned.fill(
-                left: 8,
-                top: 8,
-                bottom: 0,
-                right: 0,
-                child: Row(
-                  crossAxisAlignment: .end,
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 44,
-                        child: _videoSlider(
-                          videoController,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(
+                    alpha: 0.5,
+                  ),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                AspectRatio(
+                  aspectRatio:
+                      videoController.value.aspectRatio,
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      VideoPlayer(videoController),
+                      // Custom gradient overlay for controls
+                      Positioned.fill(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withValues(
+                                  alpha: 0.4,
+                                ),
+                                Colors.transparent,
+                                Colors.transparent,
+                                Colors.black.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ],
+                              stops: const [
+                                0.0,
+                                0.2,
+                                0.7,
+                                1.0,
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                    _volumeComponent(ctx),
-                  ],
+                      Positioned(
+                        left: 8,
+                        right: 8,
+                        bottom: 0,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: _videoSlider(
+                                ctx,
+                                videoController,
+                              ),
+                            ),
+                            _volumeComponent(ctx),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                _controlBar(ctx, videoController),
+              ],
+            ),
           ),
-          _controlBar(ctx, videoController),
           if (_state.sentenceStates.isNotEmpty)
-            _sentencesList(),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor,
+                ),
+                child: _sentencesList(),
+              ),
+            ),
         ],
       ),
-      floatingActionButton: _floatingButtons(),
+      floatingActionButton: _floatingButtons(ctx),
     );
   }
 
-  Widget? _floatingButtons() {
+  Widget? _floatingButtons(BuildContext ctx) {
     if (_state.sentenceStates.isEmpty) return null;
+    final colorScheme = Theme.of(ctx).colorScheme;
     return Column(
-      mainAxisAlignment: .end,
+      mainAxisSize: MainAxisSize.min,
       children: [
         FloatingActionButton.small(
+          heroTag: 'scroll_top',
           onPressed: _logic.player_onScrollToTop,
-          child: const Icon(Icons.vertical_align_top),
+          backgroundColor:
+              colorScheme.surfaceContainerHighest,
+          foregroundColor: colorScheme.primary,
+          child: const Icon(
+            Icons.keyboard_arrow_up_rounded,
+          ),
         ),
-        FloatingActionButton.small(
+        const SizedBox(height: 8),
+        FloatingActionButton(
+          heroTag: 'scroll_focus',
           onPressed:
               _logic.player_onScrollToFocusedSentence,
-          child: const Icon(Icons.my_location),
+          child: const Icon(
+            Icons.center_focus_strong_rounded,
+          ),
         ),
+        const SizedBox(height: 8),
         FloatingActionButton.small(
+          heroTag: 'scroll_bottom',
           onPressed: _logic.player_onScrollToBottom,
-          child: const Icon(Icons.vertical_align_bottom),
+          backgroundColor:
+              colorScheme.surfaceContainerHighest,
+          foregroundColor: colorScheme.primary,
+          child: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+          ),
         ),
       ],
     );
@@ -149,68 +219,54 @@ class PlayerUI extends StatelessWidget {
 
   Widget _volumeComponent(BuildContext ctx) {
     return Column(
-      mainAxisAlignment: .end,
+      mainAxisSize: MainAxisSize.min,
       children: [
         if (_state.showVolumeSlider)
-          Expanded(child: _volumeSlider(ctx)),
+          SizedBox(height: 100, child: _volumeSlider(ctx)),
         IconButton(
           onPressed: _logic.player_onVolumeTap,
-          icon: const Icon(Icons.volume_up),
-          iconSize: 24,
-          style: const ButtonStyle(
-            tapTargetSize: .shrinkWrap,
+          icon: Icon(
+            _state.volume == 0
+                ? Icons.volume_off_rounded
+                : Icons.volume_up_rounded,
           ),
-          constraints: const BoxConstraints(
-            minWidth: 44,
-            minHeight: 44,
-          ),
-          padding: EdgeInsets.zero,
+          color: Colors.white,
+          iconSize: 20,
         ),
       ],
     );
   }
 
   Widget _volumeSlider(BuildContext ctx) {
+    final colorScheme = Theme.of(ctx).colorScheme;
     return RotatedBox(
       quarterTurns: 3,
       child: SliderTheme(
         data: SliderTheme.of(ctx).copyWith(
-          // 1. 縮小軌道高度
-          trackHeight: 2.0,
-          // 2. 移除周圍的滑塊內邊距（關鍵：將熱區半徑縮小或設為與滑塊相同）
+          trackHeight: 3.0,
           thumbShape: const RoundSliderThumbShape(
-            enabledThumbRadius: 8.0,
+            enabledThumbRadius: 6.0,
           ),
           overlayShape: const RoundSliderOverlayShape(
             overlayRadius: 12.0,
           ),
-          // 3. 移除滑塊在兩端的空白間距
-          valueIndicatorShape:
-              const PaddleSliderValueIndicatorShape(),
+          activeTrackColor: colorScheme.primary,
+          inactiveTrackColor: Colors.white24,
+          thumbColor: Colors.white,
         ),
         child: Slider(
           value: _state.volume,
-          min: 0.0,
-          max: 1.0,
-          divisions: 10,
-          //cut 1 into step 0.1
-          activeColor: Theme.of(ctx).colorScheme.primary,
-          thumbColor: Theme.of(ctx).colorScheme.primary,
-          inactiveColor: Theme.of(ctx)
-              .colorScheme
-              .surfaceContainerHighest
-              .withValues(alpha: 0.5),
-          onChanged: (newVolume) {
-            _logic.player_onVolumeChanging(newVolume);
-          },
+          onChanged: _logic.player_onVolumeChanging,
         ),
       ),
     );
   }
 
   Widget _videoSlider(
+    BuildContext ctx,
     VideoPlayerController videoController,
   ) {
+    final colorScheme = Theme.of(ctx).colorScheme;
     return ValueListenableBuilder(
       valueListenable: videoController,
       builder: (ctx, videoValue, child) {
@@ -222,18 +278,16 @@ class PlayerUI extends StatelessWidget {
             _state.videoSliderDraggingValue;
         return SliderTheme(
           data: SliderTheme.of(ctx).copyWith(
-            // 1. 縮小軌道高度
             trackHeight: 4.0,
-            // 2. 移除周圍的滑塊內邊距（關鍵：將熱區半徑縮小或設為與滑塊相同）
             thumbShape: const RoundSliderThumbShape(
               enabledThumbRadius: 8.0,
             ),
             overlayShape: const RoundSliderOverlayShape(
-              overlayRadius: 12.0,
+              overlayRadius: 16.0,
             ),
-            // 3. 移除滑塊在兩端的空白間距
-            valueIndicatorShape:
-                const PaddleSliderValueIndicatorShape(),
+            activeTrackColor: colorScheme.primary,
+            inactiveTrackColor: Colors.white24,
+            thumbColor: Colors.white,
           ),
           child: Slider(
             value:
@@ -241,27 +295,11 @@ class PlayerUI extends StatelessWidget {
                 position.clamp(0, duration).toDouble(),
             min: 0.0,
             max: duration.toDouble(),
-            activeColor: Theme.of(ctx).colorScheme.primary,
-            thumbColor: Theme.of(ctx).colorScheme.primary,
-            inactiveColor: Theme.of(ctx)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.5),
-            onChangeStart: (sliderValue) {
-              _logic.player_onVideoSliderStartChanged(
-                sliderValue,
-              );
-            },
-            onChangeEnd: (sliderValue) {
-              _logic.player_onVideoSliderEndChanged(
-                sliderValue,
-              );
-            },
-            onChanged: (sliderValue) {
-              _logic.player_onVideoSliderChanging(
-                sliderValue,
-              );
-            },
+            onChangeStart:
+                _logic.player_onVideoSliderStartChanged,
+            onChangeEnd:
+                _logic.player_onVideoSliderEndChanged,
+            onChanged: _logic.player_onVideoSliderChanging,
           ),
         );
       },
@@ -330,7 +368,9 @@ class PlayerUI extends StatelessWidget {
               const SizedBox(height: 32),
               FilledButton.icon(
                 onPressed: _logic.player_onGoToAlbums,
-                icon: const Icon(Icons.library_music_rounded),
+                icon: const Icon(
+                  Icons.library_music_rounded,
+                ),
                 label: const Text('Go to Albums'),
               ),
             ],
@@ -362,131 +402,141 @@ class PlayerUI extends StatelessWidget {
     BuildContext ctx,
     VideoPlayerController videoController,
   ) {
-    return Padding(
+    final colorScheme = Theme.of(ctx).colorScheme;
+    return Container(
       padding: const EdgeInsets.symmetric(
-        vertical: 4,
-        horizontal: 8,
+        vertical: 12,
+        horizontal: 16,
       ),
-      child: SizedBox(
-        width: double.infinity,
-        height: _kPlayerControlBarHeight,
-        child: Row(
-          spacing: 4,
-          children: [
-            // _playerButton((){}, const Icon(Icons.skip_previous)),
-            // _playerButton((){}, const Icon(Icons.replay)),
-            _playOrPauseButton(videoController),
-            // _playerButton((){}, Transform.flip(flipX: true, child: const Icon(Icons.replay))),
-            // _playerButton((){}, const Icon(Icons.skip_next)),
-            const Spacer(),
-            if (_state.sentenceStates.isNotEmpty)
-              _repeatOneButton(),
-            _speedDownButton(),
-            _speedLabel(ctx, videoController),
-            _speedUpButton(),
-          ],
-        ),
+      color: colorScheme.surface,
+      child: Row(
+        children: [
+          _playOrPauseButton(ctx, videoController),
+          const SizedBox(width: 16),
+          if (_state.sentenceStates.isNotEmpty)
+            _repeatOneButton(ctx),
+          const Spacer(),
+          _speedDownButton(ctx),
+          const SizedBox(width: 8),
+          _speedLabel(ctx),
+          const SizedBox(width: 8),
+          _speedUpButton(ctx),
+        ],
       ),
     );
   }
 
-  AppBar _appBar() {
+  AppBar _appBar(BuildContext ctx) {
     return AppBar(
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
       automaticallyImplyLeading: false,
+      // leading: IconButton(
+      //   icon: const Icon(Icons.arrow_back_ios_new_rounded),
+      //   onPressed: () => Navigator.of(ctx).pop(),
+      // ),
       title: SizedBox(
-        width: double.infinity,
-        height: kToolbarHeight,
+        height: 24,
         child: Marquee(
           text: _state.title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
           scrollAxis: Axis.horizontal,
           blankSpace: 50,
           velocity: 30,
-          pauseAfterRound: Duration.zero,
-          accelerationDuration: Duration.zero,
-          decelerationDuration: Duration.zero,
         ),
       ),
     );
   }
 
   Widget _playOrPauseButton(
+    BuildContext ctx,
     VideoPlayerController videoController,
   ) {
     final isPlaying = _state.isPlaying;
-    return _controlButton(
-      () {
+    final colorScheme = Theme.of(ctx).colorScheme;
+    return IconButton.filled(
+      onPressed: () {
         if (isPlaying) {
           _logic.player_onPause();
         } else {
           _logic.player_onPlay();
         }
       },
-      Icon(
-        isPlaying ? Icons.pause_circle : Icons.play_circle,
+      icon: Icon(
+        isPlaying
+            ? Icons.pause_rounded
+            : Icons.play_arrow_rounded,
+        size: 32,
+      ),
+      style: IconButton.styleFrom(
+        backgroundColor: colorScheme.primary,
+        foregroundColor: Colors.white,
       ),
     );
   }
 
-  Widget _repeatOneButton() {
-    return _controlButton(
-      () {
+  Widget _repeatOneButton(BuildContext ctx) {
+    final colorScheme = Theme.of(ctx).colorScheme;
+    return IconButton(
+      onPressed: () {
         if (_state.repeat) {
           _logic.player_onRepeatOne();
         } else {
           _logic.player_onInOrder();
         }
       },
-      Icon(_state.repeat ? Icons.repeat_one : Icons.repeat),
+      icon: Icon(
+        _state.repeat
+            ? Icons.repeat_one_rounded
+            : Icons.repeat_rounded,
+        color: _state.repeat
+            ? colorScheme.primary
+            : colorScheme.outline,
+      ),
     );
   }
 
-  Widget _speedDownButton() {
-    return _controlButton(() {
-      _logic.player_onSpeedDown();
-    }, const Icon(Icons.fast_rewind));
+  Widget _speedDownButton(BuildContext ctx) {
+    return IconButton(
+      onPressed: _logic.player_onSpeedDown,
+      icon: const Icon(Icons.remove_circle_outline_rounded),
+      color: Theme.of(ctx).colorScheme.outline,
+    );
   }
 
-  Widget _speedUpButton() {
-    return _controlButton(() {
-      _logic.player_onSpeedUp();
-    }, const Icon(Icons.fast_forward));
+  Widget _speedUpButton(BuildContext ctx) {
+    return IconButton(
+      onPressed: _logic.player_onSpeedUp,
+      icon: const Icon(Icons.add_circle_outline_rounded),
+      color: Theme.of(ctx).colorScheme.outline,
+    );
   }
 
-  Widget _speedLabel(
-    BuildContext ctx,
-    VideoPlayerController videoController,
-  ) {
-    return SizedBox(
-      // 1. Set explicit outer dimensions
-      height: _kPlayerControlBarHeight,
-      child: TextButton(
-        style: TextButton.styleFrom(
-          // 1. Define the inner padding (This directly dictates the extra width)
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 0,
-          ),
-
-          // 2. Set minimumSize to 0 so it doesn't enforce a default minimum width
-          minimumSize: Size.zero,
-
-          // 3. Keep visual bounds tight to the child
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-
-          backgroundColor: Colors.blue,
-          foregroundColor: Theme.of(
-            ctx,
-          ).colorScheme.primaryContainer,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
-          ),
+  Widget _speedLabel(BuildContext ctx) {
+    final colorScheme = Theme.of(ctx).colorScheme;
+    return GestureDetector(
+      onTap: _logic.player_onSpeedReset,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 6,
         ),
-        onPressed: _logic.player_onSpeedReset,
+        decoration: BoxDecoration(
+          color: colorScheme.primaryContainer.withValues(
+            alpha: 0.3,
+          ),
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: Text(
-          '${_state.speed.toString()}x',
-          // The button width will perfectly match this text + 30px padding on each side
-          style: const TextStyle(
+          '${_state.speed}x',
+          style: TextStyle(
+            color: colorScheme.primary,
             fontWeight: FontWeight.bold,
+            fontSize: 13,
           ),
         ),
       ),

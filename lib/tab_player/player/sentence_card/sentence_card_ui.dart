@@ -13,52 +13,75 @@ class SentenceCardUI extends StatelessWidget {
   
   @override
   Widget build(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+    final theme = Theme.of(ctx);
+    final colorScheme = theme.colorScheme;
 
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 60),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: InkWell(
-          onTap: () => _logic.sentenceCard_onTap(_index),
-          borderRadius: BorderRadius.circular(8),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: _state.isFocused
-                  ? colorScheme.primary
-                  : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(8),
-              border: _state.isFocused
-                  ? Border.all(color: colorScheme.primary, width: 2)
-                  : null,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: InkWell(
+        onTap: () => _logic.sentenceCard_onTap(_index),
+        borderRadius: BorderRadius.circular(16),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          decoration: BoxDecoration(
+            color: _state.isFocused
+                ? colorScheme.primaryContainer.withValues(alpha: 0.8)
+                : colorScheme.surface,
+            borderRadius: BorderRadius.only(
+              topLeft: const Radius.circular(16),
+              topRight: const Radius.circular(16),
+              bottomRight: const Radius.circular(16),
+              bottomLeft: Radius.circular(_state.isFocused ? 4 : 16),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _state.text,
-                    style: Theme.of(ctx).textTheme.titleMedium?.copyWith(
-                      color: _state.isFocused
-                          ? colorScheme.onPrimary
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: _state.isFocused
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+            boxShadow: _state.isFocused
+                ? [
+                    BoxShadow(
+                      color: colorScheme.primary.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     ),
+                  ]
+                : null,
+            border: Border.all(
+              color: _state.isFocused
+                  ? colorScheme.primary.withValues(alpha: 0.3)
+                  : Colors.white.withValues(alpha: 0.05),
+              width: 1,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _state.text,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: _state.isFocused
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurface,
+                    fontSize: 16,
+                    height: 1.4,
+                    fontWeight: _state.isFocused ? FontWeight.w600 : FontWeight.normal,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _state.period,
-                    style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                      color: _state.isFocused
-                          ? colorScheme.onPrimary.withValues(alpha: 0.8)
-                          : colorScheme.outline,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      _state.period,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: _state.isFocused
+                            ? colorScheme.primary
+                            : colorScheme.outline,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
