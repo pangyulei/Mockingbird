@@ -86,16 +86,11 @@ class AlbumDetailUI extends StatelessWidget {
       elevation: 0,
       backgroundColor: colorScheme.surface,
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsetsDirectional.only(
-          start: 56,
-          bottom: 16,
-        ),
+        titlePadding: const EdgeInsetsDirectional.only(start: 56, bottom: 16),
         title: Text(
           _state.name,
           style: TextStyle(
-            color: _state.cover != null
-                ? Colors.white
-                : colorScheme.onSurface,
+            color: _state.cover != null ? Colors.white : colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             shadows: _state.cover != null
                 ? [

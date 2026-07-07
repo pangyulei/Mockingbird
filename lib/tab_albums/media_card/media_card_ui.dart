@@ -26,8 +26,8 @@ class MediaCardUI extends StatelessWidget {
   const MediaCardUI(this._index, this._state, this._logic, {super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext ctx) {
+    final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
 
     return Container(
@@ -54,139 +54,142 @@ class MediaCardUI extends StatelessWidget {
               bottom: 8,
               left: 16,
               right: 44,
-              // horizontal: 16,
-              // vertical: 8,
             ),
-            trailing: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: _state.isPlaying
-                    ? colorScheme.primary
-                    : colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                _state.isPlaying
-                    ? Icons.graphic_eq_rounded
-                    : Icons.play_arrow_rounded,
-                color: _state.isPlaying ? Colors.white : colorScheme.primary,
-                size: 28,
-              ),
-            ),
-            title: Text(
-              _state.name,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.w600,
-                color: _state.isPlaying ? colorScheme.primary : colorScheme.onSurface,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            subtitle: Padding(
-              padding: const EdgeInsets.only(top: 6),
-              child: Row(
-                children: [
-                  if (_state.hasSubtitle) ...[
-                    Icon(
-                      Icons.subtitles_rounded,
-                      color: colorScheme.outline,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                  ],
-                  Text(
-                    _state.type.name.toUpperCase(),
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: colorScheme.outline,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.0,
-                    ),
-                  ),
-                  if (_state.isPlaying) ...[
-                    const SizedBox(width: 12),
-                    _PlayingIndicator(color: colorScheme.primary),
-                  ],
-                ],
-              ),
+            title: _title(ctx),
+            subtitle: _subtitle(ctx),
+            trailing: _playButton(ctx),
+          ),
+          Positioned(top: 4, right: 4, child: _popMenu(ctx)),
+        ],
+      ),
+    );
+  }
+
+  Widget _title(BuildContext ctx) {
+    final theme = Theme.of(ctx);
+    final colorScheme = theme.colorScheme;
+    return Text(
+      _state.name,
+      style: theme.textTheme.titleSmall?.copyWith(
+        fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.w600,
+        color: _state.isPlaying ? colorScheme.primary : colorScheme.onSurface,
+      ),
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _subtitle(BuildContext ctx) {
+    final theme = Theme.of(ctx);
+    final colorScheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          if (_state.hasSubtitle) ...[
+            Icon(Icons.subtitles_rounded, color: colorScheme.outline, size: 14),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            _state.type.name.toUpperCase(),
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: colorScheme.outline,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
             ),
           ),
-          Positioned(
-            top: 4,
-            right: 4,
-            child: PopupMenuButton<String>(
-              icon: Icon(
-                Icons.more_horiz,
-                size: 20,
-                color: colorScheme.outline,
-              ),
-              onSelected: (value) {
-                if (value == _MoreItem.addSubtitle.raw) {
-                  _logic.mediaCard_onAddSubtitle(_index);
-                } else if (value == _MoreItem.deleteSubtitle.raw) {
-                  _logic.mediaCard_onRemoveSubtitle(_index);
-                } else if (value == _MoreItem.deleteMedia.raw) {
-                  _logic.mediaCard_onDeleteMedia(_index);
-                }
-              },
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: _MoreItem.addSubtitle.raw,
-                  child: Row(
-                    children: [
-                      const Icon(Icons.subtitles_rounded, size: 18),
-                      const SizedBox(width: 12),
-                      Text(
-                        _state.hasSubtitle ? 'Change Subtitle' : 'Add Subtitle',
-                      ),
-                    ],
-                  ),
+          if (_state.isPlaying) ...[
+            const SizedBox(width: 12),
+            _PlayingIndicator(color: colorScheme.primary),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _playButton(BuildContext ctx) {
+    final theme = Theme.of(ctx);
+    final colorScheme = theme.colorScheme;
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: _state.isPlaying
+            ? colorScheme.primary
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(
+        _state.isPlaying ? Icons.graphic_eq_rounded : Icons.play_arrow_rounded,
+        color: _state.isPlaying ? Colors.white : colorScheme.primary,
+        size: 28,
+      ),
+    );
+  }
+
+  Widget _popMenu(BuildContext ctx) {
+    final theme = Theme.of(ctx);
+    final colorScheme = theme.colorScheme;
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
+      onSelected: (value) {
+        if (value == _MoreItem.addSubtitle.raw) {
+          _logic.mediaCard_onAddSubtitle(_index);
+        } else if (value == _MoreItem.deleteSubtitle.raw) {
+          _logic.mediaCard_onRemoveSubtitle(_index);
+        } else if (value == _MoreItem.deleteMedia.raw) {
+          _logic.mediaCard_onDeleteMedia(_index);
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: _MoreItem.addSubtitle.raw,
+          child: Row(
+            children: [
+              const Icon(Icons.subtitles_rounded, size: 18),
+              const SizedBox(width: 12),
+              Text(_state.hasSubtitle ? 'Change Subtitle' : 'Add Subtitle'),
+            ],
+          ),
+        ),
+        if (_state.hasSubtitle)
+          PopupMenuItem(
+            value: _MoreItem.deleteSubtitle.raw,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.subtitles_off_rounded,
+                  size: 18,
+                  color: colorScheme.error,
                 ),
-                if (_state.hasSubtitle)
-                  PopupMenuItem(
-                    value: _MoreItem.deleteSubtitle.raw,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.subtitles_off_rounded,
-                          size: 18,
-                          color: colorScheme.error,
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Delete Subtitle',
-                          style: TextStyle(color: colorScheme.error),
-                        ),
-                      ],
-                    ),
-                  ),
-                const PopupMenuDivider(),
-                PopupMenuItem(
-                  value: _MoreItem.deleteMedia.raw,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.delete_outline_rounded,
-                        size: 18,
-                        color: colorScheme.error,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Delete Media',
-                        style: TextStyle(color: colorScheme.error),
-                      ),
-                    ],
-                  ),
+                const SizedBox(width: 12),
+                Text(
+                  'Delete Subtitle',
+                  style: TextStyle(color: colorScheme.error),
                 ),
               ],
-              style: IconButton.styleFrom(
-                minimumSize: const Size(32, 32),
-                padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
             ),
           ),
-        ],
+        const PopupMenuDivider(),
+        PopupMenuItem(
+          value: _MoreItem.deleteMedia.raw,
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete_outline_rounded,
+                size: 18,
+                color: colorScheme.error,
+              ),
+              const SizedBox(width: 12),
+              Text('Delete Media', style: TextStyle(color: colorScheme.error)),
+            ],
+          ),
+        ),
+      ],
+      style: IconButton.styleFrom(
+        minimumSize: const Size(32, 32),
+        padding: EdgeInsets.zero,
+        tapTargetSize: .shrinkWrap,
       ),
     );
   }
