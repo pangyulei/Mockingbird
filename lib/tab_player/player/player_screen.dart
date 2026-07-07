@@ -4,6 +4,8 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/media.dart';
 import 'package:mockingbird/model/sentence.dart';
@@ -178,9 +180,9 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   @override
-  void dispose() async {
+  void dispose() {
     _cancelAllSubs();
-    await _videoController?.dispose();
+    _videoController?.dispose();
     super.dispose();
   }
 
@@ -545,6 +547,11 @@ class _PlayerScreenState extends State<PlayerScreen>
         showVolumeSlider: !_state.showVolumeSlider,
       );
     });
+  }
+
+  @override
+  void player_onGoToAlbums() {
+    context.go(AppRoute.albums);
   }
 }
 
