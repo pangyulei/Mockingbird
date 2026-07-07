@@ -30,12 +30,12 @@ class PlayerUI extends StatelessWidget {
   final PlayerState _state;
   final PlayerUIOutputITF _logic;
   final ItemScrollController _scrollController;
-
-  const PlayerUI(this._state, this._logic, this._scrollController, {super.key});
+  final VideoPlayerController? _videoController;
+  const PlayerUI(this._state, this._logic, this._scrollController, this._videoController, {super.key});
 
   @override
   Widget build(BuildContext ctx) {
-    final videoController = _state.videoController;
+    final videoController = _videoController;
     return Stack(
       children: [
         if (videoController != null) _page(ctx, videoController),
@@ -77,7 +77,7 @@ class PlayerUI extends StatelessWidget {
                         child: _videoSlider(videoController),
                       ),
                     ),
-                    _volumeComponent(ctx, videoController),
+                    _volumeComponent(ctx),
                   ],
                 ),
               ),
@@ -114,13 +114,12 @@ class PlayerUI extends StatelessWidget {
 
   Widget _volumeComponent(
     BuildContext ctx,
-    VideoPlayerController videoController,
   ) {
     return Column(
       mainAxisAlignment: .end,
       children: [
         if (_state.showVolumeSlider)
-          Expanded(child: _volumeSlider(ctx, videoController)),
+          Expanded(child: _volumeSlider(ctx)),
         IconButton(
           onPressed: _logic.player_onVolumeTap,
           icon: const Icon(Icons.volume_up),
@@ -135,7 +134,6 @@ class PlayerUI extends StatelessWidget {
 
   Widget _volumeSlider(
     BuildContext ctx,
-    VideoPlayerController videoController,
   ) {
     return RotatedBox(
       quarterTurns: 3,
@@ -150,7 +148,7 @@ class PlayerUI extends StatelessWidget {
           valueIndicatorShape: const PaddleSliderValueIndicatorShape(),
         ),
         child: Slider(
-          value: videoController.value.volume,
+          value: _state.volume,
           min: 0.0,
           max: 1.0,
           divisions: 10, //cut 1 into step 0.1
@@ -280,7 +278,7 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _playOrPauseButton(VideoPlayerController videoController) {
-    final isPlaying = videoController.value.isPlaying;
+    final isPlaying = _state.isPlaying;
     return _controlButton(() {
       if (isPlaying) {
         _logic.player_onPause();
@@ -335,27 +333,11 @@ class PlayerUI extends StatelessWidget {
         ),
         onPressed: _logic.player_onSpeedReset,
         child: Text(
-          '${videoController.value.playbackSpeed.toString()}x', // The button width will perfectly match this text + 30px padding on each side
+          '${_state.speed.toString()}x', // The button width will perfectly match this text + 30px padding on each side
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
     );
-    // return Container(
-    //   height: _kPlayerControlBarHeight,
-    //   alignment: .center,
-    //   padding: const EdgeInsets.symmetric(
-    //     vertical: 0,
-    //     horizontal: 8,
-    //   ), // 1. Padding inside the box
-    //   decoration: BoxDecoration(
-    //     color: Theme.of(ctx).colorScheme.primaryContainer, // 2. Box Color
-    //     borderRadius: BorderRadius.circular(8.0), // 3. Rounded corners
-    //   ),
-    //   child: Text(
-    //     '${_state.speed.toString()}x',
-    //     style: const TextStyle(fontWeight: FontWeight.bold),
-    //   ),
-    // );
   }
 
   Widget _controlButton(void Function() onPressed, Widget icon) {

@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
@@ -12,7 +11,6 @@ import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
-
 import 'player_state.dart';
 
 const double _kMaxPlaySpeed = 3.0;
@@ -83,16 +81,16 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   void _receiveMedia(Media? oldMedia, Media newMedia) async {
     final isVideoChanged = oldMedia?.path != newMedia.path;
-    int? focusIndex = _state.focusedIndex;
-    bool repeat = _state.repeat;
     final subtitle = newMedia.subtitles.firstOrNull;
     final isSubtitleChanged =
         oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
 
     if (isVideoChanged) {
       final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
-      focusIndex = hasSubtitle ? 0 : null;
-      repeat = false;
+      _state = _state.copyWith(
+        focusedIndex: () => hasSubtitle ? 0 : null,
+        repeat: false,
+      );
 
       final newVideoController = VideoPlayerController.file(
         File(newMedia.path),
@@ -103,34 +101,41 @@ class _PlayerScreenState extends State<PlayerScreen>
       );
       await _videoController?.dispose();
       _videoController = newVideoController;
-      _state = _state.copyWith(videoController: () => newVideoController);
-      await _videoController?.play();
+      _state = _state.copyWith(speed: 1, volume: 1, isPlaying: true);
     } else if (isSubtitleChanged) {
       //subtitle changed/ or deleted
       final videoController = _videoController;
       if (videoController != null) {
         final position = videoController.value.position;
-        focusIndex = _sentenceIndexByPosition(position);
-        repeat = focusIndex == null ? false : _state.repeat;
+        final focusedIndex = _sentenceIndexByPosition(position);
+        final repeat = focusedIndex == null ? false : _state.repeat;
+        _state = _state.copyWith(
+          focusedIndex: () => focusedIndex,
+          repeat: repeat,
+        );
       }
     }
     //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
     setState(() {
       _state = _state.copyWith(
         sentenceStates: _sentenceStates(newMedia),
-        focusedIndex: () => focusIndex,
-        repeat: repeat,
         title: newMedia.name,
         showLoading: false,
         showEmpty: false,
       );
     });
     //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (focusIndex != null) {
-        _scrollController._jumpTo(focusIndex);
+    if (_state.sentenceStates.isNotEmpty) {
+      final focusedIndex = _state.focusedIndex;
+      if (focusedIndex == null) {
+        _scrollController._jumpTo(_state.sentenceStates.length - 1);
+      } else {
+        _scrollController._jumpTo(focusedIndex);
       }
-    });
+    }
+    if (isVideoChanged) {
+      await _videoController?.play();
+    }
   }
 
   @override
@@ -205,7 +210,7 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   Widget build(BuildContext context) {
-    return PlayerUI(_state, this, _scrollController);
+    return PlayerUI(_state, this, _scrollController, _videoController);
   }
 
   void _onPositionChanging(VideoPlayerController videoController) async {
@@ -235,6 +240,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       //if repeat one is turn on, while sentence finished, seek to beginning
       final focusIndex = _state.focusedIndex;
       final isDraggingSlider = _state.videoSliderDraggingValue != null;
+      debugPrint('repeat $focusIndex $isDraggingSlider');
       if (focusIndex != null && !isDraggingSlider) {
         final sentence = sentences[focusIndex];
         if (position > sentence.end) {
@@ -245,14 +251,17 @@ class _PlayerScreenState extends State<PlayerScreen>
     } else {
       //according to position, find current matched sentence index, marked as playingIndex
       final playingIndex = _sentenceIndexByPosition(position);
-      if (playingIndex == null) {
-        debugPrint('playing index not found');
-        return;
-      }
       //scroll to playingIndex and focus it
+      debugPrint(
+        'playingindex $playingIndex focusIndex ${_state.focusedIndex}',
+      );
       if (playingIndex != _state.focusedIndex) {
         //只有循環的時候，才需要持續自動滾動到當前句
-        _scrollController._scrollTo(playingIndex);
+        if (playingIndex == null) {
+          _scrollController._scrollTo(_state.sentenceStates.length - 1);
+        } else {
+          _scrollController._scrollTo(playingIndex);
+        }
         setState(() {
           _state = _state.copyWith(focusedIndex: () => playingIndex);
         });
@@ -269,14 +278,18 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   void player_onPause() async {
+    setState(() {
+      _state = _state.copyWith(isPlaying: false);
+    });
     await _videoController?.pause();
-    setState(() {});
   }
 
   @override
   void player_onPlay() async {
+    setState(() {
+      _state = _state.copyWith(isPlaying: true);
+    });
     await _videoController?.play();
-    setState(() {});
   }
 
   @override
@@ -295,8 +308,10 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (nextSpeed == currentSpeed) {
       return;
     }
+    setState(() {
+      _state = _state.copyWith(speed: nextSpeed);
+    });
     await videoController.setPlaybackSpeed(nextSpeed);
-    setState(() {});
   }
 
   @override
@@ -308,8 +323,10 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (nextSpeed == currentSpeed) {
       return;
     }
+    setState(() {
+      _state = _state.copyWith(speed: nextSpeed);
+    });
     await videoController.setPlaybackSpeed(nextSpeed);
-    setState(() {});
   }
 
   @override
@@ -328,10 +345,12 @@ class _PlayerScreenState extends State<PlayerScreen>
       return;
     }
     _scrollController._scrollTo(index);
-    _state = _state.copyWith(focusedIndex: () => index);
+
+    setState(() {
+      _state = _state.copyWith(focusedIndex: () => index, isPlaying: true);
+    });
     await videoController.seekTo(sentence.start);
     await videoController.play();
-    setState(() {});
   }
 
   int? _sentenceIndexByPosition(Duration position) {
@@ -346,8 +365,8 @@ class _PlayerScreenState extends State<PlayerScreen>
     final allRange = List.generate(sentences.length, (index) => index);
     final focusedIndex = _state.focusedIndex;
     final List<int> searchRange;
-    if (focusedIndex == null) {
-      debugPrint('focus index not found');
+    if (focusedIndex == null || focusedIndex >= sentences.length) {
+      debugPrint('focus index not found or beyond range');
       searchRange = allRange;
     } else {
       final range1 = allRange.sublist(focusedIndex);
@@ -355,15 +374,14 @@ class _PlayerScreenState extends State<PlayerScreen>
       searchRange = [...range1, ...range2];
     }
     playingIndex = searchRange.firstWhereOrNull(
-      (idx) => _isSentencePlaying(idx, position, mediaEnd),
+      (idx) => _isSentencePlaying(idx, position),
     );
     return playingIndex;
   }
 
-  bool _isSentencePlaying(int index, Duration position, Duration mediaEnd) {
+  bool _isSentencePlaying(int index, Duration position) {
     final sentences = _media?.subtitles.firstOrNull?.sentences;
     if (sentences == null || sentences.isEmpty) return false;
-    if (sentences.length == 1) return true;
 
     final sentence = sentences[index];
     final nextSentence = sentences.elementAtOrNull(index + 1);
@@ -374,7 +392,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         ? const Duration(microseconds: 0)
         : sentence.start;
     if (nextSentence == null) {
-      return start <= position && position <= mediaEnd;
+      return start <= position && position <= sentence.end;
     } else {
       return start <= position && position < nextSentence.start;
     }
@@ -389,30 +407,37 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (nextSpeed == currentSpeed) {
       return;
     }
+    setState(() {
+      _state = _state.copyWith(speed: nextSpeed);
+    });
     await videoController.setPlaybackSpeed(nextSpeed);
-    setState(() {});
   }
 
   @override
   void player_onVideoSliderStartChanged(double microValue) async {
-    _state = _state.copyWith(videoSliderDraggingValue: () => microValue);
+    setState(() {
+      _state = _state.copyWith(
+        videoSliderDraggingValue: () => microValue,
+        isPlaying: false,
+      );
+    });
     await _videoController?.pause();
-    setState(() {});
   }
 
   @override
   void player_onVideoSliderChanging(double microValue) async {
     final position = Duration(microseconds: microValue.toInt());
     final index = _sentenceIndexByPosition(position);
-    _state = _state.copyWith(
-      videoSliderDraggingValue: () => microValue,
-      focusedIndex: () => index,
-    );
     if (index != null) {
       _scrollController._jumpTo(index);
     }
+    setState(() {
+      _state = _state.copyWith(
+        videoSliderDraggingValue: () => microValue,
+        focusedIndex: () => index,
+      );
+    });
     await _videoController?.seekTo(position);
-    setState(() {});
   }
 
   @override
@@ -425,9 +450,13 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (index != null && sentence != null) {
       await _videoController?.seekTo(sentence.start);
     }
-    _state = _state.copyWith(videoSliderDraggingValue: () => null);
+    setState(() {
+      _state = _state.copyWith(
+        isPlaying: true,
+        videoSliderDraggingValue: () => null,
+      );
+    });
     await _videoController?.play();
-    setState(() {});
   }
 
   @override
@@ -460,8 +489,10 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   void player_onVolumeChanging(double newVolume) async {
+    setState(() {
+      _state = _state.copyWith(volume: newVolume);
+    });
     await _videoController?.setVolume(newVolume);
-    setState(() {});
   }
 
   @override

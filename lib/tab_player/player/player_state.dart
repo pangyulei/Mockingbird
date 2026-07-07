@@ -11,12 +11,16 @@ class PlayerState extends Equatable {
   final bool showEmpty;
   final bool showVolumeSlider;
   final int versionId;
-  final VideoPlayerController? videoController;
+  final double speed;
+  final double volume;
+  final bool isPlaying;
   final double? videoSliderDraggingValue;
 
   const PlayerState({
+    required this.isPlaying,
+    required this.speed,
+    required this.volume,
     required this.versionId,
-    required this.videoController,
     required this.showVolumeSlider,
     required this.videoSliderDraggingValue,
     required this.repeat,
@@ -30,7 +34,9 @@ class PlayerState extends Equatable {
   const PlayerState.empty()
     : this(
         versionId: 0,
-        videoController: null,
+        isPlaying: false,
+        speed: 1,
+        volume: 1,
         showVolumeSlider: false,
         focusedIndex: null,
         repeat: false,
@@ -42,7 +48,9 @@ class PlayerState extends Equatable {
       );
 
   PlayerState copyWith({
-    VideoPlayerController? Function()? videoController,
+    bool? isPlaying,
+    double? speed,
+    double? volume,
     bool? showEmpty,
     int? versionId,
     bool? showLoading,
@@ -54,10 +62,10 @@ class PlayerState extends Equatable {
     double? Function()? videoSliderDraggingValue,
   }) {
     return PlayerState(
+      isPlaying: isPlaying ?? this.isPlaying,
+      speed: speed ?? this.speed,
+      volume: volume ?? this.volume,
       versionId: versionId ?? this.versionId,
-      videoController: videoController == null
-          ? this.videoController
-          : videoController(),
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
       videoSliderDraggingValue: videoSliderDraggingValue == null
           ? this.videoSliderDraggingValue
