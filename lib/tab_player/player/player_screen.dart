@@ -86,9 +86,11 @@ class _PlayerScreenState extends State<PlayerScreen>
     int? focusIndex = _state.focusedIndex;
     bool repeat = _state.repeat;
     final subtitle = newMedia.subtitles.firstOrNull;
-    final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
+    final isSubtitleChanged =
+        oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
 
     if (isVideoChanged) {
+      final hasSubtitle = subtitle != null && subtitle.sentences.isNotEmpty;
       focusIndex = hasSubtitle ? 0 : null;
       repeat = false;
 
@@ -103,8 +105,7 @@ class _PlayerScreenState extends State<PlayerScreen>
       _videoController = newVideoController;
       _state = _state.copyWith(videoController: () => newVideoController);
       await _videoController?.play();
-    } else if (oldMedia?.subtitles.firstOrNull !=
-        newMedia.subtitles.firstOrNull) {
+    } else if (isSubtitleChanged) {
       //subtitle changed/ or deleted
       final videoController = _videoController;
       if (videoController != null) {
@@ -120,6 +121,8 @@ class _PlayerScreenState extends State<PlayerScreen>
         focusedIndex: () => focusIndex,
         repeat: repeat,
         title: newMedia.name,
+        showLoading: false,
+        showEmpty: false,
       );
     });
     //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
@@ -127,9 +130,6 @@ class _PlayerScreenState extends State<PlayerScreen>
       if (focusIndex != null) {
         _scrollController._jumpTo(focusIndex);
       }
-    });
-    setState(() {
-      _state = _state.copyWith(showLoading: false, showEmpty: false);
     });
   }
 
