@@ -5,6 +5,7 @@ import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 abstract interface class AlbumDetailUIOutputITF
     implements MediaCardUIOutputITF {
   void albumDetail_onImport();
+  void albumDetail_onPickCover();
 }
 
 class AlbumDetailUI extends StatelessWidget {
@@ -25,16 +26,38 @@ class AlbumDetailUI extends StatelessWidget {
   }
 
   Widget _page(BuildContext ctx) {
+    final theme = Theme.of(ctx);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           _sliverAppBar(ctx),
           if (_state.mediaStates.isEmpty)
-            const SliverFillRemaining(
+            SliverFillRemaining(
+              hasScrollBody: false,
               child: Center(
-                child: Text(
-                  'No medias yet. Tap + to add.',
-                  style: TextStyle(color: Colors.grey),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.library_music_outlined,
+                      size: 64,
+                      color: theme.colorScheme.outlineVariant,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No media in this album',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tap the + button to import audio or video files',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.outline,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             )
@@ -54,20 +77,33 @@ class AlbumDetailUI extends StatelessWidget {
   }
 
   Widget _sliverAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return SliverAppBar(
-      expandedHeight: 250,
+      expandedHeight: 280,
       pinned: true,
       elevation: 0,
+      backgroundColor: colorScheme.surface,
       flexibleSpace: FlexibleSpaceBar(
+        titlePadding: const EdgeInsetsDirectional.only(
+          start: 56,
+          bottom: 16,
+        ),
         title: Text(
           _state.name,
           style: TextStyle(
             color: _state.cover != null
                 ? Colors.white
-                : Theme.of(context).colorScheme.onSurface,
+                : colorScheme.onSurface,
             fontWeight: FontWeight.bold,
             shadows: _state.cover != null
-                ? [const Shadow(color: Colors.black, blurRadius: 4)]
+                ? [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      blurRadius: 8,
+                    ),
+                  ]
                 : null,
           ),
         ),
@@ -78,13 +114,38 @@ class AlbumDetailUI extends StatelessWidget {
               Image.file(_state.cover!, fit: BoxFit.cover)
             else
               Container(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: Icon(
-                  Icons.music_note,
-                  size: 100,
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.1),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primaryContainer,
+                      colorScheme.surfaceContainerHighest,
+                    ],
+                  ),
+                ),
+                child: InkWell(
+                  onTap: _logic.albumDetail_onPickCover,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.add_photo_alternate_outlined,
+                          size: 64,
+                          color: colorScheme.primary.withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Add Cover Photo',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             if (_state.cover != null)
@@ -93,24 +154,48 @@ class AlbumDetailUI extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black54],
+                    stops: [0.0, 0.3, 0.7, 1.0],
+                    colors: [
+                      Colors.black38,
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black87,
+                    ],
                   ),
+                ),
+              ),
+            // "Change Cover" floating button when cover exists
+            if (_state.cover != null)
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton.small(
+                  heroTag: 'change_cover_fab',
+                  onPressed: _logic.albumDetail_onPickCover,
+                  backgroundColor: Colors.white.withValues(alpha: 0.9),
+                  foregroundColor: colorScheme.primary,
+                  child: const Icon(Icons.edit_outlined),
                 ),
               ),
           ],
         ),
       ),
-      actionsPadding: const EdgeInsets.only(right: 10),
-      leading: IconButton.filledTonal(
-        onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back),
+      leading: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: IconButton.filledTonal(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back),
+        ),
       ),
       actions: [
-        // const Spacer(flex: 12,),
         if (_state.showImport)
-          IconButton.filledTonal(
-            icon: const Icon(Icons.download),
-            onPressed: _logic.albumDetail_onImport,
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton.filledTonal(
+              icon: const Icon(Icons.add_rounded),
+              onPressed: _logic.albumDetail_onImport,
+              tooltip: 'Add Media',
+            ),
           ),
       ],
     );

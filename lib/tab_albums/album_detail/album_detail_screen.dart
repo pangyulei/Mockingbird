@@ -5,6 +5,7 @@ import 'package:collection/collection.dart'; // 👈 确保顶部导了这个包
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_album.dart';
 import 'package:mockingbird/db/db_logic.dart';
@@ -21,17 +22,21 @@ import 'album_detail_state.dart';
 
 class AlbumDetailScreen extends StatefulWidget {
   final int _albumId;
+
   const AlbumDetailScreen(this._albumId, {super.key});
 
   @override
-  State<AlbumDetailScreen> createState() => _AlbumDetailScreenState();
+  State<AlbumDetailScreen> createState() =>
+      _AlbumDetailScreenState();
 }
 
-class _AlbumDetailScreenState extends State<AlbumDetailScreen>
+class _AlbumDetailScreenState
+    extends State<AlbumDetailScreen>
     implements AlbumDetailUIOutputITF {
   var _state = const AlbumDetailState.empty();
   Album? _album;
   final _subs = <StreamSubscription>[];
+  final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
@@ -58,26 +63,37 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
   }
 
   StreamSubscription<void> _watchAlbum(void Function() f) {
-    return DBObjectBox().store.watch<Album>().listen((event) => f());
+    return DBObjectBox().store.watch<Album>().listen(
+      (event) => f(),
+    );
   }
 
   Future<void> _reloadAlbum() async {
     setState(() {
       _state = _state.copyWith(showLoading: true);
     });
-    final album = await DBAlbum(DBObjectBox().store).get(widget._albumId);
+    final album = await DBAlbum(
+      DBObjectBox().store,
+    ).get(widget._albumId);
     _album = album;
     if (album == null) {
       setState(() {
-        _state = const AlbumDetailState.empty().copyWith(showLoading: false, showImport: false);
+        _state = const AlbumDetailState.empty().copyWith(
+          showLoading: false,
+          showImport: false,
+        );
       });
       return;
     }
     album.medias.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+      (a, b) => a.name.toLowerCase().compareTo(
+        b.name.toLowerCase(),
+      ),
     );
     //TODO playing index should be init correctly
-    final mediaStates = album.medias.map((m) => m.toCardState()).toList();
+    final mediaStates = album.medias
+        .map((m) => m.toCardState())
+        .toList();
     setState(() {
       final coverPath = album.cover;
       _state = AlbumDetailState(
@@ -103,7 +119,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
         allowMultiple: true,
       );
 
-      if (pickedFiles == null || pickedFiles.files.isEmpty) {
+      if (pickedFiles == null ||
+          pickedFiles.files.isEmpty) {
         return [];
       }
       final files = pickedFiles.files
@@ -129,6 +146,36 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     await DBLogic().importMediaAndSubtitles(album, files);
   }
 
+  @override
+  void albumDetail_onPickCover() async {
+    final album = _album;
+    if (album == null) return;
+
+    try {
+      final XFile? xImage = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 75,
+      );
+
+      if (xImage != null) {
+        setState(() {
+          _state = _state.copyWith(showLoading: true);
+        });
+        final newCover = File(xImage.path);
+        await DBAlbum(
+          DBObjectBox().store,
+        ).update(album, album.name, newCover);
+      }
+    } catch (e) {
+      debugPrint('Error picking cover: $e');
+      setState(() {
+        _state = _state.copyWith(showLoading: false);
+      });
+    }
+  }
+
   Future<String?> _pickOneSubtitle() async {
     try {
       final pickedFiles = await FilePicker.pickFiles(
@@ -138,8 +185,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       );
       final subtitlePath = pickedFiles?.files
           .firstWhereOrNull(
-            (f) =>
-                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+            (f) => kSubtitleExtensions.contains(
+              f.extension?.toLowerCase() ?? '',
+            ),
           )
           ?.path;
       return subtitlePath;
@@ -158,7 +206,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     }
     final media = album.medias.elementAtOrNull(index);
     if (media == null) {
-      debugPrint('no media at index $index, can NOT add any subtitle');
+      debugPrint(
+        'no media at index $index, can NOT add any subtitle',
+      );
       return;
     }
 
@@ -171,8 +221,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       _state = _state.copyWith(showLoading: true);
     });
     final subtitleFile = File(subtitlePath);
-    final subtitle = await SubtitleParser.parseFile(subtitleFile);
-    await DBMedia(DBObjectBox().store).addSubtitle(media, subtitle);
+    final subtitle = await SubtitleParser.parseFile(
+      subtitleFile,
+    );
+    await DBMedia(
+      DBObjectBox().store,
+    ).addSubtitle(media, subtitle);
   }
 
   @override
@@ -206,11 +260,15 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       return;
     }
     setState(() {
-      final mediaStates = _state.mediaStates.asMap().entries.map((e) {
-        int i = e.key;
-        final ms = e.value;
-        return ms.copyWith(isPlaying: i == index);
-      }).toList();
+      final mediaStates = _state.mediaStates
+          .asMap()
+          .entries
+          .map((e) {
+            int i = e.key;
+            final ms = e.value;
+            return ms.copyWith(isPlaying: i == index);
+          })
+          .toList();
       _state = _state.copyWith(mediaStates: mediaStates);
     });
     context.go(AppRoute.playerById(media.id));
@@ -232,7 +290,9 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
       _state = _state.copyWith(showLoading: true);
     });
     //TODO move these DB methods to DBLogic layer
-    await DBMedia(DBObjectBox().store).removeSubtitle(media);
+    await DBMedia(
+      DBObjectBox().store,
+    ).removeSubtitle(media);
   }
 }
 

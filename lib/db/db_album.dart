@@ -6,11 +6,12 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 import '../model/media.dart';
-import '../model/subtitle.dart';
 import '../model/sentence.dart';
+import '../model/subtitle.dart';
 
 class DBAlbum {
   final Store _store;
+
   DBAlbum(this._store);
 
   Future<Directory> get _coversDir async {
@@ -24,11 +25,15 @@ class DBAlbum {
       await coversDir.create(recursive: true);
     }
     // Generate a unique filename using timestamp and original extension
-    final String fileName = '${DateTime.now().millisecondsSinceEpoch}';
+    final String fileName =
+        '${DateTime.now().millisecondsSinceEpoch}';
     return p.join(coversDir.path, fileName);
   }
 
-  Future<Album?> create({required String name, File? cover}) async {
+  Future<Album?> create({
+    required String name,
+    File? cover,
+  }) async {
     //校验 name
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
@@ -69,24 +74,31 @@ class DBAlbum {
   /*
   cover = null means you want to remove cover
    */
-  Future<Album> update(Album album, String name, File? cover) async {
-    Album updateAlbum = album.copyWith();
+  Future<Album> update(
+    Album album,
+    String name,
+    File? cover,
+  ) async {
+    Album newAlbum = album.copyWith();
     final trimmedName = name.trim();
     if (trimmedName.isNotEmpty) {
-      updateAlbum = updateAlbum.copyWith(name: trimmedName);
+      newAlbum = newAlbum.copyWith(name: trimmedName);
     }
     if (cover == null) {
       //remove cover
-      updateAlbum = await _removeCoverFile(updateAlbum);
+      newAlbum = await _removeCoverFile(newAlbum);
     } else if (cover.path != album.cover) {
       //replace old cover to new cover
-      updateAlbum = await _removeCoverFile(updateAlbum);
+      newAlbum = await _removeCoverFile(newAlbum);
       final coverPath = await _newCoverPath;
       await cover.copy(coverPath);
-      updateAlbum = updateAlbum.copyWith(cover: () => coverPath);
+      newAlbum = newAlbum.copyWith(cover: () => coverPath);
     }
-    if (updateAlbum.cover != album.cover || updateAlbum.name != album.name) {
-      return await _store.box<Album>().putAndGetAsync(updateAlbum);
+    if (newAlbum.cover != album.cover ||
+        newAlbum.name != album.name) {
+      return await _store.box<Album>().putAndGetAsync(
+        newAlbum,
+      );
     } else {
       return album;
     }
@@ -119,11 +131,17 @@ class DBAlbum {
     return await _store.box<Album>().getAsync(id);
   }
 
-  Future<(Album, Album)> swapSortOrder(Album aAlbum, Album bAlbum) async {
+  Future<(Album, Album)> swapSortOrder(
+    Album aAlbum,
+    Album bAlbum,
+  ) async {
     final aSortOrder = aAlbum.sortOrder;
     aAlbum = aAlbum.copyWith(sortOrder: bAlbum.sortOrder);
     bAlbum = bAlbum.copyWith(sortOrder: aSortOrder);
-    await _store.box<Album>().putManyAsync([aAlbum, bAlbum]);
+    await _store.box<Album>().putManyAsync([
+      aAlbum,
+      bAlbum,
+    ]);
     return (aAlbum, bAlbum);
   }
 
@@ -148,7 +166,9 @@ class DBAlbum {
       final medias = mediaBox
           .getAll()
           .map((m) {
-            m.albums.removeWhere((a) => albumIdsSet.contains(a.id));
+            m.albums.removeWhere(
+              (a) => albumIdsSet.contains(a.id),
+            );
             return m;
           })
           .where((m) => m.albums.isEmpty)
@@ -158,17 +178,21 @@ class DBAlbum {
           .map((m) => m.subtitles)
           .expand((e) => e)
           .toList();
-      final subtitleIds = subtitles.map((s) => s.id).toList();
+      final subtitleIds = subtitles
+          .map((s) => s.id)
+          .toList();
       final sentences = subtitles
           .map((st) => st.sentences)
           .expand((e) => e)
           .toList();
-      final sentenceIds = sentences.map((s) => s.id).toList();
+      final sentenceIds = sentences
+          .map((s) => s.id)
+          .toList();
       albumBox.removeMany(albumIds);
       mediaBox.removeMany(mediaIds);
       subtitleBox.removeMany(subtitleIds);
       sentenceBox.removeMany(sentenceIds);
-    }, [for(final a in albums) a.id]);
+    }, [for (final a in albums) a.id]);
 
     // Delete cover files for removed playlists
     final uselessCovers = albums
