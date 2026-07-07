@@ -49,11 +49,15 @@ class MediaCardUI extends StatelessWidget {
           ListTile(
             onTap: () => _logic.mediaCard_onPlayMedia(_index),
             horizontalTitleGap: 12,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
+            contentPadding: const EdgeInsets.only(
+              top: 8,
+              bottom: 8,
+              left: 16,
+              right: 44,
+              // horizontal: 16,
+              // vertical: 8,
             ),
-            leading: Container(
+            trailing: Container(
               width: 48,
               height: 48,
               decoration: BoxDecoration(
