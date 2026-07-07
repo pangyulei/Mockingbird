@@ -161,7 +161,7 @@ class _PlayerScreenState extends State<PlayerScreen>
           int i = e.key;
           Sentence s = e.value;
           final isFocused = focusedIndex == null ? false : i == focusedIndex;
-          return _SentenceCardState.fromSentence(s).copyWith(isFocused: isFocused);
+          return s.toCardState().copyWith(isFocused: isFocused);
         }).toList() ??
         const [];
     return sentenceStates;
@@ -497,8 +497,8 @@ extension on ItemScrollController {
   }
 }
 
-extension _SentenceCardState on SentenceCardState {
-  static SentenceCardState fromSentence(Sentence sentence) {
+extension on Sentence {
+  SentenceCardState toCardState() {
     String formatDuration(Duration d) {
       final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
       final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -506,8 +506,9 @@ extension _SentenceCardState on SentenceCardState {
       return '$minutes:$seconds.$milliseconds';
     }
     return SentenceCardState(
-      text: sentence.text,
-      period: '${formatDuration(sentence.start)} - ${formatDuration(sentence.end)}', isFocused: false,
+      text: text,
+      period: '${formatDuration(start)} - ${formatDuration(end)}',
+      isFocused: false,
     );
   }
 }

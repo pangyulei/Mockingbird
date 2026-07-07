@@ -40,7 +40,7 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
         .map((q) async => await q.findAsync());
     final sub = albumsStream.listen((event) async {
       _albums = await event;
-      final albumStates = _albums.map((a) => _AlbumCardState.fromAlbum(a)).toList();
+      final albumStates = _albums.map((a) => a.toCardState()).toList();
       setState(() {
         _state = _state.copyWith(
           showLoading: false,
@@ -139,12 +139,12 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
   }
 }
 
-extension _AlbumCardState on AlbumCardState {
-  static AlbumCardState fromAlbum(Album album) {
+extension on Album {
+  AlbumCardState toCardState() {
     return AlbumCardState(
-      mediasCount: album.medias.length,
-      name: album.name,
-      cover: album.cover,
+      mediasCount: medias.length,
+      name: name,
+      cover: cover,
     );
   }
 }

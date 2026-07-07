@@ -76,7 +76,8 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     album.medias.sort(
           (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
     );
-    final mediaStates = album.medias.map((m)=>_MediaCardState.fromMedia(m)).toList();
+    //TODO playing index should be init correctly
+    final mediaStates = album.medias.map((m) => m.toCardState()).toList();
     setState(() {
       final coverPath = album.cover;
       _state = AlbumDetailState(
@@ -236,12 +237,12 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
 }
 
 //TODO optimize codes to use this kind way to create states
-extension _MediaCardState on MediaCardState {
-  static MediaCardState fromMedia(Media media) {
+extension on Media {
+  MediaCardState toCardState() {
     return MediaCardState(
-      name: media.name,
-      type: media.type,
-      hasSubtitle: media.subtitles.isNotEmpty,
+      name: name,
+      type: type,
+      hasSubtitle: subtitles.isNotEmpty,
       isPlaying: false,
     );
   }
