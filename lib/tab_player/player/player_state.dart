@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
-import 'package:video_player/video_player.dart';
 
 class PlayerState extends Equatable {
   final bool showLoading;
