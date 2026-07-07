@@ -8,8 +8,7 @@ import 'package:video_player/video_player.dart';
 const double _kPlayerControlBarHeight = 36;
 const double _kPlayerControlBarButtonWidth = 40;
 
-abstract interface class PlayerUIOutputITF
-    implements SentenceCardUIOutputITF {
+abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
   void player_onPlay();
 
   void player_onPause();
@@ -62,8 +61,7 @@ class PlayerUI extends StatelessWidget {
     final videoController = _videoController;
     return Stack(
       children: [
-        if (videoController != null)
-          _page(ctx, videoController),
+        if (videoController != null) _page(ctx, videoController),
         if (_state.showEmpty) _empty(ctx),
         if (_state.showLoading) _loading(),
       ],
@@ -73,16 +71,11 @@ class PlayerUI extends StatelessWidget {
   Widget _loading() {
     return ColoredBox(
       color: Colors.black.withAlpha(20),
-      child: const Center(
-        child: CircularProgressIndicator(),
-      ),
+      child: const Center(child: CircularProgressIndicator()),
     );
   }
 
-  Widget _page(
-    BuildContext ctx,
-    VideoPlayerController videoController,
-  ) {
+  Widget _page(BuildContext ctx, VideoPlayerController videoController) {
     final theme = Theme.of(ctx);
 
     return Scaffold(
@@ -95,9 +88,7 @@ class PlayerUI extends StatelessWidget {
               color: Colors.black,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: 0.5,
-                  ),
+                  color: Colors.black.withValues(alpha: 0.5),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
                 ),
@@ -106,8 +97,7 @@ class PlayerUI extends StatelessWidget {
             child: Column(
               children: [
                 AspectRatio(
-                  aspectRatio:
-                      videoController.value.aspectRatio,
+                  aspectRatio: videoController.value.aspectRatio,
                   child: Stack(
                     alignment: Alignment.bottomCenter,
                     children: [
@@ -120,21 +110,12 @@ class PlayerUI extends StatelessWidget {
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               colors: [
-                                Colors.black.withValues(
-                                  alpha: 0.4,
-                                ),
+                                Colors.black.withValues(alpha: 0.4),
                                 Colors.transparent,
                                 Colors.transparent,
-                                Colors.black.withValues(
-                                  alpha: 0.6,
-                                ),
+                                Colors.black.withValues(alpha: 0.6),
                               ],
-                              stops: const [
-                                0.0,
-                                0.2,
-                                0.7,
-                                1.0,
-                              ],
+                              stops: const [0.0, 0.2, 0.7, 1.0],
                             ),
                           ),
                         ),
@@ -149,10 +130,7 @@ class PlayerUI extends StatelessWidget {
                             Expanded(
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 8.5),
-                                child: _videoSlider(
-                                  ctx,
-                                  videoController,
-                                ),
+                                child: _videoSlider(ctx, videoController),
                               ),
                             ),
                             _volumeComponent(ctx),
@@ -169,9 +147,7 @@ class PlayerUI extends StatelessWidget {
           if (_state.sentenceStates.isNotEmpty)
             Expanded(
               child: Container(
-                decoration: BoxDecoration(
-                  color: theme.scaffoldBackgroundColor,
-                ),
+                decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
                 child: _sentencesList(),
               ),
             ),
@@ -190,32 +166,23 @@ class PlayerUI extends StatelessWidget {
         FloatingActionButton.small(
           heroTag: 'scroll_top',
           onPressed: _logic.player_onScrollToTop,
-          backgroundColor:
-              colorScheme.surfaceContainerHighest,
+          backgroundColor: colorScheme.surfaceContainerHighest,
           foregroundColor: colorScheme.primary,
-          child: const Icon(
-            Icons.keyboard_arrow_up_rounded,
-          ),
+          child: const Icon(Icons.keyboard_arrow_up_rounded),
         ),
         const SizedBox(height: 8),
-        FloatingActionButton(
+        FloatingActionButton.small(
           heroTag: 'scroll_focus',
-          onPressed:
-              _logic.player_onScrollToFocusedSentence,
-          child: const Icon(
-            Icons.center_focus_strong_rounded,
-          ),
+          onPressed: _logic.player_onScrollToFocusedSentence,
+          child: const Icon(Icons.center_focus_strong_rounded),
         ),
         const SizedBox(height: 8),
         FloatingActionButton.small(
           heroTag: 'scroll_bottom',
           onPressed: _logic.player_onScrollToBottom,
-          backgroundColor:
-              colorScheme.surfaceContainerHighest,
+          backgroundColor: colorScheme.surfaceContainerHighest,
           foregroundColor: colorScheme.primary,
-          child: const Icon(
-            Icons.keyboard_arrow_down_rounded,
-          ),
+          child: const Icon(Icons.keyboard_arrow_down_rounded),
         ),
       ],
     );
@@ -248,12 +215,8 @@ class PlayerUI extends StatelessWidget {
       child: SliderTheme(
         data: SliderTheme.of(ctx).copyWith(
           trackHeight: 3.0,
-          thumbShape: const RoundSliderThumbShape(
-            enabledThumbRadius: 6.0,
-          ),
-          overlayShape: const RoundSliderOverlayShape(
-            overlayRadius: 12.0,
-          ),
+          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+          overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
           activeTrackColor: colorScheme.primary,
           inactiveTrackColor: Colors.white24,
           thumbColor: Colors.white,
@@ -266,43 +229,29 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _videoSlider(
-    BuildContext ctx,
-    VideoPlayerController videoController,
-  ) {
+  Widget _videoSlider(BuildContext ctx, VideoPlayerController videoController) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return ValueListenableBuilder(
       valueListenable: videoController,
       builder: (ctx, videoValue, child) {
-        final int position =
-            videoValue.position.inMicroseconds;
-        final int duration =
-            videoValue.duration.inMicroseconds;
-        final draggingValue =
-            _state.videoSliderDraggingValue;
+        final int position = videoValue.position.inMicroseconds;
+        final int duration = videoValue.duration.inMicroseconds;
+        final draggingValue = _state.videoSliderDraggingValue;
         return SliderTheme(
           data: SliderTheme.of(ctx).copyWith(
             trackHeight: 4.0,
-            thumbShape: const RoundSliderThumbShape(
-              enabledThumbRadius: 8.0,
-            ),
-            overlayShape: const RoundSliderOverlayShape(
-              overlayRadius: 16.0,
-            ),
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
             activeTrackColor: colorScheme.primary,
             inactiveTrackColor: Colors.white24,
             thumbColor: Colors.white,
           ),
           child: Slider(
-            value:
-                draggingValue ??
-                position.clamp(0, duration).toDouble(),
+            value: draggingValue ?? position.clamp(0, duration).toDouble(),
             min: 0.0,
             max: duration.toDouble(),
-            onChangeStart:
-                _logic.player_onVideoSliderStartChanged,
-            onChangeEnd:
-                _logic.player_onVideoSliderEndChanged,
+            onChangeStart: _logic.player_onVideoSliderStartChanged,
+            onChangeEnd: _logic.player_onVideoSliderEndChanged,
             onChanged: _logic.player_onVideoSliderChanging,
           ),
         );
@@ -322,17 +271,14 @@ class PlayerUI extends StatelessWidget {
       ),
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 40,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 40),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer
-                      .withValues(alpha: 0.3),
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -362,9 +308,7 @@ class PlayerUI extends StatelessWidget {
               Text(
                 'Your progress starts here.',
                 style: textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary.withValues(
-                    alpha: 0.7,
-                  ),
+                  color: colorScheme.primary.withValues(alpha: 0.7),
                   letterSpacing: 2,
                   fontWeight: FontWeight.bold,
                 ),
@@ -372,9 +316,7 @@ class PlayerUI extends StatelessWidget {
               const SizedBox(height: 32),
               FilledButton.icon(
                 onPressed: _logic.player_onGoToAlbums,
-                icon: const Icon(
-                  Icons.library_music_rounded,
-                ),
+                icon: const Icon(Icons.library_music_rounded),
                 label: const Text('Go to Albums'),
               ),
             ],
@@ -390,18 +332,12 @@ class PlayerUI extends StatelessWidget {
         itemCount: _state.sentenceStates.length,
         itemScrollController: _scrollController,
         itemBuilder: (context, index) {
-          final sentenceState =
-              _state.sentenceStates[index];
-          return SentenceCardUI(
-            index,
-            sentenceState,
-            _logic,
-          );
+          final sentenceState = _state.sentenceStates[index];
+          return SentenceCardUI(index, sentenceState, _logic);
         },
       ),
     );
   }
-
 
   AppBar _appBar(BuildContext ctx) {
     return AppBar(
@@ -429,23 +365,21 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _controlBar(
-    BuildContext ctx,
-    VideoPlayerController videoController,
-  ) {
+  Widget _controlBar(BuildContext ctx, VideoPlayerController videoController) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(
-        vertical: 8,
-        horizontal: 16,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(color: colorScheme.primary.withValues(alpha: 0.3)),
+        ),
       ),
-      color: colorScheme.surface,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
           _playOrPauseButton(ctx, videoController),
           const SizedBox(width: 16),
-          if (_state.sentenceStates.isNotEmpty)
-            _repeatOneButton(ctx),
+          if (_state.sentenceStates.isNotEmpty) _repeatOneButton(ctx),
           const Spacer(),
           _speedDownButton(ctx),
           const SizedBox(width: 8),
@@ -472,9 +406,7 @@ class PlayerUI extends StatelessWidget {
         }
       },
       icon: Icon(
-        isPlaying
-            ? Icons.pause_rounded
-            : Icons.play_arrow_rounded,
+        isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
         size: 24,
       ),
       style: IconButton.styleFrom(
@@ -482,10 +414,7 @@ class PlayerUI extends StatelessWidget {
         foregroundColor: Colors.white,
         tapTargetSize: .shrinkWrap,
       ),
-      constraints: const BoxConstraints(
-          minWidth: 30,
-          minHeight: 30,
-      ),
+      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
@@ -501,20 +430,11 @@ class PlayerUI extends StatelessWidget {
         }
       },
       icon: Icon(
-        _state.repeat
-            ? Icons.repeat_one_rounded
-            : Icons.repeat_rounded,
-        color: _state.repeat
-            ? colorScheme.primary
-            : colorScheme.outline,
+        _state.repeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+        color: _state.repeat ? colorScheme.primary : colorScheme.outline,
       ),
-      style: IconButton.styleFrom(
-        tapTargetSize: .shrinkWrap,
-      ),
-      constraints: const BoxConstraints(
-          minWidth: 30,
-          minHeight: 30,
-      ),
+      style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
@@ -524,13 +444,8 @@ class PlayerUI extends StatelessWidget {
       onPressed: _logic.player_onSpeedDown,
       icon: const Icon(Icons.remove_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
-      style: IconButton.styleFrom(
-        tapTargetSize: .shrinkWrap,
-      ),
-      constraints: const BoxConstraints(
-          minWidth: 30,
-          minHeight: 30,
-      ),
+      style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
@@ -540,13 +455,8 @@ class PlayerUI extends StatelessWidget {
       onPressed: _logic.player_onSpeedUp,
       icon: const Icon(Icons.add_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
-      style: IconButton.styleFrom(
-        tapTargetSize: .shrinkWrap,
-      ),
-      constraints: const BoxConstraints(
-          minWidth: 30,
-          minHeight: 30,
-      ),
+      style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
@@ -556,14 +466,9 @@ class PlayerUI extends StatelessWidget {
     return GestureDetector(
       onTap: _logic.player_onSpeedReset,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 6,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(
-            alpha: 0.3,
-          ),
+          color: colorScheme.primaryContainer.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(

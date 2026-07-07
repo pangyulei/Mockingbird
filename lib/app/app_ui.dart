@@ -36,7 +36,7 @@ class AppUI extends StatelessWidget {
       initialLocation: AppRoute.albums,
       routes: <RouteBase>[
         StatefulShellRoute.indexedStack(
-          builder: (ctx, state, shell) => _indexesStackScaffold(shell),
+          builder: (ctx, state, shell) => _indexesStackScaffold(ctx, shell),
           branches: [
             StatefulShellBranch(routes: [_albumsRoute()]),
             StatefulShellBranch(routes: [_playerRoute()]),
@@ -101,15 +101,19 @@ class AppUI extends StatelessWidget {
     );
   }
 
-  Widget _indexesStackScaffold(StatefulNavigationShell shell) {
+  Widget _indexesStackScaffold(
+    BuildContext ctx,
+    StatefulNavigationShell shell,
+  ) {
+    final colorScheme = Theme.of(ctx).colorScheme;
     return Scaffold(
       body: shell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: Colors.white.withValues(alpha: 0.05),
-              width: 0.5,
+              color: colorScheme.primary.withValues(alpha: 0.3),
+              // width: 0.5,
             ),
           ),
         ),
@@ -202,18 +206,14 @@ class AppUI extends StatelessWidget {
       cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       dividerTheme: DividerThemeData(
         color: Colors.white.withValues(alpha: 0.05),
         thickness: 1,
         space: 1,
       ),
-      iconTheme: const IconThemeData(
-        color: primary,
-      ),
+      iconTheme: const IconThemeData(color: primary),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: textPrimary,
