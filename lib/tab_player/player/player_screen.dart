@@ -38,13 +38,12 @@ class _PlayerScreenState extends State<PlayerScreen>
   void initState() {
     super.initState();
     debugPrint('player initState mediaId: ${widget._mediaId}');
-    _subs.add(_watchMedia(() {
-      _reload(widget._mediaId);
-    }));
-    _reload(widget._mediaId);
+    _subs.add(_watchMedia(_reloadMedia));
+    _reloadMedia();
   }
 
-  void _reload(int? mediaId) async {
+  void _reloadMedia() async {
+    final mediaId = widget._mediaId;
     Future<void> setupNull() async {
       await _videoController?.dispose();
       _media = null;
@@ -118,7 +117,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
     setState(() {
       _state = _state.copyWith(
-        sentenceStates: _sentenceStates(newMedia),
+        sentenceStates: _sentenceStates(newMedia, _state.focusedIndex),
         title: newMedia.name,
         showLoading: false,
         showEmpty: false,
@@ -148,11 +147,11 @@ class _PlayerScreenState extends State<PlayerScreen>
     super.didUpdateWidget(oldWidget);
     if (widget._mediaId != oldWidget._mediaId) {
       debugPrint('player mediaId:${oldWidget._mediaId} => ${widget._mediaId}');
-      _reload(widget._mediaId);
+      _reloadMedia();
     }
   }
 
-  List<SentenceCardState> _sentenceStates(Media? media) {
+  List<SentenceCardState> _sentenceStates(Media? media, int? focusedIndex) {
     if (media == null) {
       return const [];
     }
@@ -161,22 +160,11 @@ class _PlayerScreenState extends State<PlayerScreen>
         sentences?.asMap().entries.map((e) {
           int i = e.key;
           Sentence s = e.value;
-          return SentenceCardState(
-            isFocused: i == 0,
-            text: s.text,
-            period: '${_formatDuration(s.start)} - ${_formatDuration(s.end)}',
-            index: i,
-          );
+          final isFocused = focusedIndex == null ? false : i == focusedIndex;
+          return _SentenceCardState.fromSentence(s).copyWith(isFocused: isFocused);
         }).toList() ??
         const [];
     return sentenceStates;
-  }
-
-  String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final milliseconds = (d.inMilliseconds.remainder(1000) ~/ 100).toString();
-    return '$minutes:$seconds.$milliseconds';
   }
 
   @override
@@ -506,5 +494,20 @@ extension on ItemScrollController {
     } else {
       debugPrint('${identityHashCode(this)} scroll is not attached');
     }
+  }
+}
+
+extension _SentenceCardState on SentenceCardState {
+  static SentenceCardState fromSentence(Sentence sentence) {
+    String formatDuration(Duration d) {
+      final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+      final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+      final milliseconds = (d.inMilliseconds.remainder(1000) ~/ 100).toString();
+      return '$minutes:$seconds.$milliseconds';
+    }
+    return SentenceCardState(
+      text: sentence.text,
+      period: '${formatDuration(sentence.start)} - ${formatDuration(sentence.end)}', isFocused: false,
+    );
   }
 }

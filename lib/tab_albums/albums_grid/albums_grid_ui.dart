@@ -64,7 +64,7 @@ class AlbumsGridUI extends StatelessWidget {
       ),
       itemBuilder: (ctx, index) {
         final albumState = _state.albumStates[index].copyWith(index: index);
-        return AlbumCardUI(albumState, _logic);
+        return AlbumCardUI(index, albumState, _logic);
       },
     );
   }

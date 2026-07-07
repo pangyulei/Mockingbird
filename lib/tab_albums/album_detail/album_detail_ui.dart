@@ -44,7 +44,7 @@ class AlbumDetailUI extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final mediaState = _state.mediaStates[index];
-                  return MediaCardUI(state: mediaState, logic: _logic);
+                  return MediaCardUI(index, mediaState, _logic);
                 }, childCount: _state.mediaStates.length),
               ),
             ),

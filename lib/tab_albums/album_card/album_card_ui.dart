@@ -21,12 +21,13 @@ abstract interface class AlbumCardUIOutputITF {
 class AlbumCardUI extends StatelessWidget {
   final AlbumCardUIOutputITF _logic;
   final AlbumCardState _state;
-  const AlbumCardUI(this._state, this._logic, {super.key});
+  final int _index;
+  const AlbumCardUI(this._index, this._state, this._logic, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () => _logic.albumCard_onTap(_state.index),
+      onTap: () => _logic.albumCard_onTap(_index),
       child: Column(
         children: [
           // Cover image area
@@ -91,9 +92,9 @@ class AlbumCardUI extends StatelessWidget {
       icon: const Icon(Icons.more_vert, size: 20),
       onSelected: (value) {
         if (value == _MoreItem.edit.raw) {
-          _logic.albumCard_onEdit(_state.index);
+          _logic.albumCard_onEdit(_index);
         } else if (value == _MoreItem.delete.raw) {
-          _logic.albumCard_onDelete(_state.index);
+          _logic.albumCard_onDelete(_index);
         }
       },
       itemBuilder: (context) => [

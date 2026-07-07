@@ -8,9 +8,9 @@ abstract interface class SentenceCardUIOutputITF {
 class SentenceCardUI extends StatelessWidget {
   final SentenceCardState _state;
   final SentenceCardUIOutputITF _logic;
-
-  const SentenceCardUI(this._state, this._logic, {super.key});
-
+  final int _index;
+  const SentenceCardUI(this._index, this._state, this._logic, {super.key});
+  
   @override
   Widget build(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
@@ -20,7 +20,7 @@ class SentenceCardUI extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         child: InkWell(
-          onTap: () => _logic.sentenceCard_onTap(_state.index),
+          onTap: () => _logic.sentenceCard_onTap(_index),
           borderRadius: BorderRadius.circular(8),
           child: DecoratedBox(
             decoration: BoxDecoration(

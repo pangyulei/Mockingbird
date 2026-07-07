@@ -40,14 +40,7 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
         .map((q) async => await q.findAsync());
     final sub = albumsStream.listen((event) async {
       _albums = await event;
-      final albumStates = _albums.map((a) {
-        return AlbumCardState(
-          index: 0,
-          mediasCount: a.medias.length,
-          name: a.name,
-          cover: a.cover,
-        );
-      }).toList();
+      final albumStates = _albums.map((a) => _AlbumCardState.fromAlbum(a)).toList();
       setState(() {
         _state = _state.copyWith(
           showLoading: false,
@@ -143,5 +136,15 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
   @override
   void albumCard_onTap(int index) {
     context.go(AppRoute.albumById(_albums[index].id));
+  }
+}
+
+extension _AlbumCardState on AlbumCardState {
+  static AlbumCardState fromAlbum(Album album) {
+    return AlbumCardState(
+      mediasCount: album.medias.length,
+      name: album.name,
+      cover: album.cover,
+    );
   }
 }

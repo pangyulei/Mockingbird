@@ -225,7 +225,8 @@ class PlayerUI extends StatelessWidget {
         itemBuilder: (context, index) {
           final sentenceState = _state.sentenceStates[index];
           return SentenceCardUI(
-            sentenceState.copyWith(isFocused: index == _state.focusedIndex),
+            index,
+            sentenceState,
             _logic,
           );
         },
