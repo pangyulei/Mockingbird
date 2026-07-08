@@ -166,7 +166,7 @@ class _AlbumDetailScreenState
         final newCover = File(xImage.path);
         await DBAlbum(
           DBObjectBox().store,
-        ).update(album, album.name, newCover);
+        ).updateAlbum(album, album.name, ()=>newCover);
       }
     } catch (e) {
       debugPrint('Error picking cover: $e');

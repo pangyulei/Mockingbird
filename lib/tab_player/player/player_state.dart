@@ -1,6 +1,7 @@
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 
 class PlayerState {
+  //TODO 分成普通 state and empty state,
   final bool showLoading;
   final String title;
   final List<SentenceCardState> sentenceStates;

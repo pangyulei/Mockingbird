@@ -5,11 +5,13 @@ import 'package:mockingbird/tab_albums/albums_grid/albums_grid_screen.dart';
 import 'package:mockingbird/tab_player/player/player_screen.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
-typedef OnAppTab = void Function(int index, StatefulNavigationShell shell);
+typedef OnAppTab =
+    void Function(int index, StatefulNavigationShell shell);
 
 class AppRoute {
   static AppRoute? _instance;
   final GoRouter router;
+
   AppRoute._(this.router);
 
   factory AppRoute(OnAppTab onAppTab) {
@@ -23,15 +25,22 @@ class AppRoute {
     }
   }
 
+  //TODO 这些属性谁在用 _kXXXXX
+  //TODO 变成实例方法
   static const String _kAlbums = 'albums';
+
   static String get albums => '/$_kAlbums';
+
   static String albumById(int id) => '/$_kAlbums/$id';
 
   static const String _kPlayer = 'player';
+
   static String get player => '/$_kPlayer';
+
   static String playerById(int id) => '/$_kPlayer/$id';
 
   static const String _kSettings = 'settings';
+
   static String get settings => '/$_kSettings';
 
   static GoRouter _router(OnAppTab onAppTab) => GoRouter(
@@ -58,14 +67,16 @@ class AppRoute {
       // Sub-route: Accessible via '/details'
       GoRoute(
         path: ':id',
-        builder: (BuildContext context, GoRouterState state) {
-          final albumIdStr = state.pathParameters['id']!;
-          final albumId = int.tryParse(albumIdStr);
-          if (albumId != null) {
-            return AlbumDetailScreen(albumId);
-          }
-          return const AlbumsGridScreen();
-        },
+        builder:
+            (BuildContext context, GoRouterState state) {
+              final albumIdStr =
+                  state.pathParameters['id']!;
+              final albumId = int.tryParse(albumIdStr);
+              if (albumId != null) {
+                return AlbumDetailScreen(albumId);
+              }
+              return const AlbumsGridScreen();
+            },
       ),
     ],
   );
@@ -109,7 +120,9 @@ class AppRoute {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: colorScheme.primary.withValues(alpha: 0.3),
+              color: colorScheme.primary.withValues(
+                alpha: 0.3,
+              ),
               // width: 0.5,
             ),
           ),

@@ -25,15 +25,11 @@ class DBAlbum {
       await coversDir.create(recursive: true);
     }
     // Generate a unique filename using timestamp and original extension
-    final String fileName =
-        '${DateTime.now().millisecondsSinceEpoch}';
+    final String fileName = '${DateTime.now().millisecondsSinceEpoch}';
     return p.join(coversDir.path, fileName);
   }
 
-  Future<Album?> create({
-    required String name,
-    File? cover,
-  }) async {
+  Future<Album?> create({required String name, File? cover}) async {
     //校验 name
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
@@ -71,34 +67,35 @@ class DBAlbum {
     );
   }
 
-  /*
-  cover = null means you want to remove cover
-   */
-  Future<Album> update(
+  Future<Album> updateAlbum(
     Album album,
-    String name,
-    File? cover,
+    String? name, 
+    File? Function()? cover, 
   ) async {
     Album newAlbum = album.copyWith();
-    final trimmedName = name.trim();
-    if (trimmedName.isNotEmpty) {
-      newAlbum = newAlbum.copyWith(name: trimmedName);
+    if (name != null) {
+      //update name
+      final trimmedName = name.trim();
+      if (trimmedName.isNotEmpty && trimmedName != album.name) {
+        newAlbum = newAlbum.copyWith(name: trimmedName);
+      }
     }
-    if (cover == null) {
-      //remove cover
-      newAlbum = await _removeCoverFile(newAlbum);
-    } else if (cover.path != album.cover) {
-      //replace old cover to new cover
-      newAlbum = await _removeCoverFile(newAlbum);
-      final coverPath = await _newCoverPath;
-      await cover.copy(coverPath);
-      newAlbum = newAlbum.copyWith(cover: () => coverPath);
+    if (cover != null) {
+      //update cover
+      final newCover = cover();
+      if (newCover == null) {
+        //remove cover
+        newAlbum = await _removeCoverFile(newAlbum);
+      } else if (newCover.path != album.cover) {
+        //update to newcover
+        newAlbum = await _removeCoverFile(newAlbum);
+        final newCoverPath = await _newCoverPath;
+        await newCover.copy(newCoverPath);
+        newAlbum = newAlbum.copyWith(cover: () => newCoverPath);
+      }
     }
-    if (newAlbum.cover != album.cover ||
-        newAlbum.name != album.name) {
-      return await _store.box<Album>().putAndGetAsync(
-        newAlbum,
-      );
+    if (newAlbum.cover != album.cover || newAlbum.name != album.name) {
+      return await _store.box<Album>().putAndGetAsync(newAlbum);
     } else {
       return album;
     }
@@ -131,17 +128,11 @@ class DBAlbum {
     return await _store.box<Album>().getAsync(id);
   }
 
-  Future<(Album, Album)> swapSortOrder(
-    Album aAlbum,
-    Album bAlbum,
-  ) async {
+  Future<(Album, Album)> swapSortOrder(Album aAlbum, Album bAlbum) async {
     final aSortOrder = aAlbum.sortOrder;
     aAlbum = aAlbum.copyWith(sortOrder: bAlbum.sortOrder);
     bAlbum = bAlbum.copyWith(sortOrder: aSortOrder);
-    await _store.box<Album>().putManyAsync([
-      aAlbum,
-      bAlbum,
-    ]);
+    await _store.box<Album>().putManyAsync([aAlbum, bAlbum]);
     return (aAlbum, bAlbum);
   }
 
@@ -166,9 +157,7 @@ class DBAlbum {
       final medias = mediaBox
           .getAll()
           .map((m) {
-            m.albums.removeWhere(
-              (a) => albumIdsSet.contains(a.id),
-            );
+            m.albums.removeWhere((a) => albumIdsSet.contains(a.id));
             return m;
           })
           .where((m) => m.albums.isEmpty)
@@ -178,16 +167,12 @@ class DBAlbum {
           .map((m) => m.subtitles)
           .expand((e) => e)
           .toList();
-      final subtitleIds = subtitles
-          .map((s) => s.id)
-          .toList();
+      final subtitleIds = subtitles.map((s) => s.id).toList();
       final sentences = subtitles
           .map((st) => st.sentences)
           .expand((e) => e)
           .toList();
-      final sentenceIds = sentences
-          .map((s) => s.id)
-          .toList();
+      final sentenceIds = sentences.map((s) => s.id).toList();
       albumBox.removeMany(albumIds);
       mediaBox.removeMany(mediaIds);
       subtitleBox.removeMany(subtitleIds);
