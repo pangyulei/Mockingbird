@@ -5,9 +5,6 @@ import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_ui.dar
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-const double _kPlayerControlBarHeight = 36;
-const double _kPlayerControlBarButtonWidth = 40;
-
 abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
   void player_onPlay();
 

@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_screen.dart';
-import 'package:mockingbird/tab_albums/albums_grid/albums_grid_screen.dart';
-import 'package:mockingbird/tab_player/player/player_screen.dart';
-import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
 abstract interface class AppUIOutputITF {
   void app_selectedIndex(int index, StatefulNavigationShell shell);
