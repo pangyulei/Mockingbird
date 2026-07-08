@@ -106,10 +106,14 @@ class MediaCardUI extends StatelessWidget {
       padding: const EdgeInsets.only(top: 6),
       child: Row(
         children: [
-          if (_state.hasSubtitle) ...[
-            Icon(Icons.subtitles_rounded, color: colorScheme.outline, size: 14),
-            const SizedBox(width: 4),
-          ],
+          Icon(
+            _state.hasSubtitle
+                ? Icons.subtitles_rounded
+                : Icons.subtitles_off_rounded,
+            color: _state.hasSubtitle ? colorScheme.outline : colorScheme.error,
+            size: 14,
+          ),
+          const SizedBox(width: 4),
           Text(
             _state.type.name.toUpperCase(),
             style: theme.textTheme.labelSmall?.copyWith(
