@@ -9,13 +9,17 @@ enum _MoreItem {
   deleteMedia('delete media');
 
   final String raw;
+
   const _MoreItem(this.raw);
 }
 
 abstract interface class MediaCardUIOutputITF {
   void mediaCard_onPlayMedia(int index);
+
   void mediaCard_onAddSubtitle(int index);
+
   void mediaCard_onRemoveSubtitle(int index);
+
   void mediaCard_onDeleteMedia(int index);
 }
 
@@ -24,7 +28,12 @@ class MediaCardUI extends StatelessWidget {
   final MediaCardUIOutputITF _logic;
   final int _index;
 
-  const MediaCardUI(this._index, this._state, this._logic, {super.key});
+  const MediaCardUI(
+    this._index,
+    this._state,
+    this._logic, {
+    super.key,
+  });
 
   @override
   Widget build(BuildContext ctx) {
@@ -32,10 +41,15 @@ class MediaCardUI extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      margin: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
       decoration: BoxDecoration(
         color: _state.isPlaying
-            ? colorScheme.primaryContainer.withValues(alpha: 0.15)
+            ? colorScheme.primaryContainer.withValues(
+                alpha: 0.15,
+              )
             : colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
@@ -45,23 +59,53 @@ class MediaCardUI extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Stack(
-        children: [
-          ListTile(
-            onTap: () => _logic.mediaCard_onPlayMedia(_index),
-            horizontalTitleGap: 12,
-            contentPadding: const EdgeInsets.only(
-              top: 8,
-              bottom: 8,
-              left: 16,
-              right: 44,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          children: [
+            InkWell(
+              onTap: () =>
+                  _logic.mediaCard_onPlayMedia(_index),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  top: 12,
+                  bottom: 12,
+                  left: 16,
+                  right: 52,
+                ),
+                child: Row(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          minHeight: 62,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: .center,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            _title(ctx),
+                            _subtitle(ctx),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    _playButton(ctx),
+                  ],
+                ),
+              ),
             ),
-            title: _title(ctx),
-            subtitle: _subtitle(ctx),
-            trailing: _playButton(ctx),
-          ),
-          Positioned(top: 4, right: 4, child: _popMenu(ctx)),
-        ],
+            Positioned(
+              top: 4,
+              right: 4,
+              child: _popMenu(ctx),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -110,7 +154,9 @@ class MediaCardUI extends StatelessWidget {
             _state.hasSubtitle
                 ? Icons.subtitles_rounded
                 : Icons.subtitles_off_rounded,
-            color: _state.hasSubtitle ? colorScheme.outline : colorScheme.error,
+            color: _state.hasSubtitle
+                ? colorScheme.outline
+                : colorScheme.error,
             size: 14,
           ),
           const SizedBox(width: 4),
@@ -144,8 +190,12 @@ class MediaCardUI extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
-        _state.isPlaying ? Icons.graphic_eq_rounded : Icons.play_arrow_rounded,
-        color: _state.isPlaying ? Colors.white : colorScheme.primary,
+        _state.isPlaying
+            ? Icons.graphic_eq_rounded
+            : Icons.play_arrow_rounded,
+        color: _state.isPlaying
+            ? Colors.white
+            : colorScheme.primary,
         size: 28,
       ),
     );
@@ -155,7 +205,11 @@ class MediaCardUI extends StatelessWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
+      icon: Icon(
+        Icons.more_horiz,
+        size: 20,
+        color: colorScheme.outline,
+      ),
       onSelected: (value) {
         if (value == _MoreItem.addSubtitle.raw) {
           _logic.mediaCard_onAddSubtitle(_index);
@@ -172,7 +226,11 @@ class MediaCardUI extends StatelessWidget {
             children: [
               const Icon(Icons.subtitles_rounded, size: 18),
               const SizedBox(width: 12),
-              Text(_state.hasSubtitle ? 'Change Subtitle' : 'Add Subtitle'),
+              Text(
+                _state.hasSubtitle
+                    ? 'Change Subtitle'
+                    : 'Add Subtitle',
+              ),
             ],
           ),
         ),
@@ -189,7 +247,9 @@ class MediaCardUI extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   'Delete Subtitle',
-                  style: TextStyle(color: colorScheme.error),
+                  style: TextStyle(
+                    color: colorScheme.error,
+                  ),
                 ),
               ],
             ),
@@ -205,7 +265,10 @@ class MediaCardUI extends StatelessWidget {
                 color: colorScheme.error,
               ),
               const SizedBox(width: 12),
-              Text('Delete Media', style: TextStyle(color: colorScheme.error)),
+              Text(
+                'Delete Media',
+                style: TextStyle(color: colorScheme.error),
+              ),
             ],
           ),
         ),
@@ -221,6 +284,7 @@ class MediaCardUI extends StatelessWidget {
 
 class _PlayingIndicator extends StatelessWidget {
   final Color color;
+
   const _PlayingIndicator({required this.color});
 
   @override
