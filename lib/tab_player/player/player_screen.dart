@@ -216,8 +216,8 @@ class _PlayerScreenState extends State<PlayerScreen>
       final playingIndex = _playingIndexByPosition(position);
       final uiPlayingIndex = _state.focusedIndex;
       //scroll to playingIndex and focus it
-      debugPrint('playingindex $playingIndex uiPlayingIndex $uiPlayingIndex');
       if (playingIndex != uiPlayingIndex) {
+        debugPrint('playingindex $playingIndex uiPlayingIndex $uiPlayingIndex');
         //只有循環的時候，才需要持續自動滾動到當前句
         if (playingIndex == null) {
           _scrollController._scrollTo(_state.sentenceStates.length - 1);
@@ -476,7 +476,7 @@ extension on ItemScrollController {
     if (isAttached) {
       jumpTo(index: index, alignment: index == 0 ? 0 : 0.3);
     } else {
-      debugPrint('${identityHashCode(this)} scroll is not attached');
+      debugPrint('${identityHashCode(this)} jump fail, scroll is not attached');
     }
   }
 
@@ -488,7 +488,7 @@ extension on ItemScrollController {
         alignment: index == 0 ? 0 : 0.3,
       );
     } else {
-      debugPrint('${identityHashCode(this)} scroll is not attached');
+      debugPrint('${identityHashCode(this)} scroll fail, scroll is not attached');
     }
   }
 }

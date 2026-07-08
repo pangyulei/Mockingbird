@@ -61,7 +61,8 @@ class PlayerUI extends StatelessWidget {
     final videoController = _videoController;
     return Stack(
       children: [
-        if (videoController != null) _page(ctx, videoController),
+        if (videoController != null && !_state.showEmpty)
+          _page(ctx, videoController),
         if (_state.showEmpty) _empty(ctx),
         if (_state.showLoading) _loading(),
       ],
@@ -146,8 +147,8 @@ class PlayerUI extends StatelessWidget {
           ),
           if (_state.sentenceStates.isNotEmpty)
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(color: theme.scaffoldBackgroundColor),
+              child: ColoredBox(
+                color: theme.scaffoldBackgroundColor,
                 child: _sentencesList(),
               ),
             ),
@@ -327,15 +328,13 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _sentencesList() {
-    return Expanded(
-      child: ScrollablePositionedList.builder(
-        itemCount: _state.sentenceStates.length,
-        itemScrollController: _scrollController,
-        itemBuilder: (context, index) {
-          final sentenceState = _state.sentenceStates[index];
-          return SentenceCardUI(index, sentenceState, _logic);
-        },
-      ),
+    return ScrollablePositionedList.builder(
+      itemCount: _state.sentenceStates.length,
+      itemScrollController: _scrollController,
+      itemBuilder: (context, index) {
+        final sentenceState = _state.sentenceStates[index];
+        return SentenceCardUI(index, sentenceState, _logic);
+      },
     );
   }
 
@@ -348,19 +347,27 @@ class PlayerUI extends StatelessWidget {
       //   icon: const Icon(Icons.arrow_back_ios_new_rounded),
       //   onPressed: () => Navigator.of(ctx).pop(),
       // ),
-      title: SizedBox(
-        height: 24,
-        child: Marquee(
-          text: _state.title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-          scrollAxis: Axis.horizontal,
-          blankSpace: 50,
-          velocity: 30,
+      title: _title(),
+    );
+  }
+
+  Widget _title() {
+    final text = _state.title.trim();
+    if (text.isEmpty) {
+      return const Text('');
+    }
+    return SizedBox(
+      height: 24,
+      child: Marquee(
+        text: text,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
         ),
+        scrollAxis: Axis.horizontal,
+        blankSpace: 50,
+        velocity: 30,
       ),
     );
   }

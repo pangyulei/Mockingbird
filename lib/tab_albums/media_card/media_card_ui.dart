@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:marquee/marquee.dart';
 
 import 'media_card_state.dart';
 
@@ -68,15 +69,34 @@ class MediaCardUI extends StatelessWidget {
   Widget _title(BuildContext ctx) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    return Text(
-      _state.name,
-      style: theme.textTheme.titleSmall?.copyWith(
-        fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.w600,
-        color: _state.isPlaying ? colorScheme.primary : colorScheme.onSurface,
-      ),
-      maxLines: 2,
-      overflow: TextOverflow.ellipsis,
-    );
+    final name = _state.name.trim();
+    if (_state.isPlaying && name.isNotEmpty) {
+      return SizedBox(
+        height: 20,
+        child: Marquee(
+          text: name,
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.primary,
+          ),
+          scrollAxis: .horizontal,
+          blankSpace: 20,
+          velocity: 30,
+        ),
+      );
+      // fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.w600,
+      // color: _state.isPlaying ? colorScheme.primary : colorScheme.onSurface,
+    } else {
+      return Text(
+        name,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSurface,
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
   }
 
   Widget _subtitle(BuildContext ctx) {
