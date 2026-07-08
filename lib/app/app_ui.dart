@@ -19,7 +19,7 @@ class AppUI extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      routerConfig: _goRouter(),
+      routerConfig: AppRoute(_logic.app_selectedIndex).router,
       theme: _theme(),
       // builder: (context, child) => _home(),
     );
@@ -28,127 +28,6 @@ class AppUI extends StatelessWidget {
     //   theme: _theme(),
     //   home: _home(),
     // );
-  }
-
-  GoRouter _goRouter() {
-    // Define the router configuration
-    return GoRouter(
-      initialLocation: AppRoute.albums,
-      routes: <RouteBase>[
-        StatefulShellRoute.indexedStack(
-          builder: (ctx, state, shell) => _indexesStackScaffold(ctx, shell),
-          branches: [
-            StatefulShellBranch(routes: [_albumsRoute()]),
-            StatefulShellBranch(routes: [_playerRoute()]),
-            StatefulShellBranch(routes: [_settingsRoute()]),
-          ],
-        ),
-      ],
-    );
-  }
-
-  GoRoute _albumsRoute() {
-    return GoRoute(
-      path: AppRoute.albums,
-      builder: (BuildContext context, GoRouterState state) {
-        return const AlbumsGridScreen();
-      },
-      routes: <RouteBase>[
-        // Sub-route: Accessible via '/details'
-        GoRoute(
-          path: ':id',
-          builder: (BuildContext context, GoRouterState state) {
-            final albumIdStr = state.pathParameters['id']!;
-            final albumId = int.tryParse(albumIdStr);
-            if (albumId != null) {
-              return AlbumDetailScreen(albumId);
-            }
-            return const AlbumsGridScreen();
-          },
-        ),
-      ],
-    );
-  }
-
-  GoRoute _playerRoute() {
-    return GoRoute(
-      path: AppRoute.player,
-      builder: (BuildContext context, GoRouterState state) {
-        return const PlayerScreen(null);
-      },
-      routes: <RouteBase>[
-        GoRoute(
-          path: ':id',
-          builder: (ctx, state) {
-            final mediaIdStr = state.pathParameters['id']!;
-            final mediaId = int.tryParse(mediaIdStr);
-            if (mediaId != null) {
-              return PlayerScreen(mediaId);
-            }
-            return const PlayerScreen(null);
-          },
-        ),
-      ],
-    );
-  }
-
-  GoRoute _settingsRoute() {
-    return GoRoute(
-      path: AppRoute.settings,
-      builder: (BuildContext context, GoRouterState state) {
-        return const TabSettingsWidget();
-      },
-    );
-  }
-
-  Widget _indexesStackScaffold(
-    BuildContext ctx,
-    StatefulNavigationShell shell,
-  ) {
-    final colorScheme = Theme.of(ctx).colorScheme;
-    return Scaffold(
-      body: shell,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          border: Border(
-            top: BorderSide(
-              color: colorScheme.primary.withValues(alpha: 0.3),
-              // width: 0.5,
-            ),
-          ),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: shell.currentIndex,
-          onTap: (index) {
-            _logic.app_selectedIndex(index, shell);
-          },
-          elevation: 0,
-          backgroundColor: const Color(0xFF17212B),
-          selectedItemColor: const Color(0xFF5288C1),
-          unselectedItemColor: const Color(0xFF7F91A4),
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.album_outlined),
-              activeIcon: Icon(Icons.album),
-              label: 'Albums',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.play_circle_outline),
-              activeIcon: Icon(Icons.play_circle),
-              label: 'Player',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   ThemeData _theme() {

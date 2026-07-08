@@ -11,8 +11,12 @@ class DBObjectBox {
   const DBObjectBox._(this.store);
   // static DBObjectBox get instance {}
   factory DBObjectBox() {
-    assert(_instance != null, 'You should definitely call await init() method at main.dart, make sure db prepared.');
-    return _instance!;
+    final instance = _instance;
+    if (instance == null) {
+      throw StateError('you must init dbobjectbox in main');
+    } else {
+      return instance;
+    }
   }
 
   /// Create an instance of ObjectBox to use throughout the app.
