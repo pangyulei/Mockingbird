@@ -6,11 +6,24 @@ import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:mockingbird/tab_albums/albums/albums_state.dart';
 
-class AlbumsStateNotifier extends AsyncNotifier<AlbumsState> {
+class AlbumsAsyncNotifier extends AsyncNotifier<List<Album>> {
+  List<Album> _albums = [];
   @override
-  FutureOr<AlbumsState> build() async {
-    final albums = await ref.watch(dbAlbumsProvider.future);
-    return AlbumsState(states: albums.map((a) => a.toCardState()).toList());
+  FutureOr<List<Album>> build() async {
+    final albums = ref.watch(dbAlbumsProvider).value;
+    _albums = albums ?? [];
+    return _albums;
+  }
+}
+
+class AlbumsNotifier extends Notifier<AlbumsState> {
+  @override
+  AlbumsState build() {
+    final albums = ref.watch(albumsAsyncProvider).value ?? [];
+    return AlbumsState(
+      isLoading: false,
+      states: albums.map((a) => a.toCardState()).toList(),
+    );
   }
 }
 
@@ -20,6 +33,7 @@ extension on Album {
   }
 }
 
-final albumsProvider = AsyncNotifierProvider.autoDispose(
-  AlbumsStateNotifier.new,
+final albumsProvider = NotifierProvider.autoDispose(AlbumsNotifier.new);
+final albumsAsyncProvider = AsyncNotifierProvider.autoDispose(
+  AlbumsAsyncNotifier.new,
 );

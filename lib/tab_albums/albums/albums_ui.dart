@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/albums/albums_provider.dart';
 
@@ -14,39 +13,43 @@ class AlbumsUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    final av = ref.watch(albumsProvider);
+    final isLoading = ref.watch(albumsAsyncProvider).isLoading;
     return Stack(
-      children: [
-        av.hasValue && av.requireValue.states.isNotEmpty
-            ? _page(ctx, av.requireValue.states)
-            : _empty(ctx),
-        if (av.isLoading || (av.value?.isLoading ?? false)) _loading(),
-      ],
+      children: [_page(ctx, ref), _empty(ctx, ref), if (isLoading) _loading()],
     );
   }
 
-  Widget _empty(BuildContext ctx) {
+  Widget _empty(BuildContext ctx, WidgetRef ref) {
+    final isEmpty = ref.watch(albumsProvider.select((s)=>s.states.isEmpty));
+    if (!isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Scaffold(
-      appBar: _appBar(ctx, 0),
+      appBar: _appBar(ctx, ref),
       body: const Center(child: Text('no data, make me mroe beautiful')),
     );
   }
 
-  Widget _page(BuildContext ctx, List<AlbumCardState> states) {
-    return Scaffold(appBar: _appBar(ctx, states.length), body: _grid(states));
+  Widget _page(BuildContext ctx, WidgetRef ref) {
+    return Scaffold(appBar: _appBar(ctx, ref), body: _grid(ref));
   }
 
-  AppBar _appBar(BuildContext ctx, int count) {
+  AppBar _appBar(BuildContext ctx, WidgetRef ref) {
     return AppBar(
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Albums'),
-          Text(
-            '$count created albums',
-            style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-              color: Theme.of(ctx).colorScheme.outline,
-            ),
+          Consumer(
+            builder: (context, ref, child) {
+              final count = ref.watch(albumsProvider.select((s)=>s.states.length));
+              return Text(
+                '$count created albums',
+                style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(ctx).colorScheme.outline,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -68,7 +71,8 @@ class AlbumsUI extends ConsumerWidget {
     );
   }
 
-  Widget _grid(List<AlbumCardState> states) {
+  Widget _grid(WidgetRef ref) {
+    final states = ref.watch(albumsProvider.select((s)=>s.states));
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: states.length,

@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/album.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
+import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 
 class EditAlbumAsyncNotifier extends AsyncNotifier<Album?> {
@@ -28,25 +28,22 @@ class EditAlbumAsyncNotifier extends AsyncNotifier<Album?> {
 
   Future<void> onSubmit() async {
     state = const AsyncLoading();
-    //TODO it still has value or not?
-    assert(state.hasValue, 'bro!!!!!!=asyncloading cleared the data');
     final album = _album;
     if (album == null) {
       //creating
-      state = await AsyncValue.guard(() async {
+      await AsyncValue.guard(() async {
         final data = ref.read(editAlbumProvider(_id));
-        _album = await DBLogic().createAlbum(data.name, cover: data.cover);
-        return _album;
+        await ref
+            .read(dbAlbumsProvider.notifier)
+            .createAlbum(data.name, cover: data.cover);
       });
     } else {
       //editing
       state = await AsyncValue.guard(() async {
         final data = ref.read(editAlbumProvider(_id));
-        _album = await DBLogic().updateAlbum(
-          album,
-          name: data.name,
-          cover: () => data.cover,
-        );
+        _album = await ref
+            .read(dbAlbumsProvider.notifier)
+            .updateAlbum(album, name: data.name, cover: () => data.cover);
         return _album;
       });
     }
@@ -80,10 +77,10 @@ class EditAlbumNotifier extends Notifier<EditAlbumState> {
   }
 
   void onNameChanged(String newName) {
-    final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
-    final enableSubmit = _isSubmitEnable(newName, state.cover, album);
-    if (state.enableSubmit != enableSubmit) {
-      state = state.copyWith(enableSubmit: enableSubmit);
+    if (newName != state.name) {
+      final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
+      final enableSubmit = _isSubmitEnable(newName, state.cover, album);
+      state = state.copyWith(name: newName, enableSubmit: enableSubmit);
     }
   }
 

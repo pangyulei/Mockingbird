@@ -1,23 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/db/db_logic.dart';
-import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/db/entities/album.dart';
-import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/tab_albums/albums/albums_provider.dart';
 import 'package:mockingbird/tab_albums/albums/albums_ui.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_screen.dart';
 
-class AlbumsScreen extends StatefulWidget {
+class AlbumsScreen extends ConsumerStatefulWidget {
   const AlbumsScreen({super.key});
 
   @override
-  State<StatefulWidget> createState() => _AlbumsScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _AlbumsScreenState();
 }
 
-class _AlbumsScreenState extends State<AlbumsScreen>
+class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
     implements AlbumsUIOutputITF {
   // var _albums = <Album>[];
   // final _subs = <StreamSubscription>[];
@@ -128,7 +124,13 @@ class _AlbumsScreenState extends State<AlbumsScreen>
 
   @override
   void albumCard_onEdit(int index) async {
-    // await _showEditingAlbumDialog(_albums[index]);
+    final albums = ref.read(albumsAsyncProvider).value;
+    final id = albums?.elementAtOrNull(index)?.id;
+    if (id != null) {
+      await _showEditingAlbumDialog(id);
+    } else {
+      debugPrint('on edit album but id is null');
+    }
   }
 
   @override

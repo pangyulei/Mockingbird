@@ -13,22 +13,39 @@ class DBAlbumsNotifier extends AsyncNotifier<List<Album>> {
     return await DBLogic().loadAlbums();
   }
 
-  Future<void> createAlbum(String name, File? cover) async {
-    return _lock.synchronized(() async {
-      final cachedAlbums = state.value ?? [];
-      state = await AsyncValue.guard(() async {
-        final newAlbum = await DBLogic().createAlbum(name, cover: cover);
-        if (newAlbum == null) {
-          return cachedAlbums;
-        } else {
-          return [...cachedAlbums, newAlbum];
-        }
+  Future<Album?> createAlbum(String name, {File? cover}) async {
+    return await _lock.synchronized(() async {
+      final newAlbum = (await AsyncValue.guard(() async {
+        return await DBLogic().createAlbum(name, cover: cover);
+      })).value;
+      if (newAlbum != null) {
+        final cachedAlbums = state.value ?? [];
+        state = AsyncData([...cachedAlbums, newAlbum]);
+      }
+      return newAlbum;
+    });
+  }
+
+  Future<Album> updateAlbum(
+    Album album, {
+    String? name,
+    File? Function()? cover,
+  }) async {
+    return await _lock.synchronized(() async {
+      final av = await AsyncValue.guard(() async {
+        return await DBLogic().updateAlbum(album, name: name, cover: cover);
       });
+      final updatedAlbum = av.value ?? album;
+      final newAlbums = (state.value ?? [])
+          .map((a) => a.id == updatedAlbum.id ? updatedAlbum : a)
+          .toList();
+      state = AsyncData(newAlbums);
+      return updatedAlbum;
     });
   }
 
   Future<void> deleteAlbum(Album album) async {
-    return _lock.synchronized(() async {
+    return await _lock.synchronized(() async {
       final cachedAlbums = state.value ?? [];
       state = await AsyncValue.guard(() async {
         await DBLogic().deleteAlbum(album);

@@ -297,12 +297,12 @@ class DBLogic {
     String? name,
     File? Function()? cover,
   }) async {
-    Album newAlbum = album.copyWith();
+    Album updatedAlbum = album.copyWith();
     if (name != null) {
       //update name
       final trimmedName = name.trim();
       if (trimmedName.isNotEmpty && trimmedName != album.name) {
-        newAlbum = newAlbum.copyWith(name: trimmedName);
+        updatedAlbum = updatedAlbum.copyWith(name: trimmedName);
       }
     }
     if (cover != null) {
@@ -310,17 +310,17 @@ class DBLogic {
       final newCover = cover();
       if (newCover == null) {
         //remove cover
-        newAlbum = await _deleteAlbumCoverFile(newAlbum);
+        updatedAlbum = await _deleteAlbumCoverFile(updatedAlbum);
       } else if (newCover.path != album.cover) {
         //update to newcover
-        newAlbum = await _deleteAlbumCoverFile(newAlbum);
+        updatedAlbum = await _deleteAlbumCoverFile(updatedAlbum);
         final newCoverPath = await _newAlbumCoverPath();
         await newCover.copy(newCoverPath);
-        newAlbum = newAlbum.copyWith(cover: () => newCoverPath);
+        updatedAlbum = updatedAlbum.copyWith(cover: () => newCoverPath);
       }
     }
-    if (newAlbum.cover != album.cover || newAlbum.name != album.name) {
-      return await _store.box<Album>().putAndGetAsync(newAlbum);
+    if (updatedAlbum.cover != album.cover || updatedAlbum.name != album.name) {
+      return await _store.box<Album>().putAndGetAsync(updatedAlbum);
     } else {
       return album;
     }
