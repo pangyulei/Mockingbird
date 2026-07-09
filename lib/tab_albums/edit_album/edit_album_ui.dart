@@ -59,6 +59,7 @@ class EditAlbumUI extends ConsumerWidget {
               decoration: InputDecoration(
                 labelText: 'Album Name',
                 hintText: 'Enter Album name',
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
                 prefixIcon: Icon(
                   Icons.playlist_play,
                   color: Theme.of(ctx).colorScheme.primary,
