@@ -56,15 +56,20 @@ class EditAlbumNotifier extends Notifier<EditAlbumState> {
 
   @override
   EditAlbumState build() {
-    final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
-    if (album == null) {
-      return const EditAlbumState.create();
+    final id = _id;
+    if (id == null) {
+      return const EditAlbumState.empty();
     } else {
-      final cover = album.cover;
-      return EditAlbumState.edit(
-        album.name,
-        cover == null ? null : File(cover),
-      );
+      final album = ref.watch(dbAlbumProvider(id)).value;
+      if (album == null) {
+        return const EditAlbumState.empty();
+      } else {
+        final cover = album.cover;
+        return EditAlbumState.edit(
+          album.name,
+          cover == null ? null : File(cover),
+        );
+      }
     }
   }
 

@@ -127,6 +127,7 @@ class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
     final albums = ref.read(albumsAsyncProvider).value;
     final id = albums?.elementAtOrNull(index)?.id;
     if (id != null) {
+      debugPrint('edit album $id');
       await _showEditingAlbumDialog(id);
     } else {
       debugPrint('on edit album but id is null');
