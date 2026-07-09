@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mockingbird/db/db_album.dart';
-import 'package:mockingbird/db/db_objectbox.dart';
+import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
@@ -129,17 +128,23 @@ class _EditAlbumScreenState extends State<EditAlbumScreen>
 
   @override
   void editAlbum_onSubmit() async {
-    final dbAlbum = DBAlbum(DBObjectBox().store);
     final Album? album = widget._album;
     setState(() {
       _state = _state.copyWith(showLoading: true);
     });
     if (album == null) {
       //creating
-      await dbAlbum.create(name: _nameController.text, cover: _state.cover);
+      await DBLogic().createAlbum(
+        name: _nameController.text,
+        cover: _state.cover,
+      );
     } else {
       //editing
-      await dbAlbum.updateAlbum(album, _nameController.text, ()=>_state.cover);
+      await DBLogic().updateAlbum(
+        album,
+        _nameController.text,
+        () => _state.cover,
+      );
     }
     setState(() {
       _state = _state.copyWith(showLoading: false);

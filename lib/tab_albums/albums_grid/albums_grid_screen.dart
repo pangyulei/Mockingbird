@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/db/db_album.dart';
+import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
@@ -125,7 +125,7 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
     setState(() {
       _state = _state.copyWith(showLoading: true);
     });
-    await DBAlbum(DBObjectBox().store).remove(album);
+    await DBLogic().deleteAlbum(album);
   }
 
   @override
@@ -141,10 +141,6 @@ class _AlbumsGridScreenState extends State<AlbumsGridScreen>
 
 extension on Album {
   AlbumCardState toCardState() {
-    return AlbumCardState(
-      mediasCount: medias.length,
-      name: name,
-      cover: cover,
-    );
+    return AlbumCardState(mediasCount: medias.length, name: name, cover: cover);
   }
 }

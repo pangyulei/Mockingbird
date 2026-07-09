@@ -1,8 +1,11 @@
 import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/model/album.dart';
 import 'package:mockingbird/model/media.dart';
+import 'package:mockingbird/model/sentence.dart';
+import 'package:mockingbird/model/subtitle.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
@@ -147,5 +150,267 @@ class DBLogic {
       ...mediasFilled,
     ]);
     return medias;
+  }
+
+  Future<Media> updateMedia(Media media) async {
+    return await _store.box<Media>().putAndGetAsync(media);
+  }
+
+  Future<Media> addSubtitle(Media media, Subtitle subtitle) async {
+    media = await _store.runInTransactionAsync<Media, int>(TxMode.write, (
+      Store store,
+      int mediaId,
+    ) {
+      final mediaBox = store.box<Media>();
+      final media = mediaBox.get(mediaId)?.incVersion();
+      if (media == null) {
+        throw ArgumentError('mediaId $mediaId not existed');
+      }
+      final subtitleBox = store.box<Subtitle>();
+      final sentenceBox = store.box<Sentence>();
+      final sentences = media.subtitles
+          .map((st) => st.sentences)
+          .expand((e) => e)
+          .toList();
+      sentenceBox.removeMany(sentences.map((s) => s.id).toList());
+      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
+      media.subtitles.clear();
+      media.subtitles.add(subtitle);
+      mediaBox.put(media); //will auto update memory media
+      return media;
+    }, media.id);
+    return media;
+  }
+
+  Future<void> deleteMedia(Media media) async {
+    await _store.runInTransactionAsync<void, int>(TxMode.write, (
+      Store store,
+      int mediaId,
+    ) {
+      final mediaBox = store.box<Media>();
+      final media = mediaBox.get(mediaId);
+      if (media == null) {
+        return;
+      }
+      final subtitleBox = store.box<Subtitle>();
+      final sentenceBox = store.box<Sentence>();
+      final sentences = media.subtitles
+          .map((st) => st.sentences)
+          .expand((e) => e)
+          .toList();
+      mediaBox.remove(mediaId);
+      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
+      sentenceBox.removeMany(sentences.map((s) => s.id).toList());
+    }, media.id);
+
+    // Remove file
+    final file = File(media.path);
+    if (await file.exists()) {
+      await file.delete();
+    }
+  }
+
+  Future<Media> deleteSubtitle(Media media) async {
+    if (media.subtitles.isEmpty) return media;
+    media = await _store.runInTransactionAsync<Media, int>(TxMode.write, (
+      Store store,
+      int mediaId,
+    ) {
+      final mediaBox = store.box<Media>();
+      final media = mediaBox.get(mediaId)?.incVersion();
+      if (media == null) {
+        throw ArgumentError('mediaId $mediaId not existed');
+      }
+      final subtitleBox = store.box<Subtitle>();
+      final sentenceBox = store.box<Sentence>();
+      final sentences = media.subtitles
+          .map((st) => st.sentences)
+          .expand((e) => e)
+          .toList();
+      sentenceBox.removeMany(sentences.map((s) => s.id).toList());
+      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
+      media.subtitles.clear();
+      mediaBox.put(media);
+      return media;
+    }, media.id);
+    return media;
+  }
+
+  Future<Directory> get _albumCoversDir async {
+    final appDir = await getApplicationDocumentsDirectory();
+    return Directory(p.join(appDir.path, 'album_covers'));
+  }
+
+  Future<String> _newAlbumCoverPath() async {
+    final coversDir = await _albumCoversDir;
+    if (!await coversDir.exists()) {
+      await coversDir.create(recursive: true);
+    }
+    // Generate a unique filename using timestamp and original extension
+    final String fileName = '${DateTime.now().millisecondsSinceEpoch}';
+    return p.join(coversDir.path, fileName);
+  }
+
+  Future<Album?> createAlbum({required String name, File? cover}) async {
+    //校验 name
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) {
+      return null;
+    }
+
+    //保存封面
+    final String? coverPath;
+    if (cover != null) {
+      coverPath = await _newAlbumCoverPath();
+      await cover.copy(coverPath);
+    } else {
+      coverPath = null;
+    }
+    //获取 最大SortOrder
+    final albumBox = _store.box<Album>();
+    final query = albumBox
+        .query()
+        .order(Album_.sortOrder, flags: Order.descending)
+        .build();
+    final maxSortOrderAlbum = await query.findFirstAsync();
+    query.close();
+
+    final sortOrder = maxSortOrderAlbum != null
+        ? maxSortOrderAlbum.sortOrder + 1
+        : 0;
+    return await _store.box<Album>().putAndGetAsync(
+      Album(
+        name: trimmedName,
+        sortOrder: sortOrder,
+        cover: coverPath,
+        id: 0,
+        versionId: 0,
+      ),
+    );
+  }
+
+  Future<Album> updateAlbum(
+    Album album,
+    String? name,
+    File? Function()? cover,
+  ) async {
+    Album newAlbum = album.copyWith();
+    if (name != null) {
+      //update name
+      final trimmedName = name.trim();
+      if (trimmedName.isNotEmpty && trimmedName != album.name) {
+        newAlbum = newAlbum.copyWith(name: trimmedName);
+      }
+    }
+    if (cover != null) {
+      //update cover
+      final newCover = cover();
+      if (newCover == null) {
+        //remove cover
+        newAlbum = await _deleteAlbumCoverFile(newAlbum);
+      } else if (newCover.path != album.cover) {
+        //update to newcover
+        newAlbum = await _deleteAlbumCoverFile(newAlbum);
+        final newCoverPath = await _newAlbumCoverPath();
+        await newCover.copy(newCoverPath);
+        newAlbum = newAlbum.copyWith(cover: () => newCoverPath);
+      }
+    }
+    if (newAlbum.cover != album.cover || newAlbum.name != album.name) {
+      return await _store.box<Album>().putAndGetAsync(newAlbum);
+    } else {
+      return album;
+    }
+  }
+
+  Future<Album> _deleteAlbumCoverFile(Album album) async {
+    if (album.cover != null) {
+      final oldCover = File(album.cover!);
+      if (await oldCover.exists()) {
+        await oldCover.delete();
+      }
+      return album.copyWith(cover: () => null);
+    } else {
+      return album;
+    }
+  }
+
+  Future<List<Album>> loadAlbums() async {
+    final query = _store
+        .box<Album>()
+        .query()
+        .order(Album_.sortOrder, flags: Order.descending)
+        .build();
+    final result = await query.findAsync();
+    query.close();
+    return result;
+  }
+
+  Future<Album?> loadAlbum(int id) async {
+    return await _store.box<Album>().getAsync(id);
+  }
+
+  Future<(Album, Album)> swapAlbumsOrder(Album aAlbum, Album bAlbum) async {
+    final aSortOrder = aAlbum.sortOrder;
+    aAlbum = aAlbum.copyWith(sortOrder: bAlbum.sortOrder);
+    bAlbum = bAlbum.copyWith(sortOrder: aSortOrder);
+    await _store.box<Album>().putManyAsync([aAlbum, bAlbum]);
+    return (aAlbum, bAlbum);
+  }
+
+  Future<void> deleteAlbum(Album album) async {
+    await deleteAlbums([album]);
+  }
+
+  Future<void> deleteAlbums(List<Album> albums) async {
+    if (albums.isEmpty) return;
+    albums = albums.where((a) => a.id > 0).toList();
+
+    await _store.runInTransactionAsync(TxMode.write, (
+      Store store,
+      List<int> albumIds,
+    ) {
+      final mediaBox = store.box<Media>();
+      final subtitleBox = store.box<Subtitle>();
+      final sentenceBox = store.box<Sentence>();
+      final albumBox = store.box<Album>();
+
+      final albumIdsSet = albumIds.toSet();
+      final medias = mediaBox
+          .getAll()
+          .map((m) {
+            m.albums.removeWhere((a) => albumIdsSet.contains(a.id));
+            return m;
+          })
+          .where((m) => m.albums.isEmpty)
+          .toList();
+      final mediaIds = medias.map((m) => m.id).toList();
+      final subtitles = medias
+          .map((m) => m.subtitles)
+          .expand((e) => e)
+          .toList();
+      final subtitleIds = subtitles.map((s) => s.id).toList();
+      final sentences = subtitles
+          .map((st) => st.sentences)
+          .expand((e) => e)
+          .toList();
+      final sentenceIds = sentences.map((s) => s.id).toList();
+      albumBox.removeMany(albumIds);
+      mediaBox.removeMany(mediaIds);
+      subtitleBox.removeMany(subtitleIds);
+      sentenceBox.removeMany(sentenceIds);
+    }, [for (final a in albums) a.id]);
+
+    // Delete cover files for removed playlists
+    final uselessCovers = albums
+        .where((a) => a.cover != null)
+        .map((a) => File(a.cover!));
+
+    final removeCovers = uselessCovers.map((cover) async {
+      if (await cover.exists()) {
+        await cover.delete();
+      }
+    });
+    await Future.wait(removeCovers);
   }
 }
