@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_state_provider.dart';
+import 'package:mockingbird/db/providers/album_provider.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 
 abstract interface class EditAlbumUIOutputITF {
   void editAlbum_onSubmit();
@@ -25,12 +26,10 @@ class EditAlbumUI extends ConsumerWidget {
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
     ref.listen(
-      editAlbumStateProvider(_id).select((s) => s.name),
+      editAlbumProvider(_id).select((s) => s.name),
       (previous, next) => _nameController.text = next,
     );
-    final isLoading = ref.watch(
-      editAlbumStateProvider(_id).select((s) => s.isLoading),
-    );
+    final isLoading = ref.watch(editAlbumAsyncProvider(_id)).isLoading;
     return Stack(children: [_dialog(ctx), if (isLoading) _loading()]);
   }
 
@@ -40,7 +39,7 @@ class EditAlbumUI extends ConsumerWidget {
       title: Consumer(
         builder: (context, ref, child) {
           final title = ref.watch(
-            editAlbumStateProvider(_id).select((s) => s.title),
+            editAlbumProvider(_id).select((s) => s.title),
           );
           return Text(
             title,
@@ -79,7 +78,7 @@ class EditAlbumUI extends ConsumerWidget {
         Consumer(
           builder: (context, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              editAlbumStateProvider(
+              editAlbumProvider(
                 _id,
               ).select((s) => (s.enableSubmit, s.submitTitle)),
             );
@@ -119,7 +118,7 @@ class EditAlbumUI extends ConsumerWidget {
             child: Consumer(
               builder: (context, ref, child) {
                 final cover = ref.watch(
-                  editAlbumStateProvider(_id).select((s) => s.cover),
+                  editAlbumProvider(_id).select((s) => s.cover),
                 );
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(24),
@@ -134,7 +133,7 @@ class EditAlbumUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final cover = ref.watch(
-              editAlbumStateProvider(_id).select((s) => s.cover),
+              editAlbumProvider(_id).select((s) => s.cover),
             );
             return cover != null ? _removeButton(ctx) : const SizedBox.square();
           },

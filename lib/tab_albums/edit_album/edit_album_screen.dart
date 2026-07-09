@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_state_provider.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
 class EditAlbumScreen extends ConsumerStatefulWidget {
@@ -63,12 +63,14 @@ class _EditAlbumScreenState extends ConsumerState<EditAlbumScreen>
 
   @override
   void editAlbum_onSubmit() async {
-    await _readNotifier.onSubmit();
+    await _readAsyncNotifier.onSubmit();
     _pop();
   }
 
-  EditAlbumStateNotifier get _readNotifier =>
-      ref.read(editAlbumStateProvider(widget._id).notifier);
+  EditAlbumNotifier get _readNotifier =>
+      ref.read(editAlbumProvider(widget._id).notifier);
+  EditAlbumAsyncNotifier get _readAsyncNotifier =>
+      ref.read(editAlbumAsyncProvider(widget._id).notifier);
 
   @override
   void editAlbum_onCancel() {

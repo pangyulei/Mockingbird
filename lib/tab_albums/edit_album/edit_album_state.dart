@@ -1,7 +1,6 @@
 import 'dart:io';
 
 class EditAlbumState {
-  final bool isLoading;
   final String title;
   final String submitTitle;
   final String name;
@@ -10,12 +9,20 @@ class EditAlbumState {
 
   const EditAlbumState({
     required this.name,
-    required this.isLoading,
     required this.title,
     required this.submitTitle,
     required this.cover,
     required this.enableSubmit,
   });
+
+  const EditAlbumState.empty()
+    : this(
+        cover: null,
+        enableSubmit: false,
+        name: '',
+        submitTitle: '',
+        title: '',
+      );
 
   const EditAlbumState.create()
     : this(
@@ -24,7 +31,6 @@ class EditAlbumState {
         submitTitle: 'Create',
         cover: null,
         enableSubmit: false,
-        isLoading: false,
       );
   const EditAlbumState.edit(String name, File? cover)
     : this(
@@ -33,19 +39,16 @@ class EditAlbumState {
         submitTitle: 'Save',
         cover: cover,
         enableSubmit: false,
-        isLoading: false,
       );
 
   EditAlbumState copyWith({
     String? name,
-    bool? isLoading,
     String? title,
     String? submitTitle,
     bool? enableSubmit,
     File? Function()? cover,
   }) {
     return EditAlbumState(
-      isLoading: isLoading ?? this.isLoading,
       title: title ?? this.title,
       name: name ?? this.name,
       submitTitle: submitTitle ?? this.submitTitle,
