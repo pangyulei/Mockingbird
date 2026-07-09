@@ -1,9 +1,8 @@
-
-
 import 'package:equatable/equatable.dart';
+import 'package:objectbox/objectbox.dart';
+
 import 'media.dart';
 import 'sentence.dart';
-import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class Subtitle extends Equatable {
@@ -15,10 +14,8 @@ class Subtitle extends Equatable {
 
   final media = ToOne<Media>();
 
-  Subtitle({
-    required this.id,
-  });
-  
+  Subtitle({required this.id});
+
   @override
   List<Object?> get props => [id];
 }

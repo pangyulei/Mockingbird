@@ -26,6 +26,7 @@ dependencies:
   defer: ^1.0.0
   flutter_riverpod: ^3.3.1
   riverpod_annotation: ^4.0.2
+  synchronized: ^3.4.1
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_test:

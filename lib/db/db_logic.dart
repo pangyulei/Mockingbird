@@ -2,21 +2,24 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/model/album.dart';
-import 'package:mockingbird/model/media.dart';
-import 'package:mockingbird/model/sentence.dart';
-import 'package:mockingbird/model/subtitle.dart';
+import 'package:mockingbird/db/entities/album.dart';
+import 'package:mockingbird/db/entities/media.dart';
+import 'package:mockingbird/db/entities/sentence.dart';
+import 'package:mockingbird/db/entities/subtitle.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:synchronized/synchronized.dart';
 
 typedef MF_SF = ({File mediaFile, File? subtitleFile});
 typedef M_SF = ({Media media, File subtitleFile});
 
 class DBLogic {
   final Store _store;
-  const DBLogic.test(this._store); //for unit test
+  //TODO add lock to write operations
+  final _lock = Lock();
+  DBLogic.test(this._store); //for unit test
   DBLogic() : this.test(DBObjectBox().store);
 
   ({List<MF_SF> mfsfList, List<M_SF> msfList}) _processMediaSubtitleFiles(
@@ -251,7 +254,7 @@ class DBLogic {
     return p.join(coversDir.path, fileName);
   }
 
-  Future<Album?> createAlbum({required String name, File? cover}) async {
+  Future<Album?> createAlbum(String name, {File? cover}) async {
     //校验 name
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
@@ -290,10 +293,10 @@ class DBLogic {
   }
 
   Future<Album> updateAlbum(
-    Album album,
+    Album album, {
     String? name,
     File? Function()? cover,
-  ) async {
+  }) async {
     Album newAlbum = album.copyWith();
     if (name != null) {
       //update name

@@ -2,14 +2,14 @@ import 'dart:io';
 
 import '../media_card/media_card_state.dart';
 
-class AlbumDetailState {
+class AlbumState {
   final String name;
   final File? cover;
   final bool showLoading;
   final bool showImport;
   final List<MediaCardState> mediaStates;
 
-  const AlbumDetailState({
+  const AlbumState({
     required this.showImport,
     required this.name,
     required this.cover,
@@ -17,7 +17,7 @@ class AlbumDetailState {
     required this.mediaStates,
   });
 
-  const AlbumDetailState.empty()
+  const AlbumState.empty()
     : this(
         cover: null,
         name: '',
@@ -26,14 +26,14 @@ class AlbumDetailState {
         showImport: false,
       );
 
-  AlbumDetailState copyWith({
+  AlbumState copyWith({
     bool? showImport,
     String? name,
     File? Function()? cover,
     bool? showLoading,
     List<MediaCardState>? mediaStates,
   }) {
-    return AlbumDetailState(
+    return AlbumState(
       showImport: showImport ?? this.showImport,
       name: name ?? this.name,
       cover: cover == null ? this.cover : cover(),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_state_provider.dart';
 
 abstract interface class EditAlbumUIOutputITF {
   void editAlbum_onSubmit();
@@ -8,28 +9,44 @@ abstract interface class EditAlbumUIOutputITF {
   void editAlbum_onRemoveCover();
 }
 
-class EditAlbumUI extends StatelessWidget {
-  final EditAlbumState _state;
+class EditAlbumUI extends ConsumerWidget {
+  // final EditAlbumState _state;
   final TextEditingController _nameController;
   final EditAlbumUIOutputITF _logic;
+  final int? _id;
   const EditAlbumUI(
-    this._state,
+    // this._state,
+    this._id,
     this._nameController,
     this._logic, {
     super.key,
   });
 
   @override
-  Widget build(BuildContext ctx) {
-    return Stack(children: [_dialog(ctx), if (_state.showLoading) _loading()]);
+  Widget build(BuildContext ctx, WidgetRef ref) {
+    ref.listen(
+      editAlbumStateProvider(_id).select((s) => s.name),
+      (previous, next) => _nameController.text = next,
+    );
+    final isLoading = ref.watch(
+      editAlbumStateProvider(_id).select((s) => s.isLoading),
+    );
+    return Stack(children: [_dialog(ctx), if (isLoading) _loading()]);
   }
 
   Widget _dialog(BuildContext ctx) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      title: Text(
-        _state.title,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+      title: Consumer(
+        builder: (context, ref, child) {
+          final title = ref.watch(
+            editAlbumStateProvider(_id).select((s) => s.title),
+          );
+          return Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          );
+        },
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
       content: SingleChildScrollView(
@@ -59,10 +76,19 @@ class EditAlbumUI extends StatelessWidget {
           onPressed: _logic.editAlbum_onCancel,
           child: const Text('Cancel'),
         ),
-        FilledButton(
-          onPressed: _state.enableSubmit ? _logic.editAlbum_onSubmit : null,
+        Consumer(
+          builder: (context, ref, child) {
+            final (enable, submitTitle) = ref.watch(
+              editAlbumStateProvider(
+                _id,
+              ).select((s) => (s.enableSubmit, s.submitTitle)),
+            );
+            return FilledButton(
+              onPressed: enable ? _logic.editAlbum_onSubmit : null,
 
-          child: Text(_state.submitTitle),
+              child: Text(submitTitle),
+            );
+          },
         ),
       ],
     );
@@ -90,15 +116,29 @@ class EditAlbumUI extends StatelessWidget {
                 width: 1,
               ),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: _state.cover != null
-                  ? Image.file(_state.cover!, fit: BoxFit.cover)
-                  : _noImage(ctx),
+            child: Consumer(
+              builder: (context, ref, child) {
+                final cover = ref.watch(
+                  editAlbumStateProvider(_id).select((s) => s.cover),
+                );
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: cover != null
+                      ? Image.file(cover, fit: BoxFit.cover)
+                      : _noImage(ctx),
+                );
+              },
             ),
           ),
         ),
-        if (_state.cover != null) _removeButton(ctx),
+        Consumer(
+          builder: (ctx, ref, child) {
+            final cover = ref.watch(
+              editAlbumStateProvider(_id).select((s) => s.cover),
+            );
+            return cover != null ? _removeButton(ctx) : const SizedBox.square();
+          },
+        ),
       ],
     );
   }

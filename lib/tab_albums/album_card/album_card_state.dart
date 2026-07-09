@@ -9,7 +9,6 @@ class AlbumCardState {
   });
 
   AlbumCardState copyWith({
-    int? index,
     int? mediasCount,
     String? Function()? cover,
     String? name,

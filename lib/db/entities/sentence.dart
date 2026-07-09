@@ -1,4 +1,4 @@
-import 'package:mockingbird/model/subtitle.dart';
+import 'package:mockingbird/db/entities/subtitle.dart';
 import 'package:objectbox/objectbox.dart';
 
 @Entity()

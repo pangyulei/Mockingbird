@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
+import 'package:mockingbird/tab_albums/album/album_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 
 abstract interface class AlbumDetailUIOutputITF
@@ -8,10 +8,10 @@ abstract interface class AlbumDetailUIOutputITF
   void albumDetail_onPickCover();
 }
 
-class AlbumDetailUI extends StatelessWidget {
-  final AlbumDetailState _state;
+class AlbumUI extends StatelessWidget {
+  final AlbumState _state;
   final AlbumDetailUIOutputITF _logic;
-  const AlbumDetailUI(this._state, this._logic, {super.key});
+  const AlbumUI(this._state, this._logic, {super.key});
 
   @override
   Widget build(BuildContext ctx) {

@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/model/media.dart';
-import 'package:mockingbird/model/sentence.dart';
+import 'package:mockingbird/db/entities/media.dart';
+import 'package:mockingbird/db/entities/sentence.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
@@ -70,7 +70,9 @@ class _PlayerScreenState extends State<PlayerScreen>
         showEmpty: _videoController == null,
       );
     });
-    final newMedia = await DBObjectBox().store.box<Media>().getAsync(mediaId);
+    final newMedia = await DBObjectBox().store.box<Media>().getAsync(
+      mediaId,
+    );
     if (newMedia == null) {
       await setupNull();
       return;
@@ -488,7 +490,9 @@ extension on ItemScrollController {
         alignment: index == 0 ? 0 : 0.3,
       );
     } else {
-      debugPrint('${identityHashCode(this)} scroll fail, scroll is not attached');
+      debugPrint(
+        '${identityHashCode(this)} scroll fail, scroll is not attached',
+      );
     }
   }
 }

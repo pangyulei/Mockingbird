@@ -1,14 +1,17 @@
 import 'dart:io';
+
 import 'package:flutter/widgets.dart';
-import 'package:mockingbird/model/subtitle.dart';
+import 'package:mockingbird/db/entities/subtitle.dart';
 import 'package:path/path.dart' as p;
-import '../model/sentence.dart';
+
+import '../db/entities/sentence.dart';
 
 class SubtitleParser {
   static Future<Subtitle> parsePath(String pathStr) async {
     final file = File(pathStr);
     return await parseFile(file);
   }
+
   static Future<Subtitle> parseFile(File file) async {
     final content = await file.readAsString();
     if (file.path.endsWith('.srt')) {
@@ -16,7 +19,9 @@ class SubtitleParser {
     } else if (file.path.endsWith('.vtt')) {
       return _parseVtt(content);
     }
-    throw ArgumentError('We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}');
+    throw ArgumentError(
+      'We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}',
+    );
   }
 
   static Subtitle _parseSrt(String content) {
@@ -52,12 +57,14 @@ class SubtitleParser {
         final text = lines.sublist(textStartIndex).join('\n').trim();
 
         if (text.isNotEmpty) {
-          sentences.add(Sentence(
-            text: text,
-            startMicroseconds: start.inMicroseconds,
-            endMicroseconds: end.inMicroseconds,
-            id: 0,
-          ));
+          sentences.add(
+            Sentence(
+              text: text,
+              startMicroseconds: start.inMicroseconds,
+              endMicroseconds: end.inMicroseconds,
+              id: 0,
+            ),
+          );
         }
       } catch (e) {
         // Skip malformed blocks
@@ -76,7 +83,9 @@ class SubtitleParser {
     final minutes = int.parse(parts[1]);
     final secondsParts = parts[2].replaceFirst(',', '.').split('.');
     final seconds = int.parse(secondsParts[0]);
-    final milliseconds = int.parse(secondsParts[1].padRight(3, '0').substring(0, 3));
+    final milliseconds = int.parse(
+      secondsParts[1].padRight(3, '0').substring(0, 3),
+    );
 
     return Duration(
       hours: hours,
@@ -92,7 +101,7 @@ class SubtitleParser {
 
     for (var block in blocks) {
       if (block.trim().startsWith('WEBVTT')) continue;
-      
+
       final lines = block.trim().split(RegExp(r'\r?\n'));
       if (lines.isEmpty) continue;
 
@@ -119,12 +128,12 @@ class SubtitleParser {
 
         if (text.isNotEmpty) {
           sentences.add(
-              Sentence(
-                startMicroseconds: start.inMicroseconds,
-                endMicroseconds: end.inMicroseconds,
-                text: text,
-                id: 0,
-              )
+            Sentence(
+              startMicroseconds: start.inMicroseconds,
+              endMicroseconds: end.inMicroseconds,
+              text: text,
+              id: 0,
+            ),
           );
         }
       } catch (e) {
@@ -156,9 +165,11 @@ class SubtitleParser {
 
     final secondsParts = lastPart.split('.');
     final seconds = int.parse(secondsParts[0]);
-    final milliseconds = int.parse(secondsParts.length > 1 
-        ? secondsParts[1].padRight(3, '0').substring(0, 3) 
-        : '0');
+    final milliseconds = int.parse(
+      secondsParts.length > 1
+          ? secondsParts[1].padRight(3, '0').substring(0, 3)
+          : '0',
+    );
 
     return Duration(
       hours: hours,

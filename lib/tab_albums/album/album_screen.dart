@@ -9,34 +9,34 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/model/album.dart';
-import 'package:mockingbird/model/media.dart';
+import 'package:mockingbird/db/entities/album.dart';
+import 'package:mockingbird/db/entities/media.dart';
 import 'package:mockingbird/objectbox.g.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
+import 'package:mockingbird/tab_albums/album/album_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 
-import 'album_detail_state.dart';
+import 'album_state.dart';
 
-class AlbumDetailScreen extends StatefulWidget {
+class AlbumScreen extends StatefulWidget {
   final int _albumId;
 
-  const AlbumDetailScreen(this._albumId, {super.key});
+  const AlbumScreen(this._albumId, {super.key});
 
   @override
-  State<AlbumDetailScreen> createState() => _AlbumDetailScreenState();
+  State<AlbumScreen> createState() => _AlbumScreenState();
 }
 
-class _AlbumDetailScreenState extends State<AlbumDetailScreen>
+class _AlbumScreenState extends State<AlbumScreen>
     implements AlbumDetailUIOutputITF {
-  var _state = const AlbumDetailState.empty();
+  var _state = const AlbumState.empty();
   Album? _album;
   final _subs = <StreamSubscription>[];
   final _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
-    return AlbumDetailUI(_state, this);
+    return AlbumUI(_state, this);
   }
 
   @override
@@ -70,7 +70,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     _album = album;
     if (album == null) {
       setState(() {
-        _state = const AlbumDetailState.empty().copyWith(
+        _state = const AlbumState.empty().copyWith(
           showLoading: false,
           showImport: false,
         );
@@ -84,7 +84,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
     final mediaStates = album.medias.map((m) => m.toCardState()).toList();
     setState(() {
       final coverPath = album.cover;
-      _state = AlbumDetailState(
+      _state = AlbumState(
         showImport: true,
         showLoading: false,
         name: album.name,
@@ -151,7 +151,7 @@ class _AlbumDetailScreenState extends State<AlbumDetailScreen>
           _state = _state.copyWith(showLoading: true);
         });
         final newCover = File(xImage.path);
-        await DBLogic().updateAlbum(album, album.name, () => newCover);
+        await DBLogic().updateAlbum(album, cover: () => newCover);
       }
     } catch (e) {
       debugPrint('Error picking cover: $e');

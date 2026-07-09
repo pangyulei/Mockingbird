@@ -1,9 +1,9 @@
 import 'package:equatable/equatable.dart';
+import 'package:objectbox/objectbox.dart';
+import 'package:path/path.dart' as p;
 
 import 'album.dart';
 import 'subtitle.dart';
-import 'package:objectbox/objectbox.dart';
-import 'package:path/path.dart' as p;
 
 @Entity()
 class Media extends Equatable {

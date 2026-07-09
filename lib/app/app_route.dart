@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_screen.dart';
-import 'package:mockingbird/tab_albums/albums_grid/albums_grid_screen.dart';
+import 'package:mockingbird/tab_albums/album/album_screen.dart';
+import 'package:mockingbird/tab_albums/albums/albums_screen.dart';
 import 'package:mockingbird/tab_player/player/player_screen.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
-typedef OnAppTab =
-    void Function(int index, StatefulNavigationShell shell);
+typedef OnAppTab = void Function(int index, StatefulNavigationShell shell);
 
 class AppRoute {
   static AppRoute? _instance;
@@ -61,22 +60,20 @@ class AppRoute {
   static GoRoute _albumsRoute() => GoRoute(
     path: AppRoute.albums,
     builder: (BuildContext context, GoRouterState state) {
-      return const AlbumsGridScreen();
+      return const AlbumsScreen();
     },
     routes: <RouteBase>[
       // Sub-route: Accessible via '/details'
       GoRoute(
         path: ':id',
-        builder:
-            (BuildContext context, GoRouterState state) {
-              final albumIdStr =
-                  state.pathParameters['id']!;
-              final albumId = int.tryParse(albumIdStr);
-              if (albumId != null) {
-                return AlbumDetailScreen(albumId);
-              }
-              return const AlbumsGridScreen();
-            },
+        builder: (BuildContext context, GoRouterState state) {
+          final albumIdStr = state.pathParameters['id']!;
+          final albumId = int.tryParse(albumIdStr);
+          if (albumId != null) {
+            return AlbumScreen(albumId);
+          }
+          return const AlbumsScreen();
+        },
       ),
     ],
   );
@@ -120,9 +117,7 @@ class AppRoute {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: colorScheme.primary.withValues(
-                alpha: 0.3,
-              ),
+              color: colorScheme.primary.withValues(alpha: 0.3),
               // width: 0.5,
             ),
           ),
