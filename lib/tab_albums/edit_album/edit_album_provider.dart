@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/album.dart';
-import 'package:mockingbird/db/providers/album_provider.dart';
+import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 
 class EditAlbumAsyncNotifier extends AsyncNotifier<Album?> {
@@ -21,7 +21,7 @@ class EditAlbumAsyncNotifier extends AsyncNotifier<Album?> {
     if (id == null) {
       return null;
     } else {
-      _album = ref.watch(albumProvider(id)).value;
+      _album = ref.watch(dbAlbumProvider(id)).value;
       return _album;
     }
   }
@@ -59,7 +59,7 @@ class EditAlbumNotifier extends Notifier<EditAlbumState> {
 
   @override
   EditAlbumState build() {
-    final album = _id == null ? null : ref.watch(albumProvider(_id)).value;
+    final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
     if (album == null) {
       return const EditAlbumState.create();
     } else {
@@ -73,14 +73,14 @@ class EditAlbumNotifier extends Notifier<EditAlbumState> {
 
   void onCoverChanged(File? newCover) {
     if (newCover?.path != state.cover?.path) {
-      final album = _id == null ? null : ref.watch(albumProvider(_id)).value;
+      final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
       final enableSubmit = _isSubmitEnable(state.name, newCover, album);
       state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
   }
 
   void onNameChanged(String newName) {
-    final album = _id == null ? null : ref.watch(albumProvider(_id)).value;
+    final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
     final enableSubmit = _isSubmitEnable(newName, state.cover, album);
     if (state.enableSubmit != enableSubmit) {
       state = state.copyWith(enableSubmit: enableSubmit);

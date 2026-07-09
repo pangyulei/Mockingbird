@@ -2,18 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/album.dart';
-import 'package:mockingbird/db/providers/albums_provider.dart';
+import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:mockingbird/tab_albums/albums/albums_state.dart';
 
 class AlbumsStateNotifier extends AsyncNotifier<AlbumsState> {
   @override
   FutureOr<AlbumsState> build() async {
-    final albums = await ref.watch(albumsProvider.future);
-    return AlbumsState(
-      isLoading: false,
-      states: albums.map((a) => a.toCardState()).toList(),
-    );
+    final albums = await ref.watch(dbAlbumsProvider.future);
+    return AlbumsState(states: albums.map((a) => a.toCardState()).toList());
   }
 }
 
@@ -23,4 +20,6 @@ extension on Album {
   }
 }
 
-final albumsStateProvider = AsyncNotifierProvider.autoDispose(AlbumsStateNotifier.new);
+final albumsProvider = AsyncNotifierProvider.autoDispose(
+  AlbumsStateNotifier.new,
+);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
-import 'package:mockingbird/tab_albums/albums/albums_state_provider.dart';
+import 'package:mockingbird/tab_albums/albums/albums_provider.dart';
 
 abstract interface class AlbumsUIOutputITF implements AlbumCardUIOutputITF {
   void albumsGrid_onAddAlbum();
@@ -14,7 +14,7 @@ class AlbumsUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    final av = ref.watch(albumsStateProvider);
+    final av = ref.watch(albumsProvider);
     return Stack(
       children: [
         av.hasValue && av.requireValue.states.isNotEmpty

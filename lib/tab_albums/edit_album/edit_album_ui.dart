@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/providers/album_provider.dart';
+import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 
 abstract interface class EditAlbumUIOutputITF {
