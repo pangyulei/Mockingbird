@@ -1,22 +1,20 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/album.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:synchronized/synchronized.dart';
 
-class DBAlbumNotifier extends AsyncNotifier<Album?> {
-  final int _id;
+part 'db_album_provider.g.dart';
+
+@Riverpod(name: 'dbAlbumAsyncProvider')
+class DBAlbumAsync extends _$DBAlbumAsync {
   final _lock = Lock();
-  DBAlbumNotifier(this._id);
 
   @override
-  Future<Album?> build() async {
+  FutureOr<Album?> build(int id) async {
     ref.onDispose(() {
-      debugPrint('AlbumNotifier ${identityHashCode(this)} disposed');
+      debugPrint('DBAlbumAsyncNotifier ${identityHashCode(this)} disposed');
     });
-    return await DBLogic().loadAlbum(_id);
+    return await DBLogic().loadAlbum(id);
   }
 }
-
-final dbAlbumProvider = AsyncNotifierProvider.autoDispose
-    .family<DBAlbumNotifier, Album?, int>(DBAlbumNotifier.new);

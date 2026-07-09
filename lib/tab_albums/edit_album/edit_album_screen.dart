@@ -25,7 +25,7 @@ class _EditAlbumScreenState extends ConsumerState<EditAlbumScreen>
   void initState() {
     super.initState();
     _nameController.addListener(() {
-      _readNotifier.onNameChanged(_nameController.text);
+      ref.read(editAlbumProvider(widget._id).notifier).onNameChanged(_nameController.text);
     });
   }
 
@@ -53,24 +53,19 @@ class _EditAlbumScreenState extends ConsumerState<EditAlbumScreen>
       return;
     }
     File newCover = File(xImage.path);
-    _readNotifier.onCoverChanged(newCover);
+    ref.read(editAlbumProvider(widget._id).notifier).onCoverChanged(newCover);
   }
 
   @override
   void editAlbum_onRemoveCover() {
-    _readNotifier.onCoverChanged(null);
+    ref.read(editAlbumProvider(widget._id).notifier).onCoverChanged(null);
   }
 
   @override
   void editAlbum_onSubmit() async {
-    await _readAsyncNotifier.onSubmit();
+    await ref.read(editAlbumAsyncProvider(widget._id).notifier).onSubmit();
     _pop();
   }
-
-  EditAlbumNotifier get _readNotifier =>
-      ref.read(editAlbumProvider(widget._id).notifier);
-  EditAlbumAsyncNotifier get _readAsyncNotifier =>
-      ref.read(editAlbumAsyncProvider(widget._id).notifier);
 
   @override
   void editAlbum_onCancel() {

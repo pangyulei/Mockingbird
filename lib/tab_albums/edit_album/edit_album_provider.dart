@@ -1,27 +1,27 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/album.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class EditAlbumAsyncNotifier extends AsyncNotifier<Album?> {
-  final int? _id;
+part 'edit_album_provider.g.dart';
+
+@riverpod
+class EditAlbumAsync extends _$EditAlbumAsync {
   Album? _album;
-  EditAlbumAsyncNotifier(this._id);
 
   @override
-  Future<Album?> build() async {
+  Future<Album?> build(int? id) async {
     ref.onDispose(() {
       debugPrint('EditAlbumAsyncNotifier ${identityHashCode(this)} disposed');
     });
-    final id = _id;
     if (id == null) {
       return null;
     } else {
-      _album = ref.watch(dbAlbumProvider(id)).value;
+      _album = ref.watch(dbAlbumAsyncProvider(id)).value;
       return _album;
     }
   }
@@ -32,17 +32,17 @@ class EditAlbumAsyncNotifier extends AsyncNotifier<Album?> {
     if (album == null) {
       //creating
       await AsyncValue.guard(() async {
-        final data = ref.read(editAlbumProvider(_id));
+        final data = ref.read(editAlbumProvider(id));
         await ref
-            .read(dbAlbumsProvider.notifier)
+            .read(dbAlbumsAsyncProvider.notifier)
             .createAlbum(data.name, cover: data.cover);
       });
     } else {
       //editing
       state = await AsyncValue.guard(() async {
-        final data = ref.read(editAlbumProvider(_id));
+        final data = ref.read(editAlbumProvider(id));
         _album = await ref
-            .read(dbAlbumsProvider.notifier)
+            .read(dbAlbumsAsyncProvider.notifier)
             .updateAlbum(album, name: data.name, cover: () => data.cover);
         return _album;
       });
@@ -50,17 +50,14 @@ class EditAlbumAsyncNotifier extends AsyncNotifier<Album?> {
   }
 }
 
-class EditAlbumNotifier extends Notifier<EditAlbumState> {
-  final int? _id;
-  EditAlbumNotifier(this._id);
-
+@riverpod
+class EditAlbum extends _$EditAlbum {
   @override
-  EditAlbumState build() {
-    final id = _id;
+  EditAlbumState build(int? id) {
     if (id == null) {
       return const EditAlbumState.empty();
     } else {
-      final album = ref.watch(dbAlbumProvider(id)).value;
+      final album = ref.watch(dbAlbumAsyncProvider(id)).value;
       if (album == null) {
         return const EditAlbumState.empty();
       } else {
@@ -75,7 +72,7 @@ class EditAlbumNotifier extends Notifier<EditAlbumState> {
 
   void onCoverChanged(File? newCover) {
     if (newCover?.path != state.cover?.path) {
-      final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
+      final album = _$args == null ? null : ref.watch(dbAlbumAsyncProvider(_$args)).value;
       final enableSubmit = _isSubmitEnable(state.name, newCover, album);
       state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
@@ -83,7 +80,7 @@ class EditAlbumNotifier extends Notifier<EditAlbumState> {
 
   void onNameChanged(String newName) {
     if (newName != state.name) {
-      final album = _id == null ? null : ref.watch(dbAlbumProvider(_id)).value;
+      final album = _$args == null ? null : ref.watch(dbAlbumAsyncProvider(_$args)).value;
       final enableSubmit = _isSubmitEnable(newName, state.cover, album);
       state = state.copyWith(name: newName, enableSubmit: enableSubmit);
     }
@@ -101,8 +98,3 @@ class EditAlbumNotifier extends Notifier<EditAlbumState> {
     }
   }
 }
-
-final editAlbumProvider = NotifierProvider.autoDispose
-    .family<EditAlbumNotifier, EditAlbumState, int?>(EditAlbumNotifier.new);
-final editAlbumAsyncProvider = AsyncNotifierProvider.autoDispose
-    .family<EditAlbumAsyncNotifier, Album?, int?>(EditAlbumAsyncNotifier.new);

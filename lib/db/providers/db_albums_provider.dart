@@ -1,11 +1,14 @@
 import 'dart:io';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/album.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:synchronized/synchronized.dart';
 
-class DBAlbumsNotifier extends AsyncNotifier<List<Album>> {
+part 'db_albums_provider.g.dart';
+
+@Riverpod(name: 'dbAlbumsAsyncProvider')
+class DBAlbumsAsync extends _$DBAlbumsAsync {
   final _lock = Lock();
 
   @override
@@ -55,6 +58,6 @@ class DBAlbumsNotifier extends AsyncNotifier<List<Album>> {
   }
 }
 
-final dbAlbumsProvider = AsyncNotifierProvider.autoDispose(
-  DBAlbumsNotifier.new,
-);
+// final dbAlbumsProvider = AsyncNotifierProvider.autoDispose(
+//   DBAlbumsNotifier.new,
+// );
