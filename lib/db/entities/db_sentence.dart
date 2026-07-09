@@ -1,17 +1,17 @@
-import 'package:mockingbird/db/entities/subtitle.dart';
+import 'package:mockingbird/db/entities/db_subtitle.dart';
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
-class Sentence {
+class DBSentence {
   @Id()
   int id;
 
   final int startMicroseconds;
   final int endMicroseconds;
   final String text;
-  final subtitle = ToOne<Subtitle>();
+  final subtitle = ToOne<DBSubtitle>();
 
-  Sentence({
+  DBSentence({
     required this.startMicroseconds,
     required this.endMicroseconds,
     required this.text,

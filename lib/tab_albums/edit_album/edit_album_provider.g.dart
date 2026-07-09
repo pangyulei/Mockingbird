@@ -13,7 +13,7 @@ part of 'edit_album_provider.dart';
 final editAlbumAsyncProvider = EditAlbumAsyncFamily._();
 
 final class EditAlbumAsyncProvider
-    extends $AsyncNotifierProvider<EditAlbumAsync, Album?> {
+    extends $AsyncNotifierProvider<EditAlbumAsync, DBAlbum?> {
   EditAlbumAsyncProvider._({
     required EditAlbumAsyncFamily super.from,
     required int? super.argument,
@@ -50,15 +50,15 @@ final class EditAlbumAsyncProvider
   }
 }
 
-String _$editAlbumAsyncHash() => r'ed9780c4384919d9e584c6aca2de60e033f2bac8';
+String _$editAlbumAsyncHash() => r'deadee347be29569700455a37b25cbd1e0818c29';
 
 final class EditAlbumAsyncFamily extends $Family
     with
         $ClassFamilyOverride<
           EditAlbumAsync,
-          AsyncValue<Album?>,
-          Album?,
-          FutureOr<Album?>,
+          AsyncValue<DBAlbum?>,
+          DBAlbum?,
+          FutureOr<DBAlbum?>,
           int?
         > {
   EditAlbumAsyncFamily._()
@@ -77,20 +77,20 @@ final class EditAlbumAsyncFamily extends $Family
   String toString() => r'editAlbumAsyncProvider';
 }
 
-abstract class _$EditAlbumAsync extends $AsyncNotifier<Album?> {
+abstract class _$EditAlbumAsync extends $AsyncNotifier<DBAlbum?> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  FutureOr<Album?> build(int? id);
+  FutureOr<DBAlbum?> build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<Album?>, Album?>;
+    final ref = this.ref as $Ref<AsyncValue<DBAlbum?>, DBAlbum?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<Album?>, Album?>,
-              AsyncValue<Album?>,
+              AnyNotifier<AsyncValue<DBAlbum?>, DBAlbum?>,
+              AsyncValue<DBAlbum?>,
               Object?,
               Object?
             >;
@@ -147,7 +147,7 @@ final class EditAlbumProvider
   }
 }
 
-String _$editAlbumHash() => r'bd20e3b4b32f31a8777c9afa623f3e887c0666c4';
+String _$editAlbumHash() => r'34f7cd75364b88dcdc6fd64188250b74c9e706d4';
 
 final class EditAlbumFamily extends $Family
     with

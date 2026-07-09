@@ -2,23 +2,23 @@ import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
 import 'package:path/path.dart' as p;
 
-import 'album.dart';
-import 'subtitle.dart';
+import 'db_album.dart';
+import 'db_subtitle.dart';
 
 @Entity()
-class Media extends Equatable {
+class DBMedia extends Equatable {
   @Id()
   int id;
 
-  final albums = ToMany<Album>();
+  final albums = ToMany<DBAlbum>();
   final String path; // Full path to the media file
   final String name;
   final int versionId;
   @Backlink('media')
-  final subtitles = ToMany<Subtitle>();
+  final subtitles = ToMany<DBSubtitle>();
 
   //objectbox will use this default constructor
-  Media({
+  DBMedia({
     required this.path,
     required this.name,
     required this.id,
@@ -27,15 +27,15 @@ class Media extends Equatable {
 
   MediaType get type => MediaType.fromExtension(p.extension(path));
 
-  Media copyWith({
+  DBMedia copyWith({
     int? id,
     int? versionId,
     String? path,
     String? name,
-    List<Subtitle>? Function()? subtitles,
-    List<Album>? albums,
+    List<DBSubtitle>? Function()? subtitles,
+    List<DBAlbum>? albums,
   }) {
-    final media = Media(
+    final media = DBMedia(
       id: id ?? this.id,
       versionId: versionId ?? this.versionId,
       path: path ?? this.path,
@@ -53,7 +53,7 @@ class Media extends Equatable {
     return media;
   }
 
-  Media incVersion() {
+  DBMedia incVersion() {
     return copyWith(versionId: versionId + 1);
   }
 

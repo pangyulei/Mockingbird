@@ -13,7 +13,7 @@ part of 'albums_provider.dart';
 final albumsAsyncProvider = AlbumsAsyncProvider._();
 
 final class AlbumsAsyncProvider
-    extends $AsyncNotifierProvider<AlbumsAsync, List<Album>> {
+    extends $AsyncNotifierProvider<AlbumsAsync, List<DBAlbum>> {
   AlbumsAsyncProvider._()
     : super(
         from: null,
@@ -33,19 +33,19 @@ final class AlbumsAsyncProvider
   AlbumsAsync create() => AlbumsAsync();
 }
 
-String _$albumsAsyncHash() => r'76fc372fd965729c832b8071f88eb41be956593a';
+String _$albumsAsyncHash() => r'c1d512629dd0e200d15cb212162083581810629b';
 
-abstract class _$AlbumsAsync extends $AsyncNotifier<List<Album>> {
-  FutureOr<List<Album>> build();
+abstract class _$AlbumsAsync extends $AsyncNotifier<List<DBAlbum>> {
+  FutureOr<List<DBAlbum>> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<Album>>, List<Album>>;
+    final ref = this.ref as $Ref<AsyncValue<List<DBAlbum>>, List<DBAlbum>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<Album>>, List<Album>>,
-              AsyncValue<List<Album>>,
+              AnyNotifier<AsyncValue<List<DBAlbum>>, List<DBAlbum>>,
+              AsyncValue<List<DBAlbum>>,
               Object?,
               Object?
             >;
@@ -84,7 +84,7 @@ final class AlbumsProvider extends $NotifierProvider<Albums, AlbumsState> {
   }
 }
 
-String _$albumsHash() => r'bfe29b17b20a2e9404cb72615e1f5264bffb1f6b';
+String _$albumsHash() => r'6685a0ee40f5b588c0e19b676d74c35095e5828d';
 
 abstract class _$Albums extends $Notifier<AlbumsState> {
   AlbumsState build();

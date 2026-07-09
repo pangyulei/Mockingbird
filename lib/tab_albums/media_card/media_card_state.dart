@@ -1,5 +1,5 @@
 
-import 'package:mockingbird/db/entities/media.dart';
+import 'package:mockingbird/db/entities/db_media.dart';
 
 class MediaCardState {
   final String name;

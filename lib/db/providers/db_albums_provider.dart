@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:mockingbird/db/db_logic.dart';
-import 'package:mockingbird/db/entities/album.dart';
+import 'package:mockingbird/db/entities/db_album.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:synchronized/synchronized.dart';
 
@@ -12,11 +12,11 @@ class DBAlbumsAsync extends _$DBAlbumsAsync {
   final _lock = Lock();
 
   @override
-  Future<List<Album>> build() async {
+  Future<List<DBAlbum>> build() async {
     return await DBLogic().loadAlbums();
   }
 
-  Future<Album?> createAlbum(String name, {File? cover}) async {
+  Future<DBAlbum?> createAlbum(String name, {File? cover}) async {
     return await _lock.synchronized(() async {
       final newAlbum = (await AsyncValue.guard(() async {
         return await DBLogic().createAlbum(name, cover: cover);
@@ -29,8 +29,8 @@ class DBAlbumsAsync extends _$DBAlbumsAsync {
     });
   }
 
-  Future<Album> updateAlbum(
-    Album album, {
+  Future<DBAlbum> updateAlbum(
+    DBAlbum album, {
     String? name,
     File? Function()? cover,
   }) async {
@@ -47,7 +47,7 @@ class DBAlbumsAsync extends _$DBAlbumsAsync {
     });
   }
 
-  Future<void> deleteAlbum(Album album) async {
+  Future<void> deleteAlbum(DBAlbum album) async {
     return await _lock.synchronized(() async {
       final cachedAlbums = state.value ?? [];
       state = await AsyncValue.guard(() async {
@@ -57,7 +57,3 @@ class DBAlbumsAsync extends _$DBAlbumsAsync {
     });
   }
 }
-
-// final dbAlbumsProvider = AsyncNotifierProvider.autoDispose(
-//   DBAlbumsNotifier.new,
-// );

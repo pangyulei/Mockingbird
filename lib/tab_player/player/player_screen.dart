@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/db/entities/media.dart';
-import 'package:mockingbird/db/entities/sentence.dart';
+import 'package:mockingbird/db/entities/db_media.dart';
+import 'package:mockingbird/db/entities/db_sentence.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
@@ -34,7 +34,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     implements PlayerUIOutputITF {
   var _state = const PlayerState.empty();
   final _subs = <StreamSubscription>[];
-  Media? _media;
+  DBMedia? _media;
   VideoPlayerController? _videoController;
   final _scrollController = ItemScrollController();
 
@@ -70,9 +70,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         showEmpty: _videoController == null,
       );
     });
-    final newMedia = await DBObjectBox().store.box<Media>().getAsync(
-      mediaId,
-    );
+    final newMedia = await DBObjectBox().store.box<DBMedia>().getAsync(mediaId);
     if (newMedia == null) {
       await setupNull();
       return;
@@ -147,7 +145,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   StreamSubscription<void> _watchMedia(void Function() f) {
-    final albumStream = DBObjectBox().store.watch<Media>();
+    final albumStream = DBObjectBox().store.watch<DBMedia>();
     return albumStream.listen((event) => f());
   }
 
@@ -497,7 +495,7 @@ extension on ItemScrollController {
   }
 }
 
-extension on Sentence {
+extension on DBSentence {
   SentenceCardState toCardState() {
     String formatDuration(Duration d) {
       final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');

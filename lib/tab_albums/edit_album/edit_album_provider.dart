@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:mockingbird/db/entities/album.dart';
+import 'package:mockingbird/db/entities/db_album.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
@@ -11,10 +11,10 @@ part 'edit_album_provider.g.dart';
 
 @riverpod
 class EditAlbumAsync extends _$EditAlbumAsync {
-  Album? _album;
+  DBAlbum? _album;
 
   @override
-  Future<Album?> build(int? id) async {
+  Future<DBAlbum?> build(int? id) async {
     ref.onDispose(() {
       debugPrint('EditAlbumAsyncNotifier ${identityHashCode(this)} disposed');
     });
@@ -72,7 +72,9 @@ class EditAlbum extends _$EditAlbum {
 
   void onCoverChanged(File? newCover) {
     if (newCover?.path != state.cover?.path) {
-      final album = _$args == null ? null : ref.watch(dbAlbumAsyncProvider(_$args)).value;
+      final album = _$args == null
+          ? null
+          : ref.watch(dbAlbumAsyncProvider(_$args)).value;
       final enableSubmit = _isSubmitEnable(state.name, newCover, album);
       state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
@@ -80,13 +82,15 @@ class EditAlbum extends _$EditAlbum {
 
   void onNameChanged(String newName) {
     if (newName != state.name) {
-      final album = _$args == null ? null : ref.watch(dbAlbumAsyncProvider(_$args)).value;
+      final album = _$args == null
+          ? null
+          : ref.watch(dbAlbumAsyncProvider(_$args)).value;
       final enableSubmit = _isSubmitEnable(newName, state.cover, album);
       state = state.copyWith(name: newName, enableSubmit: enableSubmit);
     }
   }
 
-  bool _isSubmitEnable(String name, File? cover, Album? album) {
+  bool _isSubmitEnable(String name, File? cover, DBAlbum? album) {
     if (album == null) {
       //is creating, only valid name
       return name.trim().isNotEmpty;

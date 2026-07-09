@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'db_album_provider.dart';
+part of 'db_media_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,39 +9,39 @@ part of 'db_album_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBAlbumAsync)
-final dbAlbumAsyncProvider = DBAlbumAsyncFamily._();
+@ProviderFor(DBMediaAsync)
+final dbMediaAsyncProvider = DBMediaAsyncFamily._();
 
-final class DBAlbumAsyncProvider
-    extends $AsyncNotifierProvider<DBAlbumAsync, DBAlbum?> {
-  DBAlbumAsyncProvider._({
-    required DBAlbumAsyncFamily super.from,
+final class DBMediaAsyncProvider
+    extends $AsyncNotifierProvider<DBMediaAsync, DBMedia?> {
+  DBMediaAsyncProvider._({
+    required DBMediaAsyncFamily super.from,
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'dbAlbumAsyncProvider',
+         name: r'dbMediaAsyncProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$dBAlbumAsyncHash();
+  String debugGetCreateSourceHash() => _$dBMediaAsyncHash();
 
   @override
   String toString() {
-    return r'dbAlbumAsyncProvider'
+    return r'dbMediaAsyncProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  DBAlbumAsync create() => DBAlbumAsync();
+  DBMediaAsync create() => DBMediaAsync();
 
   @override
   bool operator ==(Object other) {
-    return other is DBAlbumAsyncProvider && other.argument == argument;
+    return other is DBMediaAsyncProvider && other.argument == argument;
   }
 
   @override
@@ -50,47 +50,47 @@ final class DBAlbumAsyncProvider
   }
 }
 
-String _$dBAlbumAsyncHash() => r'5875197f5c477c3e4a6e02d997f6ed7ed62f80db';
+String _$dBMediaAsyncHash() => r'72d39a5a7261406fab2bbb69b05870149c096915';
 
-final class DBAlbumAsyncFamily extends $Family
+final class DBMediaAsyncFamily extends $Family
     with
         $ClassFamilyOverride<
-          DBAlbumAsync,
-          AsyncValue<DBAlbum?>,
-          DBAlbum?,
-          FutureOr<DBAlbum?>,
+          DBMediaAsync,
+          AsyncValue<DBMedia?>,
+          DBMedia?,
+          FutureOr<DBMedia?>,
           int
         > {
-  DBAlbumAsyncFamily._()
+  DBMediaAsyncFamily._()
     : super(
         retry: null,
-        name: r'dbAlbumAsyncProvider',
+        name: r'dbMediaAsyncProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  DBAlbumAsyncProvider call(int id) =>
-      DBAlbumAsyncProvider._(argument: id, from: this);
+  DBMediaAsyncProvider call(int id) =>
+      DBMediaAsyncProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'dbAlbumAsyncProvider';
+  String toString() => r'dbMediaAsyncProvider';
 }
 
-abstract class _$DBAlbumAsync extends $AsyncNotifier<DBAlbum?> {
+abstract class _$DBMediaAsync extends $AsyncNotifier<DBMedia?> {
   late final _$args = ref.$arg as int;
   int get id => _$args;
 
-  FutureOr<DBAlbum?> build(int id);
+  FutureOr<DBMedia?> build(int id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<DBAlbum?>, DBAlbum?>;
+    final ref = this.ref as $Ref<AsyncValue<DBMedia?>, DBMedia?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<DBAlbum?>, DBAlbum?>,
-              AsyncValue<DBAlbum?>,
+              AnyNotifier<AsyncValue<DBMedia?>, DBMedia?>,
+              AsyncValue<DBMedia?>,
               Object?,
               Object?
             >;

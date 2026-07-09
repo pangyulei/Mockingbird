@@ -1,18 +1,18 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:mockingbird/db/entities/subtitle.dart';
+import 'package:mockingbird/db/entities/db_subtitle.dart';
 import 'package:path/path.dart' as p;
 
-import '../db/entities/sentence.dart';
+import '../db/entities/db_sentence.dart';
 
 class SubtitleParser {
-  static Future<Subtitle> parsePath(String pathStr) async {
+  static Future<DBSubtitle> parsePath(String pathStr) async {
     final file = File(pathStr);
     return await parseFile(file);
   }
 
-  static Future<Subtitle> parseFile(File file) async {
+  static Future<DBSubtitle> parseFile(File file) async {
     final content = await file.readAsString();
     if (file.path.endsWith('.srt')) {
       return _parseSrt(content);
@@ -24,8 +24,8 @@ class SubtitleParser {
     );
   }
 
-  static Subtitle _parseSrt(String content) {
-    final sentences = <Sentence>[];
+  static DBSubtitle _parseSrt(String content) {
+    final sentences = <DBSentence>[];
     // Split by double newline (supporting both \n and \r\n)
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
@@ -58,7 +58,7 @@ class SubtitleParser {
 
         if (text.isNotEmpty) {
           sentences.add(
-            Sentence(
+            DBSentence(
               text: text,
               startMicroseconds: start.inMicroseconds,
               endMicroseconds: end.inMicroseconds,
@@ -71,7 +71,7 @@ class SubtitleParser {
         debugPrint('Error parsing SRT block: $e');
       }
     }
-    final subtitle = Subtitle(id: 0);
+    final subtitle = DBSubtitle(id: 0);
     subtitle.sentences.addAll(sentences);
     return subtitle;
   }
@@ -95,8 +95,8 @@ class SubtitleParser {
     );
   }
 
-  static Subtitle _parseVtt(String content) {
-    final sentences = <Sentence>[];
+  static DBSubtitle _parseVtt(String content) {
+    final sentences = <DBSentence>[];
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
     for (var block in blocks) {
@@ -128,7 +128,7 @@ class SubtitleParser {
 
         if (text.isNotEmpty) {
           sentences.add(
-            Sentence(
+            DBSentence(
               startMicroseconds: start.inMicroseconds,
               endMicroseconds: end.inMicroseconds,
               text: text,
@@ -140,7 +140,7 @@ class SubtitleParser {
         debugPrint('Error parsing VTT block: $e');
       }
     }
-    final subtitle = Subtitle(id: 0);
+    final subtitle = DBSubtitle(id: 0);
     subtitle.sentences.addAll(sentences);
     return subtitle;
   }
