@@ -21,19 +21,16 @@ class DBAlbum extends _$DBAlbum {
     return album;
   }
 
-  Future<EnAlbum?> updateAlbum({String? name, File? Function()? cover}) async {
+  Future<void> updateAlbum({String? name, File? Function()? cover}) async {
     final album = state.value;
     if (album == null) {
-      return null;
+      return;
     }
     state = await AsyncValue.guard(() async {
-      return await DBLogic().updateAlbum(album, name: name, cover: cover);
-    });
-    final updatedAlbum = state.value;
-    if (updatedAlbum != null) {
+      final updatedAlbum = await DBLogic().updateAlbum(album, name: name, cover: cover);
       ref.read(dbAlbumsProvider.notifier).updateAlbum(updatedAlbum);
-    }
-    return updatedAlbum;
+      return updatedAlbum;
+    });
   }
 
   Future<void> importMediasSubtitles(List<File> files) async {
@@ -48,6 +45,8 @@ class DBAlbum extends _$DBAlbum {
         album.medias.addAll(medias);
         album.sortMedias();
       }
+      //notify dbAlbums update
+      ref.read(dbAlbumsProvider.notifier).updateAlbum(album);
       return album;
     });
   }

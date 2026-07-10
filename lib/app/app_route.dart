@@ -7,10 +7,6 @@ import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
 typedef OnAppTab = void Function(int index, StatefulNavigationShell shell);
 
-const _kAlbums = 'albums';
-const _kPlayer = 'player';
-const _kSettings = 'settings';
-
 class AppRoute {
   static AppRoute? _instance;
   final GoRouter router;
@@ -27,15 +23,15 @@ class AppRoute {
       return instance;
     }
   }
-  static String get albums => '/$_kAlbums';
+  static String get albums => '/albums';
 
-  static String albumById(int id) => '/$_kAlbums/$id';
+  static String albumById(int id) => '$albums/$id';
 
-  static String get player => '/$_kPlayer';
+  static String get player => '/player';
 
-  static String playerById(int id) => '/$_kPlayer/$id';
+  static String playerById(int id) => '$player/$id';
 
-  static String get settings => '/$_kSettings';
+  static String get settings => '/settings';
 
   static GoRouter _router(OnAppTab onAppTab) => GoRouter(
     initialLocation: AppRoute.albums,

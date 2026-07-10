@@ -32,6 +32,11 @@ class Album extends _$Album {
     await ref.read(dbAlbumProvider(id).notifier).importMediasSubtitles(files);
     ref.invalidateSelf();
   }
+
+  Future<void> onPickCover(File cover) async {
+    state = const AsyncLoading();
+    await ref.read(dbAlbumProvider(id).notifier).updateAlbum(cover: () => cover);
+  }
 }
 
 extension on EnMedia {

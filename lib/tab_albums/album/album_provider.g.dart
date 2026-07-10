@@ -49,7 +49,7 @@ final class AlbumProvider extends $AsyncNotifierProvider<Album, AlbumState?> {
   }
 }
 
-String _$albumHash() => r'0407bc83980a884701f204fe12d839fa353ef644';
+String _$albumHash() => r'd3c3890d9f1d92bdbfe4477089c567918b2b9e89';
 
 final class AlbumFamily extends $Family
     with

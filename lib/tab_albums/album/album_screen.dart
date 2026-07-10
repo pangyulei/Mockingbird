@@ -24,10 +24,9 @@ class AlbumScreen extends ConsumerStatefulWidget {
   final int _id;
 
   const AlbumScreen(this._id, {super.key});
-  
+
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _AlbumScreenState();
-
 }
 
 class _AlbumScreenState extends ConsumerState<AlbumScreen>
@@ -75,30 +74,28 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
 
   @override
   void albumDetail_onPickCover() async {
-    // final album = _album;
-    // if (album == null) return;
+    final newCover = await _pickImage();
+    if (newCover != null) {
+      ref
+          .read(albumProvider(widget._id).notifier)
+          .onPickCover(newCover);
+    }
+  }
 
-    // try {
-    //   final XFile? xImage = await _picker.pickImage(
-    //     source: ImageSource.gallery,
-    //     maxWidth: 512,
-    //     maxHeight: 512,
-    //     imageQuality: 75,
-    //   );
-
-    //   if (xImage != null) {
-    //     setState(() {
-    //       _state = _state.copyWith(showLoading: true);
-    //     });
-    //     final newCover = File(xImage.path);
-    //     await DBLogic().updateAlbum(album, cover: () => newCover);
-    //   }
-    // } catch (e) {
-    //   debugPrint('Error picking cover: $e');
-    //   setState(() {
-    //     _state = _state.copyWith(showLoading: false);
-    //   });
-    // }
+  Future<File?> _pickImage() async {
+    try {
+      final XFile? xImage = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 75,
+      );
+      final path = xImage?.path;
+      return path == null ? null : File(path);
+    } catch (e) {
+      debugPrint('Error picking cover: $e');
+      return null;
+    }
   }
 
   Future<String?> _pickOneSubtitle() async {
