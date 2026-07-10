@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/db/entities/db_album.dart';
-import 'package:mockingbird/db/entities/db_media.dart';
-import 'package:mockingbird/db/entities/db_sentence.dart';
-import 'package:mockingbird/db/entities/db_subtitle.dart';
+import 'package:mockingbird/db/entities/en_album.dart';
+import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/entities/en_sentence.dart';
+import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
@@ -13,7 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:synchronized/synchronized.dart';
 
 typedef MF_SF = ({File mediaFile, File? subtitleFile});
-typedef M_SF = ({DBMedia media, File subtitleFile});
+typedef M_SF = ({EnMedia media, File subtitleFile});
 
 class DBLogic {
   final Store _store;
@@ -23,7 +23,7 @@ class DBLogic {
   DBLogic() : this.test(DBObjectBox().store);
 
   ({List<MF_SF> mfsfList, List<M_SF> msfList}) _processMediaSubtitleFiles(
-    List<DBMedia> albumMedias,
+    List<EnMedia> albumMedias,
     List<File> files,
   ) {
     final List<File> videoFiles = [];
@@ -67,8 +67,8 @@ class DBLogic {
     return (mfsfList: mfsfList, msfList: msfList);
   }
 
-  Future<List<DBMedia>> _mediasMadeFromMFSFList(
-    DBAlbum album,
+  Future<List<EnMedia>> _mediasMadeFromMFSFList(
+    EnAlbum album,
     List<MF_SF> mfsfList,
   ) async {
     if (mfsfList.isEmpty) return [];
@@ -102,7 +102,7 @@ class DBLogic {
       int i = e.key;
       final dirMediaFile = e.value;
       final mediaName = p.basenameWithoutExtension(mfsfList[i].mediaFile.path);
-      final media = DBMedia(
+      final media = EnMedia(
         path: dirMediaFile.path,
         name: mediaName,
         id: 0,
@@ -118,8 +118,8 @@ class DBLogic {
     return mediasWithoutId;
   }
 
-  Future<List<DBMedia>> _mediasFilledSubtitleFromMSFList(
-    DBAlbum album,
+  Future<List<EnMedia>> _mediasFilledSubtitleFromMSFList(
+    EnAlbum album,
     List<M_SF> msfList,
   ) async {
     if (msfList.isEmpty) return [];
@@ -138,8 +138,8 @@ class DBLogic {
     return mediasFilledSubtitle;
   }
 
-  Future<List<DBMedia>> importMediaAndSubtitles(
-    DBAlbum album,
+  Future<List<EnMedia>> importMediaAndSubtitles(
+    EnAlbum album,
     List<File> files,
   ) async {
     final (:mfsfList, :msfList) = _processMediaSubtitleFiles(
@@ -148,29 +148,29 @@ class DBLogic {
     );
     final mediasMade = await _mediasMadeFromMFSFList(album, mfsfList);
     final mediasFilled = await _mediasFilledSubtitleFromMSFList(album, msfList);
-    final medias = await _store.box<DBMedia>().putAndGetManyAsync([
+    final medias = await _store.box<EnMedia>().putAndGetManyAsync([
       ...mediasMade,
       ...mediasFilled,
     ]);
     return medias;
   }
 
-  Future<DBMedia> updateMedia(DBMedia media) async {
-    return await _store.box<DBMedia>().putAndGetAsync(media);
+  Future<EnMedia> updateMedia(EnMedia media) async {
+    return await _store.box<EnMedia>().putAndGetAsync(media);
   }
 
-  Future<DBMedia> addSubtitle(DBMedia media, DBSubtitle subtitle) async {
-    media = await _store.runInTransactionAsync<DBMedia, int>(TxMode.write, (
+  Future<EnMedia> addSubtitle(EnMedia media, EnSubtitle subtitle) async {
+    media = await _store.runInTransactionAsync<EnMedia, int>(TxMode.write, (
       Store store,
       int mediaId,
     ) {
-      final mediaBox = store.box<DBMedia>();
+      final mediaBox = store.box<EnMedia>();
       final media = mediaBox.get(mediaId)?.incVersion();
       if (media == null) {
         throw ArgumentError('mediaId $mediaId not existed');
       }
-      final subtitleBox = store.box<DBSubtitle>();
-      final sentenceBox = store.box<DBSentence>();
+      final subtitleBox = store.box<EnSubtitle>();
+      final sentenceBox = store.box<EnSentence>();
       final sentences = media.subtitles
           .map((st) => st.sentences)
           .expand((e) => e)
@@ -185,18 +185,18 @@ class DBLogic {
     return media;
   }
 
-  Future<void> deleteMedia(DBMedia media) async {
+  Future<void> deleteMedia(EnMedia media) async {
     await _store.runInTransactionAsync<void, int>(TxMode.write, (
       Store store,
       int mediaId,
     ) {
-      final mediaBox = store.box<DBMedia>();
+      final mediaBox = store.box<EnMedia>();
       final media = mediaBox.get(mediaId);
       if (media == null) {
         return;
       }
-      final subtitleBox = store.box<DBSubtitle>();
-      final sentenceBox = store.box<DBSentence>();
+      final subtitleBox = store.box<EnSubtitle>();
+      final sentenceBox = store.box<EnSentence>();
       final sentences = media.subtitles
           .map((st) => st.sentences)
           .expand((e) => e)
@@ -213,19 +213,19 @@ class DBLogic {
     }
   }
 
-  Future<DBMedia> deleteSubtitle(DBMedia media) async {
+  Future<EnMedia> deleteSubtitle(EnMedia media) async {
     if (media.subtitles.isEmpty) return media;
-    media = await _store.runInTransactionAsync<DBMedia, int>(TxMode.write, (
+    media = await _store.runInTransactionAsync<EnMedia, int>(TxMode.write, (
       Store store,
       int mediaId,
     ) {
-      final mediaBox = store.box<DBMedia>();
+      final mediaBox = store.box<EnMedia>();
       final media = mediaBox.get(mediaId)?.incVersion();
       if (media == null) {
         throw ArgumentError('mediaId $mediaId not existed');
       }
-      final subtitleBox = store.box<DBSubtitle>();
-      final sentenceBox = store.box<DBSentence>();
+      final subtitleBox = store.box<EnSubtitle>();
+      final sentenceBox = store.box<EnSentence>();
       final sentences = media.subtitles
           .map((st) => st.sentences)
           .expand((e) => e)
@@ -254,7 +254,7 @@ class DBLogic {
     return p.join(coversDir.path, fileName);
   }
 
-  Future<DBAlbum?> createAlbum(String name, {File? cover}) async {
+  Future<EnAlbum?> createAlbum(String name, {File? cover}) async {
     //校验 name
     final trimmedName = name.trim();
     if (trimmedName.isEmpty) {
@@ -270,10 +270,10 @@ class DBLogic {
       coverPath = null;
     }
     //获取 最大SortOrder
-    final albumBox = _store.box<DBAlbum>();
+    final albumBox = _store.box<EnAlbum>();
     final query = albumBox
         .query()
-        .order(DBAlbum_.sortOrder, flags: Order.descending)
+        .order(EnAlbum_.sortOrder, flags: Order.descending)
         .build();
     final maxSortOrderAlbum = await query.findFirstAsync();
     query.close();
@@ -281,8 +281,8 @@ class DBLogic {
     final sortOrder = maxSortOrderAlbum != null
         ? maxSortOrderAlbum.sortOrder + 1
         : 0;
-    return await _store.box<DBAlbum>().putAndGetAsync(
-      DBAlbum(
+    return await _store.box<EnAlbum>().putAndGetAsync(
+      EnAlbum(
         name: trimmedName,
         sortOrder: sortOrder,
         cover: coverPath,
@@ -292,12 +292,12 @@ class DBLogic {
     );
   }
 
-  Future<DBAlbum> updateAlbum(
-    DBAlbum album, {
+  Future<EnAlbum> updateAlbum(
+    EnAlbum album, {
     String? name,
     File? Function()? cover,
   }) async {
-    DBAlbum updatedAlbum = album.copyWith();
+    EnAlbum updatedAlbum = album.copyWith();
     if (name != null) {
       //update name
       final trimmedName = name.trim();
@@ -320,13 +320,13 @@ class DBLogic {
       }
     }
     if (updatedAlbum.cover != album.cover || updatedAlbum.name != album.name) {
-      return await _store.box<DBAlbum>().putAndGetAsync(updatedAlbum);
+      return await _store.box<EnAlbum>().putAndGetAsync(updatedAlbum);
     } else {
       return album;
     }
   }
 
-  Future<DBAlbum> _deleteAlbumCoverFile(DBAlbum album) async {
+  Future<EnAlbum> _deleteAlbumCoverFile(EnAlbum album) async {
     if (album.cover != null) {
       final oldCover = File(album.cover!);
       if (await oldCover.exists()) {
@@ -338,37 +338,37 @@ class DBLogic {
     }
   }
 
-  Future<List<DBAlbum>> loadAlbums() async {
+  Future<List<EnAlbum>> loadAlbums() async {
     final query = _store
-        .box<DBAlbum>()
+        .box<EnAlbum>()
         .query()
-        .order(DBAlbum_.sortOrder, flags: Order.descending)
+        .order(EnAlbum_.sortOrder, flags: Order.descending)
         .build();
     final result = await query.findAsync();
     query.close();
     return result;
   }
 
-  Future<DBAlbum?> loadAlbum(int id) async {
-    return await _store.box<DBAlbum>().getAsync(id);
+  Future<EnAlbum?> loadAlbum(int id) async {
+    return await _store.box<EnAlbum>().getAsync(id);
   }
 
-  Future<(DBAlbum, DBAlbum)> swapAlbumsOrder(
-    DBAlbum aAlbum,
-    DBAlbum bAlbum,
+  Future<(EnAlbum, EnAlbum)> swapAlbumsOrder(
+    EnAlbum aAlbum,
+    EnAlbum bAlbum,
   ) async {
     final aSortOrder = aAlbum.sortOrder;
     aAlbum = aAlbum.copyWith(sortOrder: bAlbum.sortOrder);
     bAlbum = bAlbum.copyWith(sortOrder: aSortOrder);
-    await _store.box<DBAlbum>().putManyAsync([aAlbum, bAlbum]);
+    await _store.box<EnAlbum>().putManyAsync([aAlbum, bAlbum]);
     return (aAlbum, bAlbum);
   }
 
-  Future<void> deleteAlbum(DBAlbum album) async {
+  Future<void> deleteAlbum(EnAlbum album) async {
     await deleteAlbums([album]);
   }
 
-  Future<void> deleteAlbums(List<DBAlbum> albums) async {
+  Future<void> deleteAlbums(List<EnAlbum> albums) async {
     if (albums.isEmpty) return;
     albums = albums.where((a) => a.id > 0).toList();
 
@@ -376,10 +376,10 @@ class DBLogic {
       Store store,
       List<int> albumIds,
     ) {
-      final mediaBox = store.box<DBMedia>();
-      final subtitleBox = store.box<DBSubtitle>();
-      final sentenceBox = store.box<DBSentence>();
-      final albumBox = store.box<DBAlbum>();
+      final mediaBox = store.box<EnMedia>();
+      final subtitleBox = store.box<EnSubtitle>();
+      final sentenceBox = store.box<EnSentence>();
+      final albumBox = store.box<EnAlbum>();
 
       final albumIdsSet = albumIds.toSet();
       final medias = mediaBox
@@ -420,7 +420,7 @@ class DBLogic {
     await Future.wait(removeCovers);
   }
 
-  Future<DBMedia?> loadMedia(int id) async {
-    return await _store.box<DBMedia>().getAsync(id);
+  Future<EnMedia?> loadMedia(int id) async {
+    return await _store.box<EnMedia>().getAsync(id);
   }
 }

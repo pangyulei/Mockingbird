@@ -14,87 +14,87 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
-import 'db/entities/db_album.dart';
-import 'db/entities/db_media.dart';
-import 'db/entities/db_sentence.dart';
-import 'db/entities/db_subtitle.dart';
+import 'db/entities/en_album.dart';
+import 'db/entities/en_media.dart';
+import 'db/entities/en_sentence.dart';
+import 'db/entities/en_subtitle.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
 final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(15, 2569544913880286394),
-    name: 'DBAlbum',
-    lastPropertyId: const obx_int.IdUid(5, 5498032852689904128),
+    id: const obx_int.IdUid(19, 3722181390807831493),
+    name: 'EnAlbum',
+    lastPropertyId: const obx_int.IdUid(5, 3798309444640003913),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 3349001472683323888),
+        id: const obx_int.IdUid(1, 3636517494326206206),
         name: 'id',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 4481229427335859330),
+        id: const obx_int.IdUid(2, 5683312290432269767),
         name: 'name',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 6911315652890228423),
+        id: const obx_int.IdUid(3, 7030749597211594586),
         name: 'cover',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 6906070067005500434),
+        id: const obx_int.IdUid(4, 4981929947623318346),
         name: 'versionId',
         type: 6,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 5498032852689904128),
+        id: const obx_int.IdUid(5, 3798309444640003913),
         name: 'sortOrder',
         type: 6,
         flags: 8,
-        indexId: const obx_int.IdUid(15, 4638334523528955972),
+        indexId: const obx_int.IdUid(18, 4902647209326766941),
       ),
     ],
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[
       obx_int.ModelBacklink(
         name: 'medias',
-        srcEntity: 'DBMedia',
+        srcEntity: 'EnMedia',
         srcField: 'albums',
       ),
     ],
   ),
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(16, 5202691602439670021),
-    name: 'DBMedia',
-    lastPropertyId: const obx_int.IdUid(4, 5741443140640817004),
+    id: const obx_int.IdUid(20, 5722817146860860766),
+    name: 'EnMedia',
+    lastPropertyId: const obx_int.IdUid(4, 2510609710962471538),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 5012869608313288700),
+        id: const obx_int.IdUid(1, 5661038097209074729),
         name: 'id',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 2291900954387030400),
+        id: const obx_int.IdUid(2, 351392934434100053),
         name: 'path',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 347138618058217207),
+        id: const obx_int.IdUid(3, 8434792637826821157),
         name: 'name',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 5741443140640817004),
+        id: const obx_int.IdUid(4, 2510609710962471538),
         name: 'versionId',
         type: 6,
         flags: 0,
@@ -102,89 +102,89 @@ final _entities = <obx_int.ModelEntity>[
     ],
     relations: <obx_int.ModelRelation>[
       obx_int.ModelRelation(
-        id: const obx_int.IdUid(4, 558225204056266527),
+        id: const obx_int.IdUid(5, 7929255877846348169),
         name: 'albums',
-        targetId: const obx_int.IdUid(15, 2569544913880286394),
+        targetId: const obx_int.IdUid(19, 3722181390807831493),
       ),
     ],
     backlinks: <obx_int.ModelBacklink>[
       obx_int.ModelBacklink(
         name: 'subtitles',
-        srcEntity: 'DBSubtitle',
+        srcEntity: 'EnSubtitle',
         srcField: 'media',
       ),
     ],
   ),
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(17, 7597158225435083003),
-    name: 'DBSentence',
-    lastPropertyId: const obx_int.IdUid(5, 3686783334207431062),
+    id: const obx_int.IdUid(21, 4834345700059933177),
+    name: 'EnSentence',
+    lastPropertyId: const obx_int.IdUid(5, 5630568508985330360),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 3580118706373378305),
+        id: const obx_int.IdUid(1, 1909532973637039271),
         name: 'id',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 8534859341683338394),
+        id: const obx_int.IdUid(2, 6148293603079221769),
         name: 'startMicroseconds',
         type: 6,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 4929418715775661811),
+        id: const obx_int.IdUid(3, 1876219628304349137),
         name: 'endMicroseconds',
         type: 6,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 2172174907848489091),
+        id: const obx_int.IdUid(4, 4728835043439870140),
         name: 'text',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 3686783334207431062),
+        id: const obx_int.IdUid(5, 5630568508985330360),
         name: 'subtitleId',
         type: 11,
         flags: 520,
-        indexId: const obx_int.IdUid(16, 732383481173729942),
+        indexId: const obx_int.IdUid(19, 3232281446144178994),
         relationField: 'subtitle',
-        relationTarget: 'DBSubtitle',
+        relationTarget: 'EnSubtitle',
       ),
     ],
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(18, 334029981324421535),
-    name: 'DBSubtitle',
-    lastPropertyId: const obx_int.IdUid(2, 7599652332481368775),
+    id: const obx_int.IdUid(22, 4289487194528856605),
+    name: 'EnSubtitle',
+    lastPropertyId: const obx_int.IdUid(2, 6971388164235864151),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 6366957737110863135),
+        id: const obx_int.IdUid(1, 6838575703252495508),
         name: 'id',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 7599652332481368775),
+        id: const obx_int.IdUid(2, 6971388164235864151),
         name: 'mediaId',
         type: 11,
         flags: 520,
-        indexId: const obx_int.IdUid(17, 8667250225978697774),
+        indexId: const obx_int.IdUid(20, 1321291549367293302),
         relationField: 'media',
-        relationTarget: 'DBMedia',
+        relationTarget: 'EnMedia',
       ),
     ],
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[
       obx_int.ModelBacklink(
         name: 'sentences',
-        srcEntity: 'DBSentence',
+        srcEntity: 'EnSentence',
         srcField: 'subtitle',
       ),
     ],
@@ -234,9 +234,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(18, 334029981324421535),
-    lastIndexId: const obx_int.IdUid(17, 8667250225978697774),
-    lastRelationId: const obx_int.IdUid(4, 558225204056266527),
+    lastEntityId: const obx_int.IdUid(22, 4289487194528856605),
+    lastIndexId: const obx_int.IdUid(20, 1321291549367293302),
+    lastRelationId: const obx_int.IdUid(5, 7929255877846348169),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [
       9011113446969728974,
@@ -253,6 +253,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
       8535981873911830408,
       1832484391947601132,
       9133246654849654518,
+      2569544913880286394,
+      5202691602439670021,
+      7597158225435083003,
+      334029981324421535,
     ],
     retiredIndexUids: const [
       6937227900520055071,
@@ -321,6 +325,22 @@ obx_int.ModelDefinition getObjectBoxModel() {
       916731272117924653,
       1087830737528170560,
       2017702748695953164,
+      3349001472683323888,
+      4481229427335859330,
+      6911315652890228423,
+      6906070067005500434,
+      5498032852689904128,
+      5012869608313288700,
+      2291900954387030400,
+      347138618058217207,
+      5741443140640817004,
+      3580118706373378305,
+      8534859341683338394,
+      4929418715775661811,
+      2172174907848489091,
+      3686783334207431062,
+      6366957737110863135,
+      7599652332481368775,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -329,17 +349,17 @@ obx_int.ModelDefinition getObjectBoxModel() {
   );
 
   final bindings = <Type, obx_int.EntityDefinition>{
-    DBAlbum: obx_int.EntityDefinition<DBAlbum>(
+    EnAlbum: obx_int.EntityDefinition<EnAlbum>(
       model: _entities[0],
-      toOneRelations: (DBAlbum object) => [],
-      toManyRelations: (DBAlbum object) => {
-        obx_int.RelInfo<DBMedia>.toManyBacklink(4, object.id): object.medias,
+      toOneRelations: (EnAlbum object) => [],
+      toManyRelations: (EnAlbum object) => {
+        obx_int.RelInfo<EnMedia>.toManyBacklink(5, object.id): object.medias,
       },
-      getId: (DBAlbum object) => object.id,
-      setId: (DBAlbum object, int id) {
+      getId: (EnAlbum object) => object.id,
+      setId: (EnAlbum object, int id) {
         object.id = id;
       },
-      objectToFB: (DBAlbum object, fb.Builder fbb) {
+      objectToFB: (EnAlbum object, fb.Builder fbb) {
         final nameOffset = fbb.writeString(object.name);
         final coverOffset = object.cover == null
             ? null
@@ -380,37 +400,37 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
-        final object = DBAlbum(
+        final object = EnAlbum(
           name: nameParam,
           sortOrder: sortOrderParam,
           id: idParam,
           cover: coverParam,
           versionId: versionIdParam,
         );
-        obx_int.InternalToManyAccess.setRelInfo<DBAlbum>(
+        obx_int.InternalToManyAccess.setRelInfo<EnAlbum>(
           object.medias,
           store,
-          obx_int.RelInfo<DBMedia>.toManyBacklink(4, object.id),
+          obx_int.RelInfo<EnMedia>.toManyBacklink(5, object.id),
         );
         return object;
       },
     ),
-    DBMedia: obx_int.EntityDefinition<DBMedia>(
+    EnMedia: obx_int.EntityDefinition<EnMedia>(
       model: _entities[1],
-      toOneRelations: (DBMedia object) => [],
-      toManyRelations: (DBMedia object) => {
-        obx_int.RelInfo<DBMedia>.toMany(4, object.id): object.albums,
-        obx_int.RelInfo<DBSubtitle>.toOneBacklink(
+      toOneRelations: (EnMedia object) => [],
+      toManyRelations: (EnMedia object) => {
+        obx_int.RelInfo<EnMedia>.toMany(5, object.id): object.albums,
+        obx_int.RelInfo<EnSubtitle>.toOneBacklink(
           2,
           object.id,
-          (DBSubtitle srcObject) => srcObject.media,
+          (EnSubtitle srcObject) => srcObject.media,
         ): object.subtitles,
       },
-      getId: (DBMedia object) => object.id,
-      setId: (DBMedia object, int id) {
+      getId: (EnMedia object) => object.id,
+      setId: (EnMedia object, int id) {
         object.id = id;
       },
-      objectToFB: (DBMedia object, fb.Builder fbb) {
+      objectToFB: (EnMedia object, fb.Builder fbb) {
         final pathOffset = fbb.writeString(object.path);
         final nameOffset = fbb.writeString(object.name);
         fbb.startTable(5);
@@ -442,38 +462,38 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
-        final object = DBMedia(
+        final object = EnMedia(
           path: pathParam,
           name: nameParam,
           id: idParam,
           versionId: versionIdParam,
         );
-        obx_int.InternalToManyAccess.setRelInfo<DBMedia>(
+        obx_int.InternalToManyAccess.setRelInfo<EnMedia>(
           object.albums,
           store,
-          obx_int.RelInfo<DBMedia>.toMany(4, object.id),
+          obx_int.RelInfo<EnMedia>.toMany(5, object.id),
         );
-        obx_int.InternalToManyAccess.setRelInfo<DBMedia>(
+        obx_int.InternalToManyAccess.setRelInfo<EnMedia>(
           object.subtitles,
           store,
-          obx_int.RelInfo<DBSubtitle>.toOneBacklink(
+          obx_int.RelInfo<EnSubtitle>.toOneBacklink(
             2,
             object.id,
-            (DBSubtitle srcObject) => srcObject.media,
+            (EnSubtitle srcObject) => srcObject.media,
           ),
         );
         return object;
       },
     ),
-    DBSentence: obx_int.EntityDefinition<DBSentence>(
+    EnSentence: obx_int.EntityDefinition<EnSentence>(
       model: _entities[2],
-      toOneRelations: (DBSentence object) => [object.subtitle],
-      toManyRelations: (DBSentence object) => {},
-      getId: (DBSentence object) => object.id,
-      setId: (DBSentence object, int id) {
+      toOneRelations: (EnSentence object) => [object.subtitle],
+      toManyRelations: (EnSentence object) => {},
+      getId: (EnSentence object) => object.id,
+      setId: (EnSentence object, int id) {
         object.id = id;
       },
-      objectToFB: (DBSentence object, fb.Builder fbb) {
+      objectToFB: (EnSentence object, fb.Builder fbb) {
         final textOffset = fbb.writeString(object.text);
         fbb.startTable(6);
         fbb.addInt64(0, object.id);
@@ -508,7 +528,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final object = DBSentence(
+        final object = EnSentence(
           startMicroseconds: startMicrosecondsParam,
           endMicroseconds: endMicrosecondsParam,
           text: textParam,
@@ -524,21 +544,21 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
-    DBSubtitle: obx_int.EntityDefinition<DBSubtitle>(
+    EnSubtitle: obx_int.EntityDefinition<EnSubtitle>(
       model: _entities[3],
-      toOneRelations: (DBSubtitle object) => [object.media],
-      toManyRelations: (DBSubtitle object) => {
-        obx_int.RelInfo<DBSentence>.toOneBacklink(
+      toOneRelations: (EnSubtitle object) => [object.media],
+      toManyRelations: (EnSubtitle object) => {
+        obx_int.RelInfo<EnSentence>.toOneBacklink(
           5,
           object.id,
-          (DBSentence srcObject) => srcObject.subtitle,
+          (EnSentence srcObject) => srcObject.subtitle,
         ): object.sentences,
       },
-      getId: (DBSubtitle object) => object.id,
-      setId: (DBSubtitle object, int id) {
+      getId: (EnSubtitle object) => object.id,
+      setId: (EnSubtitle object, int id) {
         object.id = id;
       },
-      objectToFB: (DBSubtitle object, fb.Builder fbb) {
+      objectToFB: (EnSubtitle object, fb.Builder fbb) {
         fbb.startTable(3);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.media.targetId);
@@ -554,7 +574,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final object = DBSubtitle(id: idParam);
+        final object = EnSubtitle(id: idParam);
         object.media.targetId = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -562,13 +582,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
           0,
         );
         object.media.attach(store);
-        obx_int.InternalToManyAccess.setRelInfo<DBSubtitle>(
+        obx_int.InternalToManyAccess.setRelInfo<EnSubtitle>(
           object.sentences,
           store,
-          obx_int.RelInfo<DBSentence>.toOneBacklink(
+          obx_int.RelInfo<EnSentence>.toOneBacklink(
             5,
             object.id,
-            (DBSentence srcObject) => srcObject.subtitle,
+            (EnSentence srcObject) => srcObject.subtitle,
           ),
         );
         return object;
@@ -579,109 +599,109 @@ obx_int.ModelDefinition getObjectBoxModel() {
   return obx_int.ModelDefinition(model, bindings);
 }
 
-/// [DBAlbum] entity fields to define ObjectBox queries.
-class DBAlbum_ {
-  /// See [DBAlbum.id].
-  static final id = obx.QueryIntegerProperty<DBAlbum>(
+/// [EnAlbum] entity fields to define ObjectBox queries.
+class EnAlbum_ {
+  /// See [EnAlbum.id].
+  static final id = obx.QueryIntegerProperty<EnAlbum>(
     _entities[0].properties[0],
   );
 
-  /// See [DBAlbum.name].
-  static final name = obx.QueryStringProperty<DBAlbum>(
+  /// See [EnAlbum.name].
+  static final name = obx.QueryStringProperty<EnAlbum>(
     _entities[0].properties[1],
   );
 
-  /// See [DBAlbum.cover].
-  static final cover = obx.QueryStringProperty<DBAlbum>(
+  /// See [EnAlbum.cover].
+  static final cover = obx.QueryStringProperty<EnAlbum>(
     _entities[0].properties[2],
   );
 
-  /// See [DBAlbum.versionId].
-  static final versionId = obx.QueryIntegerProperty<DBAlbum>(
+  /// See [EnAlbum.versionId].
+  static final versionId = obx.QueryIntegerProperty<EnAlbum>(
     _entities[0].properties[3],
   );
 
-  /// See [DBAlbum.sortOrder].
-  static final sortOrder = obx.QueryIntegerProperty<DBAlbum>(
+  /// See [EnAlbum.sortOrder].
+  static final sortOrder = obx.QueryIntegerProperty<EnAlbum>(
     _entities[0].properties[4],
   );
 }
 
-/// [DBMedia] entity fields to define ObjectBox queries.
-class DBMedia_ {
-  /// See [DBMedia.id].
-  static final id = obx.QueryIntegerProperty<DBMedia>(
+/// [EnMedia] entity fields to define ObjectBox queries.
+class EnMedia_ {
+  /// See [EnMedia.id].
+  static final id = obx.QueryIntegerProperty<EnMedia>(
     _entities[1].properties[0],
   );
 
-  /// See [DBMedia.path].
-  static final path = obx.QueryStringProperty<DBMedia>(
+  /// See [EnMedia.path].
+  static final path = obx.QueryStringProperty<EnMedia>(
     _entities[1].properties[1],
   );
 
-  /// See [DBMedia.name].
-  static final name = obx.QueryStringProperty<DBMedia>(
+  /// See [EnMedia.name].
+  static final name = obx.QueryStringProperty<EnMedia>(
     _entities[1].properties[2],
   );
 
-  /// See [DBMedia.versionId].
-  static final versionId = obx.QueryIntegerProperty<DBMedia>(
+  /// See [EnMedia.versionId].
+  static final versionId = obx.QueryIntegerProperty<EnMedia>(
     _entities[1].properties[3],
   );
 
-  /// see [DBMedia.albums]
-  static final albums = obx.QueryRelationToMany<DBMedia, DBAlbum>(
+  /// see [EnMedia.albums]
+  static final albums = obx.QueryRelationToMany<EnMedia, EnAlbum>(
     _entities[1].relations[0],
   );
 
-  /// see [DBMedia.subtitles]
-  static final subtitles = obx.QueryBacklinkToMany<DBSubtitle, DBMedia>(
-    DBSubtitle_.media,
+  /// see [EnMedia.subtitles]
+  static final subtitles = obx.QueryBacklinkToMany<EnSubtitle, EnMedia>(
+    EnSubtitle_.media,
   );
 }
 
-/// [DBSentence] entity fields to define ObjectBox queries.
-class DBSentence_ {
-  /// See [DBSentence.id].
-  static final id = obx.QueryIntegerProperty<DBSentence>(
+/// [EnSentence] entity fields to define ObjectBox queries.
+class EnSentence_ {
+  /// See [EnSentence.id].
+  static final id = obx.QueryIntegerProperty<EnSentence>(
     _entities[2].properties[0],
   );
 
-  /// See [DBSentence.startMicroseconds].
-  static final startMicroseconds = obx.QueryIntegerProperty<DBSentence>(
+  /// See [EnSentence.startMicroseconds].
+  static final startMicroseconds = obx.QueryIntegerProperty<EnSentence>(
     _entities[2].properties[1],
   );
 
-  /// See [DBSentence.endMicroseconds].
-  static final endMicroseconds = obx.QueryIntegerProperty<DBSentence>(
+  /// See [EnSentence.endMicroseconds].
+  static final endMicroseconds = obx.QueryIntegerProperty<EnSentence>(
     _entities[2].properties[2],
   );
 
-  /// See [DBSentence.text].
-  static final text = obx.QueryStringProperty<DBSentence>(
+  /// See [EnSentence.text].
+  static final text = obx.QueryStringProperty<EnSentence>(
     _entities[2].properties[3],
   );
 
-  /// See [DBSentence.subtitle].
-  static final subtitle = obx.QueryRelationToOne<DBSentence, DBSubtitle>(
+  /// See [EnSentence.subtitle].
+  static final subtitle = obx.QueryRelationToOne<EnSentence, EnSubtitle>(
     _entities[2].properties[4],
   );
 }
 
-/// [DBSubtitle] entity fields to define ObjectBox queries.
-class DBSubtitle_ {
-  /// See [DBSubtitle.id].
-  static final id = obx.QueryIntegerProperty<DBSubtitle>(
+/// [EnSubtitle] entity fields to define ObjectBox queries.
+class EnSubtitle_ {
+  /// See [EnSubtitle.id].
+  static final id = obx.QueryIntegerProperty<EnSubtitle>(
     _entities[3].properties[0],
   );
 
-  /// See [DBSubtitle.media].
-  static final media = obx.QueryRelationToOne<DBSubtitle, DBMedia>(
+  /// See [EnSubtitle.media].
+  static final media = obx.QueryRelationToOne<EnSubtitle, EnMedia>(
     _entities[3].properties[1],
   );
 
-  /// see [DBSubtitle.sentences]
-  static final sentences = obx.QueryBacklinkToMany<DBSentence, DBSubtitle>(
-    DBSentence_.subtitle,
+  /// see [EnSubtitle.sentences]
+  static final sentences = obx.QueryBacklinkToMany<EnSentence, EnSubtitle>(
+    EnSentence_.subtitle,
   );
 }

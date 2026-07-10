@@ -9,43 +9,43 @@ part of 'db_albums_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBAlbumsAsync)
-final dbAlbumsAsyncProvider = DBAlbumsAsyncProvider._();
+@ProviderFor(DBAlbums)
+final dbAlbumsProvider = DBAlbumsProvider._();
 
-final class DBAlbumsAsyncProvider
-    extends $AsyncNotifierProvider<DBAlbumsAsync, List<DBAlbum>> {
-  DBAlbumsAsyncProvider._()
+final class DBAlbumsProvider
+    extends $AsyncNotifierProvider<DBAlbums, List<EnAlbum>> {
+  DBAlbumsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'dbAlbumsAsyncProvider',
+        name: r'dbAlbumsProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$dBAlbumsAsyncHash();
+  String debugGetCreateSourceHash() => _$dBAlbumsHash();
 
   @$internal
   @override
-  DBAlbumsAsync create() => DBAlbumsAsync();
+  DBAlbums create() => DBAlbums();
 }
 
-String _$dBAlbumsAsyncHash() => r'd4cbfe841988e0a8ad52c38dffa48250d2460c92';
+String _$dBAlbumsHash() => r'74c20e9ce3337f8c0f7f67ba94ba42905fe20446';
 
-abstract class _$DBAlbumsAsync extends $AsyncNotifier<List<DBAlbum>> {
-  FutureOr<List<DBAlbum>> build();
+abstract class _$DBAlbums extends $AsyncNotifier<List<EnAlbum>> {
+  FutureOr<List<EnAlbum>> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<DBAlbum>>, List<DBAlbum>>;
+    final ref = this.ref as $Ref<AsyncValue<List<EnAlbum>>, List<EnAlbum>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<DBAlbum>>, List<DBAlbum>>,
-              AsyncValue<List<DBAlbum>>,
+              AnyNotifier<AsyncValue<List<EnAlbum>>, List<EnAlbum>>,
+              AsyncValue<List<EnAlbum>>,
               Object?,
               Object?
             >;

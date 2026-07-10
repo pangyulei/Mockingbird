@@ -32,7 +32,7 @@ final class AlbumsProvider extends $AsyncNotifierProvider<Albums, AlbumsState> {
   Albums create() => Albums();
 }
 
-String _$albumsHash() => r'c7c3f8f989ca77da6839de27e1196b6c7a0af521';
+String _$albumsHash() => r'f368876cae6ee04d13038b643cf4f75ea33b8159';
 
 abstract class _$Albums extends $AsyncNotifier<AlbumsState> {
   FutureOr<AlbumsState> build();

@@ -88,38 +88,39 @@ class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
 
   @override
   void albumCard_onDelete(int index) async {
-    // Album album = _albums[index];
-    // final confirmed = await showDialog<bool>(
-    //   context: context,
-    //   builder: (context) => AlertDialog(
-    //     title: const Text('Delete Album'),
-    //     content: Text(
-    //       'Are you sure you want to delete "${album.name}"? This action cannot be undone.',
-    //     ),
-    //     actions: [
-    //       TextButton(
-    //         onPressed: () => Navigator.pop(context, false),
-    //         child: const Text('Cancel'),
-    //       ),
-    //       FilledButton(
-    //         onPressed: () => Navigator.pop(context, true),
-    //         style: FilledButton.styleFrom(
-    //           backgroundColor: Theme.of(context).colorScheme.error,
-    //         ),
-    //         child: const Text('Delete'),
-    //       ),
-    //     ],
-    //   ),
-    // );
+    final name = ref.read(albumsProvider.notifier).nameForIndex(index);
+    if (name == null) {
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Album'),
+        content: Text(
+          'Are you sure you want to delete "$name"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
 
-    // if (confirmed == null || !confirmed) {
-    //   return;
-    // }
+    if (confirmed == null || !confirmed) {
+      return;
+    }
 
-    // setState(() {
-    //   _state = _state.copyWith(showLoading: true);
-    // });
-    // await DBLogic().deleteAlbum(album);
+    await ref.read(albumsProvider.notifier).deleteAlbum(index);
+    
   }
 
   @override

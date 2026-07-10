@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:mockingbird/db/entities/db_album.dart';
+import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
@@ -11,7 +11,7 @@ part 'edit_album_provider.g.dart';
 
 @Riverpod(name: 'editAlbumProvider')
 class EditAlbum extends _$EditAlbum {
-  DBAlbum? _album;
+  EnAlbum? _album;
 
   @override
   Future<EditAlbumState> build(int? id) async {
@@ -24,7 +24,7 @@ class EditAlbum extends _$EditAlbum {
     if (id == null) {
       return const EditAlbumState.create();
     } else {
-      final album = ref.watch(dbAlbumAsyncProvider(id)).value;
+      final album = ref.watch(dbAlbumProvider(id)).value;
       _album = album;
       if (album == null) {
         return const EditAlbumState.empty();
@@ -48,12 +48,12 @@ class EditAlbum extends _$EditAlbum {
     if (id == null) {
       //creating
       await ref
-          .read(dbAlbumsAsyncProvider.notifier)
+          .read(dbAlbumsProvider.notifier)
           .createAlbum(data.name, cover: data.cover);
     } else {
       //editing
       await ref
-          .read(dbAlbumAsyncProvider(id).notifier)
+          .read(dbAlbumProvider(id).notifier)
           .updateAlbum(name: data.name, cover: () => data.cover);
     }
   }
@@ -80,7 +80,7 @@ class EditAlbum extends _$EditAlbum {
     }
   }
 
-  bool _isSubmitEnable(String name, File? cover, DBAlbum? album) {
+  bool _isSubmitEnable(String name, File? cover, EnAlbum? album) {
     if (name.trim().isEmpty) {
       return false;
     }

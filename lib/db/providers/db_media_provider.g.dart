@@ -13,7 +13,7 @@ part of 'db_media_provider.dart';
 final dbMediaAsyncProvider = DBMediaAsyncFamily._();
 
 final class DBMediaAsyncProvider
-    extends $AsyncNotifierProvider<DBMediaAsync, DBMedia?> {
+    extends $AsyncNotifierProvider<DBMediaAsync, EnMedia?> {
   DBMediaAsyncProvider._({
     required DBMediaAsyncFamily super.from,
     required int super.argument,
@@ -50,15 +50,15 @@ final class DBMediaAsyncProvider
   }
 }
 
-String _$dBMediaAsyncHash() => r'72d39a5a7261406fab2bbb69b05870149c096915';
+String _$dBMediaAsyncHash() => r'9c9139bdec94f3a31da68c2f90543c3339d22113';
 
 final class DBMediaAsyncFamily extends $Family
     with
         $ClassFamilyOverride<
           DBMediaAsync,
-          AsyncValue<DBMedia?>,
-          DBMedia?,
-          FutureOr<DBMedia?>,
+          AsyncValue<EnMedia?>,
+          EnMedia?,
+          FutureOr<EnMedia?>,
           int
         > {
   DBMediaAsyncFamily._()
@@ -77,20 +77,20 @@ final class DBMediaAsyncFamily extends $Family
   String toString() => r'dbMediaAsyncProvider';
 }
 
-abstract class _$DBMediaAsync extends $AsyncNotifier<DBMedia?> {
+abstract class _$DBMediaAsync extends $AsyncNotifier<EnMedia?> {
   late final _$args = ref.$arg as int;
   int get id => _$args;
 
-  FutureOr<DBMedia?> build(int id);
+  FutureOr<EnMedia?> build(int id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<DBMedia?>, DBMedia?>;
+    final ref = this.ref as $Ref<AsyncValue<EnMedia?>, EnMedia?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<DBMedia?>, DBMedia?>,
-              AsyncValue<DBMedia?>,
+              AnyNotifier<AsyncValue<EnMedia?>, EnMedia?>,
+              AsyncValue<EnMedia?>,
               Object?,
               Object?
             >;

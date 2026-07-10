@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
 
-import 'db_media.dart';
+import 'en_media.dart';
 
 @Entity()
-class DBAlbum extends Equatable {
+class EnAlbum extends Equatable {
   @Id()
   int id;
 
@@ -13,12 +13,12 @@ class DBAlbum extends Equatable {
   final int versionId;
 
   @Backlink('albums')
-  final medias = ToMany<DBMedia>();
+  final medias = ToMany<EnMedia>();
 
   @Index()
   final int sortOrder;
 
-  DBAlbum({
+  EnAlbum({
     required this.name,
     required this.sortOrder,
     required this.id,
@@ -26,15 +26,15 @@ class DBAlbum extends Equatable {
     required this.versionId,
   });
 
-  DBAlbum copyWith({
+  EnAlbum copyWith({
     int? id,
     int? versionId,
     String? name,
     String? Function()? cover,
     int? sortOrder,
-    Iterable<DBMedia>? medias,
+    Iterable<EnMedia>? medias,
   }) {
-    final p = DBAlbum(
+    final p = EnAlbum(
       versionId: versionId ?? this.versionId,
       id: id ?? this.id,
       name: name ?? this.name,

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/album/album_provider.dart';
-import 'package:mockingbird/tab_albums/album/album_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 
 abstract interface class AlbumDetailUIOutputITF
@@ -23,7 +22,7 @@ class AlbumUI extends ConsumerWidget {
   }
 
   Widget _empty(WidgetRef ref) {
-    final data = ref.watch(albumProvider(_id));
+    final data = ref.watch(albumProvider(_id)).value;
     if (data != null) {
       return const SizedBox.shrink();
     }
@@ -31,7 +30,7 @@ class AlbumUI extends ConsumerWidget {
   }
 
   Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(albumAsyncProvider(_id)).isLoading;
+    final isLoading = ref.watch(albumProvider(_id)).isLoading;
     if (!isLoading) {
       return const SizedBox.shrink();
     }
@@ -49,7 +48,7 @@ class AlbumUI extends ConsumerWidget {
           _sliverAppBar(ctx),
           Consumer(
             builder: (context, ref, child) {
-              final data = ref.watch(albumProvider(_id));
+              final data = ref.watch(albumProvider(_id)).value;
               if (data != null && data.mediaStates.isNotEmpty) {
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -112,7 +111,7 @@ class AlbumUI extends ConsumerWidget {
         title: Consumer(
           builder: (ctx, ref, child) {
             final (name, cover) = ref.watch(
-              albumProvider(_id).select((s) => (s?.name, s?.cover)),
+              albumProvider(_id).select((s) => (s.value?.name, s.value?.cover)),
             );
             if (name == null) {
               return const SizedBox.shrink();
@@ -136,7 +135,7 @@ class AlbumUI extends ConsumerWidget {
         ),
         background: Consumer(
           builder: (ctx, ref, child) {
-            final cover = ref.watch(albumProvider(_id).select((s) => s?.cover));
+            final cover = ref.watch(albumProvider(_id).select((s) => s.value?.cover));
             if (cover == null) {
               return _noCoverBanner(ctx, ref);
             } else {
@@ -155,7 +154,7 @@ class AlbumUI extends ConsumerWidget {
       actions: [
         Consumer(
           builder: (ctx, ref, child) {
-            final data = ref.watch(albumProvider(_id));
+            final data = ref.watch(albumProvider(_id)).value;
             if (data != null) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),

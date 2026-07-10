@@ -9,39 +9,38 @@ part of 'db_album_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBAlbumAsync)
-final dbAlbumAsyncProvider = DBAlbumAsyncFamily._();
+@ProviderFor(DBAlbum)
+final dbAlbumProvider = DBAlbumFamily._();
 
-final class DBAlbumAsyncProvider
-    extends $AsyncNotifierProvider<DBAlbumAsync, DBAlbum?> {
-  DBAlbumAsyncProvider._({
-    required DBAlbumAsyncFamily super.from,
+final class DBAlbumProvider extends $AsyncNotifierProvider<DBAlbum, EnAlbum?> {
+  DBAlbumProvider._({
+    required DBAlbumFamily super.from,
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'dbAlbumAsyncProvider',
+         name: r'dbAlbumProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$dBAlbumAsyncHash();
+  String debugGetCreateSourceHash() => _$dBAlbumHash();
 
   @override
   String toString() {
-    return r'dbAlbumAsyncProvider'
+    return r'dbAlbumProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  DBAlbumAsync create() => DBAlbumAsync();
+  DBAlbum create() => DBAlbum();
 
   @override
   bool operator ==(Object other) {
-    return other is DBAlbumAsyncProvider && other.argument == argument;
+    return other is DBAlbumProvider && other.argument == argument;
   }
 
   @override
@@ -50,47 +49,46 @@ final class DBAlbumAsyncProvider
   }
 }
 
-String _$dBAlbumAsyncHash() => r'a221733360a584904cdb7b871c9d74fa95123ddd';
+String _$dBAlbumHash() => r'502b261d17c69f5fed91661ad5efa4d1146c2641';
 
-final class DBAlbumAsyncFamily extends $Family
+final class DBAlbumFamily extends $Family
     with
         $ClassFamilyOverride<
-          DBAlbumAsync,
-          AsyncValue<DBAlbum?>,
-          DBAlbum?,
-          FutureOr<DBAlbum?>,
+          DBAlbum,
+          AsyncValue<EnAlbum?>,
+          EnAlbum?,
+          FutureOr<EnAlbum?>,
           int
         > {
-  DBAlbumAsyncFamily._()
+  DBAlbumFamily._()
     : super(
         retry: null,
-        name: r'dbAlbumAsyncProvider',
+        name: r'dbAlbumProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  DBAlbumAsyncProvider call(int id) =>
-      DBAlbumAsyncProvider._(argument: id, from: this);
+  DBAlbumProvider call(int id) => DBAlbumProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'dbAlbumAsyncProvider';
+  String toString() => r'dbAlbumProvider';
 }
 
-abstract class _$DBAlbumAsync extends $AsyncNotifier<DBAlbum?> {
+abstract class _$DBAlbum extends $AsyncNotifier<EnAlbum?> {
   late final _$args = ref.$arg as int;
   int get id => _$args;
 
-  FutureOr<DBAlbum?> build(int id);
+  FutureOr<EnAlbum?> build(int id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<DBAlbum?>, DBAlbum?>;
+    final ref = this.ref as $Ref<AsyncValue<EnAlbum?>, EnAlbum?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<DBAlbum?>, DBAlbum?>,
-              AsyncValue<DBAlbum?>,
+              AnyNotifier<AsyncValue<EnAlbum?>, EnAlbum?>,
+              AsyncValue<EnAlbum?>,
               Object?,
               Object?
             >;
