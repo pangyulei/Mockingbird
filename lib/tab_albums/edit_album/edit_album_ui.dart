@@ -51,7 +51,7 @@ class EditAlbumUI extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _cover(ctx),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             TextField(
               controller: _nameController,
               cursorColor: Theme.of(ctx).colorScheme.primary,
@@ -81,7 +81,7 @@ class EditAlbumUI extends ConsumerWidget {
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 16,
+                  vertical: 0,
                 ),
               ),
               autofocus: true,
