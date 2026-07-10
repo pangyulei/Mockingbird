@@ -180,18 +180,21 @@ class AlbumUI extends ConsumerWidget {
       fit: StackFit.expand,
       children: [
         Image.file(cover, fit: BoxFit.cover),
-        const DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              stops: [0.0, 0.3, 0.7, 1.0],
-              colors: [
-                Colors.black38,
-                Colors.transparent,
-                Colors.transparent,
-                Colors.black87,
-              ],
+        InkWell(
+          onTap: _logic.albumDetail_onPickCover,
+          child: const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0.0, 0.3, 0.7, 1.0],
+                colors: [
+                  Colors.black38,
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black87,
+                ],
+              ),
             ),
           ),
         ),

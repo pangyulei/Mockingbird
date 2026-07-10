@@ -35,7 +35,10 @@ class Album extends _$Album {
 
   Future<void> onPickCover(File cover) async {
     state = const AsyncLoading();
-    await ref.read(dbAlbumProvider(id).notifier).updateAlbum(cover: () => cover);
+    await ref
+        .read(dbAlbumProvider(id).notifier)
+        .updateAlbum(cover: () => cover);
+    ref.invalidateSelf();
   }
 }
 
