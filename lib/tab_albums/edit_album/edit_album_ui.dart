@@ -55,15 +55,33 @@ class EditAlbumUI extends ConsumerWidget {
             TextField(
               controller: _nameController,
               cursorColor: Theme.of(ctx).colorScheme.primary,
+              style: const TextStyle(fontSize: 16),
               decoration: InputDecoration(
                 labelText: 'Album Name',
+                labelStyle: TextStyle(
+                  color: Theme.of(
+                    ctx,
+                  ).colorScheme.primary.withValues(alpha: 0.7),
+                ),
                 hintText: 'Enter Album name',
                 hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: Colors.white.withValues(alpha: 0.2),
                 ),
                 prefixIcon: Icon(
-                  Icons.playlist_play,
+                  Icons.edit_note_rounded,
                   color: Theme.of(ctx).colorScheme.primary,
+                ),
+                filled: true,
+                fillColor: Theme.of(
+                  ctx,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
                 ),
               ),
               autofocus: true,
@@ -79,9 +97,12 @@ class EditAlbumUI extends ConsumerWidget {
         Consumer(
           builder: (context, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              editAlbumProvider(
-                _id,
-              ).select((s) => (s.value?.enableSubmit ?? false, s.value?.submitTitle ?? '')),
+              editAlbumProvider(_id).select(
+                (s) => (
+                  s.value?.enableSubmit ?? false,
+                  s.value?.submitTitle ?? '',
+                ),
+              ),
             );
             return FilledButton(
               onPressed: enable ? _logic.editAlbum_onSubmit : null,
@@ -95,51 +116,64 @@ class EditAlbumUI extends ConsumerWidget {
   }
 
   Widget _cover(BuildContext ctx) {
-    return Column(
-      children: [
-        GestureDetector(
-          // onTapDown: (_) => _updateState(_state.copyWith(isCoverPressed: true)),
-          // onTapUp: (_) => _updateState(_state.copyWith(isCoverPressed: false)),
-          // onTapCancel: () => _updateState(_state.copyWith(isCoverPressed: false)),
-          onTap: _logic.editAlbum_onPickCover,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            width: double.infinity,
-            height: 150,
-            decoration: BoxDecoration(
-              color: Theme.of(
-                ctx,
-              ).colorScheme.primaryContainer.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Theme.of(ctx).colorScheme.primary.withValues(alpha: 0.1),
-                width: 1,
-              ),
-            ),
-            child: Consumer(
-              builder: (context, ref, child) {
-                final cover = ref.watch(
-                  editAlbumProvider(_id).select((s) => s.value?.cover),
-                );
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
+    return Consumer(
+      builder: (ctx, ref, child) {
+        final cover = ref.watch(
+          editAlbumProvider(_id).select((s) => s.value?.cover),
+        );
+        return Stack(
+          children: [
+            GestureDetector(
+              onTap: _logic.editAlbum_onPickCover,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 100),
+                width: double.infinity,
+                height: 160,
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    ctx,
+                  ).colorScheme.primaryContainer.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    width: 1,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
                   child: cover != null
                       ? Image.file(cover, fit: BoxFit.cover)
                       : _noImage(ctx),
-                );
-              },
+                ),
+              ),
             ),
+            if (cover != null)
+              Positioned(top: 8, right: 8, child: _removeCoverButton(ctx)),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _removeCoverButton(BuildContext ctx) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _logic.editAlbum_onRemoveCover,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.4),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            Icons.delete_outline_rounded,
+            size: 20,
+            color: Theme.of(ctx).colorScheme.error,
           ),
         ),
-        Consumer(
-          builder: (ctx, ref, child) {
-            final cover = ref.watch(
-              editAlbumProvider(_id).select((s) => s.value?.cover),
-            );
-            return cover != null ? _removeButton(ctx) : const SizedBox.shrink();
-          },
-        ),
-      ],
+      ),
     );
   }
 
@@ -173,17 +207,6 @@ class EditAlbumUI extends ConsumerWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _removeButton(BuildContext ctx) {
-    return TextButton.icon(
-      onPressed: _logic.editAlbum_onRemoveCover,
-      icon: const Icon(Icons.delete_outline, size: 18),
-      label: const Text('Remove Cover'),
-      style: TextButton.styleFrom(
-        foregroundColor: Theme.of(ctx).colorScheme.error,
-      ),
     );
   }
 }

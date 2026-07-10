@@ -5,108 +5,69 @@ applyTo: "**/*"
 # Mockingbird Flutter App - AI Agent Instructions
 
 ## Project Overview
-Mockingbird is a Flutter language shadowing app with a 3-tab bottom navigation system (Albums, Player, Settings).
-It's designed for learning languages by shadowing audio/video clips with subtitles, sentence by sentence.
-Albums contain media clips (audio/video), which have associated subtitles and sentences.
-The app uses ObjectBox database for persistence and follows a custom "Logic-State" architecture.
+Mockingbird is a Flutter language shadowing app featuring a 3-tab navigation system: **Albums**, **Player**, and **Settings**.
+It is designed for language learning through shadowing audio/video clips with synchronized subtitles.
+The app follows a **Clean Architecture** influenced "Logic-State" pattern, now fully integrated with **Riverpod** for state management and **ObjectBox** for persistence.
 
 ## Architecture Summary
 
-### State Management Pattern (Logic-State)
-The app uses a specific pattern where Logic is typically encapsulated in a `StatefulWidget`'s `State` class, which implements a UI Output interface.
+### State Management Pattern (Riverpod + UI Interface)
+The app uses Riverpod (with `riverpod_generator`) to manage state, while maintaining a decoupled UI via interfaces.
+
 ```
-Widget (UI) → Screen (Logic - implements UIOutputITF) → State (immutable)
-                                ↓
-                        setState() after state updates
+UI (ConsumerWidget) → Interface (UIOutputITF) → Screen (Logic Implementation)
+         ↓
+State (Riverpod Providers)
 ```
 
-**Key Rules:**
-- **UI Output Interface**: Defined as `abstract interface class {Feature}UIOutputITF`.
-- **UI Widget**: A `StatelessWidget` named `{Feature}UI` that takes the state and the logic interface as parameters.
-- **Screen**: A `StatefulWidget` named `{Feature}Screen` whose `State` class implements `{Feature}UIOutputITF`.
-- **State**: An immutable class named `{Feature}State` with `copyWith()` methods for updates.
-- **Async operations**: Handle async work in the Screen's State class, typically updating the immutable state and calling `setState()`.
+**Key Components:**
+- **UI State**: Immutable classes named `{Feature}State` with `copyWith()` methods.
+- **Providers**: Use `@riverpod` (Async)Notifiers to handle UI business logic and state updates.
+- **UI Output Interface**: Defined as `abstract interface class {Feature}UIOutputITF`. This decouples the visual UI from side-effect heavy logic (like navigation or dialogs).
+- **UI Widget**: A `ConsumerWidget` named `{Feature}UI` that watches providers for state and takes an interface for actions.
+- **Screen**: A `ConsumerStatefulWidget` named `{Feature}Screen` whose `State` class implements `{Feature}UIOutputITF`. It handles navigation and builds the UI widget.
 
-### Database Layer (ObjectBox)
-- **Setup**: Singleton `DBObjectBox` class (in `lib/db/db_objectbox.dart`) manages the Store.
-- **Repositories**: `DBAlbum` and `DBMedia` handle complex data persistence and operations.
-- **Entities**:
-  - `Album`: Has `name`, `cover`, `sortOrder`, and a `@Backlink('albums')` relationship `medias` (`ToMany<Media>`).
-  - `Media`: Has `path`, `name`, and a `ToMany<Album>` relationship `albums`.
-  - `Subtitle`: Has a `ToOne<Media>` and a `@Backlink('subtitle')` relationship `sentences` (`ToMany<Sentence>`).
-  - `Sentence`: Has `startMicroseconds`, `endMicroseconds`, `text`, and a `ToOne<Subtitle>`.
-- **Relationships**: `Album` and `Media` have a Many-to-Many relationship.
-- **Cascading Deletes**: Handled manually in repositories (e.g., `DBAlbum.removeMany` deletes orphaned media, subtitles, and sentences).
+### Data Layer (ObjectBox & DB Providers)
+- **Entities**: Managed in `lib/db/entities/` (Album, Media, Subtitle, Sentence).
+- **Logic Layer**: `DBLogic` (in `lib/db/db_logic.dart`) handles direct database operations.
+- **DB Providers**: Riverpod providers (e.g., `dbAlbumsAsyncProvider`) wrap `DBLogic` to provide reactive access to the database across the app.
+- **Relationships**:
+  - `Album` ↔ `Media` (Many-to-Many).
+  - `Media` → `Subtitle` (One-to-One).
+  - `Subtitle` → `Sentence` (One-to-Many).
 
 ### Navigation
-- **Router**: Uses `go_router` package.
-- **Shell**: `StatefulShellRoute.indexedStack` manages the 3 main tabs.
-- **Routes**: Defined in `AppUI._goRouter()` using `AppRoute` constants.
-- **Tabs**:
-  1. **Albums**: `/albums` (List and Detail views)
-  2. **Player**: `/player` (Media playback and shadowing)
-  3. **Settings**: `/settings` (App configuration)
+- **Router**: Managed via `go_router`.
+- **Tabs**: `StatefulShellRoute.indexedStack` manages Albums, Player, and Settings.
+- **Theme**: Premium **Dark Theme** (Telegram-inspired) with deep navy (`#0E1621`) and surface blue (`#17212B`) palette.
 
 ## File Structure Conventions
 
 ### Directory Structure
 ```
 lib/
-├── app/                    # Global app shell, routing, and UI entry point
-├── db/                     # Database repositories and ObjectBox setup
-├── model/                  # ObjectBox Entities (Album, Media, Subtitle, Sentence)
-├── tab_albums/             # Albums Feature (Grid, Detail, Edit)
-├── tab_player/             # Player Feature (Playback logic, Sentence tracking)
-├── tab_settings/           # Settings Feature
-└── main.dart              # App entry point
+├── app/                    # Routing, Global UI, and Theme
+├── db/                     # Entities, direct DB logic, and DB providers
+├── model/                  # Legacy/Helper models
+├── tab_albums/             # Albums feature (Grid, Detail, Edit)
+├── tab_player/             # Player feature (Playback logic, Shadowing tracking)
+├── tab_settings/           # Settings feature
+└── main.dart              # Entry point with ProviderScope
 ```
 
-### Naming Conventions
-- **Interfaces**: `{Feature}UIOutputITF`
-- **Screens**: `{Feature}Screen`
-- **UI Components**: `{Feature}UI`
-- **States**: `{Feature}State`
-- **Database**: `DB{Feature}`
+### Naming & Coding Standards
+- **Providers**: Defined in `{feature}_provider.dart`. Use `riverpod_generator`.
+- **UI Widgets**: Named `{Feature}UI`. Always extend `ConsumerWidget`.
+- **Logic Interfaces**: Named `{Feature}UIOutputITF`.
+- **Screens**: Named `{Feature}Screen`. Orchestrates the UI and navigation.
+- **State**: Always immutable. Use `AsyncValue` for data that might be loading or have errors.
 
-## Coding Standards
-
-### Logic & UI Pattern Example
-```dart
-abstract interface class FeatureUIOutputITF {
-  void onAction();
-}
-
-class FeatureScreen extends StatefulWidget { ... }
-
-class _FeatureScreenState extends State<FeatureScreen> implements FeatureUIOutputITF {
-  var _state = const FeatureState();
-
-  @override
-  void onAction() {
-    setState(() {
-      _state = _state.copyWith(...);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => FeatureUI(_state, this);
-}
-```
-
-### Media Handling
-- **File Paths**: `Media` stores the full path to the media file.
-- **Types**: `MediaType` (audio/video) is derived from file extension using `MediaType.fromExtension`.
-- **Subtitles**: Linked to `Media`. Currently supports `.srt` and `.vtt`.
-
-### State Updates
-- Use `copyWith()` for all state updates.
-- **Shadow Copy**: `copyWith()` performs shadow copies. Collections are passed by reference unless explicitly copied by the caller.
-- **Optional Updates**: Use `Function?` or similar patterns in `copyWith` for fields that can be set to null.
-
-## Workflow
-1. Define entities in `lib/model/` and run `build_runner`.
-2. Define the UI contract in `{Feature}UIOutputITF`.
-3. Create the immutable `{Feature}State`.
-4. Implement the UI in a `StatelessWidget` named `{Feature}UI`.
-5. Connect everything in `{Feature}Screen` and its `State` class.
-6. Register new routes in `app_ui.dart` and `app_route.dart`.
+## Workflow for New Features
+1. **DB**: Define entities in `lib/db/entities/` and DB logic in `lib/db/db_logic.dart`.
+2. **DB Provider**: Create a Riverpod provider in `lib/db/providers/` to expose the data.
+3. **UI State**: Define the immutable state in `{feature}_state.dart`.
+4. **UI Provider**: Create a provider in the feature folder that transforms DB data into UI state.
+5. **Interface**: Define the user interaction contract in `{feature}_ui.dart` as an interface.
+6. **UI**: Implement the visual layout in `{feature}_ui.dart` as a `ConsumerWidget`.
+7. **Screen**: Create the `{feature}_screen.dart` to implement the interface and build the UI.
+8. **Route**: Register the new screen in `app_ui.dart` and `app_route.dart`.
