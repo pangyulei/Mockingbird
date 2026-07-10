@@ -25,7 +25,9 @@ class _EditAlbumScreenState extends ConsumerState<EditAlbumScreen>
   void initState() {
     super.initState();
     _nameController.addListener(() {
-      ref.read(editAlbumProvider(widget._id).notifier).onNameChanged(_nameController.text);
+      ref
+          .read(editAlbumProvider(widget._id).notifier)
+          .onNameChanged(_nameController.text);
     });
   }
 
@@ -63,7 +65,7 @@ class _EditAlbumScreenState extends ConsumerState<EditAlbumScreen>
 
   @override
   void editAlbum_onSubmit() async {
-    await ref.read(editAlbumAsyncProvider(widget._id).notifier).onSubmit();
+    await ref.read(editAlbumProvider(widget._id).notifier).onSubmit();
     _pop();
   }
 

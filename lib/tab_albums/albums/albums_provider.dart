@@ -8,7 +8,7 @@ part 'albums_provider.g.dart';
 
 @Riverpod(name: 'albumsAsyncProvider')
 class AlbumsAsync extends _$AlbumsAsync {
-  List<DBAlbum> _albums = [];
+  List<DBAlbum> _albums = []; //TODO remove
   @override
   Future<List<DBAlbum>> build() async {
     final albums = ref.watch(dbAlbumsAsyncProvider).value;

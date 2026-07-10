@@ -33,7 +33,7 @@ final class DBAlbumsAsyncProvider
   DBAlbumsAsync create() => DBAlbumsAsync();
 }
 
-String _$dBAlbumsAsyncHash() => r'd95fe013c190a6e0399a36a9c629cc81dcdd5b47';
+String _$dBAlbumsAsyncHash() => r'd4cbfe841988e0a8ad52c38dffa48250d2460c92';
 
 abstract class _$DBAlbumsAsync extends $AsyncNotifier<List<DBAlbum>> {
   FutureOr<List<DBAlbum>> build();

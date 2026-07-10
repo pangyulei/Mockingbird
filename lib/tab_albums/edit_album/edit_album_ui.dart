@@ -25,11 +25,10 @@ class EditAlbumUI extends ConsumerWidget {
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
     ref.listen(
-      editAlbumProvider(_id).select((s) => s.name),
+      editAlbumProvider(_id).select((s) => s.value?.name ?? ''),
       (previous, next) => _nameController.text = next,
     );
-    final isLoading = ref.watch(editAlbumAsyncProvider(_id)).isLoading;
-    return Stack(children: [_dialog(ctx), if (isLoading) _loading()]);
+    return Stack(children: [_dialog(ctx), _loading(ref)]);
   }
 
   Widget _dialog(BuildContext ctx) {
@@ -38,7 +37,7 @@ class EditAlbumUI extends ConsumerWidget {
       title: Consumer(
         builder: (context, ref, child) {
           final title = ref.watch(
-            editAlbumProvider(_id).select((s) => s.title),
+            editAlbumProvider(_id).select((s) => s.value?.title ?? ''),
           );
           return Text(
             title,
@@ -59,7 +58,9 @@ class EditAlbumUI extends ConsumerWidget {
               decoration: InputDecoration(
                 labelText: 'Album Name',
                 hintText: 'Enter Album name',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
                 prefixIcon: Icon(
                   Icons.playlist_play,
                   color: Theme.of(ctx).colorScheme.primary,
@@ -80,7 +81,7 @@ class EditAlbumUI extends ConsumerWidget {
             final (enable, submitTitle) = ref.watch(
               editAlbumProvider(
                 _id,
-              ).select((s) => (s.enableSubmit, s.submitTitle)),
+              ).select((s) => (s.value?.enableSubmit ?? false, s.value?.submitTitle ?? '')),
             );
             return FilledButton(
               onPressed: enable ? _logic.editAlbum_onSubmit : null,
@@ -118,7 +119,7 @@ class EditAlbumUI extends ConsumerWidget {
             child: Consumer(
               builder: (context, ref, child) {
                 final cover = ref.watch(
-                  editAlbumProvider(_id).select((s) => s.cover),
+                  editAlbumProvider(_id).select((s) => s.value?.cover),
                 );
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(24),
@@ -133,7 +134,7 @@ class EditAlbumUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final cover = ref.watch(
-              editAlbumProvider(_id).select((s) => s.cover),
+              editAlbumProvider(_id).select((s) => s.value?.cover),
             );
             return cover != null ? _removeButton(ctx) : const SizedBox.square();
           },
@@ -142,7 +143,11 @@ class EditAlbumUI extends ConsumerWidget {
     );
   }
 
-  Widget _loading() {
+  Widget _loading(WidgetRef ref) {
+    final isLoading = ref.watch(editAlbumProvider(_id)).isLoading;
+    if (!isLoading) {
+      return const SizedBox.shrink();
+    }
     return ColoredBox(
       color: Colors.black.withAlpha(20),
       child: const Center(child: CircularProgressIndicator()),

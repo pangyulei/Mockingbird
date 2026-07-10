@@ -50,7 +50,7 @@ final class DBAlbumAsyncProvider
   }
 }
 
-String _$dBAlbumAsyncHash() => r'5875197f5c477c3e4a6e02d997f6ed7ed62f80db';
+String _$dBAlbumAsyncHash() => r'a221733360a584904cdb7b871c9d74fa95123ddd';
 
 final class DBAlbumAsyncFamily extends $Family
     with

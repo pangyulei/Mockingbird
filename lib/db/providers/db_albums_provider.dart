@@ -29,22 +29,11 @@ class DBAlbumsAsync extends _$DBAlbumsAsync {
     });
   }
 
-  Future<DBAlbum> updateAlbum(
-    DBAlbum album, {
-    String? name,
-    File? Function()? cover,
-  }) async {
-    return await _lock.synchronized(() async {
-      final av = await AsyncValue.guard(() async {
-        return await DBLogic().updateAlbum(album, name: name, cover: cover);
-      });
-      final updatedAlbum = av.value ?? album;
-      final newAlbums = (state.value ?? [])
-          .map((a) => a.id == updatedAlbum.id ? updatedAlbum : a)
-          .toList();
-      state = AsyncData(newAlbums);
-      return updatedAlbum;
-    });
+  void updateAlbum(DBAlbum updatedAlbum) {
+    final List<DBAlbum> newAlbums = (state.value ?? [])
+        .map((a) => a.id == updatedAlbum.id ? updatedAlbum : a)
+        .toList();
+    state = AsyncData(newAlbums);
   }
 
   Future<void> deleteAlbum(DBAlbum album) async {

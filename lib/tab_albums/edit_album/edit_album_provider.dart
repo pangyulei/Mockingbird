@@ -9,55 +9,23 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'edit_album_provider.g.dart';
 
-@riverpod
-class EditAlbumAsync extends _$EditAlbumAsync {
+@Riverpod(name: 'editAlbumProvider')
+class EditAlbum extends _$EditAlbum {
   DBAlbum? _album;
 
   @override
-  Future<DBAlbum?> build(int? id) async {
+  Future<EditAlbumState> build(int? id) async {
+    debugPrint('EditAlbumNotifier($id) ${identityHashCode(this)} build');
     ref.onDispose(() {
-      debugPrint('EditAlbumAsyncNotifier ${identityHashCode(this)} disposed');
+      debugPrint(
+        'EditAlbumAsyncNotifier($id) ${identityHashCode(this)} disposed',
+      );
     });
     if (id == null) {
-      return null;
-    } else {
-      _album = ref.watch(dbAlbumAsyncProvider(id)).value;
-      return _album;
-    }
-  }
-
-  Future<void> onSubmit() async {
-    state = const AsyncLoading();
-    final album = _album;
-    if (album == null) {
-      //creating
-      await AsyncValue.guard(() async {
-        final data = ref.read(editAlbumProvider(id));
-        await ref
-            .read(dbAlbumsAsyncProvider.notifier)
-            .createAlbum(data.name, cover: data.cover);
-      });
-    } else {
-      //editing
-      state = await AsyncValue.guard(() async {
-        final data = ref.read(editAlbumProvider(id));
-        _album = await ref
-            .read(dbAlbumsAsyncProvider.notifier)
-            .updateAlbum(album, name: data.name, cover: () => data.cover);
-        return _album;
-      });
-    }
-  }
-}
-
-@riverpod
-class EditAlbum extends _$EditAlbum {
-  @override
-  EditAlbumState build(int? id) {
-    if (id == null) {
-      return const EditAlbumState.empty();
+      return const EditAlbumState.create();
     } else {
       final album = ref.watch(dbAlbumAsyncProvider(id)).value;
+      _album = album;
       if (album == null) {
         return const EditAlbumState.empty();
       } else {
@@ -70,35 +38,59 @@ class EditAlbum extends _$EditAlbum {
     }
   }
 
+  Future<void> onSubmit() async {
+    state = const AsyncLoading();
+    final id = _$args;
+    final data = state.value;
+    if (data == null) {
+      return;
+    }
+    if (id == null) {
+      //creating
+      await ref
+          .read(dbAlbumsAsyncProvider.notifier)
+          .createAlbum(data.name, cover: data.cover);
+    } else {
+      //editing
+      await ref
+          .read(dbAlbumAsyncProvider(id).notifier)
+          .updateAlbum(name: data.name, cover: () => data.cover);
+    }
+  }
+
   void onCoverChanged(File? newCover) {
-    if (newCover?.path != state.cover?.path) {
-      final album = _$args == null
-          ? null
-          : ref.watch(dbAlbumAsyncProvider(_$args)).value;
-      final enableSubmit = _isSubmitEnable(state.name, newCover, album);
-      state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
+    final data = state.value;
+    if (data == null) {
+      return;
+    }
+    if (newCover?.path != data.cover?.path) {
+      final enableSubmit = _isSubmitEnable(data.name, newCover, _album);
+      state = AsyncData(data.copyWith(cover: () => newCover, enableSubmit: enableSubmit));
     }
   }
 
   void onNameChanged(String newName) {
-    if (newName != state.name) {
-      final album = _$args == null
-          ? null
-          : ref.watch(dbAlbumAsyncProvider(_$args)).value;
-      final enableSubmit = _isSubmitEnable(newName, state.cover, album);
-      state = state.copyWith(name: newName, enableSubmit: enableSubmit);
+    final data = state.value;
+    if (data == null) {
+      return;
+    }
+    if (newName != data.name) {
+      final enableSubmit = _isSubmitEnable(newName, data.cover, _album);
+      state = AsyncData(data.copyWith(name: newName, enableSubmit: enableSubmit));
     }
   }
 
   bool _isSubmitEnable(String name, File? cover, DBAlbum? album) {
-    if (album == null) {
-      //is creating, only valid name
-      return name.trim().isNotEmpty;
-    } else {
-      //is editing, name or cover is different then able to update
-      if (name.trim() != album.name) return true;
-      if (cover?.path != album.cover) return true;
+    if (name.trim().isEmpty) {
       return false;
     }
+    if (album == null) {
+      //is creating, only valid name
+      return true;
+    }
+    //is editing, name or cover is different then able to update
+    if (name.trim() != album.name) return true;
+    if (cover?.path != album.cover) return true;
+    return false;
   }
 }
