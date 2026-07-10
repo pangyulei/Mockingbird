@@ -136,7 +136,7 @@ class EditAlbumUI extends ConsumerWidget {
             final cover = ref.watch(
               editAlbumProvider(_id).select((s) => s.value?.cover),
             );
-            return cover != null ? _removeButton(ctx) : const SizedBox.square();
+            return cover != null ? _removeButton(ctx) : const SizedBox.shrink();
           },
         ),
       ],
