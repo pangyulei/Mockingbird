@@ -12,8 +12,8 @@ class AlbumList extends _$AlbumList {
 
   @override
   Future<AlbumListState> build() async {
-    final albums = ref.watch(dbAlbumsProvider).value;
-    _albums = albums ?? [];
+    final albums = await ref.watch(dbAlbumsProvider.future);
+    _albums = albums;
     return AlbumListState(states: _albums.map((a) => a.toCardState()).toList());
   }
 

@@ -15,6 +15,7 @@ import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tab_albums/album/album_provider.dart';
 import 'package:mockingbird/tab_albums/album/album_ui.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_screen.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 
@@ -80,6 +81,20 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
           .read(albumProvider(widget._id).notifier)
           .onPickCover(newCover);
     }
+  }
+
+  @override
+  void albumDetail_onEditAlbum() async {
+    await _showEditingAlbumDialog(widget._id);
+  }
+
+  Future<void> _showEditingAlbumDialog(int id) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return EditAlbumScreen(id);
+      },
+    );
   }
 
   Future<File?> _pickImage() async {

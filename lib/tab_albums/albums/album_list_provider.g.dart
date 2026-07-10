@@ -33,7 +33,7 @@ final class AlbumListProvider
   AlbumList create() => AlbumList();
 }
 
-String _$albumListHash() => r'5342e4e60553fc608c1b3c685851402ff99f9a64';
+String _$albumListHash() => r'1ea2d5dd1732d8cb923414d84a41f68944dd42c2';
 
 abstract class _$AlbumList extends $AsyncNotifier<AlbumListState> {
   FutureOr<AlbumListState> build();

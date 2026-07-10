@@ -26,11 +26,17 @@ class DBAlbum extends _$DBAlbum {
     if (album == null) {
       return;
     }
+    debugPrint('album($id) ${identityHashCode(state)} before: \n${album.name}\n${album.cover}');
     state = await AsyncValue.guard(() async {
-      final updatedAlbum = await DBLogic().updateAlbum(album, name: name, cover: cover);
+      final updatedAlbum = await DBLogic().updateAlbum(
+        album,
+        name: name,
+        cover: cover,
+      );
       ref.read(dbAlbumsProvider.notifier).updateAlbum(updatedAlbum);
       return updatedAlbum;
     });
+    debugPrint('album($id) ${identityHashCode(state)} after: \n${state.value?.name}\n${state.value?.cover}');
   }
 
   Future<void> importMediasSubtitles(List<File> files) async {

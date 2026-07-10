@@ -9,6 +9,7 @@ abstract interface class AlbumDetailUIOutputITF
     implements MediaCardUIOutputITF {
   void albumDetail_onImport();
   void albumDetail_onPickCover();
+  void albumDetail_onEditAlbum();
 }
 
 class AlbumUI extends ConsumerWidget {
@@ -207,7 +208,7 @@ class AlbumUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     return FloatingActionButton.small(
-      onPressed: _logic.albumDetail_onPickCover,
+      onPressed: _logic.albumDetail_onEditAlbum,
       backgroundColor: Colors.white.withValues(alpha: 0.9),
       foregroundColor: colorScheme.primary,
       child: const Icon(Icons.edit_outlined),

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/tab_albums/album/album_state.dart';
@@ -14,7 +13,11 @@ part 'album_provider.g.dart';
 class Album extends _$Album {
   @override
   Future<AlbumState?> build(int id) async {
-    final album = ref.watch(dbAlbumProvider(id)).value;
+    debugPrint('albumProvider($id) build');
+    ref.onDispose(() {
+      debugPrint('albumProvider($id) disposed');
+    });
+    final album = await ref.watch(dbAlbumProvider(id).future);
     if (album == null) {
       return null;
     } else {
@@ -30,7 +33,6 @@ class Album extends _$Album {
   Future<void> onImport(List<File> files) async {
     state = const AsyncLoading();
     await ref.read(dbAlbumProvider(id).notifier).importMediasSubtitles(files);
-    ref.invalidateSelf();
   }
 
   Future<void> onPickCover(File cover) async {
@@ -38,7 +40,6 @@ class Album extends _$Album {
     await ref
         .read(dbAlbumProvider(id).notifier)
         .updateAlbum(cover: () => cover);
-    ref.invalidateSelf();
   }
 }
 

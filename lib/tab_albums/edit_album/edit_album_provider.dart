@@ -24,7 +24,7 @@ class EditAlbum extends _$EditAlbum {
     if (id == null) {
       return const EditAlbumState.create();
     } else {
-      final album = ref.watch(dbAlbumProvider(id)).value;
+      final album = await ref.watch(dbAlbumProvider(id).future);
       _album = album;
       if (album == null) {
         return const EditAlbumState.empty();
@@ -39,11 +39,11 @@ class EditAlbum extends _$EditAlbum {
   }
 
   Future<void> onSubmit() async {
-    state = const AsyncLoading();
     final data = state.value;
     if (data == null) {
       return;
     }
+    state = const AsyncLoading();
     final localId = id;
     if (localId == null) {
       //creating
