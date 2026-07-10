@@ -26,7 +26,7 @@ class AlbumUI extends ConsumerWidget {
     if (data != null) {
       return const SizedBox.shrink();
     }
-    return const Scaffold(body: Center(child: Text('data == null')));
+    return const Scaffold(body: Center(child: Text('album == null, no any data')));
   }
 
   Widget _loading(WidgetRef ref) {
@@ -67,7 +67,7 @@ class AlbumUI extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.library_music_outlined,
+                          Icons.library_add_outlined,
                           size: 64,
                           color: theme.colorScheme.outlineVariant,
                         ),
@@ -135,7 +135,9 @@ class AlbumUI extends ConsumerWidget {
         ),
         background: Consumer(
           builder: (ctx, ref, child) {
-            final cover = ref.watch(albumProvider(_id).select((s) => s.value?.cover));
+            final cover = ref.watch(
+              albumProvider(_id).select((s) => s.value?.cover),
+            );
             if (cover == null) {
               return _noCoverBanner(ctx, ref);
             } else {
@@ -174,8 +176,6 @@ class AlbumUI extends ConsumerWidget {
   }
 
   Widget _coverBanner(BuildContext ctx, File cover) {
-    final theme = Theme.of(ctx);
-    final colorScheme = theme.colorScheme;
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -195,18 +195,19 @@ class AlbumUI extends ConsumerWidget {
             ),
           ),
         ),
-        Positioned(
-          right: 16,
-          bottom: 16,
-          child: FloatingActionButton.small(
-            heroTag: 'change_cover_fab',
-            onPressed: _logic.albumDetail_onPickCover,
-            backgroundColor: Colors.white.withValues(alpha: 0.9),
-            foregroundColor: colorScheme.primary,
-            child: const Icon(Icons.edit_outlined),
-          ),
-        ),
+        Positioned(right: 16, bottom: 16, child: _editAlbumButton(ctx)),
       ],
+    );
+  }
+
+  Widget _editAlbumButton(BuildContext ctx) {
+    final theme = Theme.of(ctx);
+    final colorScheme = theme.colorScheme;
+    return FloatingActionButton.small(
+      onPressed: _logic.albumDetail_onPickCover,
+      backgroundColor: Colors.white.withValues(alpha: 0.9),
+      foregroundColor: colorScheme.primary,
+      child: const Icon(Icons.edit_outlined),
     );
   }
 
@@ -224,28 +225,33 @@ class AlbumUI extends ConsumerWidget {
           ],
         ),
       ),
-      child: InkWell(
-        onTap: _logic.albumDetail_onPickCover,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.add_photo_alternate_outlined,
-                size: 64,
-                color: colorScheme.primary.withValues(alpha: 0.4),
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: _logic.albumDetail_onPickCover,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: 64,
+                    color: colorScheme.primary.withValues(alpha: 0.4),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Add Cover Photo',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                'Add Cover Photo',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(right: 16, bottom: 16, child: _editAlbumButton(ctx)),
+        ],
       ),
     );
   }

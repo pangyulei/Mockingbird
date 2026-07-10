@@ -40,12 +40,12 @@ class EditAlbum extends _$EditAlbum {
 
   Future<void> onSubmit() async {
     state = const AsyncLoading();
-    final id = _$args;
     final data = state.value;
     if (data == null) {
       return;
     }
-    if (id == null) {
+    final localId = id;
+    if (localId == null) {
       //creating
       await ref
           .read(dbAlbumsProvider.notifier)
@@ -53,7 +53,7 @@ class EditAlbum extends _$EditAlbum {
     } else {
       //editing
       await ref
-          .read(dbAlbumProvider(id).notifier)
+          .read(dbAlbumProvider(localId).notifier)
           .updateAlbum(name: data.name, cover: () => data.cover);
     }
   }
@@ -65,7 +65,9 @@ class EditAlbum extends _$EditAlbum {
     }
     if (newCover?.path != data.cover?.path) {
       final enableSubmit = _isSubmitEnable(data.name, newCover, _album);
-      state = AsyncData(data.copyWith(cover: () => newCover, enableSubmit: enableSubmit));
+      state = AsyncData(
+        data.copyWith(cover: () => newCover, enableSubmit: enableSubmit),
+      );
     }
   }
 
@@ -76,7 +78,9 @@ class EditAlbum extends _$EditAlbum {
     }
     if (newName != data.name) {
       final enableSubmit = _isSubmitEnable(newName, data.cover, _album);
-      state = AsyncData(data.copyWith(name: newName, enableSubmit: enableSubmit));
+      state = AsyncData(
+        data.copyWith(name: newName, enableSubmit: enableSubmit),
+      );
     }
   }
 

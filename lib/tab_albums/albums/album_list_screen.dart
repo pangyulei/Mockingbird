@@ -2,62 +2,22 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/albums/albums_provider.dart';
-import 'package:mockingbird/tab_albums/albums/albums_ui.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mockingbird/app/app_route.dart';
+import 'package:mockingbird/tab_albums/albums/album_list_provider.dart';
+import 'package:mockingbird/tab_albums/albums/album_list_ui.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_screen.dart';
 
-class AlbumsScreen extends ConsumerStatefulWidget {
-  const AlbumsScreen({super.key});
+class AlbumListScreen extends ConsumerStatefulWidget {
+  const AlbumListScreen({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _AlbumsScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _AlbumListScreenState();
 }
 
-class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
-    implements AlbumsUIOutputITF {
-  // var _albums = <Album>[];
-  // final _subs = <StreamSubscription>[];
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _observeAlbums();
-  // }
-
-  // void _observeAlbums() {
-  //   _state = _state.copyWith(showLoading: true);
-  //   //observe Album DB
-  //   final albumsStream = DBObjectBox().store
-  //       .box<Album>()
-  //       .query()
-  //       .watch(triggerImmediately: true)
-  //       .map((q) async => await q.findAsync());
-  //   final sub = albumsStream.listen((event) async {
-  //     _albums = await event;
-  //     final albumStates = _albums.map((a) => a.toCardState()).toList();
-  //     setState(() {
-  //       _state = _state.copyWith(
-  //         showLoading: false,
-  //         albumStates: albumStates,
-  //         albumsCount: _albums.length,
-  //       );
-  //     });
-  //   });
-  //   _subs.add(sub);
-  // }
-
-  // @override
-  // void dispose() {
-  //   _cancelAllSubs();
-  //   super.dispose();
-  // }
-
-  // void _cancelAllSubs() {
-  //   for (final sub in _subs) {
-  //     sub.cancel();
-  //   }
-  // }
-
+class _AlbumListScreenState extends ConsumerState<AlbumListScreen>
+    implements AlbumListUIOutputITF {
   Future<void> _showCreatingAlbumDialog() async {
     await showDialog(
       context: context,
@@ -78,7 +38,7 @@ class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return AlbumsUI(this);
+    return AlbumListUI(this);
   }
 
   @override
@@ -88,7 +48,7 @@ class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
 
   @override
   void albumCard_onDelete(int index) async {
-    final name = ref.read(albumsProvider.notifier).nameForIndex(index);
+    final name = ref.read(albumListProvider.notifier).nameForIndex(index);
     if (name == null) {
       return;
     }
@@ -119,13 +79,12 @@ class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
       return;
     }
 
-    await ref.read(albumsProvider.notifier).deleteAlbum(index);
-    
+    await ref.read(albumListProvider.notifier).deleteAlbum(index);
   }
 
   @override
   void albumCard_onEdit(int index) async {
-    final id = ref.read(albumsProvider.notifier).idForIndex(index);
+    final id = ref.read(albumListProvider.notifier).idForIndex(index);
     if (id != null) {
       debugPrint('edit album $id');
       await _showEditingAlbumDialog(id);
@@ -136,6 +95,9 @@ class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
 
   @override
   void albumCard_onTap(int index) {
-    // context.go(AppRoute.albumById(_albums[index].id));
+    final id = ref.read(albumListProvider.notifier).idForIndex(index);
+    if (id != null) {
+      context.go(AppRoute.albumById(id));
+    }
   }
 }

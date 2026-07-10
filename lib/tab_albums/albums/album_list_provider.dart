@@ -1,21 +1,20 @@
-import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
-import 'package:mockingbird/tab_albums/albums/albums_state.dart';
+import 'package:mockingbird/tab_albums/albums/album_list_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'albums_provider.g.dart';
+part 'album_list_provider.g.dart';
 
-@Riverpod(name: 'albumsProvider')
-class Albums extends _$Albums {
+@Riverpod(name: 'albumListProvider')
+class AlbumList extends _$AlbumList {
   List<EnAlbum> _albums = [];
 
   @override
-  Future<AlbumsState> build() async {
+  Future<AlbumListState> build() async {
     final albums = ref.watch(dbAlbumsProvider).value;
     _albums = albums ?? [];
-    return AlbumsState(states: _albums.map((a) => a.toCardState()).toList());
+    return AlbumListState(states: _albums.map((a) => a.toCardState()).toList());
   }
 
   int? idForIndex(int i) {

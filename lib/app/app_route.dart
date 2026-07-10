@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/tab_albums/album/album_screen.dart';
-import 'package:mockingbird/tab_albums/albums/albums_screen.dart';
+import 'package:mockingbird/tab_albums/albums/album_list_screen.dart';
 import 'package:mockingbird/tab_player/player/player_screen.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
 typedef OnAppTab = void Function(int index, StatefulNavigationShell shell);
+
+const _kAlbums = 'albums';
+const _kPlayer = 'player';
+const _kSettings = 'settings';
 
 class AppRoute {
   static AppRoute? _instance;
@@ -23,22 +27,13 @@ class AppRoute {
       return instance;
     }
   }
-
-  //TODO 这些属性谁在用 _kXXXXX
-  //TODO 变成实例方法
-  static const String _kAlbums = 'albums';
-
   static String get albums => '/$_kAlbums';
 
   static String albumById(int id) => '/$_kAlbums/$id';
 
-  static const String _kPlayer = 'player';
-
   static String get player => '/$_kPlayer';
 
   static String playerById(int id) => '/$_kPlayer/$id';
-
-  static const String _kSettings = 'settings';
 
   static String get settings => '/$_kSettings';
 
@@ -60,7 +55,7 @@ class AppRoute {
   static GoRoute _albumsRoute() => GoRoute(
     path: AppRoute.albums,
     builder: (BuildContext context, GoRouterState state) {
-      return const AlbumsScreen();
+      return const AlbumListScreen();
     },
     routes: <RouteBase>[
       // Sub-route: Accessible via '/details'
@@ -72,7 +67,7 @@ class AppRoute {
           if (albumId != null) {
             return AlbumScreen(albumId);
           }
-          return const AlbumsScreen();
+          return const AlbumListScreen();
         },
       ),
     ],

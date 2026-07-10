@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
@@ -11,16 +12,11 @@ part 'album_provider.g.dart';
 
 @Riverpod(name: 'albumProvider')
 class Album extends _$Album {
-  EnAlbum? _album;
   @override
-  Future<AlbumState> build(int id) async {
+  Future<AlbumState?> build(int id) async {
     final album = ref.watch(dbAlbumProvider(id)).value;
-    _album = album;
-    _album?.medias.sort(
-      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-    );
     if (album == null) {
-      return const AlbumState.empty();
+      return null;
     } else {
       final coverPath = album.cover;
       return AlbumState(
@@ -29,6 +25,12 @@ class Album extends _$Album {
         mediaStates: album.medias.map((m) => m.toCardState()).toList(),
       );
     }
+  }
+
+  Future<void> onImport(List<File> files) async {
+    state = const AsyncLoading();
+    await ref.read(dbAlbumProvider(id).notifier).importMediasSubtitles(files);
+    ref.invalidateSelf();
   }
 }
 

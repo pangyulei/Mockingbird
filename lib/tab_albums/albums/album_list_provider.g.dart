@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'albums_provider.dart';
+part of 'album_list_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,42 +9,43 @@ part of 'albums_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(Albums)
-final albumsProvider = AlbumsProvider._();
+@ProviderFor(AlbumList)
+final albumListProvider = AlbumListProvider._();
 
-final class AlbumsProvider extends $AsyncNotifierProvider<Albums, AlbumsState> {
-  AlbumsProvider._()
+final class AlbumListProvider
+    extends $AsyncNotifierProvider<AlbumList, AlbumListState> {
+  AlbumListProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'albumsProvider',
+        name: r'albumListProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$albumsHash();
+  String debugGetCreateSourceHash() => _$albumListHash();
 
   @$internal
   @override
-  Albums create() => Albums();
+  AlbumList create() => AlbumList();
 }
 
-String _$albumsHash() => r'f368876cae6ee04d13038b643cf4f75ea33b8159';
+String _$albumListHash() => r'5342e4e60553fc608c1b3c685851402ff99f9a64';
 
-abstract class _$Albums extends $AsyncNotifier<AlbumsState> {
-  FutureOr<AlbumsState> build();
+abstract class _$AlbumList extends $AsyncNotifier<AlbumListState> {
+  FutureOr<AlbumListState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AlbumsState>, AlbumsState>;
+    final ref = this.ref as $Ref<AsyncValue<AlbumListState>, AlbumListState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AlbumsState>, AlbumsState>,
-              AsyncValue<AlbumsState>,
+              AnyNotifier<AsyncValue<AlbumListState>, AlbumListState>,
+              AsyncValue<AlbumListState>,
               Object?,
               Object?
             >;

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:collection/collection.dart'; // 👈 确保顶部导了这个包
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/app/app_route.dart';
@@ -12,22 +13,24 @@ import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/objectbox.g.dart';
+import 'package:mockingbird/tab_albums/album/album_provider.dart';
 import 'package:mockingbird/tab_albums/album/album_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 
 import 'album_state.dart';
 
-class AlbumScreen extends StatefulWidget {
+class AlbumScreen extends ConsumerStatefulWidget {
   final int _id;
 
   const AlbumScreen(this._id, {super.key});
-
+  
   @override
-  State<AlbumScreen> createState() => _AlbumScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _AlbumScreenState();
+
 }
 
-class _AlbumScreenState extends State<AlbumScreen>
+class _AlbumScreenState extends ConsumerState<AlbumScreen>
     implements AlbumDetailUIOutputITF {
   final _picker = ImagePicker();
 
@@ -66,13 +69,8 @@ class _AlbumScreenState extends State<AlbumScreen>
 
   @override
   void albumDetail_onImport() async {
-    // final album = _album;
-    // if (album == null) {
-    //   debugPrint('album==null, can NOT import medias');
-    //   return;
-    // }
-    // final files = await _pickMediasAndSubtitleFiles();
-    // await DBLogic().importMediaAndSubtitles(album, files);
+    final files = await _pickMediasAndSubtitleFiles();
+    ref.read(albumProvider(widget._id).notifier).onImport(files);
   }
 
   @override
@@ -206,4 +204,3 @@ class _AlbumScreenState extends State<AlbumScreen>
     // await DBLogic().deleteSubtitle(media);
   }
 }
-

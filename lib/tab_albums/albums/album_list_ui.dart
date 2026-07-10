@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
-import 'package:mockingbird/tab_albums/albums/albums_provider.dart';
+import 'package:mockingbird/tab_albums/albums/album_list_provider.dart';
 
-abstract interface class AlbumsUIOutputITF implements AlbumCardUIOutputITF {
+abstract interface class AlbumListUIOutputITF implements AlbumCardUIOutputITF {
   void albumsGrid_onAddAlbum();
 }
 
-class AlbumsUI extends ConsumerWidget {
-  final AlbumsUIOutputITF _logic;
-  const AlbumsUI(this._logic, {super.key});
+class AlbumListUI extends ConsumerWidget {
+  final AlbumListUIOutputITF _logic;
+  const AlbumListUI(this._logic, {super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
@@ -17,7 +17,9 @@ class AlbumsUI extends ConsumerWidget {
   }
 
   Widget _empty(BuildContext ctx, WidgetRef ref) {
-    final isEmpty = ref.watch(albumsProvider.select((s) => s.value?.states.isEmpty ?? true));
+    final isEmpty = ref.watch(
+      albumListProvider.select((s) => s.value?.states.isEmpty ?? true),
+    );
     if (!isEmpty) {
       return const SizedBox.shrink();
     }
@@ -40,7 +42,7 @@ class AlbumsUI extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final count = ref.watch(
-                albumsProvider.select((s) => s.value?.states.length ?? 0),
+                albumListProvider.select((s) => s.value?.states.length ?? 0),
               );
               return Text(
                 '$count created albums',
@@ -64,7 +66,7 @@ class AlbumsUI extends ConsumerWidget {
   }
 
   Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(albumsProvider).isLoading;
+    final isLoading = ref.watch(albumListProvider).isLoading;
     if (!isLoading) {
       return const SizedBox.shrink();
     }
@@ -75,7 +77,9 @@ class AlbumsUI extends ConsumerWidget {
   }
 
   Widget _grid(WidgetRef ref) {
-    final states = ref.watch(albumsProvider.select((s) => s.value?.states ?? []));
+    final states = ref.watch(
+      albumListProvider.select((s) => s.value?.states ?? []),
+    );
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: states.length,

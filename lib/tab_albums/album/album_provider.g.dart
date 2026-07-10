@@ -12,7 +12,7 @@ part of 'album_provider.dart';
 @ProviderFor(Album)
 final albumProvider = AlbumFamily._();
 
-final class AlbumProvider extends $AsyncNotifierProvider<Album, AlbumState> {
+final class AlbumProvider extends $AsyncNotifierProvider<Album, AlbumState?> {
   AlbumProvider._({
     required AlbumFamily super.from,
     required int super.argument,
@@ -49,15 +49,15 @@ final class AlbumProvider extends $AsyncNotifierProvider<Album, AlbumState> {
   }
 }
 
-String _$albumHash() => r'1053ae7613d80bb84d3968bd2b0c3cbc84163735';
+String _$albumHash() => r'0407bc83980a884701f204fe12d839fa353ef644';
 
 final class AlbumFamily extends $Family
     with
         $ClassFamilyOverride<
           Album,
-          AsyncValue<AlbumState>,
-          AlbumState,
-          FutureOr<AlbumState>,
+          AsyncValue<AlbumState?>,
+          AlbumState?,
+          FutureOr<AlbumState?>,
           int
         > {
   AlbumFamily._()
@@ -75,20 +75,20 @@ final class AlbumFamily extends $Family
   String toString() => r'albumProvider';
 }
 
-abstract class _$Album extends $AsyncNotifier<AlbumState> {
+abstract class _$Album extends $AsyncNotifier<AlbumState?> {
   late final _$args = ref.$arg as int;
   int get id => _$args;
 
-  FutureOr<AlbumState> build(int id);
+  FutureOr<AlbumState?> build(int id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AlbumState>, AlbumState>;
+    final ref = this.ref as $Ref<AsyncValue<AlbumState?>, AlbumState?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AlbumState>, AlbumState>,
-              AsyncValue<AlbumState>,
+              AnyNotifier<AsyncValue<AlbumState?>, AlbumState?>,
+              AsyncValue<AlbumState?>,
               Object?,
               Object?
             >;
