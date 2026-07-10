@@ -17,7 +17,7 @@ class AlbumsUI extends ConsumerWidget {
   }
 
   Widget _empty(BuildContext ctx, WidgetRef ref) {
-    final isEmpty = ref.watch(albumsProvider.select((s) => s.states.isEmpty));
+    final isEmpty = ref.watch(albumsProvider.select((s) => s.value?.states.isEmpty ?? true));
     if (!isEmpty) {
       return const SizedBox.shrink();
     }
@@ -40,7 +40,7 @@ class AlbumsUI extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final count = ref.watch(
-                albumsProvider.select((s) => s.states.length),
+                albumsProvider.select((s) => s.value?.states.length ?? 0),
               );
               return Text(
                 '$count created albums',
@@ -64,7 +64,7 @@ class AlbumsUI extends ConsumerWidget {
   }
 
   Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(albumsAsyncProvider).isLoading;
+    final isLoading = ref.watch(albumsProvider).isLoading;
     if (!isLoading) {
       return const SizedBox.shrink();
     }
@@ -75,7 +75,7 @@ class AlbumsUI extends ConsumerWidget {
   }
 
   Widget _grid(WidgetRef ref) {
-    final states = ref.watch(albumsProvider.select((s) => s.states));
+    final states = ref.watch(albumsProvider.select((s) => s.value?.states ?? []));
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: states.length,

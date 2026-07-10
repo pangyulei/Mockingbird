@@ -124,8 +124,7 @@ class _AlbumsScreenState extends ConsumerState<AlbumsScreen>
 
   @override
   void albumCard_onEdit(int index) async {
-    final albums = ref.read(albumsAsyncProvider).value;
-    final id = albums?.elementAtOrNull(index)?.id;
+    final id = ref.read(albumsProvider.notifier).idForIndex(index);
     if (id != null) {
       debugPrint('edit album $id');
       await _showEditingAlbumDialog(id);

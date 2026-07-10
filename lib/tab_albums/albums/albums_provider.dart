@@ -6,23 +6,19 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'albums_provider.g.dart';
 
-@Riverpod(name: 'albumsAsyncProvider')
-class AlbumsAsync extends _$AlbumsAsync {
-  List<DBAlbum> _albums = []; //TODO remove
-  @override
-  Future<List<DBAlbum>> build() async {
-    final albums = ref.watch(dbAlbumsAsyncProvider).value;
-    _albums = albums ?? [];
-    return _albums;
-  }
-}
-
 @Riverpod(name: 'albumsProvider')
 class Albums extends _$Albums {
+  List<DBAlbum> _albums = [];
+
   @override
-  AlbumsState build() {
-    final albums = ref.watch(albumsAsyncProvider).value ?? [];
-    return AlbumsState(states: albums.map((a) => a.toCardState()).toList());
+  Future<AlbumsState> build() async {
+    final albums = ref.watch(dbAlbumsAsyncProvider).value;
+    _albums = albums ?? [];
+    return AlbumsState(states: _albums.map((a) => a.toCardState()).toList());
+  }
+
+  int? idForIndex(int i) {
+    return _albums.elementAtOrNull(i)?.id;
   }
 }
 
