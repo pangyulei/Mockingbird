@@ -9,39 +9,38 @@ part of 'db_media_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBMediaAsync)
-final dbMediaAsyncProvider = DBMediaAsyncFamily._();
+@ProviderFor(DBMedia)
+final dbMediaProvider = DBMediaFamily._();
 
-final class DBMediaAsyncProvider
-    extends $AsyncNotifierProvider<DBMediaAsync, EnMedia?> {
-  DBMediaAsyncProvider._({
-    required DBMediaAsyncFamily super.from,
+final class DBMediaProvider extends $AsyncNotifierProvider<DBMedia, EnMedia?> {
+  DBMediaProvider._({
+    required DBMediaFamily super.from,
     required int super.argument,
   }) : super(
          retry: null,
-         name: r'dbMediaAsyncProvider',
+         name: r'dbMediaProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$dBMediaAsyncHash();
+  String debugGetCreateSourceHash() => _$dBMediaHash();
 
   @override
   String toString() {
-    return r'dbMediaAsyncProvider'
+    return r'dbMediaProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  DBMediaAsync create() => DBMediaAsync();
+  DBMedia create() => DBMedia();
 
   @override
   bool operator ==(Object other) {
-    return other is DBMediaAsyncProvider && other.argument == argument;
+    return other is DBMediaProvider && other.argument == argument;
   }
 
   @override
@@ -50,34 +49,33 @@ final class DBMediaAsyncProvider
   }
 }
 
-String _$dBMediaAsyncHash() => r'9c9139bdec94f3a31da68c2f90543c3339d22113';
+String _$dBMediaHash() => r'b802cea46f05b97f3fbeb523245669e20bc1d8c7';
 
-final class DBMediaAsyncFamily extends $Family
+final class DBMediaFamily extends $Family
     with
         $ClassFamilyOverride<
-          DBMediaAsync,
+          DBMedia,
           AsyncValue<EnMedia?>,
           EnMedia?,
           FutureOr<EnMedia?>,
           int
         > {
-  DBMediaAsyncFamily._()
+  DBMediaFamily._()
     : super(
         retry: null,
-        name: r'dbMediaAsyncProvider',
+        name: r'dbMediaProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  DBMediaAsyncProvider call(int id) =>
-      DBMediaAsyncProvider._(argument: id, from: this);
+  DBMediaProvider call(int id) => DBMediaProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'dbMediaAsyncProvider';
+  String toString() => r'dbMediaProvider';
 }
 
-abstract class _$DBMediaAsync extends $AsyncNotifier<EnMedia?> {
+abstract class _$DBMedia extends $AsyncNotifier<EnMedia?> {
   late final _$args = ref.$arg as int;
   int get id => _$args;
 

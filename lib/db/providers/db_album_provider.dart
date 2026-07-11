@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
+import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_albums_provider.dart';
+import 'package:objectbox/objectbox.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:synchronized/synchronized.dart';
 
 part 'db_album_provider.g.dart';
 
@@ -26,21 +29,25 @@ class DBAlbum extends _$DBAlbum {
     if (album == null) {
       return;
     }
-    debugPrint('album($id) ${identityHashCode(state)} before: \n${album.name}\n${album.cover}');
+    debugPrint(
+      'album($id) ${identityHashCode(state)} before: \n${album.name}\n${album.cover}',
+    );
     state = await AsyncValue.guard(() async {
       final updatedAlbum = await DBLogic().updateAlbum(
         album,
         name: name,
         cover: cover,
       );
-      ref.read(dbAlbumsProvider.notifier).updateAlbum(updatedAlbum);
+      ref.read(dbAlbumsProvider.notifier).updateByAlbumUpdated(updatedAlbum);
       return updatedAlbum;
     });
-    debugPrint('album($id) ${identityHashCode(state)} after: \n${state.value?.name}\n${state.value?.cover}');
+    debugPrint(
+      'album($id) ${identityHashCode(state)} after: \n${state.value?.name}\n${state.value?.cover}',
+    );
   }
 
   Future<void> importMediasSubtitles(List<File> files) async {
-    final album = state.value;
+    final album = await future;
     if (album == null) {
       debugPrint('album==null, can NOT import medias');
       return;
@@ -52,9 +59,41 @@ class DBAlbum extends _$DBAlbum {
         album.sortMedias();
       }
       //notify dbAlbums update
-      ref.read(dbAlbumsProvider.notifier).updateAlbum(album);
+      await ref.read(dbAlbumsProvider.notifier).updateByAlbumUpdated(album);
       return album;
     });
+  }
+
+  Future<void> updateByMediaUpdated(EnMedia updatedMedia) async {
+    final album = await future;
+    if (album == null) {
+      return;
+    }
+    final updatedMedias = album.medias
+        .map((media) => media.id == updatedMedia.id ? updatedMedia : media)
+        .toList();
+    final updatedAlbum = album.copyWith(medias: updatedMedias);
+    updatedAlbum.sortMedias();
+    state = AsyncData(updatedAlbum);
+    await ref
+        .read(dbAlbumsProvider.notifier)
+        .updateByAlbumUpdated(updatedAlbum);
+  }
+
+  Future<void> updateByMediaDeleted(int mediaId) async {
+    final album = await future;
+    if (album == null) {
+      debugPrint('album==null');
+      return;
+    }
+    album.medias.removeWhere((media) => media.id == mediaId);
+    state = AsyncData(album);
+    await ref.read(dbAlbumsProvider.notifier).updateByAlbumUpdated(album);
+  }
+
+  EnMedia? mediaAtIndex(int i) {
+    final album = state.value;
+    return album?.medias.elementAtOrNull(i);
   }
 }
 

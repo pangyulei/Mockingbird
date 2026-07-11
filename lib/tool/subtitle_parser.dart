@@ -7,24 +7,25 @@ import 'package:path/path.dart' as p;
 import '../db/entities/en_sentence.dart';
 
 class SubtitleParser {
-  static Future<EnSubtitle> parsePath(String pathStr) async {
+  static Future<EnSubtitle?> parsePath(String pathStr) async {
     final file = File(pathStr);
     return await parseFile(file);
   }
 
-  static Future<EnSubtitle> parseFile(File file) async {
+  static Future<EnSubtitle?> parseFile(File file) async {
     final content = await file.readAsString();
     if (file.path.endsWith('.srt')) {
       return _parseSrt(content);
     } else if (file.path.endsWith('.vtt')) {
       return _parseVtt(content);
     }
-    throw ArgumentError(
+    debugPrint(
       'We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}',
     );
+    return null;
   }
 
-  static EnSubtitle _parseSrt(String content) {
+  static EnSubtitle? _parseSrt(String content) {
     final sentences = <EnSentence>[];
     // Split by double newline (supporting both \n and \r\n)
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
@@ -71,9 +72,13 @@ class SubtitleParser {
         debugPrint('Error parsing SRT block: $e');
       }
     }
-    final subtitle = EnSubtitle(id: 0);
-    subtitle.sentences.addAll(sentences);
-    return subtitle;
+    if (sentences.isNotEmpty) {
+      final subtitle = EnSubtitle(id: 0);
+      subtitle.sentences.addAll(sentences);
+      return subtitle;
+    } else {
+      return null;
+    }
   }
 
   static Duration _parseSrtTime(String timeStr) {
@@ -95,7 +100,7 @@ class SubtitleParser {
     );
   }
 
-  static EnSubtitle _parseVtt(String content) {
+  static EnSubtitle? _parseVtt(String content) {
     final sentences = <EnSentence>[];
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
@@ -140,9 +145,13 @@ class SubtitleParser {
         debugPrint('Error parsing VTT block: $e');
       }
     }
-    final subtitle = EnSubtitle(id: 0);
-    subtitle.sentences.addAll(sentences);
-    return subtitle;
+    if (sentences.isNotEmpty) {
+      final subtitle = EnSubtitle(id: 0);
+      subtitle.sentences.addAll(sentences);
+      return subtitle;
+    } else {
+      return null;
+    }
   }
 
   static Duration _parseVttTime(String timeStr) {

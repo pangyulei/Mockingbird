@@ -131,8 +131,10 @@ class DBLogic {
       int i = e.key;
       final media = e.value.media.incVersion();
       final subtitleWithoutId = subtitlesWithoutId[i];
-      media.subtitles.clear();
-      media.subtitles.add(subtitleWithoutId);
+      if (subtitleWithoutId != null) {
+        media.subtitles.clear();
+        media.subtitles.add(subtitleWithoutId);
+      }
       return media;
     }).toList();
     return mediasFilledSubtitle;

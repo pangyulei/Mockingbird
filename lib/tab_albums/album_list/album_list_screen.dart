@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/tab_albums/albums/album_list_provider.dart';
-import 'package:mockingbird/tab_albums/albums/album_list_ui.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_screen.dart';
 
 class AlbumListScreen extends ConsumerStatefulWidget {
@@ -48,7 +48,7 @@ class _AlbumListScreenState extends ConsumerState<AlbumListScreen>
 
   @override
   void albumCard_onDelete(int index) async {
-    final name = ref.read(albumListProvider.notifier).nameForIndex(index);
+    final name = ref.read(albumListProvider.notifier).albumNameAtIndex(index);
     if (name == null) {
       return;
     }
@@ -84,7 +84,7 @@ class _AlbumListScreenState extends ConsumerState<AlbumListScreen>
 
   @override
   void albumCard_onEdit(int index) async {
-    final id = ref.read(albumListProvider.notifier).idForIndex(index);
+    final id = ref.read(albumListProvider.notifier).albumIdAtIndex(index);
     if (id != null) {
       debugPrint('edit album $id');
       await _showEditingAlbumDialog(id);
@@ -95,7 +95,7 @@ class _AlbumListScreenState extends ConsumerState<AlbumListScreen>
 
   @override
   void albumCard_onTap(int index) {
-    final id = ref.read(albumListProvider.notifier).idForIndex(index);
+    final id = ref.read(albumListProvider.notifier).albumIdAtIndex(index);
     if (id != null) {
       context.go(AppRoute.albumById(id));
     }

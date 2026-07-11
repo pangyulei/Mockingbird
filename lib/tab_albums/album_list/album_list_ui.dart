@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
-import 'package:mockingbird/tab_albums/albums/album_list_provider.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
 
 abstract interface class AlbumListUIOutputITF implements AlbumCardUIOutputITF {
   void albumsGrid_onAddAlbum();

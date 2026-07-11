@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/tab_albums/album/album_screen.dart';
-import 'package:mockingbird/tab_albums/albums/album_list_screen.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_screen.dart';
 import 'package:mockingbird/tab_player/player/player_screen.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 

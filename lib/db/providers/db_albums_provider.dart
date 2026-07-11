@@ -3,13 +3,11 @@ import 'dart:io';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:synchronized/synchronized.dart';
 
 part 'db_albums_provider.g.dart';
 
 @Riverpod(name: 'dbAlbumsProvider')
 class DBAlbums extends _$DBAlbums {
-
   @override
   Future<List<EnAlbum>> build() async {
     return await DBLogic().loadAlbums();
@@ -26,18 +24,29 @@ class DBAlbums extends _$DBAlbums {
     return newAlbum;
   }
 
-  void updateAlbum(EnAlbum updatedAlbum) {
-    final List<EnAlbum> newAlbums = (state.value ?? [])
-        .map((a) => a.id == updatedAlbum.id ? updatedAlbum : a)
-        .toList();
-    state = AsyncData(newAlbums);
+  Future<void> updateByAlbumUpdated(EnAlbum updatedAlbum) async {
+    final albums = await future;
+    final updatedAlbums = albums.map((a) => a.id == updatedAlbum.id ? updatedAlbum : a).toList();
+    state = AsyncData(updatedAlbums);
   }
 
-  Future<void> deleteAlbum(EnAlbum album) async {
-    final cachedAlbums = state.value ?? [];
+  Future<void> deleteAlbum(int i) async {
+    final albums = state.value;
+    if (albums == null) {
+      return;
+    }
+    final album = albums.elementAtOrNull(i);
+    if (album == null) {
+      return;
+    }
     state = await AsyncValue.guard(() async {
       await DBLogic().deleteAlbum(album);
-      return cachedAlbums.where((a) => a.id != album.id).toList();
+      albums.removeAt(i);
+      return albums;
     });
+  }
+
+  EnAlbum? albumAtIndex(int i) {
+    return state.value?.elementAtOrNull(i);
   }
 }
