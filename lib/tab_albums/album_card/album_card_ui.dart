@@ -1,6 +1,11 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'album_card_state.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mockingbird/app/app_route.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
 enum _MoreItem {
   delete('delete'),
@@ -10,27 +15,70 @@ enum _MoreItem {
   const _MoreItem(this.raw);
 }
 
-abstract interface class AlbumCardUIOutputITF {
-  void albumCard_onTap(int index);
-  void albumCard_onEdit(int index);
-  void albumCard_onDelete(int index);
-}
+class AlbumCardUI extends ConsumerWidget {
+  final int _id;
+  const AlbumCardUI(this._id, {super.key});
 
+  void _onTap(BuildContext ctx) {
+    ctx.go(AppRoute.albumById(_id));
+  }
 
+  void _onEdit(BuildContext ctx) async {
+    debugPrint('edit album $_id');
+    await _showEditingAlbumDialog(ctx);
+  }
 
-class AlbumCardUI extends StatelessWidget {
-  final AlbumCardUIOutputITF _logic;
-  final AlbumCardState _state;
-  final int _index;
-  const AlbumCardUI(this._index, this._state, this._logic, {super.key});
+  void _onDelete(BuildContext ctx, WidgetRef ref) async {
+    final name = ref.read(albumCardProvider(_id).notifier).albumName;
+    if (name == null) {
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: ctx,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Album'),
+        content: Text(
+          'Are you sure you want to delete "$name"? This action cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == null || !confirmed) {
+      return;
+    }
+
+    await ref.read(albumCardProvider(_id).notifier).delete();
+  }
+
+  Future<void> _showEditingAlbumDialog(BuildContext ctx) async {
+    await showDialog(
+      context: ctx,
+      builder: (ctx) {
+        return EditAlbumUI(_id);
+      },
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  Widget build(BuildContext ctx, WidgetRef ref) {
+    final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
 
     return InkWell(
-      onTap: () => _logic.albumCard_onTap(_index),
+      onTap: () => _onTap,
       borderRadius: BorderRadius.circular(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -53,7 +101,7 @@ class AlbumCardUI extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 child: Stack(
                   children: [
-                    Positioned.fill(child: _cover(context)),
+                    Positioned.fill(child: _cover(ctx, ref)),
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -68,7 +116,7 @@ class AlbumCardUI extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Positioned(top: 8, right: 8, child: _menu(context)),
+                    Positioned(top: 8, right: 8, child: _menu(ctx, ref)),
                   ],
                 ),
               ),
@@ -80,22 +128,42 @@ class AlbumCardUI extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _state.name,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.2,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Consumer(
+                  builder: (context, ref, child) {
+                    final name =
+                        ref.watch(
+                          albumCardProvider(_id).select((s) => s.value?.name),
+                        ) ??
+                        '';
+                    return Text(
+                      name,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  '${_state.mediasCount} Medias',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.outline,
-                    fontWeight: FontWeight.w500,
-                  ),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final mediasCount =
+                        ref.watch(
+                          albumCardProvider(
+                            _id,
+                          ).select((s) => s.value?.mediasCount),
+                        ) ??
+                        0;
+                    return Text(
+                      '$mediasCount Medias',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.outline,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -105,15 +173,15 @@ class AlbumCardUI extends StatelessWidget {
     );
   }
 
-  Widget _menu(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _menu(BuildContext ctx, WidgetRef ref) {
+    final colorScheme = Theme.of(ctx).colorScheme;
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
       onSelected: (value) {
         if (value == _MoreItem.edit.raw) {
-          _logic.albumCard_onEdit(_index);
+          _onEdit(ctx);
         } else if (value == _MoreItem.delete.raw) {
-          _logic.albumCard_onDelete(_index);
+          _onDelete(ctx, ref);
         }
       },
       itemBuilder: (context) => [
@@ -131,16 +199,9 @@ class AlbumCardUI extends StatelessWidget {
           value: _MoreItem.delete.raw,
           child: Row(
             children: [
-              Icon(
-                Icons.delete_outline,
-                size: 18,
-                color: colorScheme.error,
-              ),
+              Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
               const SizedBox(width: 12),
-              Text(
-                'Delete',
-                style: TextStyle(color: colorScheme.error),
-              ),
+              Text('Delete', style: TextStyle(color: colorScheme.error)),
             ],
           ),
         ),
@@ -154,9 +215,11 @@ class AlbumCardUI extends StatelessWidget {
     );
   }
 
-  Widget _cover(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    String? cover = _state.cover;
+  Widget _cover(BuildContext ctx, WidgetRef ref) {
+    final cover = ref.watch(
+      albumCardProvider(_id).select((s) => s.value?.cover),
+    );
+    final colorScheme = Theme.of(ctx).colorScheme;
     if (cover != null) {
       return Image.file(File(cover), fit: BoxFit.cover);
     } else {

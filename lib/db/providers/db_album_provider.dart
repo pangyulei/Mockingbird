@@ -7,6 +7,7 @@ import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_albums_provider.dart';
+import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:objectbox/objectbox.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -89,6 +90,20 @@ class DBAlbum extends _$DBAlbum {
     album.medias.removeWhere((media) => media.id == mediaId);
     state = AsyncData(album);
     await ref.read(dbAlbumsProvider.notifier).updateByAlbumUpdated(album);
+  }
+
+  Future<void> delete() async {
+    final album = state.value;
+    if (album != null) {
+      state = await AsyncValue.guard(() async {
+        await DBLogic().deleteAlbum(album);
+        ref.read(dbAlbumsProvider.notifier).updateByAlbumDeleted(album.id);
+        for (final media in album.medias) {
+          ref.read(dbMediaProvider(media.id).notifier).updateByAlbumDeleted();
+        }
+        return null;
+      });
+    }
   }
 
   EnMedia? mediaAtIndex(int i) {

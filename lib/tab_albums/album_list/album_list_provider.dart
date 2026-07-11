@@ -1,4 +1,5 @@
 import 'package:mockingbird/db/entities/en_album.dart';
+import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/db/providers/db_albums_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
@@ -11,7 +12,7 @@ class AlbumList extends _$AlbumList {
   @override
   Future<AlbumListState> build() async {
     final albums = await ref.watch(dbAlbumsProvider.future);
-    return AlbumListState(states: albums.map((a) => a.toCardState()).toList());
+    return AlbumListState(count: albums.length);
   }
 
   int? albumIdAtIndex(int i) {
@@ -24,12 +25,9 @@ class AlbumList extends _$AlbumList {
 
   Future<void> deleteAlbum(int i) async {
     state = const AsyncLoading();
-    await ref.read(dbAlbumsProvider.notifier).deleteAlbum(i);
-  }
-}
-
-extension on EnAlbum {
-  AlbumCardState toCardState() {
-    return AlbumCardState(mediasCount: medias.length, name: name, cover: cover);
+    final albumId = albumIdAtIndex(i);
+    if (albumId != null) {
+      await ref.read(dbAlbumProvider(albumId).notifier).delete();
+    }
   }
 }

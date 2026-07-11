@@ -1,29 +1,43 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
-abstract interface class EditAlbumUIOutputITF {
-  void editAlbum_onSubmit();
-  void editAlbum_onCancel();
-  void editAlbum_onPickCover();
-  void editAlbum_onRemoveCover();
-}
-
-class EditAlbumUI extends ConsumerWidget {
-  // final EditAlbumState _state;
-  final TextEditingController _nameController;
-  final EditAlbumUIOutputITF _logic;
+class EditAlbumUI extends ConsumerStatefulWidget {
   final int? _id;
-  const EditAlbumUI(
-    // this._state,
-    this._id,
-    this._nameController,
-    this._logic, {
-    super.key,
-  });
+
+  const EditAlbumUI(this._id, {super.key});
 
   @override
-  Widget build(BuildContext ctx, WidgetRef ref) {
+  ConsumerState<ConsumerStatefulWidget> createState() => _EditAlbumUIState();
+}
+
+class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
+  final _nameController = TextEditingController();
+  final _picker = ImagePicker();
+  int? get _id => widget._id;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(() {
+      ref
+          .read(editAlbumProvider(widget._id).notifier)
+          .onNameChanged(_nameController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext ctx) {
     ref.listen(
       editAlbumProvider(_id).select((s) => s.value?.name ?? ''),
       (previous, next) => _nameController.text = next,
@@ -91,7 +105,7 @@ class EditAlbumUI extends ConsumerWidget {
       ),
       actions: [
         TextButton(
-          onPressed: _logic.editAlbum_onCancel,
+          onPressed: _onCancel,
           child: const Text('Cancel'),
         ),
         Consumer(
@@ -105,7 +119,7 @@ class EditAlbumUI extends ConsumerWidget {
               ),
             );
             return FilledButton(
-              onPressed: enable ? _logic.editAlbum_onSubmit : null,
+              onPressed: enable ? _onSubmit : null,
 
               child: Text(submitTitle),
             );
@@ -124,7 +138,7 @@ class EditAlbumUI extends ConsumerWidget {
         return Stack(
           children: [
             GestureDetector(
-              onTap: _logic.editAlbum_onPickCover,
+              onTap: _onPickCover,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 width: double.infinity,
@@ -159,7 +173,7 @@ class EditAlbumUI extends ConsumerWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: _logic.editAlbum_onRemoveCover,
+        onTap: _onRemoveCover,
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.all(8),
@@ -208,5 +222,39 @@ class EditAlbumUI extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  void _onPickCover() async {
+    final XFile? xImage = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 75,
+    );
+    if (xImage == null) {
+      //didnt select any image, no changes
+      return;
+    }
+    File newCover = File(xImage.path);
+    ref.read(editAlbumProvider(widget._id).notifier).onCoverChanged(newCover);
+  }
+
+  void _onRemoveCover() {
+    ref.read(editAlbumProvider(widget._id).notifier).onCoverChanged(null);
+  }
+
+  void _onSubmit() async {
+    await ref.read(editAlbumProvider(widget._id).notifier).onSubmit();
+    _pop();
+  }
+
+  void _onCancel() {
+    _pop();
+  }
+
+  void _pop() {
+    if (mounted) {
+      Navigator.of(context).pop();
+    }
   }
 }

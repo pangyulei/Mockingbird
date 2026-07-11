@@ -26,24 +26,17 @@ class DBAlbums extends _$DBAlbums {
 
   Future<void> updateByAlbumUpdated(EnAlbum updatedAlbum) async {
     final albums = await future;
-    final updatedAlbums = albums.map((a) => a.id == updatedAlbum.id ? updatedAlbum : a).toList();
+    final updatedAlbums = albums
+        .map((a) => a.id == updatedAlbum.id ? updatedAlbum : a)
+        .toList();
     state = AsyncData(updatedAlbums);
   }
 
-  Future<void> deleteAlbum(int i) async {
+  void updateByAlbumDeleted(int id) {
     final albums = state.value;
-    if (albums == null) {
-      return;
+    if (albums != null) {
+      state = AsyncData(albums.where((a) => a.id != id).toList());
     }
-    final album = albums.elementAtOrNull(i);
-    if (album == null) {
-      return;
-    }
-    state = await AsyncValue.guard(() async {
-      await DBLogic().deleteAlbum(album);
-      albums.removeAt(i);
-      return albums;
-    });
   }
 
   EnAlbum? albumAtIndex(int i) {

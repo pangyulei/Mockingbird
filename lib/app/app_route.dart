@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/tab_albums/album/album_screen.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_screen.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_screen.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
@@ -51,7 +51,7 @@ class AppRoute {
   static GoRoute _albumsRoute() => GoRoute(
     path: AppRoute.albums,
     builder: (BuildContext context, GoRouterState state) {
-      return const AlbumListScreen();
+      return const AlbumListUI();
     },
     routes: <RouteBase>[
       // Sub-route: Accessible via '/details'
@@ -60,10 +60,7 @@ class AppRoute {
         builder: (BuildContext context, GoRouterState state) {
           final albumIdStr = state.pathParameters['id']!;
           final albumId = int.tryParse(albumIdStr);
-          if (albumId != null) {
-            return AlbumScreen(albumId);
-          }
-          return const AlbumListScreen();
+          return AlbumScreen(albumId!); //TODO make id int?
         },
       ),
     ],

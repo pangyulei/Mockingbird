@@ -8,18 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/db/db_logic.dart';
-import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
-import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tab_albums/album/album_provider.dart';
 import 'package:mockingbird/tab_albums/album/album_ui.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_screen.dart';
-import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
-
-import 'album_state.dart';
 
 class AlbumScreen extends ConsumerStatefulWidget {
   final int _id;
@@ -90,7 +83,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
     await showDialog(
       context: context,
       builder: (context) {
-        return EditAlbumScreen(id);
+        return EditAlbumUI(id);
       },
     );
   }

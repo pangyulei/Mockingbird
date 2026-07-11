@@ -72,4 +72,8 @@ class DBMedia extends _$DBMedia {
       return updatedMedia;
     });
   }
+
+  void updateByAlbumDeleted() {
+    state = const AsyncData(null);
+  }
 }

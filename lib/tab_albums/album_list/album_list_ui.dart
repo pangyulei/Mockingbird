@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
-
-abstract interface class AlbumListUIOutputITF implements AlbumCardUIOutputITF {
-  void albumsGrid_onAddAlbum();
-}
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
 class AlbumListUI extends ConsumerWidget {
-  final AlbumListUIOutputITF _logic;
-  const AlbumListUI(this._logic, {super.key});
+  const AlbumListUI({super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
@@ -18,7 +16,7 @@ class AlbumListUI extends ConsumerWidget {
 
   Widget _empty(BuildContext ctx, WidgetRef ref) {
     final isEmpty = ref.watch(
-      albumListProvider.select((s) => s.value?.states.isEmpty ?? true),
+      albumListProvider.select((s) => s.value?.count == 0),
     );
     if (!isEmpty) {
       return const SizedBox.shrink();
@@ -42,7 +40,7 @@ class AlbumListUI extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final count = ref.watch(
-                albumListProvider.select((s) => s.value?.states.length ?? 0),
+                albumListProvider.select((s) => s.value?.count ?? 0),
               );
               return Text(
                 '$count created albums',
@@ -57,7 +55,7 @@ class AlbumListUI extends ConsumerWidget {
       centerTitle: false,
       actions: [
         IconButton(
-          onPressed: _logic.albumsGrid_onAddAlbum,
+          onPressed: () => _onAddAlbum(ctx),
           iconSize: 34,
           icon: const Icon(Icons.add),
         ),
@@ -77,22 +75,38 @@ class AlbumListUI extends ConsumerWidget {
   }
 
   Widget _grid(WidgetRef ref) {
-    final states = ref.watch(
-      albumListProvider.select((s) => s.value?.states ?? []),
-    );
+    final count = ref.watch(albumListProvider).value?.count ?? 0;
     return GridView.builder(
       padding: const EdgeInsets.all(12),
-      itemCount: states.length,
+      itemCount: count,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 4,
         crossAxisSpacing: 4,
         childAspectRatio: 1,
       ),
-      itemBuilder: (ctx, index) {
-        final state = states[index];
-        return AlbumCardUI(index, state, _logic);
+      itemBuilder: (ctx, i) {
+        final albumId = ref.read(albumListProvider.notifier).albumIdAtIndex(i);
+        if (albumId == null) {
+          AssertionError('album list not found albumId at index ($i)');
+          return const SizedBox.shrink();
+        } else {
+          return AlbumCardUI(albumId);
+        }
       },
     );
+  }
+
+  Future<void> _showCreatingAlbumDialog(BuildContext ctx) async {
+    await showDialog(
+      context: ctx,
+      builder: (context) {
+        return const EditAlbumUI(null);
+      },
+    );
+  }
+
+  void _onAddAlbum(BuildContext ctx) async {
+    await _showCreatingAlbumDialog(ctx);
   }
 }
