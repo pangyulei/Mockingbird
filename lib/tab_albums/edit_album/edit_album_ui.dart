@@ -7,7 +7,7 @@ import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
 class EditAlbumUI extends ConsumerStatefulWidget {
-  final int? _id;
+  final int? _id; //TODO refactor
 
   const EditAlbumUI(this._id, {super.key});
 

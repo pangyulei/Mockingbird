@@ -1,5 +1,12 @@
+import 'package:collection/collection.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee/marquee.dart';
+import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/entities/en_subtitle.dart';
+import 'package:mockingbird/tool/subtitle_parser.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'media_card_state.dart';
 
@@ -13,47 +20,54 @@ enum _MoreItem {
   const _MoreItem(this.raw);
 }
 
-abstract interface class MediaCardUIOutputITF {
-  void mediaCard_onPlayMedia(int index);
-
-  void mediaCard_onAddSubtitle(int index);
-
-  void mediaCard_onRemoveSubtitle(int index);
-
-  void mediaCard_onDeleteMedia(int index);
+abstract interface class MediaCardNotifierITF {
+  int? get id;
+  Future<void> play();
+  Future<void> deleteSubtitle();
+  Future<void> addSubtitle(EnSubtitle subtitle);
+  Future<void> deleteMedia();
 }
 
-class MediaCardUI extends StatelessWidget {
-  final MediaCardState _state;
-  final MediaCardUIOutputITF _logic;
-  final int _index;
+class MediaCardUI extends ConsumerWidget {
+  final ProviderListenable<AsyncValue<MediaCardState>> _provider;
+  final MediaCardNotifierITF _notifier;
+  const MediaCardUI(this._provider, this._notifier, {super.key});
 
-  const MediaCardUI(
-    this._index,
-    this._state,
-    this._logic, {
-    super.key,
-  });
+  void _onPlay() async {
+    await _notifier.play();
+  }
+
+  void _onAddSubtitle() async {
+    final subtitlePath = await _pickOneSubtitle();
+    if (subtitlePath == null) return;
+    final subtitle = await SubtitleParser.parsePath(subtitlePath);
+    if (subtitle == null) return;
+    await _notifier.addSubtitle(subtitle);
+  }
+
+  void _onDeleteSubtitle() async {
+    await _notifier.deleteSubtitle();
+  }
+
+  void _onDeleteMedia() async {
+    await _notifier.deleteMedia();
+  }
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-
+    final isPlaying =
+        ref.watch(_provider.select((s) => s.value?.isPlaying)) ?? false;
     return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: _state.isPlaying
-            ? colorScheme.primaryContainer.withValues(
-                alpha: 0.15,
-              )
+        color: isPlaying
+            ? colorScheme.primaryContainer.withValues(alpha: 0.15)
             : colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _state.isPlaying
+          color: isPlaying
               ? colorScheme.primary.withValues(alpha: 0.5)
               : Colors.white.withValues(alpha: 0.05),
           width: 1,
@@ -64,8 +78,7 @@ class MediaCardUI extends StatelessWidget {
         child: Stack(
           children: [
             InkWell(
-              onTap: () =>
-                  _logic.mediaCard_onPlayMedia(_index),
+              onTap: _onPlay,
               child: Padding(
                 padding: const EdgeInsets.only(
                   top: 12,
@@ -74,47 +87,40 @@ class MediaCardUI extends StatelessWidget {
                   right: 52,
                 ),
                 child: Row(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Expanded(
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minHeight: 62,
-                        ),
+                        constraints: const BoxConstraints(minHeight: 62),
                         child: Column(
                           mainAxisAlignment: .center,
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                          children: [
-                            _title(ctx),
-                            _subtitle(ctx),
-                          ],
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [_title(ctx, ref), _subtitle(ctx, ref)],
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    _playButton(ctx),
+                    _playButton(ctx, ref),
                   ],
                 ),
               ),
             ),
-            Positioned(
-              top: 4,
-              right: 4,
-              child: _popMenu(ctx),
-            ),
+            Positioned(top: 4, right: 4, child: _popMenu(ctx)),
           ],
         ),
       ),
     );
   }
 
-  Widget _title(BuildContext ctx) {
+  Widget _title(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final name = _state.name.trim();
-    if (_state.isPlaying && name.isNotEmpty) {
+    final (name, isPlaying) = ref.watch(
+      _provider.select(
+        (s) => (s.value?.name.trim() ?? '', s.value?.isPlaying ?? false),
+      ),
+    );
+    if (isPlaying && name.isNotEmpty) {
       return SizedBox(
         height: 20,
         child: Marquee(
@@ -143,59 +149,69 @@ class MediaCardUI extends StatelessWidget {
     }
   }
 
-  Widget _subtitle(BuildContext ctx) {
+  Widget _subtitle(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(top: 6),
-      child: Row(
-        children: [
-          Icon(
-            _state.hasSubtitle
-                ? Icons.subtitles_rounded
-                : Icons.subtitles_off_rounded,
-            color: _state.hasSubtitle
-                ? colorScheme.outline
-                : colorScheme.error,
-            size: 14,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            _state.type.name.toUpperCase(),
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: colorScheme.outline,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.0,
+      padding: const EdgeInsets.all(8.0),
+      child: Consumer(
+        builder: (context, ref, child) {
+          final (hasSubtitle, type, isPlaying) = ref.watch(
+            _provider.select(
+              (s) => (
+                s.value?.hasSubtitle ?? false,
+                s.value?.type ?? .video,
+                s.value?.isPlaying ?? false,
+              ),
             ),
-          ),
-          if (_state.isPlaying) ...[
-            const SizedBox(width: 12),
-            _PlayingIndicator(color: colorScheme.primary),
-          ],
-        ],
+          );
+          return Row(
+            children: [
+              Icon(
+                hasSubtitle
+                    ? Icons.subtitles_rounded
+                    : Icons.subtitles_off_rounded,
+                color: hasSubtitle ? colorScheme.outline : colorScheme.error,
+                size: 14,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                type.name.toUpperCase(),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colorScheme.outline,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+              ),
+              if (isPlaying) ...[
+                const SizedBox(width: 12),
+                _PlayingIndicator(color: colorScheme.primary),
+              ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _playButton(BuildContext ctx) {
+  Widget _playButton(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
+    final isPlaying = ref.watch(
+      _provider.select((s) => s.value?.isPlaying ?? false),
+    );
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: _state.isPlaying
+        color: isPlaying
             ? colorScheme.primary
             : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
-        _state.isPlaying
-            ? Icons.graphic_eq_rounded
-            : Icons.play_arrow_rounded,
-        color: _state.isPlaying
-            ? Colors.white
-            : colorScheme.primary,
+        isPlaying ? Icons.graphic_eq_rounded : Icons.play_arrow_rounded,
+        color: isPlaying ? Colors.white : colorScheme.primary,
         size: 28,
       ),
     );
@@ -204,81 +220,107 @@ class MediaCardUI extends StatelessWidget {
   Widget _popMenu(BuildContext ctx) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_horiz,
-        size: 20,
-        color: colorScheme.outline,
-      ),
-      onSelected: (value) {
-        if (value == _MoreItem.addSubtitle.raw) {
-          _logic.mediaCard_onAddSubtitle(_index);
-        } else if (value == _MoreItem.deleteSubtitle.raw) {
-          _logic.mediaCard_onRemoveSubtitle(_index);
-        } else if (value == _MoreItem.deleteMedia.raw) {
-          _logic.mediaCard_onDeleteMedia(_index);
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: _MoreItem.addSubtitle.raw,
-          child: Row(
-            children: [
-              const Icon(Icons.subtitles_rounded, size: 18),
-              const SizedBox(width: 12),
-              Text(
-                _state.hasSubtitle
-                    ? 'Change Subtitle'
-                    : 'Add Subtitle',
+    return Consumer(
+      builder: (context, ref, child) {
+        final hasSubtitle = ref.watch(
+          _provider.select((s) => s.value?.hasSubtitle ?? false),
+        );
+        return PopupMenuButton<String>(
+          icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
+          onSelected: (value) {
+            if (value == _MoreItem.addSubtitle.raw) {
+              _onAddSubtitle();
+            } else if (value == _MoreItem.deleteSubtitle.raw) {
+              _onDeleteSubtitle();
+            } else if (value == _MoreItem.deleteMedia.raw) {
+              _onDeleteMedia();
+            }
+          },
+          itemBuilder: (context) => [
+            PopupMenuItem(
+              value: _MoreItem.addSubtitle.raw,
+              child: Row(
+                children: [
+                  const Icon(Icons.subtitles_rounded, size: 18),
+                  const SizedBox(width: 12),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final hasSubtitle = ref.watch(
+                        _provider.select((s) => s.value?.hasSubtitle ?? false),
+                      );
+                      return Text(
+                        hasSubtitle ? 'Change Subtitle' : 'Add Subtitle',
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-        if (_state.hasSubtitle)
-          PopupMenuItem(
-            value: _MoreItem.deleteSubtitle.raw,
-            child: Row(
-              children: [
-                Icon(
-                  Icons.subtitles_off_rounded,
-                  size: 18,
-                  color: colorScheme.error,
+            ),
+            if (hasSubtitle)
+              PopupMenuItem(
+                value: _MoreItem.deleteSubtitle.raw,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.subtitles_off_rounded,
+                      size: 18,
+                      color: colorScheme.error,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Delete Subtitle',
+                      style: TextStyle(color: colorScheme.error),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'Delete Subtitle',
-                  style: TextStyle(
+              ),
+            const PopupMenuDivider(),
+            PopupMenuItem(
+              value: _MoreItem.deleteMedia.raw,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.delete_outline_rounded,
+                    size: 18,
                     color: colorScheme.error,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  Text(
+                    'Delete Media',
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                ],
+              ),
             ),
+          ],
+          style: IconButton.styleFrom(
+            minimumSize: const Size(32, 32),
+            padding: EdgeInsets.zero,
+            tapTargetSize: .shrinkWrap,
           ),
-        const PopupMenuDivider(),
-        PopupMenuItem(
-          value: _MoreItem.deleteMedia.raw,
-          child: Row(
-            children: [
-              Icon(
-                Icons.delete_outline_rounded,
-                size: 18,
-                color: colorScheme.error,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Delete Media',
-                style: TextStyle(color: colorScheme.error),
-              ),
-            ],
-          ),
-        ),
-      ],
-      style: IconButton.styleFrom(
-        minimumSize: const Size(32, 32),
-        padding: EdgeInsets.zero,
-        tapTargetSize: .shrinkWrap,
-      ),
+        );
+      },
     );
+  }
+
+  Future<String?> _pickOneSubtitle() async {
+    try {
+      final pickedFiles = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [...kSubtitleExtensions],
+        allowMultiple: false,
+      );
+      final subtitlePath = pickedFiles?.files
+          .firstWhereOrNull(
+            (f) =>
+                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+          )
+          ?.path;
+      return subtitlePath;
+    } catch (e) {
+      debugPrint('Error adding subtitle: $e');
+      return null;
+    }
   }
 }
 

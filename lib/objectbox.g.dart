@@ -16,6 +16,7 @@ import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'db/entities/en_album.dart';
 import 'db/entities/en_media.dart';
+import 'db/entities/en_pref.dart';
 import 'db/entities/en_sentence.dart';
 import 'db/entities/en_subtitle.dart';
 
@@ -44,12 +45,6 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(3, 7030749597211594586),
         name: 'cover',
         type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 4981929947623318346),
-        name: 'versionId',
-        type: 6,
         flags: 0,
       ),
       obx_int.ModelProperty(
@@ -91,12 +86,6 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(3, 8434792637826821157),
         name: 'name',
         type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 2510609710962471538),
-        name: 'versionId',
-        type: 6,
         flags: 0,
       ),
     ],
@@ -189,6 +178,28 @@ final _entities = <obx_int.ModelEntity>[
       ),
     ],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(27, 7767215884357716294),
+    name: 'EnPref',
+    lastPropertyId: const obx_int.IdUid(2, 4275848776010639930),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 4336757419314789380),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 4275848776010639930),
+        name: 'playingId',
+        type: 6,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -234,7 +245,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(22, 4289487194528856605),
+    lastEntityId: const obx_int.IdUid(27, 7767215884357716294),
     lastIndexId: const obx_int.IdUid(20, 1321291549367293302),
     lastRelationId: const obx_int.IdUid(5, 7929255877846348169),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -257,6 +268,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
       5202691602439670021,
       7597158225435083003,
       334029981324421535,
+      879445042261807688,
+      7260526553019707370,
+      8594489510359452364,
+      1340594227652822739,
     ],
     retiredIndexUids: const [
       6937227900520055071,
@@ -341,6 +356,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
       3686783334207431062,
       6366957737110863135,
       7599652332481368775,
+      4981929947623318346,
+      2510609710962471538,
+      63069105017578061,
+      6332426996235933152,
+      751654707181276603,
+      7317344906264796339,
+      2445340836971257849,
+      6964814762436615696,
+      235818499227633718,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -368,7 +392,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, nameOffset);
         fbb.addOffset(2, coverOffset);
-        fbb.addInt64(3, object.versionId);
         fbb.addInt64(4, object.sortOrder);
         fbb.finish(fbb.endTable());
         return object.id;
@@ -394,18 +417,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final coverParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 8);
-        final versionIdParam = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          10,
-          0,
-        );
         final object = EnAlbum(
           name: nameParam,
           sortOrder: sortOrderParam,
           id: idParam,
           cover: coverParam,
-          versionId: versionIdParam,
         );
         obx_int.InternalToManyAccess.setRelInfo<EnAlbum>(
           object.medias,
@@ -437,7 +453,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, pathOffset);
         fbb.addOffset(2, nameOffset);
-        fbb.addInt64(3, object.versionId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -456,18 +471,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final versionIdParam = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          10,
-          0,
-        );
-        final object = EnMedia(
-          path: pathParam,
-          name: nameParam,
-          id: idParam,
-          versionId: versionIdParam,
-        );
+        final object = EnMedia(path: pathParam, name: nameParam, id: idParam);
         obx_int.InternalToManyAccess.setRelInfo<EnMedia>(
           object.albums,
           store,
@@ -594,6 +598,40 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    EnPref: obx_int.EntityDefinition<EnPref>(
+      model: _entities[4],
+      toOneRelations: (EnPref object) => [],
+      toManyRelations: (EnPref object) => {},
+      getId: (EnPref object) => object.id,
+      setId: (EnPref object, int id) {
+        object.id = id;
+      },
+      objectToFB: (EnPref object, fb.Builder fbb) {
+        fbb.startTable(3);
+        fbb.addInt64(0, object.id);
+        fbb.addInt64(1, object.playingId);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final playingIdParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          6,
+        );
+        final object = EnPref(id: idParam, playingId: playingIdParam);
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -616,14 +654,9 @@ class EnAlbum_ {
     _entities[0].properties[2],
   );
 
-  /// See [EnAlbum.versionId].
-  static final versionId = obx.QueryIntegerProperty<EnAlbum>(
-    _entities[0].properties[3],
-  );
-
   /// See [EnAlbum.sortOrder].
   static final sortOrder = obx.QueryIntegerProperty<EnAlbum>(
-    _entities[0].properties[4],
+    _entities[0].properties[3],
   );
 }
 
@@ -642,11 +675,6 @@ class EnMedia_ {
   /// See [EnMedia.name].
   static final name = obx.QueryStringProperty<EnMedia>(
     _entities[1].properties[2],
-  );
-
-  /// See [EnMedia.versionId].
-  static final versionId = obx.QueryIntegerProperty<EnMedia>(
-    _entities[1].properties[3],
   );
 
   /// see [EnMedia.albums]
@@ -703,5 +731,18 @@ class EnSubtitle_ {
   /// see [EnSubtitle.sentences]
   static final sentences = obx.QueryBacklinkToMany<EnSentence, EnSubtitle>(
     EnSentence_.subtitle,
+  );
+}
+
+/// [EnPref] entity fields to define ObjectBox queries.
+class EnPref_ {
+  /// See [EnPref.id].
+  static final id = obx.QueryIntegerProperty<EnPref>(
+    _entities[4].properties[0],
+  );
+
+  /// See [EnPref.playingId].
+  static final playingId = obx.QueryIntegerProperty<EnPref>(
+    _entities[4].properties[1],
   );
 }

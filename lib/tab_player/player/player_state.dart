@@ -1,72 +1,54 @@
-import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
+import 'package:video_player/video_player.dart';
 
 class PlayerState {
-  //TODO 分成普通 state and empty state,
-  final bool showLoading;
   final String title;
-  final List<SentenceCardState> sentenceStates;
   final bool repeat;
-  final bool showEmpty;
   final bool showVolumeSlider;
-  final double speed;
-  final double volume;
-  final bool isPlaying;
   final double? videoSliderDraggingValue;
+  final int sentenceCount;
+  final int positionMicro;
+  final VideoPlayerController? videoController;
 
   const PlayerState({
-    required this.isPlaying,
-    required this.speed,
-    required this.volume,
+    required this.videoController,
+    required this.positionMicro,
     required this.showVolumeSlider,
     required this.videoSliderDraggingValue,
     required this.repeat,
-    required this.showEmpty,
-    required this.showLoading,
     required this.title,
-    required this.sentenceStates,
+    required this.sentenceCount,
   });
 
   const PlayerState.empty()
     : this(
-        isPlaying: false,
-        speed: 1,
-        volume: 1,
+      videoController: null,
+        positionMicro: 0,
+        sentenceCount: 0,
         showVolumeSlider: false,
         repeat: false,
-        sentenceStates: const [],
-        showEmpty: false,
-        showLoading: false,
         title: '',
         videoSliderDraggingValue: null,
       );
 
   PlayerState copyWith({
-    bool? isPlaying,
-    double? speed,
-    double? volume,
-    bool? showEmpty,
-    bool? showLoading,
+    int? positionMicro,
     String? title,
     bool? showVolumeSlider,
-    List<SentenceCardState>? sentenceStates,
     bool? repeat,
+    int? sentenceCount,
     double? Function()? videoSliderDraggingValue,
+    VideoPlayerController? Function()? videoController,
   }) {
     return PlayerState(
-      isPlaying: isPlaying ?? this.isPlaying,
-      speed: speed ?? this.speed,
-      volume: volume ?? this.volume,
-      showVolumeSlider:
-          showVolumeSlider ?? this.showVolumeSlider,
-      videoSliderDraggingValue:
-          videoSliderDraggingValue == null
+      positionMicro: positionMicro ?? this.positionMicro,
+      sentenceCount: sentenceCount ?? this.sentenceCount,
+      showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
+      videoSliderDraggingValue: videoSliderDraggingValue == null
           ? this.videoSliderDraggingValue
           : videoSliderDraggingValue(),
       repeat: repeat ?? this.repeat,
-      showEmpty: showEmpty ?? this.showEmpty,
-      showLoading: showLoading ?? this.showLoading,
       title: title ?? this.title,
-      sentenceStates: sentenceStates ?? this.sentenceStates,
+      videoController: videoController == null ? this.videoController : videoController(),
     );
   }
 }

@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/entities/en_pref.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/objectbox.g.dart';
@@ -21,6 +23,15 @@ class DBLogic {
   final _lock = Lock();
   DBLogic.test(this._store); //for unit test
   DBLogic() : this.test(DBObjectBox().store);
+
+  Future<EnPref?> loadPref() async {
+    final prefs = await _store.box<EnPref>().getAllAsync();
+    return prefs.firstOrNull;
+  }
+
+  Future<EnPref> updatePref(EnPref pref) async {
+    return await _store.box<EnPref>().putAndGetAsync(pref);
+  }
 
   ({List<MF_SF> mfsfList, List<M_SF> msfList}) _processMediaSubtitleFiles(
     List<EnMedia> albumMedias,
@@ -102,12 +113,7 @@ class DBLogic {
       int i = e.key;
       final dirMediaFile = e.value;
       final mediaName = p.basenameWithoutExtension(mfsfList[i].mediaFile.path);
-      final media = EnMedia(
-        path: dirMediaFile.path,
-        name: mediaName,
-        id: 0,
-        versionId: 0,
-      );
+      final media = EnMedia(path: dirMediaFile.path, name: mediaName, id: 0);
       media.albums.add(album);
       final subtitle = subtitlesWithoutId[i];
       if ((subtitle != null)) {
@@ -129,7 +135,7 @@ class DBLogic {
     final subtitlesWithoutId = await Future.wait(makeSubtitles);
     final mediasFilledSubtitle = msfList.asMap().entries.map((e) {
       int i = e.key;
-      final media = e.value.media.incVersion();
+      final media = e.value.media;
       final subtitleWithoutId = subtitlesWithoutId[i];
       if (subtitleWithoutId != null) {
         media.subtitles.clear();
@@ -140,7 +146,7 @@ class DBLogic {
     return mediasFilledSubtitle;
   }
 
-  Future<List<EnMedia>> importMediaAndSubtitles(
+  Future<({List<EnMedia> made, List<EnMedia> filled})> importMediaAndSubtitles(
     EnAlbum album,
     List<File> files,
   ) async {
@@ -148,13 +154,11 @@ class DBLogic {
       album.medias,
       files,
     );
-    final mediasMade = await _mediasMadeFromMFSFList(album, mfsfList);
-    final mediasFilled = await _mediasFilledSubtitleFromMSFList(album, msfList);
-    final medias = await _store.box<EnMedia>().putAndGetManyAsync([
-      ...mediasMade,
-      ...mediasFilled,
-    ]);
-    return medias;
+    var mediasMade = await _mediasMadeFromMFSFList(album, mfsfList);
+    var mediasFilled = await _mediasFilledSubtitleFromMSFList(album, msfList);
+    mediasMade = await _store.box<EnMedia>().putAndGetManyAsync(mediasMade);
+    mediasFilled = await _store.box<EnMedia>().putAndGetManyAsync(mediasFilled);
+    return (made:mediasMade, filled:mediasFilled);
   }
 
   Future<EnMedia> updateMedia(EnMedia media) async {
@@ -167,7 +171,7 @@ class DBLogic {
       int mediaId,
     ) {
       final mediaBox = store.box<EnMedia>();
-      final media = mediaBox.get(mediaId)?.incVersion();
+      final media = mediaBox.get(mediaId);
       if (media == null) {
         throw ArgumentError('mediaId $mediaId not existed');
       }
@@ -188,6 +192,9 @@ class DBLogic {
   }
 
   Future<void> deleteMedia(EnMedia media) async {
+    debugPrint(
+      'before delete media(${media.id}):\nalbum(${media.albums.firstOrNull?.id}, ${media.albums.firstOrNull?.name})',
+    );
     await _store.runInTransactionAsync<void, int>(TxMode.write, (
       Store store,
       int mediaId,
@@ -213,6 +220,9 @@ class DBLogic {
     if (await file.exists()) {
       await file.delete();
     }
+    debugPrint(
+      'after delete media(${media.id}):\nalbum(${media.albums.firstOrNull?.id}, ${media.albums.firstOrNull?.name})',
+    );
   }
 
   Future<EnMedia> deleteSubtitle(EnMedia media) async {
@@ -222,7 +232,7 @@ class DBLogic {
       int mediaId,
     ) {
       final mediaBox = store.box<EnMedia>();
-      final media = mediaBox.get(mediaId)?.incVersion();
+      final media = mediaBox.get(mediaId);
       if (media == null) {
         throw ArgumentError('mediaId $mediaId not existed');
       }
@@ -284,13 +294,7 @@ class DBLogic {
         ? maxSortOrderAlbum.sortOrder + 1
         : 0;
     return await _store.box<EnAlbum>().putAndGetAsync(
-      EnAlbum(
-        name: trimmedName,
-        sortOrder: sortOrder,
-        cover: coverPath,
-        id: 0,
-        versionId: 0,
-      ),
+      EnAlbum(name: trimmedName, sortOrder: sortOrder, cover: coverPath, id: 0),
     );
   }
 

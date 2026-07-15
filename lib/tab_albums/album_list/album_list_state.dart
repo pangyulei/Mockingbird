@@ -1,10 +1,8 @@
-import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
-
 class AlbumListState {
-  final int count;
-  const AlbumListState({required this.count});
+  final int albumCount;
+  const AlbumListState({required this.albumCount});
 
   AlbumListState copyWith({int? count}) {
-    return AlbumListState(count: count ?? this.count);
+    return AlbumListState(albumCount: count ?? this.albumCount);
   }
 }

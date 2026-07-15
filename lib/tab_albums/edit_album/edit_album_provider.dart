@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
-import 'package:mockingbird/db/providers/db_albums_provider.dart';
+import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -48,7 +48,7 @@ class EditAlbum extends _$EditAlbum {
     if (localId == null) {
       //creating
       await ref
-          .read(dbAlbumsProvider.notifier)
+          .read(dbAlbumListProvider.notifier)
           .createAlbum(data.name, cover: data.cover);
     } else {
       //editing

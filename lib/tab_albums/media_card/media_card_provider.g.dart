@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'album_provider.dart';
+part of 'media_card_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,38 +9,39 @@ part of 'album_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(Album)
-final albumProvider = AlbumFamily._();
+@ProviderFor(MediaCard)
+final mediaCardProvider = MediaCardFamily._();
 
-final class AlbumProvider extends $AsyncNotifierProvider<Album, AlbumState> {
-  AlbumProvider._({
-    required AlbumFamily super.from,
+final class MediaCardProvider
+    extends $AsyncNotifierProvider<MediaCard, MediaCardState> {
+  MediaCardProvider._({
+    required MediaCardFamily super.from,
     required int? super.argument,
   }) : super(
          retry: null,
-         name: r'albumProvider',
+         name: r'mediaCardProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$albumHash();
+  String debugGetCreateSourceHash() => _$mediaCardHash();
 
   @override
   String toString() {
-    return r'albumProvider'
+    return r'mediaCardProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  Album create() => Album();
+  MediaCard create() => MediaCard();
 
   @override
   bool operator ==(Object other) {
-    return other is AlbumProvider && other.argument == argument;
+    return other is MediaCardProvider && other.argument == argument;
   }
 
   @override
@@ -49,46 +50,47 @@ final class AlbumProvider extends $AsyncNotifierProvider<Album, AlbumState> {
   }
 }
 
-String _$albumHash() => r'551c19162a9b178b27b47a75a63bf1290a39c22a';
+String _$mediaCardHash() => r'c5ea5d03566366d3d4fc13583d7253502a60efea';
 
-final class AlbumFamily extends $Family
+final class MediaCardFamily extends $Family
     with
         $ClassFamilyOverride<
-          Album,
-          AsyncValue<AlbumState>,
-          AlbumState,
-          FutureOr<AlbumState>,
+          MediaCard,
+          AsyncValue<MediaCardState>,
+          MediaCardState,
+          FutureOr<MediaCardState>,
           int?
         > {
-  AlbumFamily._()
+  MediaCardFamily._()
     : super(
         retry: null,
-        name: r'albumProvider',
+        name: r'mediaCardProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  AlbumProvider call(int? id) => AlbumProvider._(argument: id, from: this);
+  MediaCardProvider call(int? id) =>
+      MediaCardProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'albumProvider';
+  String toString() => r'mediaCardProvider';
 }
 
-abstract class _$Album extends $AsyncNotifier<AlbumState> {
+abstract class _$MediaCard extends $AsyncNotifier<MediaCardState> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  FutureOr<AlbumState> build(int? id);
+  FutureOr<MediaCardState> build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AlbumState>, AlbumState>;
+    final ref = this.ref as $Ref<AsyncValue<MediaCardState>, MediaCardState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AlbumState>, AlbumState>,
-              AsyncValue<AlbumState>,
+              AnyNotifier<AsyncValue<MediaCardState>, MediaCardState>,
+              AsyncValue<MediaCardState>,
               Object?,
               Object?
             >;

@@ -1,203 +1,458 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/tab_player/player/player_state.dart';
+import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_provider.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_ui.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-abstract interface class PlayerUIOutputITF implements SentenceCardUIOutputITF {
-  void player_onPlay();
+import 'player_state.dart';
 
-  void player_onPause();
+const double _kMaxPlaySpeed = 3.0;
+const double _kMinPlaySpeed = 0.25;
+const double _kStepPlaySpeed = 0.25;
 
-  void player_onRepeatOne();
-
-  void player_onInOrder();
-
-  void player_onSpeedUp();
-
-  void player_onSpeedDown();
-
-  void player_onSpeedReset();
-
-  void player_onVideoSliderStartChanged(double microValue);
-
-  void player_onVideoSliderEndChanged(double microValue);
-
-  void player_onVideoSliderChanging(double microValue);
-
-  void player_onScrollToFocusedSentence();
-
-  void player_onScrollToTop();
-
-  void player_onScrollToBottom();
-
-  void player_onVolumeChanging(double newVolume);
-
-  void player_onVolumeTap();
-
-  void player_onGoToAlbums();
+abstract interface class PlayerNotifierITF {
+  int? sentenceIdAtIndex(int i);
+  Future<void> play();
+  Future<void> pause();
 }
 
-class PlayerUI extends StatelessWidget {
-  final PlayerState _state;
-  final PlayerUIOutputITF _logic;
-  final ItemScrollController _scrollController;
-  final VideoPlayerController? _videoController;
-
-  const PlayerUI(
-    this._state,
-    this._logic,
-    this._scrollController,
-    this._videoController, {
-    super.key,
-  });
+class PlayerUI extends ConsumerWidget {
+  final ProviderListenable<AsyncValue<PlayerState?>> _provider;
+  final PlayerNotifierITF _notifier;
+  final _scrollController = ItemScrollController();
+  PlayerUI(this._provider, this._notifier, {super.key});
 
   @override
-  Widget build(BuildContext ctx) {
-    final videoController = _videoController;
-    return Stack(
-      children: [
-        if (videoController != null && !_state.showEmpty)
-          _page(ctx, videoController),
-        if (_state.showEmpty) _empty(ctx),
-        if (_state.showLoading) _loading(),
-      ],
-    );
+  Widget build(BuildContext ctx, WidgetRef ref) {
+    return Stack(children: [_page(ctx), _empty(ctx), _loading(ref)]);
   }
 
-  Widget _loading() {
+  void _onInOrder() {
+    // setState(() {
+    //   _state = _state.copyWith(repeat: true);
+    // });
+  }
+
+  void _onPause() async {
+    await _notifier.pause();
+  }
+
+  void _onPlay() async {
+    await _notifier.play();
+  }
+
+  void _onRepeatOne() {
+    // setState(() {
+    //   _state = _state.copyWith(repeat: false);
+    // });
+  }
+
+  void _onSpeedDown() async {
+    // if (videoController == null) return;
+    // final currentSpeed = videoController.value.playbackSpeed;
+    // var nextSpeed = max(_kMinPlaySpeed, currentSpeed - _kStepPlaySpeed);
+    // if (nextSpeed == currentSpeed) {
+    //   return;
+    // }
+    // setState(() {
+    //   _state = _state.copyWith(speed: nextSpeed);
+    // });
+    // await videoController.setPlaybackSpeed(nextSpeed);
+  }
+
+  void _onSpeedUp() async {
+    // final videoController = _videoController;
+    // if (videoController == null) return;
+    // final currentSpeed = videoController.value.playbackSpeed;
+    // var nextSpeed = min(_kMaxPlaySpeed, currentSpeed + _kStepPlaySpeed);
+    // if (nextSpeed == currentSpeed) {
+    //   return;
+    // }
+    // setState(() {
+    //   _state = _state.copyWith(speed: nextSpeed);
+    // });
+    // await videoController.setPlaybackSpeed(nextSpeed);
+  }
+
+  @override
+  void sentenceCard_onTap(int index) async {
+    // debugPrint('click sentence at $index ${_state.sentenceStates[index].text}');
+    // final videoController = _videoController;
+    // if (videoController == null) {
+    //   debugPrint('videoController==null, nothing to control');
+    //   return;
+    // }
+    // final sentence = _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(
+    //   index,
+    // );
+    // if (sentence == null) {
+    //   debugPrint('sentence not found');
+    //   return;
+    // }
+    // _scrollController._scrollTo(index);
+
+    // setState(() {
+    //   _state = _state.focus(index).copyWith(isPlaying: true);
+    // });
+    // await videoController.seekTo(sentence.start);
+    // await videoController.play();
+  }
+
+  int? _playingIndexByPosition(Duration position) {
+    // final sentences = _media?.subtitles.firstOrNull?.sentences;
+    // if (sentences == null || sentences.isEmpty) return null;
+    // final mediaEnd = _videoController?.value.duration;
+    // if (mediaEnd == null) return null;
+
+    // final int? playingIndex;
+    // //从当前sentence开始判断这句是不是真的在播放中
+    // //从现在的 index，判断到最后，再从最前的index，判断到现在的index
+    // final allRange = List.generate(sentences.length, (index) => index);
+    // final focusedIndex = _state.focusedIndex;
+    // final List<int> searchRange;
+    // if (focusedIndex == null || focusedIndex >= sentences.length) {
+    //   debugPrint('focus index not found or beyond range');
+    //   searchRange = allRange;
+    // } else {
+    //   final range1 = allRange.sublist(focusedIndex);
+    //   final range2 = allRange.sublist(0, focusedIndex);
+    //   searchRange = [...range1, ...range2];
+    // }
+    // playingIndex = searchRange.firstWhereOrNull(
+    //   (idx) => _isSentencePlaying(idx, position),
+    // );
+    // return playingIndex;
+  }
+
+  bool _isSentencePlaying(int index, Duration position) {
+    return false;
+    // final sentences = _media?.subtitles.firstOrNull?.sentences;
+    // if (sentences == null || sentences.isEmpty) {
+    //   return false;
+    // }
+
+    // final sentence = sentences[index];
+    // final nextSentence = sentences.elementAtOrNull(index + 1);
+    // final prevSentence = index == 0 ? null : sentences[index - 1];
+    // //刚开始的时候position=0,但是第一句话的start不一定是0
+    // //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
+    // final start = prevSentence == null
+    //     ? const Duration(microseconds: 0)
+    //     : sentence.start;
+    // if (nextSentence == null) {
+    //   return start <= position && position <= sentence.end;
+    // } else {
+    //   return start <= position && position < nextSentence.start;
+    // }
+  }
+
+  void _onSpeedReset() async {
+    // final videoController = _videoController;
+    // if (videoController == null) return;
+    // final currentSpeed = videoController.value.playbackSpeed;
+    // const double nextSpeed = 1.0;
+    // if (nextSpeed == currentSpeed) {
+    //   return;
+    // }
+    // setState(() {
+    //   _state = _state.copyWith(speed: nextSpeed);
+    // });
+    // await videoController.setPlaybackSpeed(nextSpeed);
+  }
+
+  void _onVideoSliderStartChanged(double microValue) async {
+    // setState(() {
+    //   _state = _state.copyWith(
+    //     videoSliderDraggingValue: () => microValue,
+    //     isPlaying: false,
+    //   );
+    // });
+    // await _videoController?.pause();
+  }
+
+  void _onVideoSliderChanging(double microValue) async {
+    // final position = Duration(microseconds: microValue.toInt());
+    // final index = _playingIndexByPosition(position);
+    // if (index != null) {
+    //   _scrollController._jumpTo(index);
+    // }
+    // setState(() {
+    //   _state = _state
+    //       .focus(index)
+    //       .copyWith(videoSliderDraggingValue: () => microValue);
+    // });
+    // await _videoController?.seekTo(position);
+  }
+
+  void _onVideoSliderEndChanged(double microValue) async {
+    // final position = Duration(microseconds: microValue.toInt());
+    // final sentences = _media?.subtitles.firstOrNull?.sentences;
+    // final index = _playingIndexByPosition(position);
+    // final sentence = index == null ? null : sentences?.elementAtOrNull(index);
+
+    // if (index != null && sentence != null) {
+    //   await _videoController?.seekTo(sentence.start);
+    // }
+    // setState(() {
+    //   _state = _state.copyWith(
+    //     isPlaying: true,
+    //     videoSliderDraggingValue: () => null,
+    //   );
+    // });
+    // await _videoController?.play();
+  }
+
+  void _onScrollToFocusedSentence() {
+    // final focusedIndex = _state.focusedIndex;
+    // if (focusedIndex != null &&
+    //     focusedIndex >= 0 &&
+    //     focusedIndex < _state.sentenceStates.length) {
+    //   _scrollController._scrollTo(focusedIndex);
+    // }
+  }
+
+  void _onScrollToTop() {
+    // if (_state.sentenceStates.isEmpty) {
+    //   debugPrint('no sentence list to scroll');
+    //   return;
+    // }
+    // _scrollController._scrollTo(0);
+  }
+
+  void _onScrollToBottom() {
+    // if (_state.sentenceStates.isEmpty) {
+    //   debugPrint('no sentence list to scroll');
+    //   return;
+    // }
+    // _scrollController._scrollTo(_state.sentenceStates.length - 1);
+  }
+
+  void _onVolumeChanging(double newVolume) async {
+    // setState(() {
+    //   _state = _state.copyWith(volume: newVolume);
+    // });
+    // await _videoController?.setVolume(newVolume);
+  }
+
+  void _onVolumeTap() {
+    // setState(() {
+    //   _state = _state.copyWith(showVolumeSlider: !_state.showVolumeSlider);
+    // });
+  }
+
+  void _onGoToAlbums() {
+    // context.go(AppRoute.albums);
+  }
+
+  Widget _loading(WidgetRef ref) {
+    final isLoading = ref.watch(_provider.select((s) => s.isLoading));
+    if (!isLoading) return const SizedBox.shrink();
     return ColoredBox(
       color: Colors.black.withAlpha(20),
       child: const Center(child: CircularProgressIndicator()),
     );
   }
 
-  Widget _page(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _page(BuildContext ctx) {
     final theme = Theme.of(ctx);
-
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: _appBar(ctx),
-      body: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.black,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                AspectRatio(
-                  aspectRatio: videoController.value.aspectRatio,
-                  child: Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      VideoPlayer(videoController),
-                      // Custom gradient overlay for controls
-                      Positioned.fill(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: 0.4),
-                                Colors.transparent,
-                                Colors.transparent,
-                                Colors.black.withValues(alpha: 0.6),
-                              ],
-                              stops: const [0.0, 0.2, 0.7, 1.0],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        left: 8,
-                        right: 8,
-                        bottom: 0,
-                        child: Row(
-                          crossAxisAlignment: .end,
-                          children: [
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 8.5),
-                                child: _videoSlider(ctx, videoController),
-                              ),
-                            ),
-                            _volumeComponent(ctx),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                _controlBar(ctx, videoController),
-              ],
-            ),
-          ),
-          if (_state.sentenceStates.isNotEmpty)
-            Expanded(
-              child: ColoredBox(
-                color: theme.scaffoldBackgroundColor,
-                child: _sentencesList(),
-              ),
-            ),
-        ],
-      ),
-      floatingActionButton: _floatingButtons(ctx),
+      appBar: _appBar(),
+      body: _body(ctx),
+      floatingActionButton: _floatingButtons(),
     );
   }
 
-  Widget? _floatingButtons(BuildContext ctx) {
-    if (_state.sentenceStates.isEmpty) return null;
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _body(BuildContext ctx) {
     return Column(
-      mainAxisSize: MainAxisSize.min,
       children: [
-        FloatingActionButton.small(
-          heroTag: 'scroll_top',
-          onPressed: _logic.player_onScrollToTop,
-          backgroundColor: colorScheme.surfaceContainerHighest,
-          foregroundColor: colorScheme.primary,
-          child: const Icon(Icons.keyboard_arrow_up_rounded),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.black,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(children: [_displayer(), _controlBar(ctx)]),
         ),
-        const SizedBox(height: 8),
-        FloatingActionButton.small(
-          heroTag: 'scroll_focus',
-          onPressed: _logic.player_onScrollToFocusedSentence,
-          child: const Icon(Icons.center_focus_strong_rounded),
-        ),
-        const SizedBox(height: 8),
-        FloatingActionButton.small(
-          heroTag: 'scroll_bottom',
-          onPressed: _logic.player_onScrollToBottom,
-          backgroundColor: colorScheme.surfaceContainerHighest,
-          foregroundColor: colorScheme.primary,
-          child: const Icon(Icons.keyboard_arrow_down_rounded),
-        ),
+        _sentenceList(),
       ],
     );
   }
 
-  Widget _volumeComponent(BuildContext ctx) {
+  Widget _displayer() {
+    return Consumer(
+      builder: (ctx, ref, child) {
+        final aspectRatio = ref.watch(
+          _provider.select((s) => s.value?.videoController?.value.aspectRatio),
+        );
+        if (aspectRatio == null) return const SizedBox.shrink();
+        return AspectRatio(
+          aspectRatio: aspectRatio,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Consumer(
+                builder: (ctx, ref, _) {
+                  final videoController = ref.watch(
+                    _provider.select((s) => s.value?.videoController),
+                  );
+                  if (videoController == null) return const SizedBox.shrink();
+                  return VideoPlayer(videoController);
+                },
+              ),
+              // Custom gradient overlay for controls
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.4),
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.6),
+                      ],
+                      stops: const [0.0, 0.2, 0.7, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 8,
+                right: 8,
+                bottom: 0,
+                child: Row(
+                  crossAxisAlignment: .end,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8.5),
+                        child: _videoSlider(ctx),
+                      ),
+                    ),
+                    _volumeComponent(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _sentenceList() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final theme = Theme.of(context);
+        final sentenceCount = ref.watch(
+          _provider.select((s) => s.value?.sentenceCount ?? 0),
+        );
+        if (sentenceCount == 0) {
+          return const SizedBox.shrink();
+        } else {
+          return Expanded(
+            child: ColoredBox(
+              color: theme.scaffoldBackgroundColor,
+              child: ScrollablePositionedList.builder(
+                itemCount: sentenceCount,
+                itemScrollController: _scrollController,
+                itemBuilder: (context, i) {
+                  final sentenceId = _notifier.sentenceIdAtIndex(i);
+                  final provider = sentenceCardProvider(sentenceId);
+                  final notifier = ref.read(provider.notifier);
+                  return SentenceCardUI(provider, notifier);
+                },
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget? _floatingButtons() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final sentenceCount = ref.watch(
+          _provider.select((s) => s.value?.sentenceCount ?? 0),
+        );
+        if (sentenceCount == 0) {
+          return const SizedBox.shrink();
+        } else {
+          final colorScheme = Theme.of(context).colorScheme;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'scroll_top',
+                onPressed: _onScrollToTop,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                foregroundColor: colorScheme.primary,
+                child: const Icon(Icons.keyboard_arrow_up_rounded),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton.small(
+                heroTag: 'scroll_focus',
+                onPressed: _onScrollToFocusedSentence,
+                child: const Icon(Icons.center_focus_strong_rounded),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton.small(
+                heroTag: 'scroll_bottom',
+                onPressed: _onScrollToBottom,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                foregroundColor: colorScheme.primary,
+                child: const Icon(Icons.keyboard_arrow_down_rounded),
+              ),
+            ],
+          );
+        }
+      },
+    );
+  }
+
+  Widget _volumeComponent() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (_state.showVolumeSlider)
-          SizedBox(height: 100, child: _volumeSlider(ctx)),
+        Consumer(
+          builder: (ctx, ref, child) {
+            final showVolumeSlider = ref.watch(
+              _provider.select((s) => s.value?.showVolumeSlider ?? false),
+            );
+            if (showVolumeSlider) {
+              return SizedBox(height: 100, child: _volumeSlider(ctx));
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
         IconButton(
-          onPressed: _logic.player_onVolumeTap,
-          icon: Icon(
-            _state.volume == 0
-                ? Icons.volume_off_rounded
-                : Icons.volume_up_rounded,
+          onPressed: _onVolumeTap,
+          icon: Consumer(
+            builder: (context, ref, child) {
+              final volume = ref.watch(
+                _provider.select(
+                  (s) => s.value?.videoController?.value.volume ?? 1,
+                ),
+              );
+              final icon = volume == 0
+                  ? Icons.volume_off_rounded
+                  : Icons.volume_up_rounded;
+              return Icon(icon);
+            },
           ),
           color: Colors.white,
           iconSize: 20,
@@ -219,42 +474,78 @@ class PlayerUI extends StatelessWidget {
           inactiveTrackColor: Colors.white24,
           thumbColor: Colors.white,
         ),
-        child: Slider(
-          value: _state.volume,
-          onChanged: _logic.player_onVolumeChanging,
+        child: Consumer(
+          builder: (context, ref, child) {
+            final volume = ref.watch(
+              _provider.select(
+                (s) => s.value?.videoController?.value.volume ?? 1,
+              ),
+            );
+            return Slider(value: volume, onChanged: _onVolumeChanging);
+          },
         ),
       ),
     );
   }
 
-  Widget _videoSlider(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _videoSlider(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
-    return ValueListenableBuilder(
-      valueListenable: videoController,
-      builder: (ctx, videoValue, child) {
-        final int position = videoValue.position.inMicroseconds;
-        final int duration = videoValue.duration.inMicroseconds;
-        final draggingValue = _state.videoSliderDraggingValue;
-        return SliderTheme(
-          data: SliderTheme.of(ctx).copyWith(
-            trackHeight: 4.0,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
-            activeTrackColor: colorScheme.primary,
-            inactiveTrackColor: Colors.white24,
-            thumbColor: Colors.white,
-          ),
-          child: Slider(
-            value: draggingValue ?? position.clamp(0, duration).toDouble(),
+    return SliderTheme(
+      data: SliderTheme.of(ctx).copyWith(
+        trackHeight: 4.0,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+        activeTrackColor: colorScheme.primary,
+        inactiveTrackColor: Colors.white24,
+        thumbColor: Colors.white,
+      ),
+      child: Consumer(
+        builder: (ctx, ref, _) {
+          final (position, duration) = ref.watch(
+            _provider.select(
+              (s) => (
+                s.value?.videoController?.value.position.inMicroseconds ?? 0,
+                s.value?.videoController?.value.duration.inMicroseconds ?? 0,
+              ),
+            ),
+          );
+          return Slider(
+            value: position.toDouble(),
             min: 0.0,
             max: duration.toDouble(),
-            onChangeStart: _logic.player_onVideoSliderStartChanged,
-            onChangeEnd: _logic.player_onVideoSliderEndChanged,
-            onChanged: _logic.player_onVideoSliderChanging,
-          ),
-        );
-      },
+            onChangeStart: _onVideoSliderStartChanged,
+            onChangeEnd: _onVideoSliderEndChanged,
+            onChanged: _onVideoSliderChanging,
+          );
+        },
+      ),
     );
+    // return ValueListenableBuilder(
+    //   valueListenable: videoController,
+    //   builder: (ctx, videoValue, child) {
+    //     final int position = videoValue.position.inMicroseconds;
+    //     final int duration = videoValue.duration.inMicroseconds;
+    //     final draggingValue = _state.videoSliderDraggingValue;
+    //     return SliderTheme(
+    //       data: SliderTheme.of(ctx).copyWith(
+    //         trackHeight: 4.0,
+    //         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
+    //         overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+    //         activeTrackColor: colorScheme.primary,
+    //         inactiveTrackColor: Colors.white24,
+    //         thumbColor: Colors.white,
+    //       ),
+    //       child: Slider(
+    //         value: draggingValue ?? position.clamp(0, duration).toDouble(),
+    //         min: 0.0,
+    //         max: duration.toDouble(),
+    //         onChangeStart: _onVideoSliderStartChanged,
+    //         onChangeEnd: _onVideoSliderEndChanged,
+    //         onChanged: _onVideoSliderChanging,
+    //       ),
+    //     );
+    //   },
+    // );
   }
 
   Widget _empty(BuildContext ctx) {
@@ -313,7 +604,7 @@ class PlayerUI extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
-                onPressed: _logic.player_onGoToAlbums,
+                onPressed: _onGoToAlbums,
                 icon: const Icon(Icons.library_music_rounded),
                 label: const Text('Go to Albums'),
               ),
@@ -324,18 +615,7 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _sentencesList() {
-    return ScrollablePositionedList.builder(
-      itemCount: _state.sentenceStates.length,
-      itemScrollController: _scrollController,
-      itemBuilder: (context, index) {
-        final sentenceState = _state.sentenceStates[index];
-        return SentenceCardUI(index, sentenceState, _logic);
-      },
-    );
-  }
-
-  AppBar _appBar(BuildContext ctx) {
+  AppBar _appBar() {
     return AppBar(
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
@@ -349,27 +629,34 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _title() {
-    final text = _state.title.trim();
-    if (text.isEmpty) {
-      return const Text('');
-    }
     return SizedBox(
       height: 24,
-      child: Marquee(
-        text: text,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-        scrollAxis: Axis.horizontal,
-        blankSpace: 50,
-        velocity: 30,
+      child: Consumer(
+        builder: (ctx, ref, _) {
+          final title = ref.watch(
+            _provider.select((s) => s.value?.title ?? ''),
+          );
+          if (title.isEmpty) {
+            return const Text('');
+          } else {
+            return Marquee(
+              text: title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+              scrollAxis: Axis.horizontal,
+              blankSpace: 50,
+              velocity: 30,
+            );
+          }
+        },
       ),
     );
   }
 
-  Widget _controlBar(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _controlBar(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Container(
       decoration: BoxDecoration(
@@ -381,9 +668,9 @@ class PlayerUI extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          _playOrPauseButton(ctx, videoController),
+          _playOrPauseButton(ctx),
           const SizedBox(width: 16),
-          if (_state.sentenceStates.isNotEmpty) _repeatOneButton(ctx),
+          _repeatOneButton(ctx),
           const Spacer(),
           _speedDownButton(ctx),
           const SizedBox(width: 8),
@@ -395,57 +682,73 @@ class PlayerUI extends StatelessWidget {
     );
   }
 
-  Widget _playOrPauseButton(
-    BuildContext ctx,
-    VideoPlayerController videoController,
-  ) {
-    final isPlaying = _state.isPlaying;
+  Widget _playOrPauseButton(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
-    return IconButton.filled(
-      onPressed: () {
-        if (isPlaying) {
-          _logic.player_onPause();
-        } else {
-          _logic.player_onPlay();
-        }
+    return Consumer(
+      builder: (ctx, ref, child) {
+        final isPlaying = ref.watch(
+          _provider.select(
+            (s) => s.value?.videoController?.value.isPlaying ?? false,
+          ),
+        );
+        return IconButton.filled(
+          onPressed: () {
+            if (isPlaying) {
+              _onPause();
+            } else {
+              _onPlay();
+            }
+          },
+          icon: Icon(
+            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            size: 24,
+          ),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: Colors.white,
+            tapTargetSize: .shrinkWrap,
+          ),
+          constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+          padding: EdgeInsets.zero,
+        );
       },
-      icon: Icon(
-        isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-        size: 24,
-      ),
-      style: IconButton.styleFrom(
-        backgroundColor: colorScheme.primary,
-        foregroundColor: Colors.white,
-        tapTargetSize: .shrinkWrap,
-      ),
-      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-      padding: EdgeInsets.zero,
     );
   }
 
   Widget _repeatOneButton(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
-    return IconButton(
-      onPressed: () {
-        if (_state.repeat) {
-          _logic.player_onRepeatOne();
-        } else {
-          _logic.player_onInOrder();
-        }
+    return Consumer(
+      builder: (ctx, ref, _) {
+        final sentenceCount = ref.watch(
+          _provider.select((s) => s.value?.sentenceCount ?? 0),
+        );
+        if (sentenceCount == 0) return const SizedBox.shrink();
+        final repeat = ref.watch(
+          _provider.select((s) => s.value?.repeat ?? false),
+        );
+        return IconButton(
+          onPressed: () {
+            if (repeat) {
+              _onRepeatOne();
+            } else {
+              _onInOrder();
+            }
+          },
+          icon: Icon(
+            repeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+            color: repeat ? colorScheme.primary : colorScheme.outline,
+          ),
+          style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+          constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+          padding: EdgeInsets.zero,
+        );
       },
-      icon: Icon(
-        _state.repeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-        color: _state.repeat ? colorScheme.primary : colorScheme.outline,
-      ),
-      style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
-      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-      padding: EdgeInsets.zero,
     );
   }
 
   Widget _speedDownButton(BuildContext ctx) {
     return IconButton(
-      onPressed: _logic.player_onSpeedDown,
+      onPressed: _onSpeedDown,
       icon: const Icon(Icons.remove_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
@@ -456,7 +759,7 @@ class PlayerUI extends StatelessWidget {
 
   Widget _speedUpButton(BuildContext ctx) {
     return IconButton(
-      onPressed: _logic.player_onSpeedUp,
+      onPressed: _onSpeedUp,
       icon: const Icon(Icons.add_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
@@ -468,36 +771,180 @@ class PlayerUI extends StatelessWidget {
   Widget _speedLabel(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return GestureDetector(
-      onTap: _logic.player_onSpeedReset,
+      onTap: _onSpeedReset,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: colorScheme.primaryContainer.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Text(
-          '${_state.speed}x',
-          style: TextStyle(
-            color: colorScheme.primary,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-          ),
+        child: Consumer(
+          builder: (ctx, ref, _) {
+            final speed = ref.watch(
+              _provider.select(
+                (s) => s.value?.videoController?.value.playbackSpeed ?? 1,
+              ),
+            );
+            return Text(
+              '${speed}x',
+              style: TextStyle(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            );
+          },
         ),
       ),
     );
   }
-
-  // Widget _controlButton(
-  //   void Function() onPressed,
-  //   Widget icon,
-  // ) {
-  //   return SizedBox(
-  //     width: _kPlayerControlBarButtonWidth,
-  //     child: IconButton.filledTonal(
-  //       onPressed: onPressed,
-  //       icon: icon,
-  //       padding: EdgeInsets.zero,
-  //     ),
-  //   );
-  // }
 }
+
+extension on ItemScrollController {
+  void _jumpTo(int index) {
+    if (isAttached) {
+      jumpTo(index: index, alignment: index == 0 ? 0 : 0.3);
+    } else {
+      debugPrint('${identityHashCode(this)} jump fail, scroll is not attached');
+    }
+  }
+
+  void _scrollTo(int index) {
+    if (isAttached) {
+      scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 250),
+        alignment: index == 0 ? 0 : 0.3,
+      );
+    } else {
+      debugPrint(
+        '${identityHashCode(this)} scroll fail, scroll is not attached',
+      );
+    }
+  }
+}
+
+// extension on PlayerState {
+//   PlayerState unfocus() {
+//     return copyWith(
+//       sentenceStates: sentenceStates
+//           .map((ss) => ss.copyWith(isFocused: false))
+//           .toList(),
+//     );
+//   }
+
+//   PlayerState focus(int? index) {
+//     if (index == null) {
+//       return unfocus();
+//     }
+//     return copyWith(
+//       sentenceStates: sentenceStates
+//           .asMap()
+//           .entries
+//           .map((e) => e.value.copyWith(isFocused: index == e.key))
+//           .toList(),
+//     );
+//   }
+
+//   int? get focusedIndex {
+//     int i = sentenceStates.indexWhere((s) => s.isFocused);
+//     return i == -1 ? null : i;
+//     // return sentenceStates
+//     //     .asMap()
+//     //     .entries
+//     //     .firstWhereOrNull((e) => e.value.isFocused)
+//     //     ?.key;
+//   }
+// }
+
+
+
+
+  // void _reloadMedia() async {
+  //   final mediaId = widget._mediaId;
+  //   Future<void> setupNull() async {
+  //     await _videoController?.dispose();
+  //     _media = null;
+  //     _videoController = null;
+  //     setState(() {
+  //       _state = const PlayerState.empty().copyWith(
+  //         showLoading: false,
+  //         showEmpty: true,
+  //       );
+  //     });
+  //   }
+
+  //   if (mediaId == null) {
+  //     await setupNull();
+  //     return;
+  //   }
+  //   setState(() {
+  //     _state = _state.copyWith(
+  //       showLoading: true,
+  //       showEmpty: _videoController == null,
+  //     );
+  //   });
+  //   final newMedia = await DBObjectBox().store.box<EnMedia>().getAsync(mediaId);
+  //   if (newMedia == null) {
+  //     await setupNull();
+  //     return;
+  //   }
+  //   final oldMedia = _media?.copyWith();
+  //   _media = newMedia;
+  //   if (oldMedia == newMedia) {
+  //     debugPrint('same media notified');
+  //     setState(() {
+  //       _state = _state.copyWith(showLoading: false);
+  //     });
+  //     return;
+  //   }
+  //   final isVideoChanged = oldMedia?.path != newMedia.path;
+  //   final subtitle = newMedia.subtitles.firstOrNull;
+  //   // final isSubtitleChanged =
+  //   //     oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
+  //   final sentenceStates =
+  //       subtitle?.sentences.map((s) => s.toCardState()).toList() ?? const [];
+
+  //   if (isVideoChanged) {
+  //     _state = const PlayerState.empty()
+  //         .copyWith(sentenceStates: sentenceStates, isPlaying: true)
+  //         .focus(sentenceStates.isEmpty ? null : 0);
+
+  //   } else {
+  //     //subtitle changed/ or deleted
+  //     final videoController = _videoController;
+  //     if (videoController == null) {
+  //       _state = const PlayerState.empty().copyWith(
+  //         showLoading: false,
+  //         showEmpty: true,
+  //       );
+  //     } else {
+  //       final position = videoController.value.position;
+  //       final playingIndex = _playingIndexByPosition(position);
+  //       final repeat = playingIndex == null ? false : _state.repeat;
+  //       _state = _state
+  //           .copyWith(repeat: repeat, sentenceStates: sentenceStates)
+  //           .focus(playingIndex);
+  //     }
+  //   }
+  //   //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
+  //   setState(() {
+  //     _state = _state.copyWith(
+  //       title: newMedia.name,
+  //       showLoading: false,
+  //       showEmpty: false,
+  //     );
+  //   });
+  //   //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
+  //   if (_state.sentenceStates.isNotEmpty) {
+  //     final focusedIndex = _state.focusedIndex;
+  //     if (focusedIndex == null) {
+  //       _scrollController._jumpTo(_state.sentenceStates.length - 1);
+  //     } else {
+  //       _scrollController._jumpTo(focusedIndex);
+  //     }
+  //   }
+  //   if (isVideoChanged) {
+  //     await _videoController?.play();
+  //   }
+  // }

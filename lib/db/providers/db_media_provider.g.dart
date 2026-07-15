@@ -49,7 +49,7 @@ final class DBMediaProvider extends $AsyncNotifierProvider<DBMedia, EnMedia?> {
   }
 }
 
-String _$dBMediaHash() => r'2f533486ff2599008d421cf8c787a78f1774e7d3';
+String _$dBMediaHash() => r'9cd1730b7d424905802aa06c6dfda95e4fb99712';
 
 final class DBMediaFamily extends $Family
     with

@@ -2,20 +2,23 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/album/album_provider.dart';
+import 'package:mockingbird/tab_albums/album/album_state.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-abstract interface class AlbumDetailUIOutputITF
-    implements MediaCardUIOutputITF {
-  void albumDetail_onImport();
-  void albumDetail_onPickCover();
-  void albumDetail_onEditAlbum();
+abstract interface class AlbumNotifierITF {
+  int? get id;
+  int? mediaIdAtIndex(int i);
+  Future<void> import();
+  Future<void> addCover();
 }
 
 class AlbumUI extends ConsumerWidget {
-  final int _id;
-  final AlbumDetailUIOutputITF _logic;
-  const AlbumUI(this._id, this._logic, {super.key});
+  final ProviderListenable<AsyncValue<AlbumState?>> _provider;
+  final AlbumNotifierITF _notifier;
+  const AlbumUI(this._provider, this._notifier, {super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
@@ -23,15 +26,17 @@ class AlbumUI extends ConsumerWidget {
   }
 
   Widget _empty(WidgetRef ref) {
-    final data = ref.watch(albumProvider(_id)).value;
+    final data = ref.watch(_provider).value;
     if (data != null) {
       return const SizedBox.shrink();
     }
-    return const Scaffold(body: Center(child: Text('album == null, no any data')));
+    return const Scaffold(
+      body: Center(child: Text('album == null, no any data')),
+    );
   }
 
   Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(albumProvider(_id)).isLoading;
+    final isLoading = ref.watch(_provider).isLoading;
     if (!isLoading) {
       return const SizedBox.shrink();
     }
@@ -49,15 +54,17 @@ class AlbumUI extends ConsumerWidget {
           _sliverAppBar(ctx),
           Consumer(
             builder: (context, ref, child) {
-              final data = ref.watch(albumProvider(_id)).value;
-              if (data != null && data.mediaStates.isNotEmpty) {
+              final mediaCount = ref.watch(_provider.select((s)=>s.value?.mediaCount ?? 0));
+              if (mediaCount > 0) {
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final mediaState = data.mediaStates[index];
-                      return MediaCardUI(index, mediaState, _logic);
-                    }, childCount: data.mediaStates.length),
+                    delegate: SliverChildBuilderDelegate((context, i) {
+                      final mediaId = _notifier.mediaIdAtIndex(i);
+                      final provider = mediaCardProvider(mediaId);
+                      final notifier = ref.read(provider.notifier);
+                      return MediaCardUI(provider, notifier);
+                    }, childCount: mediaCount),
                   ),
                 );
               } else {
@@ -112,7 +119,7 @@ class AlbumUI extends ConsumerWidget {
         title: Consumer(
           builder: (ctx, ref, child) {
             final (name, cover) = ref.watch(
-              albumProvider(_id).select((s) => (s.value?.name, s.value?.cover)),
+              _provider.select((s) => (s.value?.name, s.value?.cover)),
             );
             if (name == null) {
               return const SizedBox.shrink();
@@ -136,9 +143,7 @@ class AlbumUI extends ConsumerWidget {
         ),
         background: Consumer(
           builder: (ctx, ref, child) {
-            final cover = ref.watch(
-              albumProvider(_id).select((s) => s.value?.cover),
-            );
+            final cover = ref.watch(_provider.select((s) => s.value?.cover));
             if (cover == null) {
               return _noCoverBanner(ctx, ref);
             } else {
@@ -157,13 +162,13 @@ class AlbumUI extends ConsumerWidget {
       actions: [
         Consumer(
           builder: (ctx, ref, child) {
-            final data = ref.watch(albumProvider(_id)).value;
+            final data = ref.watch(_provider).value;
             if (data != null) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: IconButton.filledTonal(
                   icon: const Icon(Icons.add_rounded),
-                  onPressed: _logic.albumDetail_onImport,
+                  onPressed: _onImport,
                   tooltip: 'Add Media',
                 ),
               );
@@ -182,7 +187,7 @@ class AlbumUI extends ConsumerWidget {
       children: [
         Image.file(cover, fit: BoxFit.cover),
         InkWell(
-          onTap: _logic.albumDetail_onPickCover,
+          onTap: _onPickCover,
           child: const DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -208,7 +213,7 @@ class AlbumUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     return FloatingActionButton.small(
-      onPressed: _logic.albumDetail_onEditAlbum,
+      onPressed: () => _onEditAlbum(ctx),
       backgroundColor: Colors.white.withValues(alpha: 0.9),
       foregroundColor: colorScheme.primary,
       child: const Icon(Icons.edit_outlined),
@@ -232,7 +237,7 @@ class AlbumUI extends ConsumerWidget {
       child: Stack(
         children: [
           InkWell(
-            onTap: _logic.albumDetail_onPickCover,
+            onTap: _onPickCover,
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -257,6 +262,30 @@ class AlbumUI extends ConsumerWidget {
           Positioned(right: 16, bottom: 16, child: _editAlbumButton(ctx)),
         ],
       ),
+    );
+  }
+
+  void _onImport() async {
+    await _notifier.import();
+  }
+
+  void _onPickCover() async {
+    await _notifier.addCover();
+  }
+
+  void _onEditAlbum(BuildContext ctx) async {
+    final id = _notifier.id;
+    if (id != null) {
+      await _showEditingAlbumDialog(ctx, id);
+    }
+  }
+
+  Future<void> _showEditingAlbumDialog(BuildContext ctx, int id) async {
+    await showDialog(
+      context: ctx,
+      builder: (context) {
+        return EditAlbumUI(id);
+      },
     );
   }
 }

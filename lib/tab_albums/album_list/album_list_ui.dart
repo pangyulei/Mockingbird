@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:mockingbird/app/app_route.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
@@ -16,7 +15,7 @@ class AlbumListUI extends ConsumerWidget {
 
   Widget _empty(BuildContext ctx, WidgetRef ref) {
     final isEmpty = ref.watch(
-      albumListProvider.select((s) => s.value?.count == 0),
+      albumListProvider.select((s) => s.value?.albumCount == 0),
     );
     if (!isEmpty) {
       return const SizedBox.shrink();
@@ -40,7 +39,7 @@ class AlbumListUI extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final count = ref.watch(
-                albumListProvider.select((s) => s.value?.count ?? 0),
+                albumListProvider.select((s) => s.value?.albumCount ?? 0),
               );
               return Text(
                 '$count created albums',
@@ -75,7 +74,7 @@ class AlbumListUI extends ConsumerWidget {
   }
 
   Widget _grid(WidgetRef ref) {
-    final count = ref.watch(albumListProvider).value?.count ?? 0;
+    final count = ref.watch(albumListProvider).value?.albumCount ?? 0;
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: count,
@@ -87,12 +86,9 @@ class AlbumListUI extends ConsumerWidget {
       ),
       itemBuilder: (ctx, i) {
         final albumId = ref.read(albumListProvider.notifier).albumIdAtIndex(i);
-        if (albumId == null) {
-          AssertionError('album list not found albumId at index ($i)');
-          return const SizedBox.shrink();
-        } else {
-          return AlbumCardUI(albumId);
-        }
+        final provider = albumCardProvider(albumId);
+        final notifier = ref.read(provider.notifier);
+        return AlbumCardUI(provider, notifier);
       },
     );
   }

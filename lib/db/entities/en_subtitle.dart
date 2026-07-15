@@ -1,11 +1,10 @@
-import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
 
 import 'en_media.dart';
 import 'en_sentence.dart';
 
 @Entity()
-class EnSubtitle extends Equatable {
+class EnSubtitle {
   @Id()
   int id;
 
@@ -16,6 +15,4 @@ class EnSubtitle extends Equatable {
 
   EnSubtitle({required this.id});
 
-  @override
-  List<Object?> get props => [id];
 }

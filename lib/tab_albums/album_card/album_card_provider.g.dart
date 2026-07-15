@@ -13,10 +13,10 @@ part of 'album_card_provider.dart';
 final albumCardProvider = AlbumCardFamily._();
 
 final class AlbumCardProvider
-    extends $AsyncNotifierProvider<AlbumCard, AlbumCardState?> {
+    extends $AsyncNotifierProvider<AlbumCard, AlbumCardState> {
   AlbumCardProvider._({
     required AlbumCardFamily super.from,
-    required int super.argument,
+    required int? super.argument,
   }) : super(
          retry: null,
          name: r'albumCardProvider',
@@ -50,16 +50,16 @@ final class AlbumCardProvider
   }
 }
 
-String _$albumCardHash() => r'9aff81bbeae8b2e36be3140fc8b9de918950020c';
+String _$albumCardHash() => r'3b3a4cedd61f446cb9fa851ee8cd8a1b8c1a2821';
 
 final class AlbumCardFamily extends $Family
     with
         $ClassFamilyOverride<
           AlbumCard,
-          AsyncValue<AlbumCardState?>,
-          AlbumCardState?,
-          FutureOr<AlbumCardState?>,
-          int
+          AsyncValue<AlbumCardState>,
+          AlbumCardState,
+          FutureOr<AlbumCardState>,
+          int?
         > {
   AlbumCardFamily._()
     : super(
@@ -70,27 +70,27 @@ final class AlbumCardFamily extends $Family
         isAutoDispose: true,
       );
 
-  AlbumCardProvider call(int id) =>
+  AlbumCardProvider call(int? id) =>
       AlbumCardProvider._(argument: id, from: this);
 
   @override
   String toString() => r'albumCardProvider';
 }
 
-abstract class _$AlbumCard extends $AsyncNotifier<AlbumCardState?> {
-  late final _$args = ref.$arg as int;
-  int get id => _$args;
+abstract class _$AlbumCard extends $AsyncNotifier<AlbumCardState> {
+  late final _$args = ref.$arg as int?;
+  int? get id => _$args;
 
-  FutureOr<AlbumCardState?> build(int id);
+  FutureOr<AlbumCardState> build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AlbumCardState?>, AlbumCardState?>;
+    final ref = this.ref as $Ref<AsyncValue<AlbumCardState>, AlbumCardState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AlbumCardState?>, AlbumCardState?>,
-              AsyncValue<AlbumCardState?>,
+              AnyNotifier<AsyncValue<AlbumCardState>, AlbumCardState>,
+              AsyncValue<AlbumCardState>,
               Object?,
               Object?
             >;

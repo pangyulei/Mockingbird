@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 enum _MoreItem {
   delete('delete'),
@@ -15,23 +16,37 @@ enum _MoreItem {
   const _MoreItem(this.raw);
 }
 
+abstract interface class AlbumCardNotifierITF {
+  int? get id;
+  String? get albumName;
+  Future<void> delete();
+}
+
 class AlbumCardUI extends ConsumerWidget {
-  final int _id;
-  const AlbumCardUI(this._id, {super.key});
+  final ProviderListenable<AsyncValue<AlbumCardState>> _provider;
+  final AlbumCardNotifierITF _notifier;
+  const AlbumCardUI(this._provider, this._notifier, {super.key});
 
   void _onTap(BuildContext ctx) {
-    ctx.go(AppRoute.albumById(_id));
+    final id = _notifier.id;
+    if (id != null) ctx.go(AppRoute.albumById(id));
   }
 
   void _onEdit(BuildContext ctx) async {
-    debugPrint('edit album $_id');
+    debugPrint('edit album ${_notifier.id}');
     await _showEditingAlbumDialog(ctx);
   }
 
   void _onDelete(BuildContext ctx, WidgetRef ref) async {
-    final name = ref.read(albumCardProvider(_id).notifier).albumName;
+    if (await confirmDelete(ctx, ref)) {
+      await _notifier.delete();
+    }
+  }
+
+  Future<bool> confirmDelete(BuildContext ctx, WidgetRef ref) async {
+    final name = _notifier.albumName;
     if (name == null) {
-      return;
+      return false;
     }
     final confirmed = await showDialog<bool>(
       context: ctx,
@@ -57,17 +72,16 @@ class AlbumCardUI extends ConsumerWidget {
     );
 
     if (confirmed == null || !confirmed) {
-      return;
+      return false;
     }
-
-    await ref.read(albumCardProvider(_id).notifier).delete();
+    return true;
   }
 
   Future<void> _showEditingAlbumDialog(BuildContext ctx) async {
     await showDialog(
       context: ctx,
       builder: (ctx) {
-        return EditAlbumUI(_id);
+        return EditAlbumUI(_notifier.id);
       },
     );
   }
@@ -78,7 +92,7 @@ class AlbumCardUI extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return InkWell(
-      onTap: () => _onTap,
+      onTap: () => _onTap(ctx),
       borderRadius: BorderRadius.circular(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,10 +145,7 @@ class AlbumCardUI extends ConsumerWidget {
                 Consumer(
                   builder: (context, ref, child) {
                     final name =
-                        ref.watch(
-                          albumCardProvider(_id).select((s) => s.value?.name),
-                        ) ??
-                        '';
+                        ref.watch(_provider.select((s) => s.value?.name)) ?? '';
                     return Text(
                       name,
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -151,9 +162,7 @@ class AlbumCardUI extends ConsumerWidget {
                   builder: (context, ref, child) {
                     final mediasCount =
                         ref.watch(
-                          albumCardProvider(
-                            _id,
-                          ).select((s) => s.value?.mediasCount),
+                          _provider.select((s) => s.value?.mediasCount),
                         ) ??
                         0;
                     return Text(
@@ -216,9 +225,7 @@ class AlbumCardUI extends ConsumerWidget {
   }
 
   Widget _cover(BuildContext ctx, WidgetRef ref) {
-    final cover = ref.watch(
-      albumCardProvider(_id).select((s) => s.value?.cover),
-    );
+    final cover = ref.watch(_provider.select((s) => s.value?.cover));
     final colorScheme = Theme.of(ctx).colorScheme;
     if (cover != null) {
       return Image.file(File(cover), fit: BoxFit.cover);

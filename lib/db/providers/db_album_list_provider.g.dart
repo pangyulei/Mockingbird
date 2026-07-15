@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'player_provider.dart';
+part of 'db_album_list_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,43 +9,43 @@ part of 'player_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(Player)
-final playerProvider = PlayerProvider._();
+@ProviderFor(DBAlbumList)
+final dbAlbumListProvider = DBAlbumListProvider._();
 
-final class PlayerProvider
-    extends $AsyncNotifierProvider<Player, PlayerState?> {
-  PlayerProvider._()
+final class DBAlbumListProvider
+    extends $AsyncNotifierProvider<DBAlbumList, List<EnAlbum>> {
+  DBAlbumListProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'playerProvider',
+        name: r'dbAlbumListProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$playerHash();
+  String debugGetCreateSourceHash() => _$dBAlbumListHash();
 
   @$internal
   @override
-  Player create() => Player();
+  DBAlbumList create() => DBAlbumList();
 }
 
-String _$playerHash() => r'73ebcf85e2b1a9e346a6bc80f3461bb7e7e4449f';
+String _$dBAlbumListHash() => r'176370212a367f4890849dccace1543fa5e4f533';
 
-abstract class _$Player extends $AsyncNotifier<PlayerState?> {
-  FutureOr<PlayerState?> build();
+abstract class _$DBAlbumList extends $AsyncNotifier<List<EnAlbum>> {
+  FutureOr<List<EnAlbum>> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<PlayerState?>, PlayerState?>;
+    final ref = this.ref as $Ref<AsyncValue<List<EnAlbum>>, List<EnAlbum>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<PlayerState?>, PlayerState?>,
-              AsyncValue<PlayerState?>,
+              AnyNotifier<AsyncValue<List<EnAlbum>>, List<EnAlbum>>,
+              AsyncValue<List<EnAlbum>>,
               Object?,
               Object?
             >;

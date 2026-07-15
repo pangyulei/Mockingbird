@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'db_albums_provider.dart';
+part of 'db_pref_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,43 +9,42 @@ part of 'db_albums_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBAlbums)
-final dbAlbumsProvider = DBAlbumsProvider._();
+@ProviderFor(DBPref)
+final dbPrefProvider = DBPrefProvider._();
 
-final class DBAlbumsProvider
-    extends $AsyncNotifierProvider<DBAlbums, List<EnAlbum>> {
-  DBAlbumsProvider._()
+final class DBPrefProvider extends $AsyncNotifierProvider<DBPref, EnPref> {
+  DBPrefProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'dbAlbumsProvider',
-        isAutoDispose: true,
+        name: r'dbPrefProvider',
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$dBAlbumsHash();
+  String debugGetCreateSourceHash() => _$dBPrefHash();
 
   @$internal
   @override
-  DBAlbums create() => DBAlbums();
+  DBPref create() => DBPref();
 }
 
-String _$dBAlbumsHash() => r'd0092be746b93ab50e0200a1b46968b09e0dbf84';
+String _$dBPrefHash() => r'bfb2f712815c29dcdf9900f41b0481db028da9ea';
 
-abstract class _$DBAlbums extends $AsyncNotifier<List<EnAlbum>> {
-  FutureOr<List<EnAlbum>> build();
+abstract class _$DBPref extends $AsyncNotifier<EnPref> {
+  FutureOr<EnPref> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<EnAlbum>>, List<EnAlbum>>;
+    final ref = this.ref as $Ref<AsyncValue<EnPref>, EnPref>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<EnAlbum>>, List<EnAlbum>>,
-              AsyncValue<List<EnAlbum>>,
+              AnyNotifier<AsyncValue<EnPref>, EnPref>,
+              AsyncValue<EnPref>,
               Object?,
               Object?
             >;

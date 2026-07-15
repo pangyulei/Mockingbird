@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/tab_albums/album/album_screen.dart';
+import 'package:mockingbird/db/providers/db_pref_provider.dart';
+import 'package:mockingbird/tab_albums/album/album_provider.dart';
+import 'package:mockingbird/tab_albums/album/album_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
-import 'package:mockingbird/tab_player/player/player_screen.dart';
+import 'package:mockingbird/tab_player/player/player_provider.dart';
+import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
 typedef OnAppTab = void Function(int index, StatefulNavigationShell shell);
@@ -58,9 +62,15 @@ class AppRoute {
       GoRoute(
         path: ':id',
         builder: (BuildContext context, GoRouterState state) {
-          final albumIdStr = state.pathParameters['id']!;
-          final albumId = int.tryParse(albumIdStr);
-          return AlbumScreen(albumId!); //TODO make id int?
+          return Consumer(
+            builder: (context, ref, child) {
+              final albumIdStr = state.pathParameters['id']!;
+              final albumId = int.tryParse(albumIdStr);
+              final provider = albumProvider(albumId);
+              final notifier = ref.read(provider.notifier);
+              return AlbumUI(provider, notifier);
+            },
+          );
         },
       ),
     ],
@@ -69,7 +79,12 @@ class AppRoute {
   static GoRoute _playerRoute() => GoRoute(
     path: AppRoute.player,
     builder: (BuildContext context, GoRouterState state) {
-      return const PlayerScreen(null);
+      return Consumer(
+        builder: (ctx, ref, _) {
+          final notifier = ref.read(playerProvider.notifier);
+          return PlayerUI(playerProvider, notifier);
+        },
+      );
     },
     routes: <RouteBase>[
       GoRoute(
@@ -77,10 +92,13 @@ class AppRoute {
         builder: (ctx, state) {
           final mediaIdStr = state.pathParameters['id']!;
           final mediaId = int.tryParse(mediaIdStr);
-          if (mediaId != null) {
-            return PlayerScreen(mediaId);
-          }
-          return const PlayerScreen(null);
+          return Consumer(
+            builder: (ctx, ref, _) {
+              ref.read(dbPrefProvider.notifier).setPlayingId(mediaId);
+              final notifier = ref.read(playerProvider.notifier);
+              return PlayerUI(playerProvider, notifier);
+            },
+          );
         },
       ),
     ],

@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
 import 'package:path/path.dart' as p;
 
@@ -6,59 +5,36 @@ import 'en_album.dart';
 import 'en_subtitle.dart';
 
 @Entity()
-class EnMedia extends Equatable {
+class EnMedia {
   @Id()
   int id;
 
   final albums = ToMany<EnAlbum>();
   final String path; // Full path to the media file
   final String name;
-  final int versionId;
   @Backlink('media')
   final subtitles = ToMany<EnSubtitle>();
 
   //objectbox will use this default constructor
-  EnMedia({
-    required this.path,
-    required this.name,
-    required this.id,
-    required this.versionId,
-  });
+  EnMedia({required this.path, required this.name, required this.id});
 
   MediaType get type => MediaType.fromExtension(p.extension(path));
 
   EnMedia copyWith({
-    int? id,
-    int? versionId,
     String? path,
     String? name,
-    List<EnSubtitle>? Function()? subtitles,
+    List<EnSubtitle>? subtitles,
     List<EnAlbum>? albums,
   }) {
     final media = EnMedia(
-      id: id ?? this.id,
-      versionId: versionId ?? this.versionId,
+      id: id,
       path: path ?? this.path,
       name: name ?? this.name,
     );
-    if (subtitles != null) {
-      final res = subtitles();
-      if (res != null) {
-        media.subtitles.addAll(res);
-      }
-    } else {
-      media.subtitles.addAll(this.subtitles);
-    }
+    media.subtitles.addAll(subtitles ?? this.subtitles);
     media.albums.addAll(albums ?? this.albums);
     return media;
   }
-
-  EnMedia incVersion() {
-    return copyWith(versionId: versionId + 1);
-  }
-
-  @override
-  List<Object?> get props => [id, versionId];
 }
 
 enum MediaType {

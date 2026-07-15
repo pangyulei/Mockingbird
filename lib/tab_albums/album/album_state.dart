@@ -1,35 +1,28 @@
 import 'dart:io';
 
-import '../media_card/media_card_state.dart';
-
 class AlbumState {
   final String name;
   final File? cover;
-  final List<MediaCardState> mediaStates;
+  final int mediaCount;
 
   const AlbumState({
     required this.name,
     required this.cover,
-    required this.mediaStates,
+    required this.mediaCount,
   });
 
-  const AlbumState.empty()
-    : this(
-        cover: null,
-        name: '',
-        mediaStates: const [],
-      );
+  const AlbumState.empty() : this(cover: null, name: '', mediaCount: 0);
 
   AlbumState copyWith({
     bool? showImport,
     String? name,
     File? Function()? cover,
-    List<MediaCardState>? mediaStates,
+    int? mediaCount,
   }) {
     return AlbumState(
       name: name ?? this.name,
       cover: cover == null ? this.cover : cover(),
-      mediaStates: mediaStates ?? this.mediaStates,
+      mediaCount: mediaCount ?? this.mediaCount,
     );
   }
 }

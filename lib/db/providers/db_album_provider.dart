@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
-import 'package:mockingbird/db/entities/en_media.dart';
-import 'package:mockingbird/db/entities/en_subtitle.dart';
-import 'package:mockingbird/db/providers/db_albums_provider.dart';
+import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_media_provider.dart';
-import 'package:objectbox/objectbox.dart';
+import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'db_album_provider.g.dart';
@@ -26,89 +23,56 @@ class DBAlbum extends _$DBAlbum {
   }
 
   Future<void> updateAlbum({String? name, File? Function()? cover}) async {
-    final album = state.value;
-    if (album == null) {
-      return;
-    }
-    debugPrint(
-      'album($id) ${identityHashCode(state)} before: \n${album.name}\n${album.cover}',
+    final album = await future;
+    if (album == null) return;
+    final updatedAlbum = await DBLogic().updateAlbum(
+      album,
+      name: name,
+      cover: cover,
     );
-    state = await AsyncValue.guard(() async {
-      final updatedAlbum = await DBLogic().updateAlbum(
-        album,
-        name: name,
-        cover: cover,
-      );
-      ref.read(dbAlbumsProvider.notifier).updateByAlbumUpdated(updatedAlbum);
-      return updatedAlbum;
-    });
-    debugPrint(
-      'album($id) ${identityHashCode(state)} after: \n${state.value?.name}\n${state.value?.cover}',
-    );
+    ref.invalidateSelf();
+    await ref
+        .read(dbAlbumListProvider.notifier)
+        .updateByAlbumUpdated(updatedAlbum);
   }
 
   Future<void> importMediasSubtitles(List<File> files) async {
     final album = await future;
-    if (album == null) {
-      debugPrint('album==null, can NOT import medias');
-      return;
-    }
-    state = await AsyncValue.guard(() async {
-      final medias = await DBLogic().importMediaAndSubtitles(album, files);
-      if (medias.isNotEmpty) {
-        album.medias.addAll(medias);
-        album.sortMedias();
+    if (album == null) return;
+    await DBLogic().importMediaAndSubtitles(album, files);
+    ref.invalidateSelf();
+    final updatedAlbum = await future;
+    if (updatedAlbum != null) {
+      for (final media in updatedAlbum.medias) {
+        ref.invalidate(dbMediaProvider(media.id));
       }
-      //notify dbAlbums update
-      await ref.read(dbAlbumsProvider.notifier).updateByAlbumUpdated(album);
-      return album;
-    });
+      await ref
+          .read(dbAlbumListProvider.notifier)
+          .updateByAlbumUpdated(updatedAlbum);
+    }
   }
 
-  Future<void> updateByMediaUpdated(EnMedia updatedMedia) async {
-    final album = await future;
-    if (album == null) {
-      return;
+  Future<void> updateByMediaUpdated() async {
+    ref.invalidateSelf();
+    final updatedAlbum = await future;
+    if (updatedAlbum != null) {
+      await ref
+          .read(dbAlbumListProvider.notifier)
+          .updateByAlbumUpdated(updatedAlbum);
     }
-    final updatedMedias = album.medias
-        .map((media) => media.id == updatedMedia.id ? updatedMedia : media)
-        .toList();
-    final updatedAlbum = album.copyWith(medias: updatedMedias);
-    updatedAlbum.sortMedias();
-    state = AsyncData(updatedAlbum);
-    await ref
-        .read(dbAlbumsProvider.notifier)
-        .updateByAlbumUpdated(updatedAlbum);
   }
 
-  Future<void> updateByMediaDeleted(int mediaId) async {
-    final album = await future;
-    if (album == null) {
-      debugPrint('album==null');
-      return;
-    }
-    album.medias.removeWhere((media) => media.id == mediaId);
-    state = AsyncData(album);
-    await ref.read(dbAlbumsProvider.notifier).updateByAlbumUpdated(album);
-  }
 
   Future<void> delete() async {
-    final album = state.value;
-    if (album != null) {
-      state = await AsyncValue.guard(() async {
-        await DBLogic().deleteAlbum(album);
-        ref.read(dbAlbumsProvider.notifier).updateByAlbumDeleted(album.id);
-        for (final media in album.medias) {
-          ref.read(dbMediaProvider(media.id).notifier).updateByAlbumDeleted();
-        }
-        return null;
-      });
+    final album = await future;
+    if (album == null) return;
+    await DBLogic().deleteAlbum(album);
+    ref.invalidateSelf();
+    for (final media in album.medias) {
+      ref.invalidate(dbMediaProvider(media.id));
     }
-  }
-
-  EnMedia? mediaAtIndex(int i) {
-    final album = state.value;
-    return album?.medias.elementAtOrNull(i);
+    ref.invalidate(dbPrefProvider);
+    await ref.read(dbAlbumListProvider.notifier).updateByAlbumDeleted(album.id);
   }
 }
 
