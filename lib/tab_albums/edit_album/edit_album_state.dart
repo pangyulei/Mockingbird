@@ -3,6 +3,7 @@ import 'dart:io';
 class EditAlbumState {
   final String title;
   final String submitTitle;
+
   final String name;
   final File? cover;
   final bool enableSubmit;
@@ -32,6 +33,7 @@ class EditAlbumState {
         cover: null,
         enableSubmit: false,
       );
+
   const EditAlbumState.edit(String name, File? cover)
     : this(
         name: name,

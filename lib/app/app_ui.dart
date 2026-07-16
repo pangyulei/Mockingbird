@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
@@ -17,6 +18,7 @@ class AppUI extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       routerConfig: AppRoute(_logic.app_selectedIndex).router,
       theme: _theme(),
+      builder: EasyLoading.init(),
       // builder: (context, child) => _home(),
     );
     // return MaterialApp(

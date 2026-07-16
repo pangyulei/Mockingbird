@@ -1,33 +1,50 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+abstract interface class EditAlbumNotifierITF {
+  void updateName(String newName);
+
+  void updateCover(File? newCover);
+
+  Future<void> submit();
+}
 
 class EditAlbumUI extends ConsumerStatefulWidget {
-  final int? _id; //TODO refactor
+  final ProviderListenable<EditAlbumState> _provider;
+  final EditAlbumNotifierITF _notifier;
 
-  const EditAlbumUI(this._id, {super.key});
+  const EditAlbumUI(
+    this._provider,
+    this._notifier, {
+    super.key,
+  });
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _EditAlbumUIState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _EditAlbumUIState();
 }
 
 class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
-  final _nameController = TextEditingController();
+  late final TextEditingController _nameController;
   final _picker = ImagePicker();
-  int? get _id => widget._id;
+
+  EditAlbumNotifierITF get _notifier => widget._notifier;
+
+  ProviderListenable<EditAlbumState> get _provider =>
+      widget._provider;
 
   @override
   void initState() {
     super.initState();
-    _nameController.addListener(() {
-      ref
-          .read(editAlbumProvider(widget._id).notifier)
-          .onNameChanged(_nameController.text);
-    });
+    _nameController = TextEditingController(
+      text: ref.read(_provider.select((s) => s.name)),
+    );
   }
 
   @override
@@ -38,24 +55,24 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
 
   @override
   Widget build(BuildContext ctx) {
-    ref.listen(
-      editAlbumProvider(_id).select((s) => s.value?.name ?? ''),
-      (previous, next) => _nameController.text = next,
-    );
-    return Stack(children: [_dialog(ctx), _loading(ref)]);
+    return Stack(children: [_dialog(ctx)]);
   }
 
   Widget _dialog(BuildContext ctx) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
       title: Consumer(
         builder: (context, ref, child) {
           final title = ref.watch(
-            editAlbumProvider(_id).select((s) => s.value?.title ?? ''),
+            _provider.select((s) => s.title),
           );
           return Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           );
         },
       ),
@@ -67,28 +84,35 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
             _cover(ctx),
             const SizedBox(height: 20),
             TextField(
+              onChanged: (value) {
+                _notifier.updateName(value);
+              },
               controller: _nameController,
-              cursorColor: Theme.of(ctx).colorScheme.primary,
+              cursorColor: Theme.of(
+                ctx,
+              ).colorScheme.primary,
               style: const TextStyle(fontSize: 16),
               decoration: InputDecoration(
                 labelText: 'Album Name',
                 labelStyle: TextStyle(
-                  color: Theme.of(
-                    ctx,
-                  ).colorScheme.primary.withValues(alpha: 0.7),
+                  color: Theme.of(ctx).colorScheme.primary
+                      .withValues(alpha: 0.7),
                 ),
                 hintText: 'Enter Album name',
                 hintStyle: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withValues(
+                    alpha: 0.2,
+                  ),
                 ),
                 prefixIcon: Icon(
                   Icons.edit_note_rounded,
                   color: Theme.of(ctx).colorScheme.primary,
                 ),
                 filled: true,
-                fillColor: Theme.of(
-                  ctx,
-                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                fillColor: Theme.of(ctx)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withValues(alpha: 0.3),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -111,16 +135,12 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
         Consumer(
           builder: (context, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              editAlbumProvider(_id).select(
-                (s) => (
-                  s.value?.enableSubmit ?? false,
-                  s.value?.submitTitle ?? '',
-                ),
+              _provider.select(
+                (s) => (s.enableSubmit, s.submitTitle),
               ),
             );
             return FilledButton(
               onPressed: enable ? _onSubmit : null,
-
               child: Text(submitTitle),
             );
           },
@@ -133,7 +153,7 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
     return Consumer(
       builder: (ctx, ref, child) {
         final cover = ref.watch(
-          editAlbumProvider(_id).select((s) => s.value?.cover),
+          _provider.select((s) => s.cover),
         );
         return Stack(
           children: [
@@ -144,12 +164,15 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
                 width: double.infinity,
                 height: 160,
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    ctx,
-                  ).colorScheme.primaryContainer.withValues(alpha: 0.1),
+                  color: Theme.of(ctx)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.05),
+                    color: Colors.white.withValues(
+                      alpha: 0.05,
+                    ),
                     width: 1,
                   ),
                 ),
@@ -162,7 +185,11 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
               ),
             ),
             if (cover != null)
-              Positioned(top: 8, right: 8, child: _removeCoverButton(ctx)),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: _removeCoverButton(ctx),
+              ),
           ],
         );
       },
@@ -188,17 +215,6 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(editAlbumProvider(_id)).isLoading;
-    if (!isLoading) {
-      return const SizedBox.shrink();
-    }
-    return ColoredBox(
-      color: Colors.black.withAlpha(20),
-      child: const Center(child: CircularProgressIndicator()),
     );
   }
 
@@ -236,15 +252,15 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
       return;
     }
     File newCover = File(xImage.path);
-    ref.read(editAlbumProvider(widget._id).notifier).onCoverChanged(newCover);
+    _notifier.updateCover(newCover);
   }
 
   void _onRemoveCover() {
-    ref.read(editAlbumProvider(widget._id).notifier).onCoverChanged(null);
+    _notifier.updateCover(null);
   }
 
   void _onSubmit() async {
-    await ref.read(editAlbumProvider(widget._id).notifier).onSubmit();
+    await _notifier.submit();
     _pop();
   }
 

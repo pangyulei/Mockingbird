@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -17,19 +18,62 @@ const double _kStepPlaySpeed = 0.25;
 
 abstract interface class PlayerNotifierITF {
   int? sentenceIdAtIndex(int i);
+
   Future<void> play();
+
   Future<void> pause();
 }
 
-class PlayerUI extends ConsumerWidget {
+class PlayerUI extends ConsumerStatefulWidget {
   final ProviderListenable<AsyncValue<PlayerState?>> _provider;
   final PlayerNotifierITF _notifier;
-  final _scrollController = ItemScrollController();
-  PlayerUI(this._provider, this._notifier, {super.key});
+
+  const PlayerUI(this._provider, this._notifier, {super.key});
 
   @override
-  Widget build(BuildContext ctx, WidgetRef ref) {
-    return Stack(children: [_page(ctx), _empty(ctx), _loading(ref)]);
+  ConsumerState<ConsumerStatefulWidget> createState() => _PlayerUIState();
+}
+
+class _PlayerUIState extends ConsumerState<PlayerUI> {
+  final _scrollController = ItemScrollController();
+  VideoPlayerController? _videoController;
+  ProviderListenable<AsyncValue<PlayerState?>> get _provider =>
+      widget._provider;
+  PlayerNotifierITF get _notifier => widget._notifier;
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _listenState();
+    return Stack(children: [_page(), _empty()]);
+  }
+
+  void _listenState() {
+    ref.listen(_provider.select((s) => s.value?.videoState?.videoPath), (
+      previous,
+      next,
+    ) {
+      if (next != null && next.isNotEmpty) {
+        _videoController?.dispose();
+        _videoController = VideoPlayerController.file(File(next));
+        _videoController?.initialize();
+      }
+    });
+    ref.listen(_provider.select((s) => s.value?.videoState?.isPlaying), (
+      previous,
+      next,
+    ) {
+      if (next == true) {
+        _videoController?.play();
+      } else {
+        _videoController?.pause();
+      }
+    });
   }
 
   void _onInOrder() {
@@ -104,6 +148,8 @@ class PlayerUI extends ConsumerWidget {
   }
 
   int? _playingIndexByPosition(Duration position) {
+    return null;
+
     // final sentences = _media?.subtitles.firstOrNull?.sentences;
     // if (sentences == null || sentences.isEmpty) return null;
     // final mediaEnd = _videoController?.value.duration;
@@ -249,26 +295,18 @@ class PlayerUI extends ConsumerWidget {
     // context.go(AppRoute.albums);
   }
 
-  Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(_provider.select((s) => s.isLoading));
-    if (!isLoading) return const SizedBox.shrink();
-    return ColoredBox(
-      color: Colors.black.withAlpha(20),
-      child: const Center(child: CircularProgressIndicator()),
-    );
-  }
 
-  Widget _page(BuildContext ctx) {
-    final theme = Theme.of(ctx);
+  Widget _page() {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _appBar(),
-      body: _body(ctx),
+      body: _body(),
       floatingActionButton: _floatingButtons(),
     );
   }
 
-  Widget _body(BuildContext ctx) {
+  Widget _body() {
     return Column(
       children: [
         Container(
@@ -282,7 +320,7 @@ class PlayerUI extends ConsumerWidget {
               ),
             ],
           ),
-          child: Column(children: [_displayer(), _controlBar(ctx)]),
+          child: Column(children: [_displayer(), _controlBar()]),
         ),
         _sentenceList(),
       ],
@@ -290,65 +328,51 @@ class PlayerUI extends ConsumerWidget {
   }
 
   Widget _displayer() {
-    return Consumer(
-      builder: (ctx, ref, child) {
-        final aspectRatio = ref.watch(
-          _provider.select((s) => s.value?.videoController?.value.aspectRatio),
-        );
-        if (aspectRatio == null) return const SizedBox.shrink();
-        return AspectRatio(
-          aspectRatio: aspectRatio,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
-            children: [
-              Consumer(
-                builder: (ctx, ref, _) {
-                  final videoController = ref.watch(
-                    _provider.select((s) => s.value?.videoController),
-                  );
-                  if (videoController == null) return const SizedBox.shrink();
-                  return VideoPlayer(videoController);
-                },
+    final videoController = _videoController;
+    if (videoController == null) return const SizedBox.shrink();
+    return AspectRatio(
+      aspectRatio: videoController.value.aspectRatio,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          VideoPlayer(_videoController!),
+          // Custom gradient overlay for controls
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.6),
+                  ],
+                  stops: const [0.0, 0.2, 0.7, 1.0],
+                ),
               ),
-              // Custom gradient overlay for controls
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.4),
-                        Colors.transparent,
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.6),
-                      ],
-                      stops: const [0.0, 0.2, 0.7, 1.0],
-                    ),
+            ),
+          ),
+          Positioned(
+            left: 8,
+            right: 8,
+            bottom: 0,
+            child: Row(
+              crossAxisAlignment: .end,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.5),
+                    child: _videoSlider(),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 8,
-                right: 8,
-                bottom: 0,
-                child: Row(
-                  crossAxisAlignment: .end,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 8.5),
-                        child: _videoSlider(ctx),
-                      ),
-                    ),
-                    _volumeComponent(),
-                  ],
-                ),
-              ),
-            ],
+                _volumeComponent(),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -430,7 +454,9 @@ class PlayerUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
-              _provider.select((s) => s.value?.showVolumeSlider ?? false),
+              _provider.select(
+                (s) => s.value?.videoState?.showVolumeSlider ?? false,
+              ),
             );
             if (showVolumeSlider) {
               return SizedBox(height: 100, child: _volumeSlider(ctx));
@@ -444,9 +470,7 @@ class PlayerUI extends ConsumerWidget {
           icon: Consumer(
             builder: (context, ref, child) {
               final volume = ref.watch(
-                _provider.select(
-                  (s) => s.value?.videoController?.value.volume ?? 1,
-                ),
+                _provider.select((s) => s.value?.videoState?.volume ?? 1),
               );
               final icon = volume == 0
                   ? Icons.volume_off_rounded
@@ -477,9 +501,7 @@ class PlayerUI extends ConsumerWidget {
         child: Consumer(
           builder: (context, ref, child) {
             final volume = ref.watch(
-              _provider.select(
-                (s) => s.value?.videoController?.value.volume ?? 1,
-              ),
+              _provider.select((s) => s.value?.videoState?.volume ?? 1),
             );
             return Slider(value: volume, onChanged: _onVolumeChanging);
           },
@@ -488,10 +510,10 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _videoSlider(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _videoSlider() {
+    final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
-      data: SliderTheme.of(ctx).copyWith(
+      data: SliderTheme.of(context).copyWith(
         trackHeight: 4.0,
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
@@ -504,8 +526,8 @@ class PlayerUI extends ConsumerWidget {
           final (position, duration) = ref.watch(
             _provider.select(
               (s) => (
-                s.value?.videoController?.value.position.inMicroseconds ?? 0,
-                s.value?.videoController?.value.duration.inMicroseconds ?? 0,
+                s.value?.videoState?.positionMicro ?? 0,
+                s.value?.videoState?.durationMicro ?? 0,
               ),
             ),
           );
@@ -548,70 +570,77 @@ class PlayerUI extends ConsumerWidget {
     // );
   }
 
-  Widget _empty(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
-    final textTheme = Theme.of(ctx).textTheme;
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.auto_stories_rounded,
-                  size: 80,
-                  color: colorScheme.primary,
-                ),
-              ),
-              const SizedBox(height: 40),
-              Text(
-                'Ready to Shadow?',
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Shadowing is the key to mastering a new language. Select a media from your albums to begin your practice session.',
-                textAlign: TextAlign.center,
-                style: textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.5,
-                ),
-              ),
-              const SizedBox(height: 48),
-              Text(
-                'Your progress starts here.',
-                style: textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary.withValues(alpha: 0.7),
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 32),
-              FilledButton.icon(
-                onPressed: _onGoToAlbums,
-                icon: const Icon(Icons.library_music_rounded),
-                label: const Text('Go to Albums'),
-              ),
-            ],
+  Widget _empty() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final data = ref.watch(_provider).value;
+        if (data != null) return const SizedBox.shrink();
+
+        final colorScheme = Theme.of(context).colorScheme;
+        final textTheme = Theme.of(context).textTheme;
+        return Scaffold(
+          backgroundColor: colorScheme.surface,
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           ),
-        ),
-      ),
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.auto_stories_rounded,
+                      size: 80,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  Text(
+                    'Ready to Shadow?',
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Shadowing is the key to mastering a new language. Select a media from your albums to begin your practice session.',
+                    textAlign: TextAlign.center,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  Text(
+                    'Your progress starts here.',
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colorScheme.primary.withValues(alpha: 0.7),
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  FilledButton.icon(
+                    onPressed: _onGoToAlbums,
+                    icon: const Icon(Icons.library_music_rounded),
+                    label: const Text('Go to Albums'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -656,8 +685,8 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _controlBar(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _controlBar() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -668,28 +697,26 @@ class PlayerUI extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          _playOrPauseButton(ctx),
+          _playOrPauseButton(),
           const SizedBox(width: 16),
-          _repeatOneButton(ctx),
+          _repeatOneButton(),
           const Spacer(),
-          _speedDownButton(ctx),
+          _speedDownButton(),
           const SizedBox(width: 8),
-          _speedLabel(ctx),
+          _speedLabel(),
           const SizedBox(width: 8),
-          _speedUpButton(ctx),
+          _speedUpButton(),
         ],
       ),
     );
   }
 
-  Widget _playOrPauseButton(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _playOrPauseButton() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer(
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
-          _provider.select(
-            (s) => s.value?.videoController?.value.isPlaying ?? false,
-          ),
+          _provider.select((s) => s.value?.videoState?.isPlaying ?? false),
         );
         return IconButton.filled(
           onPressed: () {
@@ -715,8 +742,8 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _repeatOneButton(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _repeatOneButton() {
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer(
       builder: (ctx, ref, _) {
         final sentenceCount = ref.watch(
@@ -724,7 +751,7 @@ class PlayerUI extends ConsumerWidget {
         );
         if (sentenceCount == 0) return const SizedBox.shrink();
         final repeat = ref.watch(
-          _provider.select((s) => s.value?.repeat ?? false),
+          _provider.select((s) => s.value?.videoState?.repeat ?? false),
         );
         return IconButton(
           onPressed: () {
@@ -746,30 +773,30 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _speedDownButton(BuildContext ctx) {
+  Widget _speedDownButton() {
     return IconButton(
       onPressed: _onSpeedDown,
       icon: const Icon(Icons.remove_circle_outline_rounded),
-      color: Theme.of(ctx).colorScheme.outline,
+      color: Theme.of(context).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
       constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
 
-  Widget _speedUpButton(BuildContext ctx) {
+  Widget _speedUpButton() {
     return IconButton(
       onPressed: _onSpeedUp,
       icon: const Icon(Icons.add_circle_outline_rounded),
-      color: Theme.of(ctx).colorScheme.outline,
+      color: Theme.of(context).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
       constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
 
-  Widget _speedLabel(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _speedLabel() {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: _onSpeedReset,
       child: Container(
@@ -781,9 +808,7 @@ class PlayerUI extends ConsumerWidget {
         child: Consumer(
           builder: (ctx, ref, _) {
             final speed = ref.watch(
-              _provider.select(
-                (s) => s.value?.videoController?.value.playbackSpeed ?? 1,
-              ),
+              _provider.select((s) => s.value?.videoState?.speed ?? 1),
             );
             return Text(
               '${speed}x',
@@ -857,94 +882,91 @@ extension on ItemScrollController {
 //   }
 // }
 
+// void _reloadMedia() async {
+//   final mediaId = widget._mediaId;
+//   Future<void> setupNull() async {
+//     await _videoController?.dispose();
+//     _media = null;
+//     _videoController = null;
+//     setState(() {
+//       _state = const PlayerState.empty().copyWith(
+//         showLoading: false,
+//         showEmpty: true,
+//       );
+//     });
+//   }
 
+//   if (mediaId == null) {
+//     await setupNull();
+//     return;
+//   }
+//   setState(() {
+//     _state = _state.copyWith(
+//       showLoading: true,
+//       showEmpty: _videoController == null,
+//     );
+//   });
+//   final newMedia = await DBObjectBox().store.box<EnMedia>().getAsync(mediaId);
+//   if (newMedia == null) {
+//     await setupNull();
+//     return;
+//   }
+//   final oldMedia = _media?.copyWith();
+//   _media = newMedia;
+//   if (oldMedia == newMedia) {
+//     debugPrint('same media notified');
+//     setState(() {
+//       _state = _state.copyWith(showLoading: false);
+//     });
+//     return;
+//   }
+//   final isVideoChanged = oldMedia?.path != newMedia.path;
+//   final subtitle = newMedia.subtitles.firstOrNull;
+//   // final isSubtitleChanged =
+//   //     oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
+//   final sentenceStates =
+//       subtitle?.sentences.map((s) => s.toCardState()).toList() ?? const [];
 
+//   if (isVideoChanged) {
+//     _state = const PlayerState.empty()
+//         .copyWith(sentenceStates: sentenceStates, isPlaying: true)
+//         .focus(sentenceStates.isEmpty ? null : 0);
 
-  // void _reloadMedia() async {
-  //   final mediaId = widget._mediaId;
-  //   Future<void> setupNull() async {
-  //     await _videoController?.dispose();
-  //     _media = null;
-  //     _videoController = null;
-  //     setState(() {
-  //       _state = const PlayerState.empty().copyWith(
-  //         showLoading: false,
-  //         showEmpty: true,
-  //       );
-  //     });
-  //   }
-
-  //   if (mediaId == null) {
-  //     await setupNull();
-  //     return;
-  //   }
-  //   setState(() {
-  //     _state = _state.copyWith(
-  //       showLoading: true,
-  //       showEmpty: _videoController == null,
-  //     );
-  //   });
-  //   final newMedia = await DBObjectBox().store.box<EnMedia>().getAsync(mediaId);
-  //   if (newMedia == null) {
-  //     await setupNull();
-  //     return;
-  //   }
-  //   final oldMedia = _media?.copyWith();
-  //   _media = newMedia;
-  //   if (oldMedia == newMedia) {
-  //     debugPrint('same media notified');
-  //     setState(() {
-  //       _state = _state.copyWith(showLoading: false);
-  //     });
-  //     return;
-  //   }
-  //   final isVideoChanged = oldMedia?.path != newMedia.path;
-  //   final subtitle = newMedia.subtitles.firstOrNull;
-  //   // final isSubtitleChanged =
-  //   //     oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
-  //   final sentenceStates =
-  //       subtitle?.sentences.map((s) => s.toCardState()).toList() ?? const [];
-
-  //   if (isVideoChanged) {
-  //     _state = const PlayerState.empty()
-  //         .copyWith(sentenceStates: sentenceStates, isPlaying: true)
-  //         .focus(sentenceStates.isEmpty ? null : 0);
-
-  //   } else {
-  //     //subtitle changed/ or deleted
-  //     final videoController = _videoController;
-  //     if (videoController == null) {
-  //       _state = const PlayerState.empty().copyWith(
-  //         showLoading: false,
-  //         showEmpty: true,
-  //       );
-  //     } else {
-  //       final position = videoController.value.position;
-  //       final playingIndex = _playingIndexByPosition(position);
-  //       final repeat = playingIndex == null ? false : _state.repeat;
-  //       _state = _state
-  //           .copyWith(repeat: repeat, sentenceStates: sentenceStates)
-  //           .focus(playingIndex);
-  //     }
-  //   }
-  //   //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
-  //   setState(() {
-  //     _state = _state.copyWith(
-  //       title: newMedia.name,
-  //       showLoading: false,
-  //       showEmpty: false,
-  //     );
-  //   });
-  //   //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
-  //   if (_state.sentenceStates.isNotEmpty) {
-  //     final focusedIndex = _state.focusedIndex;
-  //     if (focusedIndex == null) {
-  //       _scrollController._jumpTo(_state.sentenceStates.length - 1);
-  //     } else {
-  //       _scrollController._jumpTo(focusedIndex);
-  //     }
-  //   }
-  //   if (isVideoChanged) {
-  //     await _videoController?.play();
-  //   }
-  // }
+//   } else {
+//     //subtitle changed/ or deleted
+//     final videoController = _videoController;
+//     if (videoController == null) {
+//       _state = const PlayerState.empty().copyWith(
+//         showLoading: false,
+//         showEmpty: true,
+//       );
+//     } else {
+//       final position = videoController.value.position;
+//       final playingIndex = _playingIndexByPosition(position);
+//       final repeat = playingIndex == null ? false : _state.repeat;
+//       _state = _state
+//           .copyWith(repeat: repeat, sentenceStates: sentenceStates)
+//           .focus(playingIndex);
+//     }
+//   }
+//   //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
+//   setState(() {
+//     _state = _state.copyWith(
+//       title: newMedia.name,
+//       showLoading: false,
+//       showEmpty: false,
+//     );
+//   });
+//   //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
+//   if (_state.sentenceStates.isNotEmpty) {
+//     final focusedIndex = _state.focusedIndex;
+//     if (focusedIndex == null) {
+//       _scrollController._jumpTo(_state.sentenceStates.length - 1);
+//     } else {
+//       _scrollController._jumpTo(focusedIndex);
+//     }
+//   }
+//   if (isVideoChanged) {
+//     await _videoController?.play();
+//   }
+// }

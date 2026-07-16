@@ -26,7 +26,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(19, 3722181390807831493),
     name: 'EnAlbum',
-    lastPropertyId: const obx_int.IdUid(5, 3798309444640003913),
+    lastPropertyId: const obx_int.IdUid(6, 1987327048821258978),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -67,7 +67,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(20, 5722817146860860766),
     name: 'EnMedia',
-    lastPropertyId: const obx_int.IdUid(4, 2510609710962471538),
+    lastPropertyId: const obx_int.IdUid(5, 4321953774055709715),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -181,7 +181,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(27, 7767215884357716294),
     name: 'EnPref',
-    lastPropertyId: const obx_int.IdUid(2, 4275848776010639930),
+    lastPropertyId: const obx_int.IdUid(3, 967088597097392464),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -193,6 +193,12 @@ final _entities = <obx_int.ModelEntity>[
       obx_int.ModelProperty(
         id: const obx_int.IdUid(2, 4275848776010639930),
         name: 'playingId',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 967088597097392464),
+        name: 'versionId',
         type: 6,
         flags: 0,
       ),
@@ -365,6 +371,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
       2445340836971257849,
       6964814762436615696,
       235818499227633718,
+      1987327048821258978,
+      4321953774055709715,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -388,7 +396,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final coverOffset = object.cover == null
             ? null
             : fbb.writeString(object.cover!);
-        fbb.startTable(6);
+        fbb.startTable(7);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, nameOffset);
         fbb.addOffset(2, coverOffset);
@@ -449,7 +457,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       objectToFB: (EnMedia object, fb.Builder fbb) {
         final pathOffset = fbb.writeString(object.path);
         final nameOffset = fbb.writeString(object.name);
-        fbb.startTable(5);
+        fbb.startTable(6);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, pathOffset);
         fbb.addOffset(2, nameOffset);
@@ -607,9 +615,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (EnPref object, fb.Builder fbb) {
-        fbb.startTable(3);
+        fbb.startTable(4);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.playingId);
+        fbb.addInt64(2, object.versionId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -627,7 +636,17 @@ obx_int.ModelDefinition getObjectBoxModel() {
           rootOffset,
           6,
         );
-        final object = EnPref(id: idParam, playingId: playingIdParam);
+        final versionIdParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          0,
+        );
+        final object = EnPref(
+          id: idParam,
+          playingId: playingIdParam,
+          versionId: versionIdParam,
+        );
 
         return object;
       },
@@ -744,5 +763,10 @@ class EnPref_ {
   /// See [EnPref.playingId].
   static final playingId = obx.QueryIntegerProperty<EnPref>(
     _entities[4].properties[1],
+  );
+
+  /// See [EnPref.versionId].
+  static final versionId = obx.QueryIntegerProperty<EnPref>(
+    _entities[4].properties[2],
   );
 }

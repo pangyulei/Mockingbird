@@ -6,7 +6,7 @@ import 'en_media.dart';
 class EnAlbum {
   @Id()
   int id;
-
+  // final int versionId;
   final String name;
   final String? cover;
 
@@ -21,6 +21,7 @@ class EnAlbum {
     required this.sortOrder,
     required this.id,
     required this.cover,
+    // required this.versionId,
   });
 
   EnAlbum copyWith({
@@ -28,14 +29,28 @@ class EnAlbum {
     String? Function()? cover,
     int? sortOrder,
     Iterable<EnMedia>? medias,
+    // int? versionId,
   }) {
     final album = EnAlbum(
       id: id,
+      // versionId: versionId ?? this.versionId,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
       cover: cover != null ? cover() : this.cover,
     );
     album.medias.addAll(medias ?? this.medias);
     return album;
+  }
+
+  // EnAlbum incVersion() {
+  //   return copyWith(versionId: versionId + 1);
+  // }
+
+  // @override
+  // List<Object?> get props => [id, versionId];
+
+  @override
+  String toString() {
+    return 'EnAlbum(id: $id, name: $name, cover: $cover, sortOrder: $sortOrder)';
   }
 }

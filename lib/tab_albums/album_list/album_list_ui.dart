@@ -1,28 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class AlbumListUI extends ConsumerWidget {
-  const AlbumListUI({super.key});
+abstract interface class AlbumListNotifierITF {
+  EnAlbum? albumAtIndex(int i);
+}
+
+class AlbumListUI extends ConsumerStatefulWidget {
+  final ProviderListenable<AsyncValue<AlbumListState>> _provider;
+  final AlbumListNotifierITF _notifier;
+  const AlbumListUI(this._provider, this._notifier, {super.key});
 
   @override
-  Widget build(BuildContext ctx, WidgetRef ref) {
-    return Stack(children: [_page(ctx, ref), _empty(ctx, ref), _loading(ref)]);
+  ConsumerState<ConsumerStatefulWidget> createState() => _AlbumListUIState();
+}
+
+class _AlbumListUIState extends ConsumerState<AlbumListUI> {
+  ProviderListenable<AsyncValue<AlbumListState>> get _provider => widget._provider;
+  AlbumListNotifierITF get _notifier => widget._notifier;
+
+  @override
+  Widget build(BuildContext ctx) {
+    return Stack(children: [_page(ctx, ref), _empty()]);
   }
 
-  Widget _empty(BuildContext ctx, WidgetRef ref) {
-    final isEmpty = ref.watch(
-      albumListProvider.select((s) => s.value?.albumCount == 0),
-    );
-    if (!isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Scaffold(
-      appBar: _appBar(ctx, ref),
-      body: const Center(child: Text('no data, make me mroe beautiful')),
+  Widget _empty() {
+    return Consumer(
+      builder: (ctx, ref, child) {
+        final isEmpty = ref.watch(
+          _provider.select((s) => s.value?.albumCount == 0),
+        );
+        if (!isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Scaffold(
+          appBar: _appBar(ctx, ref),
+          body: const Center(child: Text('no data, make me mroe beautiful')),
+        );
+      },
     );
   }
 
@@ -39,7 +62,7 @@ class AlbumListUI extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final count = ref.watch(
-                albumListProvider.select((s) => s.value?.albumCount ?? 0),
+                _provider.select((s) => s.value?.albumCount ?? 0),
               );
               return Text(
                 '$count created albums',
@@ -62,19 +85,8 @@ class AlbumListUI extends ConsumerWidget {
     );
   }
 
-  Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(albumListProvider).isLoading;
-    if (!isLoading) {
-      return const SizedBox.shrink();
-    }
-    return Container(
-      color: Colors.black54,
-      child: const Center(child: CircularProgressIndicator(strokeWidth: 3)),
-    );
-  }
-
   Widget _grid(WidgetRef ref) {
-    final count = ref.watch(albumListProvider).value?.albumCount ?? 0;
+    final count = ref.watch(_provider.select((s) => s.value?.albumCount ?? 0));
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       itemCount: count,
@@ -85,8 +97,8 @@ class AlbumListUI extends ConsumerWidget {
         childAspectRatio: 1,
       ),
       itemBuilder: (ctx, i) {
-        final albumId = ref.read(albumListProvider.notifier).albumIdAtIndex(i);
-        final provider = albumCardProvider(albumId);
+        final album = _notifier.albumAtIndex(i);
+        final provider = albumCardProvider(album?.id);
         final notifier = ref.read(provider.notifier);
         return AlbumCardUI(provider, notifier);
       },
@@ -97,7 +109,13 @@ class AlbumListUI extends ConsumerWidget {
     await showDialog(
       context: ctx,
       builder: (context) {
-        return const EditAlbumUI(null);
+        return Consumer(
+          builder: (context, ref, child) {
+            final provider = editAlbumProvider(null);
+            final notifier = ref.read(provider.notifier);
+            return EditAlbumUI(provider, notifier);
+          },
+        );
       },
     );
   }

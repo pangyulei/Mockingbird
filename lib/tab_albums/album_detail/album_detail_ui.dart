@@ -2,48 +2,31 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/album/album_state.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-abstract interface class AlbumNotifierITF {
+abstract interface class AlbumDetailNotifierITF {
   int? get id;
-  int? mediaIdAtIndex(int i);
+
+  EnMedia? mediaAtIndex(int i);
+
   Future<void> import();
+
   Future<void> addCover();
 }
 
-class AlbumUI extends ConsumerWidget {
-  final ProviderListenable<AsyncValue<AlbumState?>> _provider;
-  final AlbumNotifierITF _notifier;
-  const AlbumUI(this._provider, this._notifier, {super.key});
+class AlbumDetailUI extends ConsumerWidget {
+  final ProviderListenable<AlbumDetailState> _provider;
+  final AlbumDetailNotifierITF _notifier;
+
+  const AlbumDetailUI(this._provider, this._notifier, {super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    return Stack(children: [_page(ctx, ref), _empty(ref), _loading(ref)]);
-  }
-
-  Widget _empty(WidgetRef ref) {
-    final data = ref.watch(_provider).value;
-    if (data != null) {
-      return const SizedBox.shrink();
-    }
-    return const Scaffold(
-      body: Center(child: Text('album == null, no any data')),
-    );
-  }
-
-  Widget _loading(WidgetRef ref) {
-    final isLoading = ref.watch(_provider).isLoading;
-    if (!isLoading) {
-      return const SizedBox.shrink();
-    }
-    return ColoredBox(
-      color: Colors.black.withAlpha(20),
-      child: const Center(child: CircularProgressIndicator()),
-    );
+    return Stack(children: [_page(ctx, ref)]);
   }
 
   Widget _page(BuildContext ctx, WidgetRef ref) {
@@ -54,14 +37,16 @@ class AlbumUI extends ConsumerWidget {
           _sliverAppBar(ctx),
           Consumer(
             builder: (context, ref, child) {
-              final mediaCount = ref.watch(_provider.select((s)=>s.value?.mediaCount ?? 0));
+              final mediaCount = ref.watch(
+                _provider.select((s) => s.mediaCount),
+              );
               if (mediaCount > 0) {
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, i) {
-                      final mediaId = _notifier.mediaIdAtIndex(i);
-                      final provider = mediaCardProvider(mediaId);
+                      final media = _notifier.mediaAtIndex(i);
+                      final provider = mediaCardProvider(media);
                       final notifier = ref.read(provider.notifier);
                       return MediaCardUI(provider, notifier);
                     }, childCount: mediaCount),
@@ -70,30 +55,33 @@ class AlbumUI extends ConsumerWidget {
               } else {
                 return SliverFillRemaining(
                   hasScrollBody: false,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.library_add_outlined,
-                          size: 64,
-                          color: theme.colorScheme.outlineVariant,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No media in this album',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.outline,
+                  child: InkWell(
+                    onTap: _onImport,
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.library_add_outlined,
+                            size: 64,
+                            color: theme.colorScheme.outlineVariant,
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tap the + button to import audio or video files',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.outline,
+                          const SizedBox(height: 16),
+                          Text(
+                            'No media in this album',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: theme.colorScheme.outline,
+                            ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Tap the + button to import audio or video files',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -119,11 +107,8 @@ class AlbumUI extends ConsumerWidget {
         title: Consumer(
           builder: (ctx, ref, child) {
             final (name, cover) = ref.watch(
-              _provider.select((s) => (s.value?.name, s.value?.cover)),
+              _provider.select((s) => (s.name, s.cover)),
             );
-            if (name == null) {
-              return const SizedBox.shrink();
-            }
             return Text(
               name,
               style: TextStyle(
@@ -143,7 +128,7 @@ class AlbumUI extends ConsumerWidget {
         ),
         background: Consumer(
           builder: (ctx, ref, child) {
-            final cover = ref.watch(_provider.select((s) => s.value?.cover));
+            final cover = ref.watch(_provider.select((s) => s.cover));
             if (cover == null) {
               return _noCoverBanner(ctx, ref);
             } else {
@@ -162,8 +147,10 @@ class AlbumUI extends ConsumerWidget {
       actions: [
         Consumer(
           builder: (ctx, ref, child) {
-            final data = ref.watch(_provider).value;
-            if (data != null) {
+            final showImport = ref.watch(
+              _provider.select((st) => st.showImport),
+            );
+            if (showImport) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
                 child: IconButton.filledTonal(
@@ -281,11 +268,18 @@ class AlbumUI extends ConsumerWidget {
   }
 
   Future<void> _showEditingAlbumDialog(BuildContext ctx, int id) async {
-    await showDialog(
-      context: ctx,
-      builder: (context) {
-        return EditAlbumUI(id);
-      },
-    );
+    //TODO
+    // await showDialog(
+    //   context: ctx,
+    //   builder: (context) {
+    //     return Consumer(
+    //       builder: (context, ref, child) {
+    //         final provider = editAlbumProvider(_notifier.album);
+    //         final notifier = ref.read(provider.notifier);
+    //         return EditAlbumUI(provider, notifier);
+    //       },
+    //     );
+    //   },
+    // );
   }
 }

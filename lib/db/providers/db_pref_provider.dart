@@ -24,15 +24,15 @@ class DBPref extends _$DBPref {
     }
   }
 
-  Future<void> updateByAlbumDeleted(int albumId) async {
-    final pref = await future;
-    final playingId = pref.playingId;
-    if (playingId == null) return;
-    final playingMedia = await ref.read(dbMediaProvider(playingId).future);
-    if (playingMedia?.albums.firstOrNull?.id == albumId) {
-      await setPlayingId(null);
-    }
-  }
+  // Future<void> updateByAlbumDeleted(int albumId) async {
+  //   final pref = await future;
+  //   final playingId = pref.playingId;
+  //   if (playingId == null) return;
+  //   final playingMedia = await ref.read(dbMediaProvider(playingId).future);
+  //   if (playingMedia?.albums.firstOrNull?.id == albumId) {
+  //     await setPlayingId(null);
+  //   }
+  // }
 
 
 }

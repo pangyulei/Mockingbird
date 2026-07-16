@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
-import 'package:mockingbird/tab_albums/album/album_provider.dart';
-import 'package:mockingbird/tab_albums/album/album_ui.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_provider.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_provider.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
@@ -27,6 +28,7 @@ class AppRoute {
       return instance;
     }
   }
+
   static String get albums => '/albums';
 
   static String albumById(int id) => '$albums/$id';
@@ -55,7 +57,14 @@ class AppRoute {
   static GoRoute _albumsRoute() => GoRoute(
     path: AppRoute.albums,
     builder: (BuildContext context, GoRouterState state) {
-      return const AlbumListUI();
+      return Consumer(
+        builder: (context, ref, child) {
+          return AlbumListUI(
+            albumListProvider,
+            ref.read(albumListProvider.notifier),
+          );
+        },
+      );
     },
     routes: <RouteBase>[
       // Sub-route: Accessible via '/details'
@@ -66,9 +75,9 @@ class AppRoute {
             builder: (context, ref, child) {
               final albumIdStr = state.pathParameters['id']!;
               final albumId = int.tryParse(albumIdStr);
-              final provider = albumProvider(albumId);
+              final provider = albumDetailProvider(albumId);
               final notifier = ref.read(provider.notifier);
-              return AlbumUI(provider, notifier);
+              return AlbumDetailUI(provider, notifier);
             },
           );
         },

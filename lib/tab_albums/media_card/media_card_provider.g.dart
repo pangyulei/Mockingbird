@@ -16,7 +16,7 @@ final class MediaCardProvider
     extends $AsyncNotifierProvider<MediaCard, MediaCardState> {
   MediaCardProvider._({
     required MediaCardFamily super.from,
-    required int? super.argument,
+    required EnMedia? super.argument,
   }) : super(
          retry: null,
          name: r'mediaCardProvider',
@@ -50,7 +50,7 @@ final class MediaCardProvider
   }
 }
 
-String _$mediaCardHash() => r'c5ea5d03566366d3d4fc13583d7253502a60efea';
+String _$mediaCardHash() => r'2bcc1594d90aae4f890cd00d3986687f01a362f5';
 
 final class MediaCardFamily extends $Family
     with
@@ -59,7 +59,7 @@ final class MediaCardFamily extends $Family
           AsyncValue<MediaCardState>,
           MediaCardState,
           FutureOr<MediaCardState>,
-          int?
+          EnMedia?
         > {
   MediaCardFamily._()
     : super(
@@ -70,18 +70,18 @@ final class MediaCardFamily extends $Family
         isAutoDispose: true,
       );
 
-  MediaCardProvider call(int? id) =>
-      MediaCardProvider._(argument: id, from: this);
+  MediaCardProvider call(EnMedia? media) =>
+      MediaCardProvider._(argument: media, from: this);
 
   @override
   String toString() => r'mediaCardProvider';
 }
 
 abstract class _$MediaCard extends $AsyncNotifier<MediaCardState> {
-  late final _$args = ref.$arg as int?;
-  int? get id => _$args;
+  late final _$args = ref.$arg as EnMedia?;
+  EnMedia? get media => _$args;
 
-  FutureOr<MediaCardState> build(int? id);
+  FutureOr<MediaCardState> build(EnMedia? media);
   @$mustCallSuper
   @override
   void runBuild() {

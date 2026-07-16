@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'album_card_provider.dart';
+part of 'album_detail_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,47 +9,47 @@ part of 'album_card_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(AlbumCard)
-final albumCardProvider = AlbumCardFamily._();
+@ProviderFor(AlbumDetail)
+final albumDetailProvider = AlbumDetailFamily._();
 
-final class AlbumCardProvider
-    extends $NotifierProvider<AlbumCard, AlbumCardState> {
-  AlbumCardProvider._({
-    required AlbumCardFamily super.from,
+final class AlbumDetailProvider
+    extends $NotifierProvider<AlbumDetail, AlbumDetailState> {
+  AlbumDetailProvider._({
+    required AlbumDetailFamily super.from,
     required int? super.argument,
   }) : super(
          retry: null,
-         name: r'albumCardProvider',
+         name: r'albumDetailProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$albumCardHash();
+  String debugGetCreateSourceHash() => _$albumDetailHash();
 
   @override
   String toString() {
-    return r'albumCardProvider'
+    return r'albumDetailProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  AlbumCard create() => AlbumCard();
+  AlbumDetail create() => AlbumDetail();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AlbumCardState value) {
+  Override overrideWithValue(AlbumDetailState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AlbumCardState>(value),
+      providerOverride: $SyncValueProvider<AlbumDetailState>(value),
     );
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AlbumCardProvider && other.argument == argument;
+    return other is AlbumDetailProvider && other.argument == argument;
   }
 
   @override
@@ -58,47 +58,47 @@ final class AlbumCardProvider
   }
 }
 
-String _$albumCardHash() => r'825983918d6e7da27c612289370c8f068ee62949';
+String _$albumDetailHash() => r'ae3f70b7df9acb03f1705f64be67cf702a137316';
 
-final class AlbumCardFamily extends $Family
+final class AlbumDetailFamily extends $Family
     with
         $ClassFamilyOverride<
-          AlbumCard,
-          AlbumCardState,
-          AlbumCardState,
-          AlbumCardState,
+          AlbumDetail,
+          AlbumDetailState,
+          AlbumDetailState,
+          AlbumDetailState,
           int?
         > {
-  AlbumCardFamily._()
+  AlbumDetailFamily._()
     : super(
         retry: null,
-        name: r'albumCardProvider',
+        name: r'albumDetailProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  AlbumCardProvider call(int? id) =>
-      AlbumCardProvider._(argument: id, from: this);
+  AlbumDetailProvider call(int? id) =>
+      AlbumDetailProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'albumCardProvider';
+  String toString() => r'albumDetailProvider';
 }
 
-abstract class _$AlbumCard extends $Notifier<AlbumCardState> {
+abstract class _$AlbumDetail extends $Notifier<AlbumDetailState> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  AlbumCardState build(int? id);
+  AlbumDetailState build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AlbumCardState, AlbumCardState>;
+    final ref = this.ref as $Ref<AlbumDetailState, AlbumDetailState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AlbumCardState, AlbumCardState>,
-              AlbumCardState,
+              AnyNotifier<AlbumDetailState, AlbumDetailState>,
+              AlbumDetailState,
               Object?,
               Object?
             >;

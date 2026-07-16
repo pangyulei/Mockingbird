@@ -13,10 +13,10 @@ part of 'edit_album_provider.dart';
 final editAlbumProvider = EditAlbumFamily._();
 
 final class EditAlbumProvider
-    extends $AsyncNotifierProvider<EditAlbum, EditAlbumState> {
+    extends $NotifierProvider<EditAlbum, EditAlbumState> {
   EditAlbumProvider._({
     required EditAlbumFamily super.from,
-    required int? super.argument,
+    required EnAlbum? super.argument,
   }) : super(
          retry: null,
          name: r'editAlbumProvider',
@@ -39,6 +39,14 @@ final class EditAlbumProvider
   @override
   EditAlbum create() => EditAlbum();
 
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(EditAlbumState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<EditAlbumState>(value),
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     return other is EditAlbumProvider && other.argument == argument;
@@ -50,16 +58,16 @@ final class EditAlbumProvider
   }
 }
 
-String _$editAlbumHash() => r'01c67534d0e61c482e1a8a773d9636d37b79b112';
+String _$editAlbumHash() => r'f4fa0465b1473999d476da6cae2c20dbda8fdafd';
 
 final class EditAlbumFamily extends $Family
     with
         $ClassFamilyOverride<
           EditAlbum,
-          AsyncValue<EditAlbumState>,
           EditAlbumState,
-          FutureOr<EditAlbumState>,
-          int?
+          EditAlbumState,
+          EditAlbumState,
+          EnAlbum?
         > {
   EditAlbumFamily._()
     : super(
@@ -70,27 +78,27 @@ final class EditAlbumFamily extends $Family
         isAutoDispose: true,
       );
 
-  EditAlbumProvider call(int? id) =>
-      EditAlbumProvider._(argument: id, from: this);
+  EditAlbumProvider call(EnAlbum? album) =>
+      EditAlbumProvider._(argument: album, from: this);
 
   @override
   String toString() => r'editAlbumProvider';
 }
 
-abstract class _$EditAlbum extends $AsyncNotifier<EditAlbumState> {
-  late final _$args = ref.$arg as int?;
-  int? get id => _$args;
+abstract class _$EditAlbum extends $Notifier<EditAlbumState> {
+  late final _$args = ref.$arg as EnAlbum?;
+  EnAlbum? get album => _$args;
 
-  FutureOr<EditAlbumState> build(int? id);
+  EditAlbumState build(EnAlbum? album);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EditAlbumState>, EditAlbumState>;
+    final ref = this.ref as $Ref<EditAlbumState, EditAlbumState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EditAlbumState>, EditAlbumState>,
-              AsyncValue<EditAlbumState>,
+              AnyNotifier<EditAlbumState, EditAlbumState>,
+              EditAlbumState,
               Object?,
               Object?
             >;

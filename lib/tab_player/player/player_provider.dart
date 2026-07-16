@@ -13,68 +13,80 @@ part 'player_provider.g.dart';
 @riverpod
 class Player extends _$Player implements PlayerNotifierITF {
   int? _playingId;
+
   @override
   Future<PlayerState?> build() async {
-    ref.onDispose(() {
-      state.value?.videoController?.dispose();
-    });
-    final playingId = await ref.watch(
-      dbPrefProvider.selectAsync((s) => s.playingId),
-    );
-    final isIdChanged = _playingId != playingId;
-    _playingId = playingId;
-    if (playingId == null) return null;
-    final media = await ref.watch(dbMediaProvider(playingId).future);
-    if (media == null) return null;
-    if (isIdChanged) {
-      state.value?.videoController?.dispose();
-      final videoController = VideoPlayerController.file(File(media.path));
-      await videoController.initialize();
-      videoController.addListener(() {
-        _onVideoPositionChanged(videoController);
-      });
-      return PlayerState(
-        showVolumeSlider: false,
-        videoSliderDraggingValue: null,
-        repeat: false,
-        title: media.name,
-        sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
-        positionMicro: 0,
-        videoController: videoController,
-      );
-    } else {
-      return state.value?.copyWith(
-        title: media.name,
-        sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
-      );
-    }
+    return null;
+    // final playingId = await ref.watch(
+    //   dbPrefProvider.selectAsync((s) => s.playingId),
+    // );
+    // final isIdChanged = _playingId != playingId;
+    // _playingId = playingId;
+    // if (playingId == null) return null;
+    // final media = await ref.watch(dbMediaProvider(playingId).future);
+    // if (media == null) return null;
+    // if (isIdChanged) {
+    //   final videoController = VideoPlayerController.file(File(media.path));
+    //   await videoController.initialize();
+    //   final duration = videoController.value.duration;
+    //   videoController.dispose();
+
+    //   return PlayerState(
+    //     title: media.name,
+    //     sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
+    //     videoState: VideoState(
+    //       repeat: false,
+    //       showVolumeSlider: false,
+    //       videoSliderDraggingValue: null,
+    //       positionMicro: 0,
+    //       durationMicro: duration.inMicroseconds,
+    //       speed: 1,
+    //       volume: 1,
+    //       videoPath: media.path,
+    //       isPlaying: true,
+    //     ),
+    //   );
+    // } else {
+    //   return state.value?.copyWith(
+    //     title: media.name,
+    //     sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
+    //   );
+    // }
   }
 
   @override
   int? sentenceIdAtIndex(int i) {
-    final mediaId = ref.read(dbPrefProvider).value?.playingId;
-    if (mediaId == null) return null;
-    final media = ref.read(dbMediaProvider(mediaId)).value;
-    return media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
+    // final mediaId = ref.read(dbPrefProvider).value?.playingId;
+    // if (mediaId == null) return null;
+    // final media = ref.read(dbMediaProvider(mediaId)).value;
+    // return media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
   }
 
   @override
-  Future<void> play() async {
-    final vc = state.value?.videoController;
-    if (vc == null) return;
-    await vc.play();
-    state = AsyncData(state.value);
-  }
+  Future<void> play() async {}
+
+  @override
+  Future<void> pause() async {}
 
   void _onVideoPositionChanged(VideoPlayerController videoController) async {
-    final position = videoController.value.position;
-    final duration = videoController.value.duration;
-    if (position >= duration) {
-      //if video end of duration, play/pause button should update
-      state = AsyncData(state.value);
-    }
     final data = state.value;
     if (data == null) return;
+    final videoState = data.videoState;
+    if (videoState == null) return;
+    final position = videoController.value.position;
+    final duration = videoController.value.duration;
+    state = AsyncData(
+      data.copyWith(
+        videoState: () =>
+            videoState.copyWith(positionMicro: position.inMicroseconds),
+      ),
+    );
+    if (position >= duration) {
+      //if video end of duration, play/pause button should update
+      state = AsyncData(
+        data.copyWith(videoState: () => videoState.copyWith(isPlaying: false)),
+      );
+    }
     //prevent videoController.play() but _state not setuped fully.
     if (data.sentenceCount == 0) return;
     // final media = _media;
@@ -118,13 +130,5 @@ class Player extends _$Player implements PlayerNotifierITF {
     //     });
     //   }
     // }
-  }
-
-  @override
-  Future<void> pause() async {
-    final vc = state.value?.videoController;
-    if (vc == null) return;
-    await vc.pause();
-    state = AsyncData(state.value);
   }
 }

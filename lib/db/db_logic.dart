@@ -19,8 +19,10 @@ typedef M_SF = ({EnMedia media, File subtitleFile});
 
 class DBLogic {
   final Store _store;
+
   //TODO add lock to write operations
   final _lock = Lock();
+
   DBLogic.test(this._store); //for unit test
   DBLogic() : this.test(DBObjectBox().store);
 
@@ -113,7 +115,11 @@ class DBLogic {
       int i = e.key;
       final dirMediaFile = e.value;
       final mediaName = p.basenameWithoutExtension(mfsfList[i].mediaFile.path);
-      final media = EnMedia(path: dirMediaFile.path, name: mediaName, id: 0);
+      final media = EnMedia(
+        path: dirMediaFile.path,
+        name: mediaName,
+        id: 0,
+      );
       media.albums.add(album);
       final subtitle = subtitlesWithoutId[i];
       if ((subtitle != null)) {
@@ -146,19 +152,17 @@ class DBLogic {
     return mediasFilledSubtitle;
   }
 
-  Future<({List<EnMedia> made, List<EnMedia> filled})> importMediaAndSubtitles(
-    EnAlbum album,
-    List<File> files,
-  ) async {
+  Future<void> importMediaAndSubtitles(EnAlbum album, List<File> files) async {
     final (:mfsfList, :msfList) = _processMediaSubtitleFiles(
       album.medias,
       files,
     );
-    var mediasMade = await _mediasMadeFromMFSFList(album, mfsfList);
-    var mediasFilled = await _mediasFilledSubtitleFromMSFList(album, msfList);
-    mediasMade = await _store.box<EnMedia>().putAndGetManyAsync(mediasMade);
-    mediasFilled = await _store.box<EnMedia>().putAndGetManyAsync(mediasFilled);
-    return (made:mediasMade, filled:mediasFilled);
+    final mediasMade = await _mediasMadeFromMFSFList(album, mfsfList);
+    final mediasFilled = await _mediasFilledSubtitleFromMSFList(album, msfList);
+    await _store.box<EnMedia>().putAndGetManyAsync([
+      ...mediasMade,
+      ...mediasFilled,
+    ]);
   }
 
   Future<EnMedia> updateMedia(EnMedia media) async {
@@ -185,7 +189,8 @@ class DBLogic {
       subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
       media.subtitles.clear();
       media.subtitles.add(subtitle);
-      mediaBox.put(media); //will auto update memory media
+      mediaBox.put(media);
+      //TODO update album's versionId
       return media;
     }, media.id);
     return media;
@@ -356,7 +361,9 @@ class DBLogic {
   }
 
   Future<EnAlbum?> loadAlbum(int id) async {
-    return await _store.box<EnAlbum>().getAsync(id);
+    final album = await _store.box<EnAlbum>().getAsync(id);
+    album?.sortMedias();
+    return album;
   }
 
   Future<(EnAlbum, EnAlbum)> swapAlbumsOrder(
@@ -428,5 +435,11 @@ class DBLogic {
 
   Future<EnMedia?> loadMedia(int id) async {
     return await _store.box<EnMedia>().getAsync(id);
+  }
+}
+
+extension on EnAlbum {
+  void sortMedias() {
+    medias.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   }
 }

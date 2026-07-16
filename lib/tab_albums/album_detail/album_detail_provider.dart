@@ -2,31 +2,36 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
-import 'package:mockingbird/db/providers/db_album_provider.dart';
-import 'package:mockingbird/tab_albums/album/album_state.dart';
-import 'package:mockingbird/tab_albums/album/album_ui.dart';
+import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-part 'album_provider.g.dart';
+part 'album_detail_provider.g.dart';
 
 @riverpod
-class Album extends _$Album implements AlbumNotifierITF {
+class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
   @override
-  Future<AlbumState> build(int? id) async {
-    debugPrint('albumProvider($id) build');
-    ref.onDispose(() {
-      debugPrint('albumProvider($id) disposed');
-    });
-    if (id == null) return const AlbumState.empty();
-    final album = await ref.watch(dbAlbumProvider(id).future);
-    if (album == null) return const AlbumState.empty();
+  AlbumDetailState build(int? id) {
+    if (id == null) return const AlbumDetailState.empty();
+    final album = ref.watch(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
+    if (album == null) return const AlbumDetailState.empty();
     final coverPath = album.cover;
-    return AlbumState(
+    return AlbumDetailState(
       name: album.name,
       cover: coverPath == null ? null : File(coverPath),
       mediaCount: album.medias.length,
+      showImport: true,
     );
   }
 
@@ -37,9 +42,13 @@ class Album extends _$Album implements AlbumNotifierITF {
       return;
     }
     final files = await _pickMediasAndSubtitleFiles();
-    if (files.isNotEmpty) {
-      state = const AsyncLoading();
-      await ref.read(dbAlbumProvider(id).notifier).importMediasSubtitles(files);
+    final album = this.album;
+    if (files.isNotEmpty && album != null) {
+      EasyLoading.show(maskType: .clear);
+      await ref
+          .read(dbAlbumListProvider.notifier)
+          .importResourcesIntoAlbum(album, files);
+      EasyLoading.dismiss();
     }
   }
 
@@ -51,21 +60,29 @@ class Album extends _$Album implements AlbumNotifierITF {
     }
     final newCover = await _pickImage();
     if (newCover != null) {
-      state = const AsyncLoading();
-      await ref
-          .read(dbAlbumProvider(id).notifier)
-          .updateAlbum(cover: () => newCover);
+      // state = const AsyncLoading();
+      // await ref
+      //     .read(dbAlbumProvider(id).notifier)
+      //     .updateAlbum(cover: () => newCover);
     }
   }
 
   @override
-  int? mediaIdAtIndex(int i) {
+  EnMedia? mediaAtIndex(int i) {
     final id = this.id;
     if (id == null) {
       return null;
     }
-    final album = ref.read(dbAlbumProvider(id)).value;
-    return album?.medias.elementAtOrNull(i)?.id;
+    return album?.medias.elementAtOrNull(i);
+  }
+
+  EnAlbum? get album {
+    return ref.read(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
   }
 
   Future<List<File>> _pickMediasAndSubtitleFiles() async {

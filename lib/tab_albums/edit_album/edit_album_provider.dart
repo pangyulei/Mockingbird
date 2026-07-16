@@ -1,86 +1,65 @@
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
-import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'edit_album_provider.g.dart';
 
-@Riverpod(name: 'editAlbumProvider')
-class EditAlbum extends _$EditAlbum {
-  EnAlbum? _album;
-
+@Riverpod()
+class EditAlbum extends _$EditAlbum implements EditAlbumNotifierITF {
   @override
-  Future<EditAlbumState> build(int? id) async {
-    debugPrint('EditAlbumNotifier($id) ${identityHashCode(this)} build');
+  EditAlbumState build(EnAlbum? album) {
+    debugPrint('edit album provider build:\n$album\n');
     ref.onDispose(() {
-      debugPrint(
-        'EditAlbumAsyncNotifier($id) ${identityHashCode(this)} disposed',
-      );
+      debugPrint('edit album provider dispose:\n$album\n');
     });
-    if (id == null) {
+    if (album == null) {
       return const EditAlbumState.create();
     } else {
-      final album = await ref.watch(dbAlbumProvider(id).future);
-      _album = album;
-      if (album == null) {
-        return const EditAlbumState.empty();
-      } else {
-        final cover = album.cover;
-        return EditAlbumState.edit(
-          album.name,
-          cover == null ? null : File(cover),
-        );
-      }
+      final cover = album.cover;
+      return EditAlbumState.edit(
+        album.name,
+        cover == null ? null : File(cover),
+      );
     }
   }
 
-  Future<void> onSubmit() async {
-    final data = state.value;
-    if (data == null) {
-      return;
-    }
-    state = const AsyncLoading();
-    final localId = id;
-    if (localId == null) {
+  @override
+  Future<void> submit() async {
+    EasyLoading.show(maskType: .clear);
+    final album = this.album;
+    if (album == null) {
       //creating
       await ref
           .read(dbAlbumListProvider.notifier)
-          .createAlbum(data.name, cover: data.cover);
+          .addAlbum(state.name, cover: state.cover);
     } else {
       //editing
       await ref
-          .read(dbAlbumProvider(localId).notifier)
-          .updateAlbum(name: data.name, cover: () => data.cover);
+          .read(dbAlbumListProvider.notifier)
+          .updateAlbum(album, name: state.name, cover: () => state.cover);
+    }
+    EasyLoading.dismiss();
+  }
+
+  @override
+  void updateCover(File? newCover) {
+    if (newCover?.path != state.cover?.path) {
+      final enableSubmit = _isSubmitEnable(state.name, newCover, album);
+      state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
   }
 
-  void onCoverChanged(File? newCover) {
-    final data = state.value;
-    if (data == null) {
-      return;
-    }
-    if (newCover?.path != data.cover?.path) {
-      final enableSubmit = _isSubmitEnable(data.name, newCover, _album);
-      state = AsyncData(
-        data.copyWith(cover: () => newCover, enableSubmit: enableSubmit),
-      );
-    }
-  }
-
-  void onNameChanged(String newName) {
-    final data = state.value;
-    if (data == null) {
-      return;
-    }
-    if (newName != data.name) {
-      final enableSubmit = _isSubmitEnable(newName, data.cover, _album);
-      state = AsyncData(
-        data.copyWith(name: newName, enableSubmit: enableSubmit),
-      );
+  @override
+  void updateName(String newName) {
+    if (newName != state.name) {
+      final enableSubmit = _isSubmitEnable(newName, state.cover, album);
+      state = state.copyWith(name: newName, enableSubmit: enableSubmit);
     }
   }
 
