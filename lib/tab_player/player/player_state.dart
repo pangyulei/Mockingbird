@@ -2,8 +2,6 @@ class VideoState {
   final bool repeat;
   final bool showVolumeSlider;
   final double? videoSliderDraggingValue;
-  final int positionMicro;
-  final int durationMicro;
   final double speed;
   final double volume;
   final String videoPath;
@@ -13,8 +11,6 @@ class VideoState {
     required this.repeat,
     required this.showVolumeSlider,
     required this.videoSliderDraggingValue,
-    required this.positionMicro,
-    required this.durationMicro,
     required this.speed,
     required this.volume,
     required this.videoPath,
@@ -22,17 +18,15 @@ class VideoState {
   });
 
   const VideoState.empty()
-      : this(
-          repeat: false,
-          showVolumeSlider: false,
-          videoSliderDraggingValue: null,
-          positionMicro: 0,
-          durationMicro: 0,
-          speed: 1.0,
-          volume: 1.0,
-          videoPath: '',
-          isPlaying: false,
-        );
+    : this(
+        repeat: false,
+        showVolumeSlider: false,
+        videoSliderDraggingValue: null,
+        speed: 1.0,
+        volume: 1.0,
+        videoPath: '',
+        isPlaying: false,
+      );
 
   VideoState copyWith({
     bool? repeat,
@@ -51,8 +45,6 @@ class VideoState {
       videoSliderDraggingValue: videoSliderDraggingValue == null
           ? this.videoSliderDraggingValue
           : videoSliderDraggingValue(),
-      positionMicro: positionMicro ?? this.positionMicro,
-      durationMicro: durationMicro ?? this.durationMicro,
       speed: speed ?? this.speed,
       volume: volume ?? this.volume,
       videoPath: videoPath ?? this.videoPath,
@@ -83,9 +75,7 @@ class PlayerState {
     return PlayerState(
       title: title ?? this.title,
       sentenceCount: sentenceCount ?? this.sentenceCount,
-      videoState: videoState == null
-          ? this.videoState
-          : videoState(),
+      videoState: videoState == null ? this.videoState : videoState(),
     );
   }
 }

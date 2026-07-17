@@ -1,3 +1,9 @@
+import 'dart:io';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -8,61 +14,85 @@ part 'player_provider.g.dart';
 // name:'playingProvider'
 @riverpod
 class Player extends _$Player implements PlayerNotifierITF {
-  int? _playingId;
+  int? _prevId;
 
   @override
   Future<PlayerState?> build() async {
-    return null;
-    // final playingId = await ref.watch(
-    //   dbPrefProvider.selectAsync((s) => s.playingId),
-    // );
-    // final isIdChanged = _playingId != playingId;
-    // _playingId = playingId;
-    // if (playingId == null) return null;
-    // final media = await ref.watch(dbMediaProvider(playingId).future);
-    // if (media == null) return null;
-    // if (isIdChanged) {
-    //   final videoController = VideoPlayerController.file(File(media.path));
-    //   await videoController.initialize();
-    //   final duration = videoController.value.duration;
-    //   videoController.dispose();
-
-    //   return PlayerState(
-    //     title: media.name,
-    //     sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
-    //     videoState: VideoState(
-    //       repeat: false,
-    //       showVolumeSlider: false,
-    //       videoSliderDraggingValue: null,
-    //       positionMicro: 0,
-    //       durationMicro: duration.inMicroseconds,
-    //       speed: 1,
-    //       volume: 1,
-    //       videoPath: media.path,
-    //       isPlaying: true,
-    //     ),
-    //   );
-    // } else {
-    //   return state.value?.copyWith(
-    //     title: media.name,
-    //     sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
-    //   );
-    // }
+    final playingId = ref.watch(
+      dbPrefProvider.select((av) => av.value?.playingId),
+    );
+    final isIdChanged = _prevId != playingId;
+    _prevId = playingId;
+    if (playingId == null) return null;
+    final EnMedia? media = ref.watch(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => [for (final a in al) a.medias])
+          .select((mll) => mll.expand((e) => e))
+          .select((ml) => {for (final m in ml) m.id: m})
+          .select((mm) => mm[playingId]),
+    );
+    if (media == null) return null;
+    if (isIdChanged) {
+      return PlayerState(
+        title: media.name,
+        sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
+        videoState: VideoState(
+          repeat: false,
+          showVolumeSlider: false,
+          videoSliderDraggingValue: null,
+          speed: 1,
+          volume: 1,
+          videoPath: media.path,
+          isPlaying: true,
+        ),
+      );
+    } else {
+      return state.value?.copyWith(
+        title: media.name,
+        sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
+      );
+    }
   }
 
   @override
   int? sentenceIdAtIndex(int i) {
-    // final mediaId = ref.read(dbPrefProvider).value?.playingId;
-    // if (mediaId == null) return null;
-    // final media = ref.read(dbMediaProvider(mediaId)).value;
-    // return media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
+    return _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
+  }
+
+  EnMedia? get _media {
+    final playingId = ref.read(
+      dbPrefProvider.select((av) => av.value?.playingId),
+    );
+    if (playingId == null) return null;
+    final EnMedia? media = ref.read(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => [for (final a in al) a.medias])
+          .select((mll) => mll.expand((e) => e))
+          .select((ml) => {for (final m in ml) m.id: m})
+          .select((mm) => mm[playingId]),
+    );
+    return media;
   }
 
   @override
-  Future<void> play() async {}
-
+  void play() {
+    final val = state.value;
+    if (val == null) return;
+    state = AsyncData(
+      val.copyWith(videoState: () => val.videoState?.copyWith(isPlaying: true)),
+    );
+  }
   @override
-  Future<void> pause() async {}
+  void pause() {
+    final val = state.value;
+    if (val == null) return;
+    state = AsyncData(
+      val.copyWith(videoState: () => val.videoState?.copyWith(isPlaying: false)),
+    );
+  }
+
 
   void _onVideoPositionChanged(VideoPlayerController videoController) async {
     final data = state.value;

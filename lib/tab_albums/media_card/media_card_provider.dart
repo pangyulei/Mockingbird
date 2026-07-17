@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
-import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
@@ -27,7 +27,15 @@ class MediaCard extends _$MediaCard implements MediaCardNotifierITF {
           .select((mm) => mm[id]),
     );
     if (media == null) return const MediaCardState.empty();
-    return media.toCardState();
+    final playingId = ref.watch(
+      dbPrefProvider.select((av) => av.value?.playingId),
+    );
+    return MediaCardState(
+      name: media.name,
+      type: media.type,
+      hasSubtitle: media.subtitles.isNotEmpty,
+      isPlaying: media.id == playingId,
+    );
   }
 
   EnMedia? get _media {
@@ -78,12 +86,9 @@ class MediaCard extends _$MediaCard implements MediaCardNotifierITF {
 
   @override
   Future<void> play() async {
-    // final id = media?.id;
-    // if (id == null) return;
-    // await ref.read(dbPrefProvider.notifier).setPlayingId(id);
-    // final data = state.value;
-    // if (data == null) return;
-    // state = AsyncData(data.copyWith(isPlaying: true));
+    EasyLoading.show(maskType: .clear);
+    await ref.read(dbPrefProvider.notifier).setPlayingId(id);
+    EasyLoading.dismiss();
   }
 
   Future<String?> _pickOneSubtitle() async {
@@ -104,16 +109,5 @@ class MediaCard extends _$MediaCard implements MediaCardNotifierITF {
       debugPrint('Error adding subtitle: $e');
       return null;
     }
-  }
-}
-
-extension on EnMedia {
-  MediaCardState toCardState() {
-    return MediaCardState(
-      name: name,
-      type: type,
-      hasSubtitle: subtitles.isNotEmpty,
-      isPlaying: false,
-    );
   }
 }

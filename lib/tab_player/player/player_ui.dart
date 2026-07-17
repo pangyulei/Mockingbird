@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -19,9 +18,9 @@ const double _kStepPlaySpeed = 0.25;
 abstract interface class PlayerNotifierITF {
   int? sentenceIdAtIndex(int i);
 
-  Future<void> play();
+  void play();
 
-  Future<void> pause();
+  void pause();
 }
 
 class PlayerUI extends ConsumerStatefulWidget {
@@ -42,6 +41,11 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   PlayerNotifierITF get _notifier => widget._notifier;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _videoController?.dispose();
     super.dispose();
@@ -49,25 +53,15 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
 
   @override
   Widget build(BuildContext context) {
-    _listenState();
+    _listen();
     return Stack(children: [_page(), _empty()]);
   }
 
-  void _listenState() {
-    ref.listen(_provider.select((s) => s.value?.videoState?.videoPath), (
-      previous,
-      next,
-    ) {
-      if (next != null && next.isNotEmpty) {
-        _videoController?.dispose();
-        _videoController = VideoPlayerController.file(File(next));
-        _videoController?.initialize();
-      }
-    });
+  void _listen() {
     ref.listen(_provider.select((s) => s.value?.videoState?.isPlaying), (
       previous,
       next,
-    ) {
+    ) async {
       if (next == true) {
         _videoController?.play();
       } else {
@@ -76,6 +70,8 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     });
   }
 
+  void _onVideoPositionChanged(VideoPlayerController videoController) {}
+
   void _onInOrder() {
     // setState(() {
     //   _state = _state.copyWith(repeat: true);
@@ -83,11 +79,11 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   void _onPause() async {
-    await _notifier.pause();
+    _notifier.pause();
   }
 
   void _onPlay() async {
-    await _notifier.play();
+    _notifier.play();
   }
 
   void _onRepeatOne() {
@@ -295,7 +291,6 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     // context.go(AppRoute.albums);
   }
 
-
   Widget _page() {
     final theme = Theme.of(context);
     return Scaffold(
@@ -328,51 +323,73 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget _displayer() {
-    final videoController = _videoController;
-    if (videoController == null) return const SizedBox.shrink();
-    return AspectRatio(
-      aspectRatio: videoController.value.aspectRatio,
-      child: Stack(
-        alignment: Alignment.bottomCenter,
-        children: [
-          VideoPlayer(_videoController!),
-          // Custom gradient overlay for controls
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.4),
-                    Colors.transparent,
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.6),
-                  ],
-                  stops: const [0.0, 0.2, 0.7, 1.0],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 8,
-            right: 8,
-            bottom: 0,
-            child: Row(
-              crossAxisAlignment: .end,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.5),
-                    child: _videoSlider(),
+    // final videoController = _videoController;
+    // if (videoController == null) {
+    //   debugPrint('videoController == null');
+    //   return const SizedBox.shrink();
+    // }
+    return Consumer(
+      builder: (context, ref, child) {
+        final videoPath = ref.watch(
+          _provider.select((av) => av.value?.videoState?.videoPath),
+        );
+        if (videoPath != null && videoPath.isNotEmpty) {
+          _videoController?.dispose();
+          final videoController = VideoPlayerController.file(File(videoPath));
+          videoController.initialize();
+          videoController.play();
+          videoController.addListener(
+            () => _onVideoPositionChanged(videoController),
+          );
+          _videoController = videoController;
+        }
+        final videoController = _videoController;
+        if (videoController == null) return const SizedBox.shrink();
+        return AspectRatio(
+          aspectRatio: videoController.value.aspectRatio,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              VideoPlayer(videoController),
+              // Custom gradient overlay for controls
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.4),
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.6),
+                      ],
+                      stops: const [0.0, 0.2, 0.7, 1.0],
+                    ),
                   ),
                 ),
-                _volumeComponent(),
-              ],
-            ),
+              ),
+              Positioned(
+                left: 8,
+                right: 8,
+                bottom: 0,
+                child: Row(
+                  crossAxisAlignment: .end,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 8.5),
+                        child: _videoSlider(videoController),
+                      ),
+                    ),
+                    _volumeComponent(),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -510,7 +527,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _videoSlider() {
+  Widget _videoSlider(VideoPlayerController videoController) {
     final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
@@ -521,25 +538,13 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
         inactiveTrackColor: Colors.white24,
         thumbColor: Colors.white,
       ),
-      child: Consumer(
-        builder: (ctx, ref, _) {
-          final (position, duration) = ref.watch(
-            _provider.select(
-              (s) => (
-                s.value?.videoState?.positionMicro ?? 0,
-                s.value?.videoState?.durationMicro ?? 0,
-              ),
-            ),
-          );
-          return Slider(
-            value: position.toDouble(),
-            min: 0.0,
-            max: duration.toDouble(),
-            onChangeStart: _onVideoSliderStartChanged,
-            onChangeEnd: _onVideoSliderEndChanged,
-            onChanged: _onVideoSliderChanging,
-          );
-        },
+      child: Slider(
+        value: videoController.value.position.inMicroseconds.toDouble(),
+        min: 0.0,
+        max: videoController.value.duration.inMicroseconds.toDouble(),
+        onChangeStart: _onVideoSliderStartChanged,
+        onChangeEnd: _onVideoSliderEndChanged,
+        onChanged: _onVideoSliderChanging,
       ),
     );
     // return ValueListenableBuilder(
@@ -594,7 +599,9 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                      color: colorScheme.primaryContainer.withValues(
+                        alpha: 0.3,
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(

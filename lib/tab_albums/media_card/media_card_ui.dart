@@ -32,9 +32,11 @@ class MediaCardUI extends ConsumerWidget {
   final MediaCardNotifierITF _notifier;
   const MediaCardUI(this._provider, this._notifier, {super.key});
 
-  void _onPlay(BuildContext ctx) {
-    _notifier.play();
-    ctx.go(AppRoute.player);
+  void _onPlay(BuildContext ctx) async {
+    await _notifier.play();
+    if (ctx.mounted) {
+      ctx.go(AppRoute.player);
+    }
   }
 
   void _onAddSubtitle() async {
