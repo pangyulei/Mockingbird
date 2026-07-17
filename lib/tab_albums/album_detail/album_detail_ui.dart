@@ -2,14 +2,17 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 abstract interface class AlbumDetailNotifierITF {
-  int? get id;
+  EnAlbum? get album;
 
   EnMedia? mediaAtIndex(int i);
 
@@ -261,25 +264,21 @@ class AlbumDetailUI extends ConsumerWidget {
   }
 
   void _onEditAlbum(BuildContext ctx) async {
-    final id = _notifier.id;
-    if (id != null) {
-      await _showEditingAlbumDialog(ctx, id);
-    }
+    await _showEditingAlbumDialog(ctx);
   }
 
-  Future<void> _showEditingAlbumDialog(BuildContext ctx, int id) async {
-    //TODO
-    // await showDialog(
-    //   context: ctx,
-    //   builder: (context) {
-    //     return Consumer(
-    //       builder: (context, ref, child) {
-    //         final provider = editAlbumProvider(_notifier.album);
-    //         final notifier = ref.read(provider.notifier);
-    //         return EditAlbumUI(provider, notifier);
-    //       },
-    //     );
-    //   },
-    // );
+  Future<void> _showEditingAlbumDialog(BuildContext ctx) async {
+    await showDialog(
+      context: ctx,
+      builder: (context) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final provider = editAlbumProvider(_notifier.album);
+            final notifier = ref.read(provider.notifier);
+            return EditAlbumUI(provider, notifier);
+          },
+        );
+      },
+    );
   }
 }

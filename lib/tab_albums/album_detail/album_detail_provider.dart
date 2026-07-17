@@ -51,6 +51,18 @@ class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
       EasyLoading.dismiss();
     }
   }
+  
+  @override
+  EnAlbum? get album {
+    final id = this.id;
+    if (id == null) return null;
+    return ref.read(
+      dbAlbumListProvider
+          .select((st) => st.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
+  }
 
   @override
   Future<void> addCover() async {
@@ -59,11 +71,13 @@ class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
       return;
     }
     final newCover = await _pickImage();
-    if (newCover != null) {
-      // state = const AsyncLoading();
-      // await ref
-      //     .read(dbAlbumProvider(id).notifier)
-      //     .updateAlbum(cover: () => newCover);
+    final album = this.album;
+    if (newCover != null && album != null) {
+      EasyLoading.show(maskType: .clear);
+      await ref
+          .read(dbAlbumListProvider.notifier)
+          .updateAlbum(album, cover: () => newCover);
+      EasyLoading.dismiss();
     }
   }
 
@@ -74,15 +88,6 @@ class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
       return null;
     }
     return album?.medias.elementAtOrNull(i);
-  }
-
-  EnAlbum? get album {
-    return ref.read(
-      dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => {for (final a in al) a.id: a})
-          .select((am) => am[id]),
-    );
   }
 
   Future<List<File>> _pickMediasAndSubtitleFiles() async {
