@@ -42,7 +42,7 @@ class AlbumCardUI extends ConsumerWidget {
   }
 
   void _onEdit(BuildContext ctx) async {
-    await _showEditingAlbumDialog(ctx);
+    await _showEditAlbumDialog(ctx);
   }
 
   void _onDelete(BuildContext ctx, WidgetRef ref) async {
@@ -90,7 +90,7 @@ class AlbumCardUI extends ConsumerWidget {
     return true;
   }
 
-  Future<void> _showEditingAlbumDialog(
+  Future<void> _showEditAlbumDialog(
     BuildContext ctx,
   ) async {
     await showDialog(

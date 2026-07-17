@@ -8,7 +8,6 @@ import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
-import 'package:path/path.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'media_card_state.dart';
@@ -17,21 +16,19 @@ enum _MoreItem {
   addSubtitle('add subtitle'),
   deleteSubtitle('delete subtitle'),
   deleteMedia('delete media');
-
   final String raw;
-
   const _MoreItem(this.raw);
 }
 
 abstract interface class MediaCardNotifierITF {
   Future<void> play();
   Future<void> deleteSubtitle();
-  Future<void> addSubtitle(EnSubtitle subtitle);
+  Future<void> addSubtitle();
   Future<void> deleteMedia();
 }
 
 class MediaCardUI extends ConsumerWidget {
-  final ProviderListenable<AsyncValue<MediaCardState>> _provider;
+  final ProviderListenable<MediaCardState> _provider;
   final MediaCardNotifierITF _notifier;
   const MediaCardUI(this._provider, this._notifier, {super.key});
 
@@ -41,11 +38,7 @@ class MediaCardUI extends ConsumerWidget {
   }
 
   void _onAddSubtitle() async {
-    final subtitlePath = await _pickOneSubtitle();
-    if (subtitlePath == null) return;
-    final subtitle = await SubtitleParser.parsePath(subtitlePath);
-    if (subtitle == null) return;
-    await _notifier.addSubtitle(subtitle);
+    await _notifier.addSubtitle();
   }
 
   void _onDeleteSubtitle() async {
@@ -61,7 +54,7 @@ class MediaCardUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     final isPlaying =
-        ref.watch(_provider.select((s) => s.value?.isPlaying)) ?? false;
+        ref.watch(_provider.select((s) => s.isPlaying));
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -120,7 +113,7 @@ class MediaCardUI extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     final (name, isPlaying) = ref.watch(
       _provider.select(
-        (s) => (s.value?.name.trim() ?? '', s.value?.isPlaying ?? false),
+        (s) => (s.name.trim(), s.isPlaying),
       ),
     );
     if (isPlaying && name.isNotEmpty) {
@@ -162,9 +155,9 @@ class MediaCardUI extends ConsumerWidget {
           final (hasSubtitle, type, isPlaying) = ref.watch(
             _provider.select(
               (s) => (
-                s.value?.hasSubtitle ?? false,
-                s.value?.type ?? .video,
-                s.value?.isPlaying ?? false,
+                s.hasSubtitle,
+                s.type,
+                s.isPlaying,
               ),
             ),
           );
@@ -201,7 +194,7 @@ class MediaCardUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     final isPlaying = ref.watch(
-      _provider.select((s) => s.value?.isPlaying ?? false),
+      _provider.select((s) => s.isPlaying),
     );
     return Container(
       width: 48,
@@ -226,7 +219,7 @@ class MediaCardUI extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         final hasSubtitle = ref.watch(
-          _provider.select((s) => s.value?.hasSubtitle ?? false),
+          _provider.select((s) => s.hasSubtitle),
         );
         return PopupMenuButton<String>(
           icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
@@ -249,7 +242,7 @@ class MediaCardUI extends ConsumerWidget {
                   Consumer(
                     builder: (context, ref, child) {
                       final hasSubtitle = ref.watch(
-                        _provider.select((s) => s.value?.hasSubtitle ?? false),
+                        _provider.select((s) => s.hasSubtitle),
                       );
                       return Text(
                         hasSubtitle ? 'Change Subtitle' : 'Add Subtitle',
@@ -306,25 +299,6 @@ class MediaCardUI extends ConsumerWidget {
     );
   }
 
-  Future<String?> _pickOneSubtitle() async {
-    try {
-      final pickedFiles = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: [...kSubtitleExtensions],
-        allowMultiple: false,
-      );
-      final subtitlePath = pickedFiles?.files
-          .firstWhereOrNull(
-            (f) =>
-                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
-          )
-          ?.path;
-      return subtitlePath;
-    } catch (e) {
-      debugPrint('Error adding subtitle: $e');
-      return null;
-    }
-  }
 }
 
 class _PlayingIndicator extends StatelessWidget {

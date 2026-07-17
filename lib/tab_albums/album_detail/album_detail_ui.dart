@@ -48,8 +48,8 @@ class AlbumDetailUI extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, i) {
-                      final media = _notifier.mediaAtIndex(i);
-                      final provider = mediaCardProvider(media);
+                      final mediaId = _notifier.mediaAtIndex(i)?.id;
+                      final provider = mediaCardProvider(mediaId);
                       final notifier = ref.read(provider.notifier);
                       return MediaCardUI(provider, notifier);
                     }, childCount: mediaCount),

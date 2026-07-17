@@ -190,7 +190,6 @@ class DBLogic {
       media.subtitles.clear();
       media.subtitles.add(subtitle);
       mediaBox.put(media);
-      //TODO update album's versionId
       return media;
     }, media.id);
     return media;

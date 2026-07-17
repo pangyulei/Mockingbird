@@ -1,7 +1,3 @@
-import 'dart:io';
-
-import 'package:mockingbird/db/providers/db_media_provider.dart';
-import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

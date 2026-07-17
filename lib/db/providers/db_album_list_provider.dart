@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:mockingbird/db/db_logic.dart';
+import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../entities/en_album.dart';
@@ -53,27 +55,32 @@ class DBAlbumList extends _$DBAlbumList {
   Future<void> importResourcesIntoAlbum(EnAlbum album, List<File> files) async {
     await DBLogic().importMediaAndSubtitles(album, files);
     final updatedAlbum = await DBLogic().loadAlbum(album.id);
-
     if (updatedAlbum != null) {
       _replaceAlbum(updatedAlbum);
     }
   }
 
-  // void updateByAlbumCreated(EnAlbum newAlbum) {
-  //   final albums = state.value ?? [];
-  //   albums.insert(0, newAlbum);
-  //   state = AsyncData(albums);
-  // }
+  Future<void> deleteMedia(EnMedia media) async {
+    await DBLogic().deleteMedia(media);
+    final album = media.albums.firstOrNull;
+    if (album == null) return;
+    album.medias.removeWhere((m) => m.id == media.id);
+    _replaceAlbum(album);
+  }
 
-  // void updateByAlbumUpdated(EnAlbum updatedAlbum) {
-  //   final albums = state.value ?? [];
-  //   state = AsyncData(
-  //     albums.map((a) => a.id == updatedAlbum.id ? updatedAlbum : a).toList(),
-  //   );
-  // }
+  Future<void> addSubtitle(EnMedia media, EnSubtitle subtitle) async {
+    final updatedMedia = await DBLogic().addSubtitle(media, subtitle);
+    final updatedAlbum = updatedMedia.albums.firstOrNull;
+    if (updatedAlbum != null) {
+      _replaceAlbum(updatedAlbum);
+    }
+  }
 
-  // Future<void> updateByAlbumDeleted(int id) async {
-  //   final albums = await future;
-  //   state = AsyncData(albums.where((a) => a.id != id).toList());
-  // }
+  Future<void> deleteSubtitle(EnMedia media) async {
+    final updatedMedia = await DBLogic().deleteSubtitle(media);
+    final updatedAlbum = updatedMedia.albums.firstOrNull;
+    if (updatedAlbum != null) {
+      _replaceAlbum(updatedAlbum);
+    }
+  }
 }

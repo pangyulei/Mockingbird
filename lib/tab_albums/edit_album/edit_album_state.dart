@@ -25,7 +25,7 @@ class EditAlbumState {
         title: '',
       );
 
-  const EditAlbumState.create()
+  const EditAlbumState.add()
     : this(
         name: '',
         title: 'Create Album',

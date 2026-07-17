@@ -105,7 +105,7 @@ class _AlbumListUIState extends ConsumerState<AlbumListUI> {
     );
   }
 
-  Future<void> _showCreatingAlbumDialog(BuildContext ctx) async {
+  Future<void> _showAddAlbumDialog(BuildContext ctx) async {
     await showDialog(
       context: ctx,
       builder: (context) {
@@ -121,6 +121,6 @@ class _AlbumListUIState extends ConsumerState<AlbumListUI> {
   }
 
   void _onAddAlbum(BuildContext ctx) async {
-    await _showCreatingAlbumDialog(ctx);
+    await _showAddAlbumDialog(ctx);
   }
 }

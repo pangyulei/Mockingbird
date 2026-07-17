@@ -13,10 +13,10 @@ part of 'media_card_provider.dart';
 final mediaCardProvider = MediaCardFamily._();
 
 final class MediaCardProvider
-    extends $AsyncNotifierProvider<MediaCard, MediaCardState> {
+    extends $NotifierProvider<MediaCard, MediaCardState> {
   MediaCardProvider._({
     required MediaCardFamily super.from,
-    required EnMedia? super.argument,
+    required int? super.argument,
   }) : super(
          retry: null,
          name: r'mediaCardProvider',
@@ -39,6 +39,14 @@ final class MediaCardProvider
   @override
   MediaCard create() => MediaCard();
 
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MediaCardState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MediaCardState>(value),
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     return other is MediaCardProvider && other.argument == argument;
@@ -50,16 +58,16 @@ final class MediaCardProvider
   }
 }
 
-String _$mediaCardHash() => r'2bcc1594d90aae4f890cd00d3986687f01a362f5';
+String _$mediaCardHash() => r'a063c04f8fae2392c2258827cc452c1993974abf';
 
 final class MediaCardFamily extends $Family
     with
         $ClassFamilyOverride<
           MediaCard,
-          AsyncValue<MediaCardState>,
           MediaCardState,
-          FutureOr<MediaCardState>,
-          EnMedia?
+          MediaCardState,
+          MediaCardState,
+          int?
         > {
   MediaCardFamily._()
     : super(
@@ -70,27 +78,27 @@ final class MediaCardFamily extends $Family
         isAutoDispose: true,
       );
 
-  MediaCardProvider call(EnMedia? media) =>
-      MediaCardProvider._(argument: media, from: this);
+  MediaCardProvider call(int? id) =>
+      MediaCardProvider._(argument: id, from: this);
 
   @override
   String toString() => r'mediaCardProvider';
 }
 
-abstract class _$MediaCard extends $AsyncNotifier<MediaCardState> {
-  late final _$args = ref.$arg as EnMedia?;
-  EnMedia? get media => _$args;
+abstract class _$MediaCard extends $Notifier<MediaCardState> {
+  late final _$args = ref.$arg as int?;
+  int? get id => _$args;
 
-  FutureOr<MediaCardState> build(EnMedia? media);
+  MediaCardState build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<MediaCardState>, MediaCardState>;
+    final ref = this.ref as $Ref<MediaCardState, MediaCardState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<MediaCardState>, MediaCardState>,
-              AsyncValue<MediaCardState>,
+              AnyNotifier<MediaCardState, MediaCardState>,
+              MediaCardState,
               Object?,
               Object?
             >;

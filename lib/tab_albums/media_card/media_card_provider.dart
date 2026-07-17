@@ -1,10 +1,14 @@
-import 'package:flutter/widgets.dart';
+import 'package:collection/collection.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
-import 'package:mockingbird/db/providers/db_media_provider.dart';
-import 'package:mockingbird/db/providers/db_pref_provider.dart';
+import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
+import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'media_card_provider.g.dart';
@@ -12,43 +16,94 @@ part 'media_card_provider.g.dart';
 @riverpod
 class MediaCard extends _$MediaCard implements MediaCardNotifierITF {
   @override
-  Future<MediaCardState> build(EnMedia? media) async {
+  MediaCardState build(int? id) {
+    if (id == null) return const MediaCardState.empty();
+    final EnMedia? media = ref.watch(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => [for (final a in al) a.medias])
+          .select((mll) => mll.expand((e) => e))
+          .select((ml) => {for (final m in ml) m.id: m})
+          .select((mm) => mm[id]),
+    );
     if (media == null) return const MediaCardState.empty();
     return media.toCardState();
   }
 
-  @override
-  Future<void> deleteSubtitle() async {
-    // final id = media?.id;
-    // if (id == null) return;
-    // state = const AsyncLoading();
-    // await ref.read(dbMediaProvider(id).notifier).deleteSubtitle();
+  EnMedia? get _media {
+    final id = this.id;
+    if (id == null) return null;
+    return ref.read(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => [for (final a in al) a.medias])
+          .select((mll) => mll.expand((e) => e))
+          .select((ml) => {for (final m in ml) m.id: m})
+          .select((mm) => mm[id]),
+    );
   }
 
   @override
-  Future<void> addSubtitle(EnSubtitle subtitle) async {
-    // final id = media?.id;
-    // if (id == null) return;
-    // state = const AsyncLoading();
-    // await ref.read(dbMediaProvider(id).notifier).addSubtitle(subtitle);
+  Future<void> deleteSubtitle() async {
+    final media = _media;
+    if (media == null) return;
+    EasyLoading.show(maskType: .clear);
+    await ref.read(dbAlbumListProvider.notifier).deleteSubtitle(media);
+    EasyLoading.dismiss();
+  }
+
+  @override
+  Future<void> addSubtitle() async {
+    final media = _media;
+    if (media == null) return;
+    final subtitlePath = await _pickOneSubtitle();
+    if (subtitlePath == null) return;
+
+    EasyLoading.show(maskType: .clear);
+    final subtitle = await SubtitleParser.parsePath(subtitlePath);
+    if (subtitle != null) {
+      await ref.read(dbAlbumListProvider.notifier).addSubtitle(media, subtitle);
+    }
+    EasyLoading.dismiss();
   }
 
   @override
   Future<void> deleteMedia() async {
-    // final id = media?.id;
-    // if (id == null) return;
-    // state = const AsyncLoading();
-    // await ref.read(dbMediaProvider(id).notifier).delete();
+    final media = _media;
+    if (media == null) return;
+    EasyLoading.show(maskType: .clear);
+    await ref.read(dbAlbumListProvider.notifier).deleteMedia(media);
+    EasyLoading.dismiss();
   }
 
   @override
   Future<void> play() async {
-    final id = media?.id;
-    if (id == null) return;
-    await ref.read(dbPrefProvider.notifier).setPlayingId(id);
-    final data = state.value;
-    if (data == null) return;
-    state = AsyncData(data.copyWith(isPlaying: true));
+    // final id = media?.id;
+    // if (id == null) return;
+    // await ref.read(dbPrefProvider.notifier).setPlayingId(id);
+    // final data = state.value;
+    // if (data == null) return;
+    // state = AsyncData(data.copyWith(isPlaying: true));
+  }
+
+  Future<String?> _pickOneSubtitle() async {
+    try {
+      final pickedFiles = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [...kSubtitleExtensions],
+        allowMultiple: false,
+      );
+      final subtitlePath = pickedFiles?.files
+          .firstWhereOrNull(
+            (f) =>
+                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+          )
+          ?.path;
+      return subtitlePath;
+    } catch (e) {
+      debugPrint('Error adding subtitle: $e');
+      return null;
+    }
   }
 }
 

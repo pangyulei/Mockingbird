@@ -19,7 +19,7 @@ class EditAlbum extends _$EditAlbum implements EditAlbumNotifierITF {
       debugPrint('edit album provider dispose:\n$album\n');
     });
     if (album == null) {
-      return const EditAlbumState.create();
+      return const EditAlbumState.add();
     } else {
       final cover = album.cover;
       return EditAlbumState.edit(
