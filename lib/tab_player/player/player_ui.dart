@@ -19,7 +19,7 @@ abstract interface class PlayerNotifierITF {
   Future<void> videoSliderStartChanged(double valMicro);
   Future<void> videoSliderChanging(double valMicro);
   Future<void> videoSliderEndChanged(double valMicro);
-  void videoPositionChanged(VideoPlayerController videoController);
+  Future<void> videoPositionChanged(VideoPlayerController videoController);
 }
 
 class PlayerUI extends ConsumerStatefulWidget {
@@ -40,10 +40,6 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   @override
   Widget build(BuildContext context) {
     return Stack(children: [_page(), _empty()]);
-  }
-
-  void _onVideoPositionChanged(VideoPlayerController videoController) {
-    _notifier.videoPositionChanged(videoController);
   }
 
   void _onInOrder() {
@@ -152,6 +148,10 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     // }
   }
 
+  void _onVideoPositionChanged(VideoPlayerController videoController) async {
+    await _notifier.videoPositionChanged(videoController);
+  }
+
   void _onVideoSliderStartChanged(double valMicro) async {
     await _notifier.videoSliderStartChanged(valMicro);
   }
@@ -227,6 +227,9 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
           _provider.select((st) => st?.videoState?.controller),
         );
         if (videoController == null) return const SizedBox.shrink();
+        videoController.addListener(
+          () => _onVideoPositionChanged(videoController),
+        );
         return Container(
           decoration: BoxDecoration(
             color: Colors.black,
@@ -443,13 +446,16 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
       ),
       child: Consumer(
         builder: (context, ref, child) {
-          final positionMicro = ref.watch(
-            _provider.select((st) => st?.videoState?.positionMicro ?? 0),
+          final position = ref.watch(
+            _provider.select(
+              (st) => (st?.videoState?.positionMicro ?? 0).toDouble(),
+            ),
           );
+          final duration = videoController.value.duration.inMicroseconds
+              .toDouble();
           return Slider(
-            value: positionMicro.toDouble(),
-            min: 0.0,
-            max: videoController.value.duration.inMicroseconds.toDouble(),
+            value: position.clamp(0, duration),
+            max: duration,
             onChangeStart: _onVideoSliderStartChanged,
             onChangeEnd: _onVideoSliderEndChanged,
             onChanged: _onVideoSliderChanging,

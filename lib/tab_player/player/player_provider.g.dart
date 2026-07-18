@@ -40,7 +40,7 @@ final class PlayerProvider extends $NotifierProvider<Player, PlayerState?> {
   }
 }
 
-String _$playerHash() => r'ec68f99f5eaba2318b92a1ba6ba8d1a7c4fd211f';
+String _$playerHash() => r'5194f6b19052f0a05f1d615d807a882ec6aaf574';
 
 abstract class _$Player extends $Notifier<PlayerState?> {
   PlayerState? build();
@@ -61,30 +61,23 @@ abstract class _$Player extends $Notifier<PlayerState?> {
 }
 
 @ProviderFor(PlayerVideo)
-final playerVideoProvider = PlayerVideoFamily._();
+final playerVideoProvider = PlayerVideoProvider._();
 
 final class PlayerVideoProvider
     extends $NotifierProvider<PlayerVideo, PlayerVideoState?> {
-  PlayerVideoProvider._({
-    required PlayerVideoFamily super.from,
-    required void Function(VideoPlayerController) super.argument,
-  }) : super(
-         retry: null,
-         name: r'playerVideoProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  PlayerVideoProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'playerVideoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$playerVideoHash();
-
-  @override
-  String toString() {
-    return r'playerVideoProvider'
-        ''
-        '($argument)';
-  }
 
   @$internal
   @override
@@ -97,50 +90,12 @@ final class PlayerVideoProvider
       providerOverride: $SyncValueProvider<PlayerVideoState?>(value),
     );
   }
-
-  @override
-  bool operator ==(Object other) {
-    return other is PlayerVideoProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
 }
 
-String _$playerVideoHash() => r'a626116b479e85057d2770fb966571c59e82a81f';
-
-final class PlayerVideoFamily extends $Family
-    with
-        $ClassFamilyOverride<
-          PlayerVideo,
-          PlayerVideoState?,
-          PlayerVideoState?,
-          PlayerVideoState?,
-          void Function(VideoPlayerController)
-        > {
-  PlayerVideoFamily._()
-    : super(
-        retry: null,
-        name: r'playerVideoProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  PlayerVideoProvider call(void Function(VideoPlayerController) listener) =>
-      PlayerVideoProvider._(argument: listener, from: this);
-
-  @override
-  String toString() => r'playerVideoProvider';
-}
+String _$playerVideoHash() => r'0fb9bfe6a3ab43a78486850674f02ee0c1775616';
 
 abstract class _$PlayerVideo extends $Notifier<PlayerVideoState?> {
-  late final _$args = ref.$arg as void Function(VideoPlayerController);
-  void Function(VideoPlayerController) get listener => _$args;
-
-  PlayerVideoState? build(void Function(VideoPlayerController) listener);
+  PlayerVideoState? build();
   @$mustCallSuper
   @override
   void runBuild() {
@@ -153,89 +108,41 @@ abstract class _$PlayerVideo extends $Notifier<PlayerVideoState?> {
               Object?,
               Object?
             >;
-    element.handleCreate(ref, () => build(_$args));
+    element.handleCreate(ref, build);
   }
 }
 
 @ProviderFor(PlayerVideoController)
-final playerVideoControllerProvider = PlayerVideoControllerFamily._();
+final playerVideoControllerProvider = PlayerVideoControllerProvider._();
 
 final class PlayerVideoControllerProvider
     extends
         $AsyncNotifierProvider<PlayerVideoController, VideoPlayerController?> {
-  PlayerVideoControllerProvider._({
-    required PlayerVideoControllerFamily super.from,
-    required void Function(VideoPlayerController) super.argument,
-  }) : super(
-         retry: null,
-         name: r'playerVideoControllerProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
+  PlayerVideoControllerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'playerVideoControllerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$playerVideoControllerHash();
 
-  @override
-  String toString() {
-    return r'playerVideoControllerProvider'
-        ''
-        '($argument)';
-  }
-
   @$internal
   @override
   PlayerVideoController create() => PlayerVideoController();
-
-  @override
-  bool operator ==(Object other) {
-    return other is PlayerVideoControllerProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
 }
 
 String _$playerVideoControllerHash() =>
-    r'bb068072ca2011318e8501ba0facb802a83e4aab';
-
-final class PlayerVideoControllerFamily extends $Family
-    with
-        $ClassFamilyOverride<
-          PlayerVideoController,
-          AsyncValue<VideoPlayerController?>,
-          VideoPlayerController?,
-          FutureOr<VideoPlayerController?>,
-          void Function(VideoPlayerController)
-        > {
-  PlayerVideoControllerFamily._()
-    : super(
-        retry: null,
-        name: r'playerVideoControllerProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  PlayerVideoControllerProvider call(
-    void Function(VideoPlayerController) listener,
-  ) => PlayerVideoControllerProvider._(argument: listener, from: this);
-
-  @override
-  String toString() => r'playerVideoControllerProvider';
-}
+    r'a168581742990f464f9b2766b5272d27790ba695';
 
 abstract class _$PlayerVideoController
     extends $AsyncNotifier<VideoPlayerController?> {
-  late final _$args = ref.$arg as void Function(VideoPlayerController);
-  void Function(VideoPlayerController) get listener => _$args;
-
-  FutureOr<VideoPlayerController?> build(
-    void Function(VideoPlayerController) listener,
-  );
+  FutureOr<VideoPlayerController?> build();
   @$mustCallSuper
   @override
   void runBuild() {
@@ -253,7 +160,7 @@ abstract class _$PlayerVideoController
               Object?,
               Object?
             >;
-    element.handleCreate(ref, () => build(_$args));
+    element.handleCreate(ref, build);
   }
 }
 
