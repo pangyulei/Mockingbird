@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
@@ -16,8 +17,12 @@ part 'player_provider.g.dart';
 @riverpod
 class Player extends _$Player implements PlayerNotifierITF {
   PlayerVideoState? get _videoState => state?.videoState;
-  VideoPlayerController? get _videoController => state?.videoState?.controller;
-  ItemScrollController? get _scrollController => state?.scrollController;
+
+  VideoPlayerController? get _videoController =>
+      state?.videoState?.controller;
+
+  ItemScrollController? get _scrollController =>
+      state?.scrollController;
 
   @override
   PlayerState? build() {
@@ -27,7 +32,13 @@ class Player extends _$Player implements PlayerNotifierITF {
     if (playingMedia == null) return null;
     return PlayerState(
       title: playingMedia.name,
-      sentenceCount: playingMedia.subtitles.firstOrNull?.sentences.length ?? 0,
+      sentenceCount:
+          playingMedia
+              .subtitles
+              .firstOrNull
+              ?.sentences
+              .length ??
+          0,
       videoState: videoState,
       scrollController: ItemScrollController(),
     );
@@ -40,47 +51,58 @@ class Player extends _$Player implements PlayerNotifierITF {
   @override
   int? sentenceIdAtIndex(int i) {
     final media = ref.read(playerMediaProvider);
-    return media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
+    return media?.subtitles.firstOrNull?.sentences
+        .elementAtOrNull(i)
+        ?.id;
   }
 
   @override
   Future<void> decSpeed() async {
     final currSpeed = state?.videoState?.speed ?? 1;
-    final double nextSpeed = (currSpeed - _kStepPlaySpeed).clamp(
-      _kMinPlaySpeed,
-      _kMaxPlaySpeed,
+    final double nextSpeed = (currSpeed - _kStepPlaySpeed)
+        .clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
+    _updateVideoState(
+      _videoState?.copyWith(speed: nextSpeed),
     );
-    _updateVideoState(_videoState?.copyWith(speed: nextSpeed));
     await _videoController?.setPlaybackSpeed(nextSpeed);
   }
 
   @override
   Future<void> incSpeed() async {
     final currSpeed = state?.videoState?.speed ?? 1;
-    final double nextSpeed = (currSpeed + _kStepPlaySpeed).clamp(
-      _kMinPlaySpeed,
-      _kMaxPlaySpeed,
+    final double nextSpeed = (currSpeed + _kStepPlaySpeed)
+        .clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
+    _updateVideoState(
+      _videoState?.copyWith(speed: nextSpeed),
     );
-    _updateVideoState(_videoState?.copyWith(speed: nextSpeed));
     await _videoController?.setPlaybackSpeed(nextSpeed);
   }
 
   @override
   Future<void> resetSpeed() async {
-    final nextSpeed = (1.0).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
-    _updateVideoState(_videoState?.copyWith(speed: nextSpeed));
+    final nextSpeed = (1.0).clamp(
+      _kMinPlaySpeed,
+      _kMaxPlaySpeed,
+    );
+    _updateVideoState(
+      _videoState?.copyWith(speed: nextSpeed),
+    );
     await _videoController?.setPlaybackSpeed(nextSpeed);
   }
 
   @override
   Future<void> play() async {
-    _updateVideoState(_videoState?.copyWith(isPlaying: true));
+    _updateVideoState(
+      _videoState?.copyWith(isPlaying: true),
+    );
     await _videoController?.play();
   }
 
   @override
   Future<void> pause() async {
-    _updateVideoState(_videoState?.copyWith(isPlaying: false));
+    _updateVideoState(
+      _videoState?.copyWith(isPlaying: false),
+    );
     await _videoController?.pause();
   }
 
@@ -91,12 +113,16 @@ class Player extends _$Player implements PlayerNotifierITF {
     final position = videoController.value.position;
     //for video slider moving along with playing
     _updateVideoState(
-      _videoState?.copyWith(positionMicro: position.inMicroseconds),
+      _videoState?.copyWith(
+        positionMicro: position.inMicroseconds,
+      ),
     );
     final duration = videoController.value.duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
-      _updateVideoState(_videoState?.copyWith(isPlaying: false));
+      _updateVideoState(
+        _videoState?.copyWith(isPlaying: false),
+      );
     }
     //prevent videoController.play() but _state not setuped fully.
     if (state?.sentenceCount == 0) return;
@@ -145,9 +171,14 @@ class Player extends _$Player implements PlayerNotifierITF {
 
   @override
   Future<void> videoSliderChanging(double valMicro) async {
+    debugPrint('videoSliderChanging $valMicro');
     final position = valMicro.toInt();
-    _updateVideoState(_videoState?.copyWith(positionMicro: position));
-    await _videoController?.seekTo(Duration(microseconds: position));
+    _updateVideoState(
+      _videoState?.copyWith(positionMicro: position),
+    );
+    await _videoController?.seekTo(
+      Duration(microseconds: position),
+    );
     // final index = _playingIndexByPosition(position);
     // if (index != null) {
     //   _scrollController._jumpTo(index);
@@ -159,9 +190,28 @@ class Player extends _$Player implements PlayerNotifierITF {
   }
 
   @override
-  Future<void> videoSliderEndChanged(double valMicro) async {
-    _updateVideoState(_videoState?.copyWith(isPlaying: true));
-    await _videoController?.play();
+  Future<void> videoSliderEndChanged(
+    double valMicro,
+  ) async {
+    debugPrint('videoSliderEndChanged $valMicro');
+    final videoController = _videoController;
+    if (videoController == null) {
+      AssertionError('videoController==null');
+      return;
+    }
+    final position = Duration(
+      microseconds: valMicro.toInt(),
+    );
+    final duration = videoController.value.duration;
+    if (position >= duration) {
+      //user drag to end of duration, should pause the video
+      //since at starting already pause, here just do nothing
+    } else {
+      _updateVideoState(
+        _videoState?.copyWith(isPlaying: true),
+      );
+      await _videoController?.play();
+    }
     // final position = Duration(microseconds: microValue.toInt());
     // final sentences = _media?.subtitles.firstOrNull?.sentences;
     // final index = _playingIndexByPosition(position);
@@ -180,13 +230,40 @@ class Player extends _$Player implements PlayerNotifierITF {
   }
 
   @override
-  Future<void> videoSliderStartChanged(double valMicro) async {
+  Future<void> videoSliderStartChanged(
+    double valMicro,
+  ) async {
+    debugPrint(
+      'video duration ${_videoController?.value.duration.inMicroseconds.toDouble()}',
+    );
     final position = valMicro.toInt();
     _updateVideoState(
-      _videoState?.copyWith(isPlaying: false, positionMicro: position),
+      _videoState?.copyWith(
+        isPlaying: false,
+        positionMicro: position,
+      ),
     );
     await _videoController?.pause();
-    await _videoController?.seekTo(Duration(microseconds: position));
+    await _videoController?.seekTo(
+      Duration(microseconds: position),
+    );
+  }
+
+  @override
+  Future<void> updateVolume(double newVolume) async {
+    _updateVideoState(
+      _videoState?.copyWith(volume: newVolume),
+    );
+    await _videoController?.setVolume(newVolume);
+  }
+
+  @override
+  void volumeTapped() {
+    final visible = state?.videoState?.showVolumeSlider;
+    if (visible == null) return;
+    _updateVideoState(
+      _videoState?.copyWith(showVolumeSlider: !visible),
+    );
   }
 }
 
@@ -195,7 +272,9 @@ class PlayerVideo extends _$PlayerVideo {
   @override
   PlayerVideoState? build() {
     final videoController = ref.watch(
-      playerVideoControllerProvider.select((av) => av.value),
+      playerVideoControllerProvider.select(
+        (av) => av.value,
+      ),
     );
     if (videoController == null) return null;
     videoController.play();
@@ -212,12 +291,17 @@ class PlayerVideo extends _$PlayerVideo {
 }
 
 @riverpod
-class PlayerVideoController extends _$PlayerVideoController {
+class PlayerVideoController
+    extends _$PlayerVideoController {
   @override
   Future<VideoPlayerController?> build() async {
-    final String? path = ref.watch(playerMediaProvider.select((m) => m?.path));
+    final String? path = ref.watch(
+      playerMediaProvider.select((m) => m?.path),
+    );
     if (path == null || path.isEmpty) return null;
-    final videoController = VideoPlayerController.file(File(path));
+    final videoController = VideoPlayerController.file(
+      File(path),
+    );
     await videoController.initialize();
     ref.onDispose(() {
       videoController.dispose();

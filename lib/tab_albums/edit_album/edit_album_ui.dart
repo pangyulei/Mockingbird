@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -13,23 +10,14 @@ abstract interface class EditAlbumNotifierITF {
   Future<void> submit();
 }
 
-class EditAlbumUI extends ConsumerStatefulWidget {
+class EditAlbumUI extends ConsumerWidget {
   final ProviderListenable<EditAlbumState> _provider;
   final EditAlbumNotifierITF _notifier;
 
   const EditAlbumUI(this._provider, this._notifier, {super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _EditAlbumUIState();
-}
-
-class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
-  EditAlbumNotifierITF get _notifier => widget._notifier;
-
-  ProviderListenable<EditAlbumState> get _provider => widget._provider;
-
-  @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext ctx, WidgetRef ref) {
     return Stack(children: [_dialog(ctx)]);
   }
 
@@ -97,16 +85,23 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
         ),
       ),
       actions: [
-        TextButton(onPressed: _onCancel, child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => _onCancel(ctx),
+          child: const Text('Cancel'),
+        ),
         Consumer(
-          builder: (context, ref, child) {
+          builder: (ctx, ref, child) {
             final (enable, submitTitle) = ref.watch(
               _provider.select((s) => (s.enableSubmit, s.submitTitle)),
             );
-            return FilledButton(
-              onPressed: enable ? _onSubmit : null,
-              child: Text(submitTitle),
-            );
+            if (enable) {
+              return FilledButton(
+                onPressed: () => _onSubmit(ctx),
+                child: Text(submitTitle),
+              );
+            } else {
+              return FilledButton(onPressed: null, child: Text(submitTitle));
+            }
           },
         ),
       ],
@@ -207,18 +202,14 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
     _notifier.removeCover();
   }
 
-  void _onSubmit() async {
+  void _onSubmit(BuildContext ctx) async {
     await _notifier.submit();
-    _pop();
-  }
-
-  void _onCancel() {
-    _pop();
-  }
-
-  void _pop() {
-    if (mounted) {
-      Navigator.of(context).pop();
+    if (ctx.mounted) {
+      Navigator.of(ctx).pop();
     }
+  }
+
+  void _onCancel(BuildContext ctx) {
+    Navigator.of(ctx).pop();
   }
 }

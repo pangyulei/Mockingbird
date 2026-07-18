@@ -8,6 +8,7 @@ import 'en_subtitle.dart';
 class EnMedia {
   @Id()
   int id;
+
   // int versionId;
   final albums = ToMany<EnAlbum>();
   final String path; // Full path to the media file
