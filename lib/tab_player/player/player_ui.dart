@@ -33,7 +33,6 @@ class PlayerUI extends ConsumerStatefulWidget {
 }
 
 class _PlayerUIState extends ConsumerState<PlayerUI> {
-  final _scrollController = ItemScrollController();
   ProviderListenable<PlayerState?> get _provider => widget._provider;
   PlayerNotifierITF get _notifier => widget._notifier;
 
@@ -300,32 +299,72 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget _sentenceList() {
-    return Consumer(
-      builder: (context, ref, child) {
-        final theme = Theme.of(context);
-        final sentenceCount = ref.watch(
-          _provider.select((st) => st?.sentenceCount ?? 0),
-        );
-        if (sentenceCount == 0) {
-          return const SizedBox.shrink();
-        } else {
-          return Expanded(
-            child: ColoredBox(
-              color: theme.scaffoldBackgroundColor,
-              child: ScrollablePositionedList.builder(
-                itemCount: sentenceCount,
-                itemScrollController: _scrollController,
-                itemBuilder: (context, i) {
-                  final sentenceId = _notifier.sentenceIdAtIndex(i);
-                  final provider = sentenceCardProvider(sentenceId);
-                  final notifier = ref.read(provider.notifier);
-                  return SentenceCardUI(provider, notifier);
-                },
+    return Expanded(
+      child: ColoredBox(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: Consumer(
+          builder: (context, ref, child) {
+            final sentenceCount = ref.watch(
+              _provider.select((st) => st?.sentenceCount ?? 0),
+            );
+            if (sentenceCount == 0) {
+              return _noSubtitle();
+            }
+            return Consumer(
+              builder: (context, ref, child) {
+                final scrollController = ref.watch(
+                  _provider.select((st) => st?.scrollController),
+                );
+                return ScrollablePositionedList.builder(
+                  itemCount: sentenceCount,
+                  itemScrollController: scrollController,
+                  itemBuilder: (context, i) {
+                    final sentenceId = _notifier.sentenceIdAtIndex(i);
+                    final provider = sentenceCardProvider(sentenceId);
+                    final notifier = ref.read(provider.notifier);
+                    return SentenceCardUI(provider, notifier);
+                  },
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _noSubtitle() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return InkWell(
+      onTap: () {},
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.subtitles_off_rounded,
+              size: 48,
+              color: colorScheme.outline.withValues(alpha: 0.4),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No Subtitles Found',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: colorScheme.outline,
+                fontWeight: FontWeight.bold,
               ),
             ),
-          );
-        }
-      },
+            const SizedBox(height: 8),
+            Text(
+              'Tap here to import a subtitle file',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.outline.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

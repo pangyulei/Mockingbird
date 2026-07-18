@@ -7,6 +7,7 @@ import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 part 'player_provider.g.dart';
@@ -16,6 +17,7 @@ part 'player_provider.g.dart';
 class Player extends _$Player implements PlayerNotifierITF {
   PlayerVideoState? get _videoState => state?.videoState;
   VideoPlayerController? get _videoController => state?.videoState?.controller;
+  ItemScrollController? get _scrollController => state?.scrollController;
 
   @override
   PlayerState? build() {
@@ -27,6 +29,7 @@ class Player extends _$Player implements PlayerNotifierITF {
       title: playingMedia.name,
       sentenceCount: playingMedia.subtitles.firstOrNull?.sentences.length ?? 0,
       videoState: videoState,
+      scrollController: ItemScrollController(),
     );
   }
 
@@ -212,9 +215,7 @@ class PlayerVideo extends _$PlayerVideo {
 class PlayerVideoController extends _$PlayerVideoController {
   @override
   Future<VideoPlayerController?> build() async {
-    final String? path = ref.watch(
-      playerMediaProvider.select((m) => m?.path),
-    );
+    final String? path = ref.watch(playerMediaProvider.select((m) => m?.path));
     if (path == null || path.isEmpty) return null;
     final videoController = VideoPlayerController.file(File(path));
     await videoController.initialize();

@@ -1,3 +1,4 @@
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 class PlayerVideoState {
@@ -42,16 +43,15 @@ class PlayerVideoState {
 class PlayerState {
   final String title;
   final int sentenceCount;
+  final ItemScrollController scrollController;
   final PlayerVideoState? videoState;
 
   const PlayerState({
+    required this.scrollController,
     required this.videoState,
     required this.title,
     required this.sentenceCount,
   });
-
-  const PlayerState.empty()
-    : this(videoState: null, title: '', sentenceCount: 0);
 
   PlayerState copyWith({
     String? title,
@@ -62,6 +62,7 @@ class PlayerState {
       title: title ?? this.title,
       sentenceCount: sentenceCount ?? this.sentenceCount,
       videoState: videoState == null ? this.videoState : videoState(),
+      scrollController: scrollController,
     );
   }
 }
