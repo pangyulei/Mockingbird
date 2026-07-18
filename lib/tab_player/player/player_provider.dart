@@ -35,11 +35,17 @@ class Player extends _$Player implements PlayerNotifierITF {
 
   @override
   Future<void> play() async {
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(isPlaying: true),
+    );
     await state?.videoState?.controller.play();
   }
 
   @override
   Future<void> pause() async {
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(isPlaying: false),
+    );
     await state?.videoState?.controller.pause();
   }
 
@@ -106,11 +112,15 @@ class PlayerVideo extends _$PlayerVideo {
       playerVideoControllerProvider(listener).select((av) => av.value),
     );
     if (videoController == null) return null;
+    videoController.play();
     return PlayerVideoState(
       repeat: false,
       showVolumeSlider: false,
       controller: videoController,
       videoSliderDraggingValue: null,
+      isPlaying: true,
+      speed: 1,
+      volume: 1,
     );
   }
 }
@@ -127,7 +137,6 @@ class PlayerVideoController extends _$PlayerVideoController {
     if (playingMediaPath == null) return null;
     final videoController = VideoPlayerController.file(File(playingMediaPath));
     await videoController.initialize();
-    videoController.play();
     videoController.addListener(() => listener(videoController));
     ref.onDispose(() {
       videoController.dispose();

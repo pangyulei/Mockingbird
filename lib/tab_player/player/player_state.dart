@@ -5,26 +5,34 @@ class PlayerVideoState {
   final bool showVolumeSlider;
   final double? videoSliderDraggingValue;
   final VideoPlayerController controller;
+  final bool isPlaying;
+  final double speed;
+  final double volume;
 
   const PlayerVideoState({
+    required this.isPlaying,
+    required this.speed,
+    required this.volume,
     required this.repeat,
     required this.showVolumeSlider,
     required this.videoSliderDraggingValue,
     required this.controller,
   });
 
-  double get speed => controller.value.playbackSpeed;
-  double get volume => controller.value.volume;
-  bool get isPlaying => controller.value.isPlaying;
-
   PlayerVideoState copyWith({
     bool? repeat,
+    bool? isPlaying,
+    double? speed,
+    double? volume,
     bool? showVolumeSlider,
     double? Function()? videoSliderDraggingValue,
   }) {
     return PlayerVideoState(
       controller: controller,
+      speed: speed ?? this.speed,
+      volume: volume ?? this.volume,
       repeat: repeat ?? this.repeat,
+      isPlaying: isPlaying ?? this.isPlaying,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
       videoSliderDraggingValue: videoSliderDraggingValue == null
           ? this.videoSliderDraggingValue
