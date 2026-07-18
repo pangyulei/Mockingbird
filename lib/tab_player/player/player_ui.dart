@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee/marquee.dart';
@@ -17,13 +15,13 @@ const double _kStepPlaySpeed = 0.25;
 
 abstract interface class PlayerNotifierITF {
   int? sentenceIdAtIndex(int i);
-  void play();
-  void pause();
+  Future<void> play();
+  Future<void> pause();
   void videoPositionChanged(VideoPlayerController videoController);
 }
 
 class PlayerUI extends ConsumerStatefulWidget {
-  final ProviderListenable<AsyncValue<PlayerState?>> _provider;
+  final ProviderListenable<PlayerState?> _provider;
   final PlayerNotifierITF _notifier;
 
   const PlayerUI(this._provider, this._notifier, {super.key});
@@ -34,41 +32,12 @@ class PlayerUI extends ConsumerStatefulWidget {
 
 class _PlayerUIState extends ConsumerState<PlayerUI> {
   final _scrollController = ItemScrollController();
-  VideoPlayerController? _videoController;
-  ProviderListenable<AsyncValue<PlayerState?>> get _provider =>
-      widget._provider;
+  ProviderListenable<PlayerState?> get _provider => widget._provider;
   PlayerNotifierITF get _notifier => widget._notifier;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    _videoController?.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    _listen();
     return Stack(children: [_page(), _empty()]);
-  }
-
-  void _listen() {
-    ref.listen(_provider.select((av) => av.value?.videoState?.isPlaying), (
-      previous,
-      next,
-    ) {
-      debugPrint('listen isPlaying $previous => $next');
-      if (next == null) return;
-      if (next) {
-        _videoController?.play();
-      } else {
-        _videoController?.pause();
-      }
-    });
   }
 
   void _onVideoPositionChanged(VideoPlayerController videoController) {
@@ -82,11 +51,11 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   void _onPause() async {
-    _notifier.pause();
+    await _notifier.pause();
   }
 
   void _onPlay() async {
-    _notifier.play();
+    await _notifier.play();
   }
 
   void _onRepeatOne() {
@@ -277,7 +246,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     // _scrollController._scrollTo(_state.sentenceStates.length - 1);
   }
 
-  void _onVolumeChanging(double newVolume) async {
+  void _onVolumeChanged(double newVolume) async {
     // setState(() {
     //   _state = _state.copyWith(volume: newVolume);
     // });
@@ -311,21 +280,9 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   Widget _videoComponents() {
     return Consumer(
       builder: (context, ref, child) {
-        final videoPath = ref.watch(
-          _provider.select((av) => av.value?.videoState?.videoPath),
+        final videoController = ref.watch(
+          _provider.select((st) => st?.videoState?.controller),
         );
-        if (videoPath != null && videoPath.isNotEmpty) {
-          _videoController?.dispose();
-          final videoController = VideoPlayerController.file(File(videoPath));
-          videoController.initialize();
-          debugPrint('init video play()');
-          videoController.play();
-          videoController.addListener(
-            () => _onVideoPositionChanged(videoController),
-          );
-          _videoController = videoController;
-        }
-        final videoController = _videoController;
         if (videoController == null) return const SizedBox.shrink();
         return Container(
           decoration: BoxDecoration(
@@ -401,7 +358,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
       builder: (context, ref, child) {
         final theme = Theme.of(context);
         final sentenceCount = ref.watch(
-          _provider.select((s) => s.value?.sentenceCount ?? 0),
+          _provider.select((st) => st?.sentenceCount ?? 0),
         );
         if (sentenceCount == 0) {
           return const SizedBox.shrink();
@@ -430,7 +387,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     return Consumer(
       builder: (context, ref, child) {
         final sentenceCount = ref.watch(
-          _provider.select((s) => s.value?.sentenceCount ?? 0),
+          _provider.select((st) => st?.sentenceCount ?? 0),
         );
         if (sentenceCount == 0) {
           return const SizedBox.shrink();
@@ -475,7 +432,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
               _provider.select(
-                (s) => s.value?.videoState?.showVolumeSlider ?? false,
+                (st) => st?.videoState?.showVolumeSlider ?? false,
               ),
             );
             if (showVolumeSlider) {
@@ -490,7 +447,9 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
           icon: Consumer(
             builder: (context, ref, child) {
               final volume = ref.watch(
-                _provider.select((s) => s.value?.videoState?.volume ?? 1),
+                _provider.select(
+                  (st) => st?.videoState?.volume ?? 1,
+                ),
               );
               final icon = volume == 0
                   ? Icons.volume_off_rounded
@@ -521,9 +480,11 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
         child: Consumer(
           builder: (context, ref, child) {
             final volume = ref.watch(
-              _provider.select((s) => s.value?.videoState?.volume ?? 1),
+              _provider.select(
+                (st) => st?.videoState?.volume ?? 1,
+              ),
             );
-            return Slider(value: volume, onChanged: _onVolumeChanging);
+            return Slider(value: volume, onChanged: _onVolumeChanged);
           },
         ),
       ),
@@ -581,8 +542,8 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   Widget _empty() {
     return Consumer(
       builder: (context, ref, child) {
-        final data = ref.watch(_provider).value;
-        if (data != null) return const SizedBox.shrink();
+        final st = ref.watch(_provider);
+        if (st != null) return const SizedBox.shrink();
 
         final colorScheme = Theme.of(context).colorScheme;
         final textTheme = Theme.of(context).textTheme;
@@ -672,9 +633,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
       height: 24,
       child: Consumer(
         builder: (ctx, ref, _) {
-          final title = ref.watch(
-            _provider.select((s) => s.value?.title ?? ''),
-          );
+          final title = ref.watch(_provider.select((st) => st?.title ?? ''));
           if (title.isEmpty) {
             return const Text('');
           } else {
@@ -726,7 +685,9 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     return Consumer(
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
-          _provider.select((s) => s.value?.videoState?.isPlaying ?? false),
+          _provider.select(
+            (st) => st?.videoState?.isPlaying ?? false,
+          ),
         );
         return IconButton.filled(
           onPressed: () {
@@ -757,11 +718,11 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     return Consumer(
       builder: (ctx, ref, _) {
         final sentenceCount = ref.watch(
-          _provider.select((s) => s.value?.sentenceCount ?? 0),
+          _provider.select((st) => st?.sentenceCount ?? 0),
         );
         if (sentenceCount == 0) return const SizedBox.shrink();
         final repeat = ref.watch(
-          _provider.select((s) => s.value?.videoState?.repeat ?? false),
+          _provider.select((st) => st?.videoState?.repeat ?? false),
         );
         return IconButton(
           onPressed: () {
@@ -818,7 +779,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
         child: Consumer(
           builder: (ctx, ref, _) {
             final speed = ref.watch(
-              _provider.select((s) => s.value?.videoState?.speed ?? 1),
+              _provider.select((st) => st?.videoState?.speed ?? 1),
             );
             return Text(
               '${speed}x',

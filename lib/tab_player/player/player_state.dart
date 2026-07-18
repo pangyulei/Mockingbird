@@ -1,52 +1,34 @@
-class VideoState {
+import 'package:video_player/video_player.dart';
+
+class PlayerVideoState {
   final bool repeat;
   final bool showVolumeSlider;
   final double? videoSliderDraggingValue;
-  final double speed;
-  final double volume;
-  final String videoPath;
-  final bool isPlaying;
+  final VideoPlayerController controller;
 
-  const VideoState({
+  const PlayerVideoState({
     required this.repeat,
     required this.showVolumeSlider,
     required this.videoSliderDraggingValue,
-    required this.speed,
-    required this.volume,
-    required this.videoPath,
-    required this.isPlaying,
+    required this.controller,
   });
 
-  const VideoState.empty()
-    : this(
-        repeat: false,
-        showVolumeSlider: false,
-        videoSliderDraggingValue: null,
-        speed: 1.0,
-        volume: 1.0,
-        videoPath: '',
-        isPlaying: false,
-      );
+  double get speed => controller.value.playbackSpeed;
+  double get volume => controller.value.volume;
+  bool get isPlaying => controller.value.isPlaying;
 
-  VideoState copyWith({
+  PlayerVideoState copyWith({
     bool? repeat,
     bool? showVolumeSlider,
     double? Function()? videoSliderDraggingValue,
-    double? speed,
-    double? volume,
-    String? videoPath,
-    bool? isPlaying,
   }) {
-    return VideoState(
+    return PlayerVideoState(
+      controller: controller,
       repeat: repeat ?? this.repeat,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
       videoSliderDraggingValue: videoSliderDraggingValue == null
           ? this.videoSliderDraggingValue
           : videoSliderDraggingValue(),
-      speed: speed ?? this.speed,
-      volume: volume ?? this.volume,
-      videoPath: videoPath ?? this.videoPath,
-      isPlaying: isPlaying ?? this.isPlaying,
     );
   }
 }
@@ -54,7 +36,7 @@ class VideoState {
 class PlayerState {
   final String title;
   final int sentenceCount;
-  final VideoState? videoState;
+  final PlayerVideoState? videoState;
 
   const PlayerState({
     required this.videoState,
@@ -68,7 +50,7 @@ class PlayerState {
   PlayerState copyWith({
     String? title,
     int? sentenceCount,
-    VideoState? Function()? videoState,
+    PlayerVideoState? Function()? videoState,
   }) {
     return PlayerState(
       title: title ?? this.title,

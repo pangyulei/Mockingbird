@@ -13,7 +13,7 @@ part 'edit_album_provider.g.dart';
 
 @Riverpod()
 class EditAlbum extends _$EditAlbum implements EditAlbumNotifierITF {
-  late final TextEditingController _nameController;
+  late TextEditingController _nameController;
   @override
   EditAlbumState build(EnAlbum? album) {
     _nameController = TextEditingController();

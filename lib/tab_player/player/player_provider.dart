@@ -1,3 +1,4 @@
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
@@ -13,90 +14,46 @@ part 'player_provider.g.dart';
 // name:'playingProvider'
 @riverpod
 class Player extends _$Player implements PlayerNotifierITF {
-  int? _prevId;
-  EnMedia? _media;
-
   @override
-  Future<PlayerState?> build() async {
-    final playingId = ref.watch(
-      dbPrefProvider.select((av) => av.value?.playingId),
+  PlayerState? build() {
+    final videoState = ref.watch(playerVideoProvider(videoPositionChanged));
+    if (videoState == null) return null;
+    final playingMedia = ref.watch(playerMediaProvider);
+    if (playingMedia == null) return null;
+    return PlayerState(
+      title: playingMedia.name,
+      sentenceCount: playingMedia.subtitles.firstOrNull?.sentences.length ?? 0,
+      videoState: videoState,
     );
-    final isIdChanged = _prevId != playingId;
-    _prevId = playingId;
-    if (playingId == null) return null;
-    final EnMedia? media = ref.watch(
-      dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => [for (final a in al) a.medias])
-          .select((mll) => mll.expand((e) => e))
-          .select((ml) => {for (final m in ml) m.id: m})
-          .select((mm) => mm[playingId]),
-    );
-    _media = media;
-    if (media == null) return null;
-    if (isIdChanged) {
-      return PlayerState(
-        title: media.name,
-        sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
-        videoState: VideoState(
-          repeat: false,
-          showVolumeSlider: false,
-          videoSliderDraggingValue: null,
-          speed: 1,
-          volume: 1,
-          videoPath: media.path,
-          isPlaying: true,
-        ),
-      );
-    } else {
-      return state.value?.copyWith(
-        title: media.name,
-        sentenceCount: media.subtitles.firstOrNull?.sentences.length ?? 0,
-      );
-    }
   }
 
   @override
   int? sentenceIdAtIndex(int i) {
-    return _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
+    final media = ref.read(playerMediaProvider);
+    return media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
   }
 
   @override
-  void play() {
-    final val = state.value;
-    if (val == null) return;
-    state = AsyncData(
-      val.copyWith(videoState: () => val.videoState?.copyWith(isPlaying: true)),
-    );
+  Future<void> play() async {
+    await state?.videoState?.controller.play();
   }
 
   @override
-  void pause() {
-    final val = state.value;
-    if (val == null) return;
-    state = AsyncData(
-      val.copyWith(
-        videoState: () => val.videoState?.copyWith(isPlaying: false),
-      ),
-    );
+  Future<void> pause() async {
+    await state?.videoState?.controller.pause();
   }
-  
+
   @override
   void videoPositionChanged(VideoPlayerController videoController) async {
-    final val = state.value;
-    if (val == null) return;
-    final videoState = val.videoState;
-    if (videoState == null) return;
-    final position = videoController.value.position;
-    final duration = videoController.value.duration;
-    if (position >= duration) {
-      //if video end of duration, play/pause button should update
-      state = AsyncData(
-        val.copyWith(videoState: () => videoState.copyWith(isPlaying: false)),
-      );
-    }
+    final state = this.state;
+    if (state == null) return;
+    // final position = videoController.value.position;
+    // final duration = videoController.value.duration;
+    // if (position >= duration) {
+    //   //if video end of duration, play/pause button should update
+    // }
     //prevent videoController.play() but _state not setuped fully.
-    if (val.sentenceCount == 0) return;
+    if (state.sentenceCount == 0) return;
     // final media = _media;
     // if (media == null) {
     //   debugPrint('media not found');
@@ -138,5 +95,63 @@ class Player extends _$Player implements PlayerNotifierITF {
     //     });
     //   }
     // }
+  }
+}
+
+@riverpod
+class PlayerVideo extends _$PlayerVideo {
+  @override
+  PlayerVideoState? build(void Function(VideoPlayerController) listener) {
+    final videoController = ref.watch(
+      playerVideoControllerProvider(listener).select((av) => av.value),
+    );
+    if (videoController == null) return null;
+    return PlayerVideoState(
+      repeat: false,
+      showVolumeSlider: false,
+      controller: videoController,
+      videoSliderDraggingValue: null,
+    );
+  }
+}
+
+@riverpod
+class PlayerVideoController extends _$PlayerVideoController {
+  @override
+  Future<VideoPlayerController?> build(
+    void Function(VideoPlayerController) listener,
+  ) async {
+    final String? playingMediaPath = ref.watch(
+      playerMediaProvider.select((m) => m?.path),
+    );
+    if (playingMediaPath == null) return null;
+    final videoController = VideoPlayerController.file(File(playingMediaPath));
+    await videoController.initialize();
+    videoController.play();
+    videoController.addListener(() => listener(videoController));
+    ref.onDispose(() {
+      videoController.dispose();
+    });
+    return videoController;
+  }
+}
+
+@riverpod
+class PlayerMedia extends _$PlayerMedia {
+  @override
+  EnMedia? build() {
+    final playingId = ref.watch(
+      dbPrefProvider.select((av) => av.value?.playingId),
+    );
+    if (playingId == null) return null;
+    final EnMedia? media = ref.watch(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => [for (final a in al) a.medias])
+          .select((mll) => mll.expand((e) => e))
+          .select((ml) => {for (final m in ml) m.id: m})
+          .select((mm) => mm[playingId]),
+    );
+    return media;
   }
 }
