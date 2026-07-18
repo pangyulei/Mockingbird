@@ -16,6 +16,9 @@ abstract interface class PlayerNotifierITF {
   Future<void> resetSpeed();
   Future<void> decSpeed();
   Future<void> incSpeed();
+  Future<void> videoSliderStartChanged(double valMicro);
+  Future<void> videoSliderChanging(double valMicro);
+  Future<void> videoSliderEndChanged(double valMicro);
   void videoPositionChanged(VideoPlayerController videoController);
 }
 
@@ -149,46 +152,16 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     // }
   }
 
-  void _onVideoSliderStartChanged(double microValue) async {
-    // setState(() {
-    //   _state = _state.copyWith(
-    //     videoSliderDraggingValue: () => microValue,
-    //     isPlaying: false,
-    //   );
-    // });
-    // await _videoController?.pause();
+  void _onVideoSliderStartChanged(double valMicro) async {
+    await _notifier.videoSliderStartChanged(valMicro);
   }
 
-  void _onVideoSliderChanging(double microValue) async {
-    // final position = Duration(microseconds: microValue.toInt());
-    // final index = _playingIndexByPosition(position);
-    // if (index != null) {
-    //   _scrollController._jumpTo(index);
-    // }
-    // setState(() {
-    //   _state = _state
-    //       .focus(index)
-    //       .copyWith(videoSliderDraggingValue: () => microValue);
-    // });
-    // await _videoController?.seekTo(position);
+  void _onVideoSliderChanging(double valMicro) async {
+    await _notifier.videoSliderChanging(valMicro);
   }
 
-  void _onVideoSliderEndChanged(double microValue) async {
-    // final position = Duration(microseconds: microValue.toInt());
-    // final sentences = _media?.subtitles.firstOrNull?.sentences;
-    // final index = _playingIndexByPosition(position);
-    // final sentence = index == null ? null : sentences?.elementAtOrNull(index);
-
-    // if (index != null && sentence != null) {
-    //   await _videoController?.seekTo(sentence.start);
-    // }
-    // setState(() {
-    //   _state = _state.copyWith(
-    //     isPlaying: true,
-    //     videoSliderDraggingValue: () => null,
-    //   );
-    // });
-    // await _videoController?.play();
+  void _onVideoSliderEndChanged(double valMicro) async {
+    await _notifier.videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToFocusedSentence() {
@@ -468,13 +441,20 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
         inactiveTrackColor: Colors.white24,
         thumbColor: Colors.white,
       ),
-      child: Slider(
-        value: videoController.value.position.inMicroseconds.toDouble(),
-        min: 0.0,
-        max: videoController.value.duration.inMicroseconds.toDouble(),
-        onChangeStart: _onVideoSliderStartChanged,
-        onChangeEnd: _onVideoSliderEndChanged,
-        onChanged: _onVideoSliderChanging,
+      child: Consumer(
+        builder: (context, ref, child) {
+          final positionMicro = ref.watch(
+            _provider.select((st) => st?.videoState?.positionMicro ?? 0),
+          );
+          return Slider(
+            value: positionMicro.toDouble(),
+            min: 0.0,
+            max: videoController.value.duration.inMicroseconds.toDouble(),
+            onChangeStart: _onVideoSliderStartChanged,
+            onChangeEnd: _onVideoSliderEndChanged,
+            onChanged: _onVideoSliderChanging,
+          );
+        },
       ),
     );
     // return ValueListenableBuilder(

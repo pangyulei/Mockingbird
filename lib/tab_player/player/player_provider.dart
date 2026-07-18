@@ -137,6 +137,63 @@ class Player extends _$Player implements PlayerNotifierITF {
     //   }
     // }
   }
+
+  @override
+  Future<void> videoSliderChanging(double valMicro) async {
+    final position = valMicro.toInt();
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(positionMicro: position),
+    );
+    await state?.videoState?.controller.seekTo(
+      Duration(microseconds: position),
+    );
+    // final index = _playingIndexByPosition(position);
+    // if (index != null) {
+    //   _scrollController._jumpTo(index);
+    // }
+    // setState(() {
+    //   _state = _state
+    //       .focus(index)
+    // });
+  }
+
+  @override
+  Future<void> videoSliderEndChanged(double valMicro) async {
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(isPlaying: true),
+    );
+    await state?.videoState?.controller.play();
+    // final position = Duration(microseconds: microValue.toInt());
+    // final sentences = _media?.subtitles.firstOrNull?.sentences;
+    // final index = _playingIndexByPosition(position);
+    // final sentence = index == null ? null : sentences?.elementAtOrNull(index);
+
+    // if (index != null && sentence != null) {
+    //   await _videoController?.seekTo(sentence.start);
+    // }
+    // setState(() {
+    //   _state = _state.copyWith(
+    //     isPlaying: true,
+    //     videoSliderDraggingValue: () => null,
+    //   );
+    // });
+    // await _videoController?.play();
+  }
+
+  @override
+  Future<void> videoSliderStartChanged(double valMicro) async {
+    final position = valMicro.toInt();
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(
+        isPlaying: false,
+        positionMicro: position,
+      ),
+    );
+    await state?.videoState?.controller.pause();
+    await state?.videoState?.controller.seekTo(
+      Duration(microseconds: position),
+    );
+  }
 }
 
 @riverpod
@@ -149,10 +206,10 @@ class PlayerVideo extends _$PlayerVideo {
     if (videoController == null) return null;
     videoController.play();
     return PlayerVideoState(
+      positionMicro: 0,
       repeat: false,
       showVolumeSlider: false,
       controller: videoController,
-      videoSliderDraggingValue: null,
       isPlaying: true,
       speed: 1,
       volume: 1,
