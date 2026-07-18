@@ -138,7 +138,7 @@ final class PlayerVideoControllerProvider
 }
 
 String _$playerVideoControllerHash() =>
-    r'a168581742990f464f9b2766b5272d27790ba695';
+    r'2d44af38cdbc8cc5803d415969c2f327879517ac';
 
 abstract class _$PlayerVideoController
     extends $AsyncNotifier<VideoPlayerController?> {

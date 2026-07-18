@@ -212,11 +212,11 @@ class PlayerVideo extends _$PlayerVideo {
 class PlayerVideoController extends _$PlayerVideoController {
   @override
   Future<VideoPlayerController?> build() async {
-    final String? playingMediaPath = ref.watch(
+    final String? path = ref.watch(
       playerMediaProvider.select((m) => m?.path),
     );
-    if (playingMediaPath == null) return null;
-    final videoController = VideoPlayerController.file(File(playingMediaPath));
+    if (path == null || path.isEmpty) return null;
+    final videoController = VideoPlayerController.file(File(path));
     await videoController.initialize();
     ref.onDispose(() {
       videoController.dispose();
