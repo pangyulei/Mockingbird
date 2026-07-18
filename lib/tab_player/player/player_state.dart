@@ -32,8 +32,6 @@ class VideoState {
     bool? repeat,
     bool? showVolumeSlider,
     double? Function()? videoSliderDraggingValue,
-    int? positionMicro,
-    int? durationMicro,
     double? speed,
     double? volume,
     String? videoPath,

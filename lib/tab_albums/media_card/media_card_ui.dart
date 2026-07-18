@@ -1,13 +1,8 @@
-import 'package:collection/collection.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/db/entities/en_media.dart';
-import 'package:mockingbird/db/entities/en_subtitle.dart';
-import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'media_card_state.dart';

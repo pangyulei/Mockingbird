@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';

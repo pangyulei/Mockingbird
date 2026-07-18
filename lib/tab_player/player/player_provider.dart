@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
@@ -15,6 +14,7 @@ part 'player_provider.g.dart';
 @riverpod
 class Player extends _$Player implements PlayerNotifierITF {
   int? _prevId;
+  EnMedia? _media;
 
   @override
   Future<PlayerState?> build() async {
@@ -32,6 +32,7 @@ class Player extends _$Player implements PlayerNotifierITF {
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[playingId]),
     );
+    _media = media;
     if (media == null) return null;
     if (isIdChanged) {
       return PlayerState(
@@ -60,22 +61,6 @@ class Player extends _$Player implements PlayerNotifierITF {
     return _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
   }
 
-  EnMedia? get _media {
-    final playingId = ref.read(
-      dbPrefProvider.select((av) => av.value?.playingId),
-    );
-    if (playingId == null) return null;
-    final EnMedia? media = ref.read(
-      dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => [for (final a in al) a.medias])
-          .select((mll) => mll.expand((e) => e))
-          .select((ml) => {for (final m in ml) m.id: m})
-          .select((mm) => mm[playingId]),
-    );
-    return media;
-  }
-
   @override
   void play() {
     final val = state.value;
@@ -84,37 +69,34 @@ class Player extends _$Player implements PlayerNotifierITF {
       val.copyWith(videoState: () => val.videoState?.copyWith(isPlaying: true)),
     );
   }
+
   @override
   void pause() {
     final val = state.value;
     if (val == null) return;
     state = AsyncData(
-      val.copyWith(videoState: () => val.videoState?.copyWith(isPlaying: false)),
+      val.copyWith(
+        videoState: () => val.videoState?.copyWith(isPlaying: false),
+      ),
     );
   }
-
-
-  void _onVideoPositionChanged(VideoPlayerController videoController) async {
-    final data = state.value;
-    if (data == null) return;
-    final videoState = data.videoState;
+  
+  @override
+  void videoPositionChanged(VideoPlayerController videoController) async {
+    final val = state.value;
+    if (val == null) return;
+    final videoState = val.videoState;
     if (videoState == null) return;
     final position = videoController.value.position;
     final duration = videoController.value.duration;
-    state = AsyncData(
-      data.copyWith(
-        videoState: () =>
-            videoState.copyWith(positionMicro: position.inMicroseconds),
-      ),
-    );
     if (position >= duration) {
       //if video end of duration, play/pause button should update
       state = AsyncData(
-        data.copyWith(videoState: () => videoState.copyWith(isPlaying: false)),
+        val.copyWith(videoState: () => videoState.copyWith(isPlaying: false)),
       );
     }
     //prevent videoController.play() but _state not setuped fully.
-    if (data.sentenceCount == 0) return;
+    if (val.sentenceCount == 0) return;
     // final media = _media;
     // if (media == null) {
     //   debugPrint('media not found');

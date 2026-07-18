@@ -17,10 +17,9 @@ const double _kStepPlaySpeed = 0.25;
 
 abstract interface class PlayerNotifierITF {
   int? sentenceIdAtIndex(int i);
-
   void play();
-
   void pause();
+  void videoPositionChanged(VideoPlayerController videoController);
 }
 
 class PlayerUI extends ConsumerStatefulWidget {
@@ -58,11 +57,13 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   void _listen() {
-    ref.listen(_provider.select((s) => s.value?.videoState?.isPlaying), (
+    ref.listen(_provider.select((av) => av.value?.videoState?.isPlaying), (
       previous,
       next,
-    ) async {
-      if (next == true) {
+    ) {
+      debugPrint('listen isPlaying $previous => $next');
+      if (next == null) return;
+      if (next) {
         _videoController?.play();
       } else {
         _videoController?.pause();
@@ -70,7 +71,9 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     });
   }
 
-  void _onVideoPositionChanged(VideoPlayerController videoController) {}
+  void _onVideoPositionChanged(VideoPlayerController videoController) {
+    _notifier.videoPositionChanged(videoController);
+  }
 
   void _onInOrder() {
     // setState(() {
@@ -302,9 +305,29 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget _body() {
-    return Column(
-      children: [
-        Container(
+    return Column(children: [_videoComponents(), _sentenceList()]);
+  }
+
+  Widget _videoComponents() {
+    return Consumer(
+      builder: (context, ref, child) {
+        final videoPath = ref.watch(
+          _provider.select((av) => av.value?.videoState?.videoPath),
+        );
+        if (videoPath != null && videoPath.isNotEmpty) {
+          _videoController?.dispose();
+          final videoController = VideoPlayerController.file(File(videoPath));
+          videoController.initialize();
+          debugPrint('init video play()');
+          videoController.play();
+          videoController.addListener(
+            () => _onVideoPositionChanged(videoController),
+          );
+          _videoController = videoController;
+        }
+        final videoController = _videoController;
+        if (videoController == null) return const SizedBox.shrink();
+        return Container(
           decoration: BoxDecoration(
             color: Colors.black,
             boxShadow: [
@@ -315,81 +338,61 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
               ),
             ],
           ),
-          child: Column(children: [_displayer(), _controlBar()]),
-        ),
-        _sentenceList(),
-      ],
-    );
-  }
-
-  Widget _displayer() {
-    // final videoController = _videoController;
-    // if (videoController == null) {
-    //   debugPrint('videoController == null');
-    //   return const SizedBox.shrink();
-    // }
-    return Consumer(
-      builder: (context, ref, child) {
-        final videoPath = ref.watch(
-          _provider.select((av) => av.value?.videoState?.videoPath),
-        );
-        if (videoPath != null && videoPath.isNotEmpty) {
-          _videoController?.dispose();
-          final videoController = VideoPlayerController.file(File(videoPath));
-          videoController.initialize();
-          videoController.play();
-          videoController.addListener(
-            () => _onVideoPositionChanged(videoController),
-          );
-          _videoController = videoController;
-        }
-        final videoController = _videoController;
-        if (videoController == null) return const SizedBox.shrink();
-        return AspectRatio(
-          aspectRatio: videoController.value.aspectRatio,
-          child: Stack(
-            alignment: Alignment.bottomCenter,
+          child: Column(
             children: [
-              VideoPlayer(videoController),
-              // Custom gradient overlay for controls
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.4),
-                        Colors.transparent,
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.6),
-                      ],
-                      stops: const [0.0, 0.2, 0.7, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 8,
-                right: 8,
-                bottom: 0,
-                child: Row(
-                  crossAxisAlignment: .end,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 8.5),
-                        child: _videoSlider(videoController),
-                      ),
-                    ),
-                    _volumeComponent(),
-                  ],
-                ),
-              ),
+              _displayer(videoController),
+              _controlBar(videoController),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _displayer(VideoPlayerController videoController) {
+    return AspectRatio(
+      aspectRatio: videoController.value.aspectRatio,
+      child: Stack(
+        alignment: Alignment.bottomCenter,
+        children: [
+          VideoPlayer(videoController),
+          // Custom gradient overlay for controls
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.transparent,
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.6),
+                  ],
+                  stops: const [0.0, 0.2, 0.7, 1.0],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 8,
+            right: 8,
+            bottom: 0,
+            child: Row(
+              crossAxisAlignment: .end,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.5),
+                    child: _videoSlider(videoController),
+                  ),
+                ),
+                _volumeComponent(),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -692,7 +695,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _controlBar() {
+  Widget _controlBar(VideoPlayerController videoController) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(

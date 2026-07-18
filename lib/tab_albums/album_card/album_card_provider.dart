@@ -11,6 +11,8 @@ part 'album_card_provider.g.dart';
 
 @riverpod
 class AlbumCard extends _$AlbumCard implements AlbumCardNotifierITF {
+  EnAlbum? _album;
+
   @override
   AlbumCardState build(int? id) {
     if (id == null) return const AlbumCardState.empty();
@@ -20,24 +22,13 @@ class AlbumCard extends _$AlbumCard implements AlbumCardNotifierITF {
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
+    _album = album;
     debugPrint('album card provider build:\n$album\n');
     ref.onDispose(() {
       debugPrint('album card provider dispose:\n$album\n');
     });
     if (album == null) return const AlbumCardState.empty();
     return album.toCardState();
-  }
-
-  @override
-  EnAlbum? get album {
-    final id = this.id;
-    if (id == null) return null;
-    return ref.read(
-      dbAlbumListProvider
-          .select((st) => st.value ?? [])
-          .select((al) => {for (final a in al) a.id: a})
-          .select((am) => am[id]),
-    );
   }
 
   @override
@@ -48,6 +39,9 @@ class AlbumCard extends _$AlbumCard implements AlbumCardNotifierITF {
     await ref.read(dbAlbumListProvider.notifier).deleteAlbum(album);
     EasyLoading.dismiss();
   }
+  
+  @override
+  EnAlbum? get album => _album;
 }
 
 extension on EnAlbum {

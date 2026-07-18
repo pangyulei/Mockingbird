@@ -205,8 +205,7 @@ class AlbumCardUI extends ConsumerWidget {
                           _provider.select(
                             (s) => s.mediasCount,
                           ),
-                        ) ??
-                        0;
+                        );
                     return Text(
                       '$mediasCount Medias',
                       style: theme.textTheme.bodySmall

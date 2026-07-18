@@ -1,17 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 abstract interface class EditAlbumNotifierITF {
+  Future<void> pickCover();
+  void removeCover();
   void updateName(String newName);
-
-  void updateCover(File? newCover);
-
   Future<void> submit();
 }
 
@@ -19,39 +17,16 @@ class EditAlbumUI extends ConsumerStatefulWidget {
   final ProviderListenable<EditAlbumState> _provider;
   final EditAlbumNotifierITF _notifier;
 
-  const EditAlbumUI(
-    this._provider,
-    this._notifier, {
-    super.key,
-  });
+  const EditAlbumUI(this._provider, this._notifier, {super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() =>
-      _EditAlbumUIState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _EditAlbumUIState();
 }
 
 class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
-  late final TextEditingController _nameController;
-  final _picker = ImagePicker();
-
   EditAlbumNotifierITF get _notifier => widget._notifier;
 
-  ProviderListenable<EditAlbumState> get _provider =>
-      widget._provider;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(
-      text: ref.read(_provider.select((s) => s.name)),
-    );
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    super.dispose();
-  }
+  ProviderListenable<EditAlbumState> get _provider => widget._provider;
 
   @override
   Widget build(BuildContext ctx) {
@@ -60,19 +35,13 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
 
   Widget _dialog(BuildContext ctx) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Consumer(
         builder: (context, ref, child) {
-          final title = ref.watch(
-            _provider.select((s) => s.title),
-          );
+          final title = ref.watch(_provider.select((s) => s.title));
           return Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           );
         },
       ),
@@ -83,61 +52,56 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
           children: [
             _cover(ctx),
             const SizedBox(height: 20),
-            TextField(
-              onChanged: (value) {
-                _notifier.updateName(value);
-              },
-              controller: _nameController,
-              cursorColor: Theme.of(
-                ctx,
-              ).colorScheme.primary,
-              style: const TextStyle(fontSize: 16),
-              decoration: InputDecoration(
-                labelText: 'Album Name',
-                labelStyle: TextStyle(
-                  color: Theme.of(ctx).colorScheme.primary
-                      .withValues(alpha: 0.7),
-                ),
-                hintText: 'Enter Album name',
-                hintStyle: TextStyle(
-                  color: Colors.white.withValues(
-                    alpha: 0.2,
+            Consumer(
+              builder: (context, ref, child) {
+                final nameController = ref.watch(
+                  _provider.select((st) => st.nameController),
+                );
+                return TextField(
+                  onChanged: _onNameChanged,
+                  controller: nameController,
+                  cursorColor: Theme.of(ctx).colorScheme.primary,
+                  style: const TextStyle(fontSize: 16),
+                  decoration: InputDecoration(
+                    labelText: 'Album Name',
+                    labelStyle: TextStyle(
+                      color: Theme.of(
+                        ctx,
+                      ).colorScheme.primary.withValues(alpha: 0.7),
+                    ),
+                    hintText: 'Enter Album name',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
+                    prefixIcon: Icon(
+                      Icons.edit_note_rounded,
+                      color: Theme.of(ctx).colorScheme.primary,
+                    ),
+                    filled: true,
+                    fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
                   ),
-                ),
-                prefixIcon: Icon(
-                  Icons.edit_note_rounded,
-                  color: Theme.of(ctx).colorScheme.primary,
-                ),
-                filled: true,
-                fillColor: Theme.of(ctx)
-                    .colorScheme
-                    .surfaceContainerHighest
-                    .withValues(alpha: 0.3),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 0,
-                ),
-              ),
-              autofocus: true,
+                  autofocus: true,
+                );
+              },
             ),
           ],
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _onCancel,
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: _onCancel, child: const Text('Cancel')),
         Consumer(
           builder: (context, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              _provider.select(
-                (s) => (s.enableSubmit, s.submitTitle),
-              ),
+              _provider.select((s) => (s.enableSubmit, s.submitTitle)),
             );
             return FilledButton(
               onPressed: enable ? _onSubmit : null,
@@ -152,9 +116,7 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
   Widget _cover(BuildContext ctx) {
     return Consumer(
       builder: (ctx, ref, child) {
-        final cover = ref.watch(
-          _provider.select((s) => s.cover),
-        );
+        final cover = ref.watch(_provider.select((s) => s.cover));
         return Stack(
           children: [
             GestureDetector(
@@ -164,15 +126,12 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
                 width: double.infinity,
                 height: 160,
                 decoration: BoxDecoration(
-                  color: Theme.of(ctx)
-                      .colorScheme
-                      .primaryContainer
-                      .withValues(alpha: 0.1),
+                  color: Theme.of(
+                    ctx,
+                  ).colorScheme.primaryContainer.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: Colors.white.withValues(
-                      alpha: 0.05,
-                    ),
+                    color: Colors.white.withValues(alpha: 0.05),
                     width: 1,
                   ),
                 ),
@@ -185,11 +144,7 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
               ),
             ),
             if (cover != null)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: _removeCoverButton(ctx),
-              ),
+              Positioned(top: 8, right: 8, child: _removeCoverButton(ctx)),
           ],
         );
       },
@@ -241,22 +196,15 @@ class _EditAlbumUIState extends ConsumerState<EditAlbumUI> {
   }
 
   void _onPickCover() async {
-    final XFile? xImage = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 75,
-    );
-    if (xImage == null) {
-      //didnt select any image, no changes
-      return;
-    }
-    File newCover = File(xImage.path);
-    _notifier.updateCover(newCover);
+    await _notifier.pickCover();
+  }
+
+  void _onNameChanged(String newName) {
+    _notifier.updateName(newName);
   }
 
   void _onRemoveCover() {
-    _notifier.updateCover(null);
+    _notifier.removeCover();
   }
 
   void _onSubmit() async {

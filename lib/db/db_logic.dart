@@ -12,16 +12,12 @@ import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:synchronized/synchronized.dart';
 
 typedef MF_SF = ({File mediaFile, File? subtitleFile});
 typedef M_SF = ({EnMedia media, File subtitleFile});
 
 class DBLogic {
   final Store _store;
-
-  //TODO add lock to write operations
-  final _lock = Lock();
 
   DBLogic.test(this._store); //for unit test
   DBLogic() : this.test(DBObjectBox().store);

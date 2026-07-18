@@ -33,7 +33,7 @@ final class PlayerProvider
   Player create() => Player();
 }
 
-String _$playerHash() => r'96df8211635b2eeed76d5c193fb5c9af645686d7';
+String _$playerHash() => r'5c1d39ef87140f1daa12e32e0f9a1708093bb418';
 
 abstract class _$Player extends $AsyncNotifier<PlayerState?> {
   FutureOr<PlayerState?> build();

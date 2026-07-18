@@ -8,7 +8,7 @@ abstract interface class SentenceCardNotifierITF {
 }
 
 class SentenceCardUI extends ConsumerWidget {
-  final ProviderListenable<AsyncValue<SentenceCardState>> _provider;
+  final ProviderListenable<SentenceCardState> _provider;
   final SentenceCardNotifierITF _notifier;
   const SentenceCardUI(this._provider, this._notifier, {super.key});
 
@@ -26,8 +26,7 @@ class SentenceCardUI extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         child: Consumer(
           builder: (ctx, ref, _) {
-            final data = ref.watch(_provider).value;
-            final isPlaying = data?.isPlaying ?? false;
+            final isPlaying = ref.watch(_provider.select((st) => st.isPlaying));
             return AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
@@ -39,7 +38,7 @@ class SentenceCardUI extends ConsumerWidget {
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
                   bottomRight: const Radius.circular(16),
-                  bottomLeft: Radius.circular(isPlaying? 4 : 16),
+                  bottomLeft: Radius.circular(isPlaying ? 4 : 16),
                 ),
                 boxShadow: isPlaying
                     ? [
@@ -62,31 +61,45 @@ class SentenceCardUI extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      data?.text ?? '',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: isPlaying
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurface,
-                        fontSize: 16,
-                        height: 1.4,
-                        fontWeight: isPlaying
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final text = ref.watch(
+                          _provider.select((st) => st.text),
+                        );
+                        return Text(
+                          text,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: isPlaying
+                                ? colorScheme.onPrimaryContainer
+                                : colorScheme.onSurface,
+                            fontSize: 16,
+                            height: 1.4,
+                            fontWeight: isPlaying
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        Text(
-                          data?.period ?? '',
-                          style: theme.textTheme.labelSmall?.copyWith(
-                            color: isPlaying
-                                ? colorScheme.primary
-                                : colorScheme.outline,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final period = ref.watch(
+                              _provider.select((st) => st.period),
+                            );
+                            return Text(
+                              period,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: isPlaying
+                                    ? colorScheme.primary
+                                    : colorScheme.outline,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
