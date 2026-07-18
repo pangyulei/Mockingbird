@@ -9,14 +9,13 @@ import 'package:video_player/video_player.dart';
 
 import 'player_state.dart';
 
-const double _kMaxPlaySpeed = 3.0;
-const double _kMinPlaySpeed = 0.25;
-const double _kStepPlaySpeed = 0.25;
-
 abstract interface class PlayerNotifierITF {
   int? sentenceIdAtIndex(int i);
   Future<void> play();
   Future<void> pause();
+  Future<void> resetSpeed();
+  Future<void> decSpeed();
+  Future<void> incSpeed();
   void videoPositionChanged(VideoPlayerController videoController);
 }
 
@@ -64,31 +63,16 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     // });
   }
 
-  void _onSpeedDown() async {
-    // if (videoController == null) return;
-    // final currentSpeed = videoController.value.playbackSpeed;
-    // var nextSpeed = max(_kMinPlaySpeed, currentSpeed - _kStepPlaySpeed);
-    // if (nextSpeed == currentSpeed) {
-    //   return;
-    // }
-    // setState(() {
-    //   _state = _state.copyWith(speed: nextSpeed);
-    // });
-    // await videoController.setPlaybackSpeed(nextSpeed);
+  void _onDecSpeed() async {
+    await _notifier.decSpeed();
   }
 
-  void _onSpeedUp() async {
-    // final videoController = _videoController;
-    // if (videoController == null) return;
-    // final currentSpeed = videoController.value.playbackSpeed;
-    // var nextSpeed = min(_kMaxPlaySpeed, currentSpeed + _kStepPlaySpeed);
-    // if (nextSpeed == currentSpeed) {
-    //   return;
-    // }
-    // setState(() {
-    //   _state = _state.copyWith(speed: nextSpeed);
-    // });
-    // await videoController.setPlaybackSpeed(nextSpeed);
+  void _onIncSpeed() async {
+    await _notifier.incSpeed();
+  }
+
+  void _onResetSpeed() async {
+    await _notifier.resetSpeed();
   }
 
   @override
@@ -163,20 +147,6 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     // } else {
     //   return start <= position && position < nextSentence.start;
     // }
-  }
-
-  void _onSpeedReset() async {
-    // final videoController = _videoController;
-    // if (videoController == null) return;
-    // final currentSpeed = videoController.value.playbackSpeed;
-    // const double nextSpeed = 1.0;
-    // if (nextSpeed == currentSpeed) {
-    //   return;
-    // }
-    // setState(() {
-    //   _state = _state.copyWith(speed: nextSpeed);
-    // });
-    // await videoController.setPlaybackSpeed(nextSpeed);
   }
 
   void _onVideoSliderStartChanged(double microValue) async {
@@ -447,9 +417,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
           icon: Consumer(
             builder: (context, ref, child) {
               final volume = ref.watch(
-                _provider.select(
-                  (st) => st?.videoState?.volume ?? 1,
-                ),
+                _provider.select((st) => st?.videoState?.volume ?? 1),
               );
               final icon = volume == 0
                   ? Icons.volume_off_rounded
@@ -480,9 +448,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
         child: Consumer(
           builder: (context, ref, child) {
             final volume = ref.watch(
-              _provider.select(
-                (st) => st?.videoState?.volume ?? 1,
-              ),
+              _provider.select((st) => st?.videoState?.volume ?? 1),
             );
             return Slider(value: volume, onChanged: _onVolumeChanged);
           },
@@ -685,9 +651,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
     return Consumer(
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
-          _provider.select(
-            (st) => st?.videoState?.isPlaying ?? false,
-          ),
+          _provider.select((st) => st?.videoState?.isPlaying ?? false),
         );
         return IconButton.filled(
           onPressed: () {
@@ -746,7 +710,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
 
   Widget _speedDownButton() {
     return IconButton(
-      onPressed: _onSpeedDown,
+      onPressed: _onDecSpeed,
       icon: const Icon(Icons.remove_circle_outline_rounded),
       color: Theme.of(context).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
@@ -757,7 +721,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
 
   Widget _speedUpButton() {
     return IconButton(
-      onPressed: _onSpeedUp,
+      onPressed: _onIncSpeed,
       icon: const Icon(Icons.add_circle_outline_rounded),
       color: Theme.of(context).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
@@ -769,7 +733,7 @@ class _PlayerUIState extends ConsumerState<PlayerUI> {
   Widget _speedLabel() {
     final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
-      onTap: _onSpeedReset,
+      onTap: _onResetSpeed,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(

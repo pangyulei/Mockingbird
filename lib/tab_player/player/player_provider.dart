@@ -34,6 +34,41 @@ class Player extends _$Player implements PlayerNotifierITF {
   }
 
   @override
+  Future<void> decSpeed() async {
+    final currSpeed = state?.videoState?.speed ?? 1;
+    final double nextSpeed = (currSpeed - _kStepPlaySpeed).clamp(
+      _kMinPlaySpeed,
+      _kMaxPlaySpeed,
+    );
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(speed: nextSpeed),
+    );
+    await state?.videoState?.controller.setPlaybackSpeed(nextSpeed);
+  }
+
+  @override
+  Future<void> incSpeed() async {
+    final currSpeed = state?.videoState?.speed ?? 1;
+    final double nextSpeed = (currSpeed + _kStepPlaySpeed).clamp(
+      _kMinPlaySpeed,
+      _kMaxPlaySpeed,
+    );
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(speed: nextSpeed),
+    );
+    await state?.videoState?.controller.setPlaybackSpeed(nextSpeed);
+  }
+
+  @override
+  Future<void> resetSpeed() async {
+    final nextSpeed = (1.0).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
+    state = state?.copyWith(
+      videoState: () => state?.videoState?.copyWith(speed: nextSpeed),
+    );
+    await state?.videoState?.controller.setPlaybackSpeed(nextSpeed);
+  }
+
+  @override
   Future<void> play() async {
     state = state?.copyWith(
       videoState: () => state?.videoState?.copyWith(isPlaying: true),
@@ -164,3 +199,7 @@ class PlayerMedia extends _$PlayerMedia {
     return media;
   }
 }
+
+const double _kMaxPlaySpeed = 3.0;
+const double _kMinPlaySpeed = 0.25;
+const double _kStepPlaySpeed = 0.25;
