@@ -209,7 +209,7 @@ class Player extends _$Player {
     if (index != null) {
       int? id = sentenceList.elementAtOrNull(index)?.id;
       final isPlaying = ref.read(sentenceCardProvider(id)).isPlaying;
-      if (isPlaying == true) {
+      if (isPlaying) {
         return;
       }
     }
