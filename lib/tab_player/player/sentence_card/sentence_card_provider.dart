@@ -3,13 +3,12 @@ import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
-import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'sentence_card_provider.g.dart';
 
 @riverpod
-class SentenceCard extends _$SentenceCard implements SentenceCardNotifierITF {
+class SentenceCard extends _$SentenceCard {
   @override
   SentenceCardState build(int? id) {
     if (id == null) return const SentenceCardState.empty();
@@ -18,11 +17,7 @@ class SentenceCard extends _$SentenceCard implements SentenceCardNotifierITF {
           .select((av) => av.value ?? [])
           .select((al) => [for (final a in al) a.medias])
           .select((mll) => mll.expand((e) => e))
-          .select(
-            (ml) => [
-              for (final m in ml) m.subtitles.firstOrNull,
-            ].whereType<EnSubtitle>(),
-          )
+          .select((ml) => [for (final m in ml) m.subtitles.firstOrNull].whereType<EnSubtitle>())
           .select((subl) => [for (final sub in subl) sub.sentences])
           .select((senll) => senll.expand((e) => e))
           .select((senl) => {for (final sen in senl) sen.id: sen})
@@ -30,6 +25,10 @@ class SentenceCard extends _$SentenceCard implements SentenceCardNotifierITF {
     );
     if (sentence == null) return const SentenceCardState.empty();
     return sentence.toCardState();
+  }
+
+  void setPlaying(bool isPlaying) {
+    state = state.copyWith(isPlaying: isPlaying);
   }
 }
 

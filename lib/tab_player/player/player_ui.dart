@@ -1,177 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_provider.dart';
+import 'package:mockingbird/tab_player/player/player_provider.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_ui.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-import 'player_state.dart';
-
-abstract interface class PlayerNotifierITF {
-  Future<void> addSubtitle();
-
-  int? sentenceIdAtIndex(int i);
-
-  Future<void> play();
-
-  Future<void> pause();
-
-  Future<void> resetSpeed();
-
-  Future<void> decSpeed();
-
-  Future<void> incSpeed();
-
-  void volumeTapped();
-
-  Future<void> updateVolume(double newVolume);
-
-  Future<void> videoSliderStartChanged(double valMicro);
-
-  Future<void> videoSliderChanging(double valMicro);
-
-  Future<void> videoSliderEndChanged(double valMicro);
-
-  Future<void> videoPositionChanged(VideoPlayerController videoController);
-}
-
 class PlayerUI extends ConsumerWidget {
-  final ProviderListenable<PlayerState?> _provider;
-  final PlayerNotifierITF _notifier;
-
-  const PlayerUI(this._provider, this._notifier, {super.key});
+  const PlayerUI({super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
     return Stack(children: [_page(ctx), _empty()]);
   }
 
-  void _onAddSubtitle() async {
-    await _notifier.addSubtitle();
+  void _onAddSubtitle(WidgetRef ref) async {
+    await ref.read(playerProvider.notifier).addSubtitle();
   }
 
-  void _onPlaySentenceInOrder() {
-    // setState(() {
-    //   _state = _state.copyWith(repeat: true);
-    // });
+  void _onUnloop(WidgetRef ref) {
+    ref.read(playerProvider.notifier).loop();
   }
 
-  void _onPause() async {
-    await _notifier.pause();
+  void _onLoop(WidgetRef ref) {
+    ref.read(playerProvider.notifier).unloop();
   }
 
-  void _onPlay() async {
-    await _notifier.play();
+  void _onPause(WidgetRef ref) async {
+    await ref.read(playerProvider.notifier).pause();
   }
 
-  void _onRepeatOneSentence() {
-    // setState(() {
-    //   _state = _state.copyWith(repeat: false);
-    // });
+  void _onPlay(WidgetRef ref) async {
+    await ref.read(playerProvider.notifier).play();
   }
 
-  void _onDecSpeed() async {
-    await _notifier.decSpeed();
+  void _onDecSpeed(WidgetRef ref) async {
+    await ref.read(playerProvider.notifier).decSpeed();
   }
 
-  void _onIncSpeed() async {
-    await _notifier.incSpeed();
+  void _onIncSpeed(WidgetRef ref) async {
+    await ref.read(playerProvider.notifier).incSpeed();
   }
 
-  void _onResetSpeed() async {
-    await _notifier.resetSpeed();
+  void _onResetSpeed(WidgetRef ref) async {
+    await ref.read(playerProvider.notifier).resetSpeed();
   }
 
-  @override
-  void sentenceCard_onTap(int index) async {
-    // debugPrint('click sentence at $index ${_state.sentenceStates[index].text}');
-    // final videoController = _videoController;
-    // if (videoController == null) {
-    //   debugPrint('videoController==null, nothing to control');
-    //   return;
-    // }
-    // final sentence = _media?.subtitles.firstOrNull?.sentences.elementAtOrNull(
-    //   index,
-    // );
-    // if (sentence == null) {
-    //   debugPrint('sentence not found');
-    //   return;
-    // }
-    // _scrollController._scrollTo(index);
-
-    // setState(() {
-    //   _state = _state.focus(index).copyWith(isPlaying: true);
-    // });
-    // await videoController.seekTo(sentence.start);
-    // await videoController.play();
+  void _onVideoPositionChanged(WidgetRef ref, VideoPlayerController videoController) async {
+    await ref.read(playerProvider.notifier).videoPositionChanged(videoController);
   }
 
-  int? _playingIndexByPosition(Duration position) {
-    return null;
-
-    // final sentences = _media?.subtitles.firstOrNull?.sentences;
-    // if (sentences == null || sentences.isEmpty) return null;
-    // final mediaEnd = _videoController?.value.duration;
-    // if (mediaEnd == null) return null;
-
-    // final int? playingIndex;
-    // //从当前sentence开始判断这句是不是真的在播放中
-    // //从现在的 index，判断到最后，再从最前的index，判断到现在的index
-    // final allRange = List.generate(sentences.length, (index) => index);
-    // final focusedIndex = _state.focusedIndex;
-    // final List<int> searchRange;
-    // if (focusedIndex == null || focusedIndex >= sentences.length) {
-    //   debugPrint('focus index not found or beyond range');
-    //   searchRange = allRange;
-    // } else {
-    //   final range1 = allRange.sublist(focusedIndex);
-    //   final range2 = allRange.sublist(0, focusedIndex);
-    //   searchRange = [...range1, ...range2];
-    // }
-    // playingIndex = searchRange.firstWhereOrNull(
-    //   (idx) => _isSentencePlaying(idx, position),
-    // );
-    // return playingIndex;
+  void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
+    await ref.read(playerProvider.notifier).videoSliderStartChanged(valMicro);
   }
 
-  bool _isSentencePlaying(int index, Duration position) {
-    return false;
-    // final sentences = _media?.subtitles.firstOrNull?.sentences;
-    // if (sentences == null || sentences.isEmpty) {
-    //   return false;
-    // }
-
-    // final sentence = sentences[index];
-    // final nextSentence = sentences.elementAtOrNull(index + 1);
-    // final prevSentence = index == 0 ? null : sentences[index - 1];
-    // //刚开始的时候position=0,但是第一句话的start不一定是0
-    // //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
-    // final start = prevSentence == null
-    //     ? const Duration(microseconds: 0)
-    //     : sentence.start;
-    // if (nextSentence == null) {
-    //   return start <= position && position <= sentence.end;
-    // } else {
-    //   return start <= position && position < nextSentence.start;
-    // }
+  void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
+    await ref.read(playerProvider.notifier).videoSliderChanging(valMicro);
   }
 
-  void _onVideoPositionChanged(VideoPlayerController videoController) async {
-    await _notifier.videoPositionChanged(videoController);
-  }
-
-  void _onVideoSliderStartChanged(double valMicro) async {
-    await _notifier.videoSliderStartChanged(valMicro);
-  }
-
-  void _onVideoSliderChanging(double valMicro) async {
-    await _notifier.videoSliderChanging(valMicro);
-  }
-
-  void _onVideoSliderEndChanged(double valMicro) async {
-    await _notifier.videoSliderEndChanged(valMicro);
+  void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
+    await ref.read(playerProvider.notifier).videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToFocusedSentence() {
@@ -199,12 +87,12 @@ class PlayerUI extends ConsumerWidget {
     // _scrollController._scrollTo(_state.sentenceStates.length - 1);
   }
 
-  void _onVolumeChanged(double newVolume) async {
-    await _notifier.updateVolume(newVolume);
+  void _onVolumeChanged(WidgetRef ref, double newVolume) async {
+    await ref.read(playerProvider.notifier).updateVolume(newVolume);
   }
 
-  void _onVolumeTap() {
-    _notifier.volumeTapped();
+  void _onVolumeTap(WidgetRef ref) {
+    ref.read(playerProvider.notifier).volumeTapped();
   }
 
   void _onGoToAlbums() {
@@ -228,9 +116,11 @@ class PlayerUI extends ConsumerWidget {
   Widget _videoComponents() {
     return Consumer(
       builder: (ctx, ref, child) {
-        final videoController = ref.watch(_provider.select((st) => st?.videoState?.controller));
+        final videoController = ref.watch(
+          playerProvider.select((st) => st?.videoState?.controller),
+        );
         if (videoController == null) return const SizedBox.shrink();
-        videoController.addListener(() => _onVideoPositionChanged(videoController));
+        videoController.addListener(() => _onVideoPositionChanged(ref, videoController));
         return Container(
           decoration: BoxDecoration(
             color: Colors.black,
@@ -243,14 +133,17 @@ class PlayerUI extends ConsumerWidget {
             ],
           ),
           child: Column(
-            children: [_displayer(ctx, videoController), _controlBar(ctx, videoController)],
+            children: [
+              _displayer(ctx, ref, videoController),
+              _controlBar(ctx, ref, videoController),
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _displayer(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _displayer(BuildContext ctx, WidgetRef ref, VideoPlayerController videoController) {
     return AspectRatio(
       aspectRatio: videoController.value.aspectRatio,
       child: Stack(
@@ -288,7 +181,7 @@ class PlayerUI extends ConsumerWidget {
                   bottom: 8.5,
                   child: _videoSlider(ctx, videoController),
                 ),
-                Positioned(right: 0, bottom: 0, top: 0, child: _volumeComponent()),
+                Positioned(right: 0, bottom: 0, top: 0, child: _volumeComponent(ref)),
               ],
             ),
           ),
@@ -303,21 +196,21 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final sentenceCount = ref.watch(_provider.select((st) => st?.sentenceCount ?? 0));
+            final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
             if (sentenceCount == 0) {
-              return _noSubtitle(ctx);
+              return _noSubtitle(ctx, ref);
             }
             return Consumer(
               builder: (context, ref, child) {
-                final scrollController = ref.watch(_provider.select((st) => st?.scrollController));
+                final scrollController = ref.watch(
+                  playerProvider.select((st) => st?.scrollController),
+                );
                 return ScrollablePositionedList.builder(
                   itemCount: sentenceCount,
                   itemScrollController: scrollController,
                   itemBuilder: (context, i) {
-                    final sentenceId = _notifier.sentenceIdAtIndex(i);
-                    final provider = sentenceCardProvider(sentenceId);
-                    final notifier = ref.read(provider.notifier);
-                    return SentenceCardUI(provider, notifier);
+                    final sentenceId = ref.read(playerProvider.notifier).sentenceIdAtIndex(i);
+                    return SentenceCardUI(sentenceId);
                   },
                 );
               },
@@ -328,11 +221,11 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _noSubtitle(BuildContext ctx) {
+  Widget _noSubtitle(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     return InkWell(
-      onTap: _onAddSubtitle,
+      onTap: () => _onAddSubtitle(ref),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -366,7 +259,7 @@ class PlayerUI extends ConsumerWidget {
   Widget? _floatingButtons() {
     return Consumer(
       builder: (context, ref, child) {
-        final sentenceCount = ref.watch(_provider.select((st) => st?.sentenceCount ?? 0));
+        final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
         if (sentenceCount == 0) {
           return const SizedBox.shrink();
         } else {
@@ -402,7 +295,7 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _volumeComponent() {
+  Widget _volumeComponent(WidgetRef ref) {
     return Column(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.end,
@@ -410,7 +303,7 @@ class PlayerUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
-              _provider.select((st) => st?.videoState?.showVolumeSlider ?? false),
+              playerProvider.select((st) => st?.videoState?.showVolumeSlider ?? false),
             );
             if (showVolumeSlider) {
               return Flexible(child: _volumeSlider(ctx));
@@ -420,10 +313,10 @@ class PlayerUI extends ConsumerWidget {
           },
         ),
         IconButton(
-          onPressed: _onVolumeTap,
+          onPressed: () => _onVolumeTap(ref),
           icon: Consumer(
             builder: (context, ref, child) {
-              final volume = ref.watch(_provider.select((st) => st?.videoState?.volume ?? 1));
+              final volume = ref.watch(playerProvider.select((st) => st?.videoState?.volume ?? 1));
               final icon = volume == 0 ? Icons.volume_off_rounded : Icons.volume_up_rounded;
               return Icon(icon);
             },
@@ -450,8 +343,11 @@ class PlayerUI extends ConsumerWidget {
         ),
         child: Consumer(
           builder: (context, ref, child) {
-            final volume = ref.watch(_provider.select((st) => st?.videoState?.volume ?? 1));
-            return Slider(value: volume, onChanged: _onVolumeChanged);
+            final volume = ref.watch(playerProvider.select((st) => st?.videoState?.volume ?? 1));
+            return Slider(
+              value: volume,
+              onChanged: (newVolume) => _onVolumeChanged(ref, newVolume),
+            );
           },
         ),
       ),
@@ -472,51 +368,27 @@ class PlayerUI extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final position = ref.watch(
-            _provider.select((st) => (st?.videoState?.positionMicro ?? 0).toDouble()),
+            playerProvider.select((st) => (st?.videoState?.positionMicro ?? 0).toDouble()),
           );
           final duration = videoController.value.duration.inMicroseconds.toDouble();
+          // debugPrint('slider pos: ${position} pos.clamp: ${position.clamp(0, duration)}');
+          // debugPrint('slider max: ${videoController.value.duration}');
           return Slider(
             value: position.clamp(0, duration),
             max: duration,
-            onChangeStart: _onVideoSliderStartChanged,
-            onChangeEnd: _onVideoSliderEndChanged,
-            onChanged: _onVideoSliderChanging,
+            onChangeStart: (val) => _onVideoSliderStartChanged(ref, val),
+            onChangeEnd: (val) => _onVideoSliderEndChanged(ref, val),
+            onChanged: (val) => _onVideoSliderChanging(ref, val),
           );
         },
       ),
     );
-    // return ValueListenableBuilder(
-    //   valueListenable: videoController,
-    //   builder: (ctx, videoValue, child) {
-    //     final int position = videoValue.position.inMicroseconds;
-    //     final int duration = videoValue.duration.inMicroseconds;
-    //     final draggingValue = _state.videoSliderDraggingValue;
-    //     return SliderTheme(
-    //       data: SliderTheme.of(ctx).copyWith(
-    //         trackHeight: 4.0,
-    //         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-    //         overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
-    //         activeTrackColor: colorScheme.primary,
-    //         inactiveTrackColor: Colors.white24,
-    //         thumbColor: Colors.white,
-    //       ),
-    //       child: Slider(
-    //         value: draggingValue ?? position.clamp(0, duration).toDouble(),
-    //         min: 0.0,
-    //         max: duration.toDouble(),
-    //         onChangeStart: _onVideoSliderStartChanged,
-    //         onChangeEnd: _onVideoSliderEndChanged,
-    //         onChanged: _onVideoSliderChanging,
-    //       ),
-    //     );
-    //   },
-    // );
   }
 
   Widget _empty() {
     return Consumer(
       builder: (context, ref, child) {
-        final st = ref.watch(_provider);
+        final st = ref.watch(playerProvider);
         if (st != null) return const SizedBox.shrink();
 
         final colorScheme = Theme.of(context).colorScheme;
@@ -588,10 +460,6 @@ class PlayerUI extends ConsumerWidget {
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
       automaticallyImplyLeading: false,
-      // leading: IconButton(
-      //   icon: const Icon(Icons.arrow_back_ios_new_rounded),
-      //   onPressed: () => Navigator.of(ctx).pop(),
-      // ),
       title: _title(),
     );
   }
@@ -601,7 +469,7 @@ class PlayerUI extends ConsumerWidget {
       height: 24,
       child: Consumer(
         builder: (ctx, ref, _) {
-          final title = ref.watch(_provider.select((st) => st?.title ?? ''));
+          final title = ref.watch(playerProvider.select((st) => st?.title ?? ''));
           if (title.isEmpty) {
             return const Text('');
           } else {
@@ -622,7 +490,7 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _controlBar(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _controlBar(BuildContext ctx, WidgetRef ref, VideoPlayerController videoController) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Container(
       decoration: BoxDecoration(
@@ -634,13 +502,13 @@ class PlayerUI extends ConsumerWidget {
         children: [
           _playOrPauseButton(ctx),
           const SizedBox(width: 16),
-          _repeatOneButton(ctx),
+          _loopButton(ctx),
           const Spacer(),
-          _speedDownButton(ctx),
+          _speedDownButton(ctx, ref),
           const SizedBox(width: 8),
-          _speedLabel(ctx),
+          _speedLabel(ctx, ref),
           const SizedBox(width: 8),
-          _speedUpButton(ctx),
+          _speedUpButton(ctx, ref),
         ],
       ),
     );
@@ -650,13 +518,15 @@ class PlayerUI extends ConsumerWidget {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
       builder: (ctx, ref, child) {
-        final isPlaying = ref.watch(_provider.select((st) => st?.videoState?.isPlaying ?? false));
+        final isPlaying = ref.watch(
+          playerProvider.select((st) => st?.videoState?.isPlaying ?? false),
+        );
         return IconButton.filled(
           onPressed: () {
             if (isPlaying) {
-              _onPause();
+              _onPause(ref);
             } else {
-              _onPlay();
+              _onPlay(ref);
             }
           },
           icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 24),
@@ -672,24 +542,26 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _repeatOneButton(BuildContext ctx) {
+  Widget _loopButton(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
-      builder: (ctx, ref, _) {
-        final sentenceCount = ref.watch(_provider.select((st) => st?.sentenceCount ?? 0));
+      builder: (ctx, ref, child) {
+        final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
         if (sentenceCount == 0) return const SizedBox.shrink();
-        final repeat = ref.watch(_provider.select((st) => st?.videoState?.repeat ?? false));
+        final bool loop = ref.watch(
+          playerProvider.select((st) => st?.videoState?.loopingIndex != null),
+        );
         return IconButton(
           onPressed: () {
-            if (repeat) {
-              _onRepeatOneSentence();
+            if (loop) {
+              _onLoop(ref);
             } else {
-              _onPlaySentenceInOrder();
+              _onUnloop(ref);
             }
           },
           icon: Icon(
-            repeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-            color: repeat ? colorScheme.primary : colorScheme.outline,
+            loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+            color: loop ? colorScheme.primary : colorScheme.outline,
           ),
           style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
           constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
@@ -699,9 +571,9 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _speedDownButton(BuildContext ctx) {
+  Widget _speedDownButton(BuildContext ctx, WidgetRef ref) {
     return IconButton(
-      onPressed: _onDecSpeed,
+      onPressed: () => _onDecSpeed(ref),
       icon: const Icon(Icons.remove_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
@@ -710,9 +582,9 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _speedUpButton(BuildContext ctx) {
+  Widget _speedUpButton(BuildContext ctx, WidgetRef ref) {
     return IconButton(
-      onPressed: _onIncSpeed,
+      onPressed: () => _onIncSpeed(ref),
       icon: const Icon(Icons.add_circle_outline_rounded),
       color: Theme.of(ctx).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
@@ -721,10 +593,10 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _speedLabel(BuildContext ctx) {
+  Widget _speedLabel(BuildContext ctx, WidgetRef ref) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return GestureDetector(
-      onTap: _onResetSpeed,
+      onTap: () => _onResetSpeed(ref),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -733,7 +605,7 @@ class PlayerUI extends ConsumerWidget {
         ),
         child: Consumer(
           builder: (ctx, ref, _) {
-            final speed = ref.watch(_provider.select((st) => st?.videoState?.speed ?? 1));
+            final speed = ref.watch(playerProvider.select((st) => st?.videoState?.speed ?? 1));
             return Text(
               '${speed}x',
               style: TextStyle(
@@ -748,147 +620,3 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 }
-
-extension on ItemScrollController {
-  void _jumpTo(int index) {
-    if (isAttached) {
-      jumpTo(index: index, alignment: index == 0 ? 0 : 0.3);
-    } else {
-      debugPrint('${identityHashCode(this)} jump fail, scroll is not attached');
-    }
-  }
-
-  void _scrollTo(int index) {
-    if (isAttached) {
-      scrollTo(
-        index: index,
-        duration: const Duration(milliseconds: 250),
-        alignment: index == 0 ? 0 : 0.3,
-      );
-    } else {
-      debugPrint('${identityHashCode(this)} scroll fail, scroll is not attached');
-    }
-  }
-}
-
-// extension on PlayerState {
-//   PlayerState unfocus() {
-//     return copyWith(
-//       sentenceStates: sentenceStates
-//           .map((ss) => ss.copyWith(isFocused: false))
-//           .toList(),
-//     );
-//   }
-
-//   PlayerState focus(int? index) {
-//     if (index == null) {
-//       return unfocus();
-//     }
-//     return copyWith(
-//       sentenceStates: sentenceStates
-//           .asMap()
-//           .entries
-//           .map((e) => e.value.copyWith(isFocused: index == e.key))
-//           .toList(),
-//     );
-//   }
-
-//   int? get focusedIndex {
-//     int i = sentenceStates.indexWhere((s) => s.isFocused);
-//     return i == -1 ? null : i;
-//     // return sentenceStates
-//     //     .asMap()
-//     //     .entries
-//     //     .firstWhereOrNull((e) => e.value.isFocused)
-//     //     ?.key;
-//   }
-// }
-
-// void _reloadMedia() async {
-//   final mediaId = widget._mediaId;
-//   Future<void> setupNull() async {
-//     await _videoController?.dispose();
-//     _media = null;
-//     _videoController = null;
-//     setState(() {
-//       _state = const PlayerState.empty().copyWith(
-//         showLoading: false,
-//         showEmpty: true,
-//       );
-//     });
-//   }
-
-//   if (mediaId == null) {
-//     await setupNull();
-//     return;
-//   }
-//   setState(() {
-//     _state = _state.copyWith(
-//       showLoading: true,
-//       showEmpty: _videoController == null,
-//     );
-//   });
-//   final newMedia = await DBObjectBox().store.box<EnMedia>().getAsync(mediaId);
-//   if (newMedia == null) {
-//     await setupNull();
-//     return;
-//   }
-//   final oldMedia = _media?.copyWith();
-//   _media = newMedia;
-//   if (oldMedia == newMedia) {
-//     debugPrint('same media notified');
-//     setState(() {
-//       _state = _state.copyWith(showLoading: false);
-//     });
-//     return;
-//   }
-//   final isVideoChanged = oldMedia?.path != newMedia.path;
-//   final subtitle = newMedia.subtitles.firstOrNull;
-//   // final isSubtitleChanged =
-//   //     oldMedia?.subtitles.firstOrNull != newMedia.subtitles.firstOrNull;
-//   final sentenceStates =
-//       subtitle?.sentences.map((s) => s.toCardState()).toList() ?? const [];
-
-//   if (isVideoChanged) {
-//     _state = const PlayerState.empty()
-//         .copyWith(sentenceStates: sentenceStates, isPlaying: true)
-//         .focus(sentenceStates.isEmpty ? null : 0);
-
-//   } else {
-//     //subtitle changed/ or deleted
-//     final videoController = _videoController;
-//     if (videoController == null) {
-//       _state = const PlayerState.empty().copyWith(
-//         showLoading: false,
-//         showEmpty: true,
-//       );
-//     } else {
-//       final position = videoController.value.position;
-//       final playingIndex = _playingIndexByPosition(position);
-//       final repeat = playingIndex == null ? false : _state.repeat;
-//       _state = _state
-//           .copyWith(repeat: repeat, sentenceStates: sentenceStates)
-//           .focus(playingIndex);
-//     }
-//   }
-//   //before video play need to setup state and refresh, otherwise position changing scroll to index will crash
-//   setState(() {
-//     _state = _state.copyWith(
-//       title: newMedia.name,
-//       showLoading: false,
-//       showEmpty: false,
-//     );
-//   });
-//   //Fix videoA scroll to very bottom, and play videoB, videoB doesnt immediately jumped to top
-//   if (_state.sentenceStates.isNotEmpty) {
-//     final focusedIndex = _state.focusedIndex;
-//     if (focusedIndex == null) {
-//       _scrollController._jumpTo(_state.sentenceStates.length - 1);
-//     } else {
-//       _scrollController._jumpTo(focusedIndex);
-//     }
-//   }
-//   if (isVideoChanged) {
-//     await _videoController?.play();
-//   }
-// }

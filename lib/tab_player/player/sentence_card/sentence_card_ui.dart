@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart';
-import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
+import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_provider.dart';
 
-abstract interface class SentenceCardNotifierITF {
-  // void sentenceCard_onTap(int index);
-}
+import '../player_provider.dart';
 
 class SentenceCardUI extends ConsumerWidget {
-  final ProviderListenable<SentenceCardState> _provider;
-  final SentenceCardNotifierITF _notifier;
-  const SentenceCardUI(this._provider, this._notifier, {super.key});
+  final int? _id;
 
-  void _onTap() {}
+  const SentenceCardUI(this._id, {super.key});
+
+  void _onTap(WidgetRef ref) {
+    ref.read(playerProvider.notifier).tapSentence(_id);
+  }
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
@@ -22,11 +21,11 @@ class SentenceCardUI extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: InkWell(
-        onTap: _onTap,
+        onTap: () => _onTap(ref),
         borderRadius: BorderRadius.circular(16),
         child: Consumer(
           builder: (ctx, ref, _) {
-            final isPlaying = ref.watch(_provider.select((st) => st.isPlaying));
+            final isPlaying = ref.watch(sentenceCardProvider(_id).select((st) => st.isPlaying));
             return AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
@@ -63,9 +62,7 @@ class SentenceCardUI extends ConsumerWidget {
                   children: [
                     Consumer(
                       builder: (context, ref, child) {
-                        final text = ref.watch(
-                          _provider.select((st) => st.text),
-                        );
+                        final text = ref.watch(sentenceCardProvider(_id).select((st) => st.text));
                         return Text(
                           text,
                           style: theme.textTheme.bodyLarge?.copyWith(
@@ -74,9 +71,7 @@ class SentenceCardUI extends ConsumerWidget {
                                 : colorScheme.onSurface,
                             fontSize: 16,
                             height: 1.4,
-                            fontWeight: isPlaying
-                                ? FontWeight.w600
-                                : FontWeight.normal,
+                            fontWeight: isPlaying ? FontWeight.w600 : FontWeight.normal,
                           ),
                         );
                       },
@@ -88,14 +83,12 @@ class SentenceCardUI extends ConsumerWidget {
                         Consumer(
                           builder: (context, ref, child) {
                             final period = ref.watch(
-                              _provider.select((st) => st.period),
+                              sentenceCardProvider(_id).select((st) => st.period),
                             );
                             return Text(
                               period,
                               style: theme.textTheme.labelSmall?.copyWith(
-                                color: isPlaying
-                                    ? colorScheme.primary
-                                    : colorScheme.outline,
+                                color: isPlaying ? colorScheme.primary : colorScheme.outline,
                                 fontWeight: FontWeight.bold,
                               ),
                             );

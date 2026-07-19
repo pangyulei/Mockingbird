@@ -19,5 +19,11 @@ class EnSentence {
   });
 
   Duration get start => Duration(microseconds: startMicroseconds);
+
   Duration get end => Duration(microseconds: endMicroseconds);
+
+  @override
+  String toString() {
+    return text;
+  }
 }

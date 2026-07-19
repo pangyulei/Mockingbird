@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_provider.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
-import 'package:mockingbird/tab_player/player/player_provider.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
 
@@ -35,7 +32,7 @@ class AppRoute {
 
   static String get player => '/player';
 
-  static String playerById(int id) => '$player/$id';
+  // static String playerById(int id) => '$player/$id';
 
   static String get settings => '/settings';
 
@@ -43,8 +40,7 @@ class AppRoute {
     initialLocation: AppRoute.albums,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
-        builder: (ctx, state, shell) =>
-            _indexesStackScaffold(ctx, shell, onAppTab),
+        builder: (ctx, state, shell) => _indexesStackScaffold(ctx, shell, onAppTab),
         branches: [
           StatefulShellBranch(routes: [_albumsRoute()]),
           StatefulShellBranch(routes: [_playerRoute()]),
@@ -57,14 +53,7 @@ class AppRoute {
   static GoRoute _albumsRoute() => GoRoute(
     path: AppRoute.albums,
     builder: (BuildContext context, GoRouterState state) {
-      return Consumer(
-        builder: (context, ref, child) {
-          return AlbumListUI(
-            albumListProvider,
-            ref.read(albumListProvider.notifier),
-          );
-        },
-      );
+      return const AlbumListUI();
     },
     routes: <RouteBase>[
       // Sub-route: Accessible via '/details'
@@ -88,29 +77,24 @@ class AppRoute {
   static GoRoute _playerRoute() => GoRoute(
     path: AppRoute.player,
     builder: (BuildContext context, GoRouterState state) {
-      return Consumer(
-        builder: (ctx, ref, _) {
-          final notifier = ref.read(playerProvider.notifier);
-          return PlayerUI(playerProvider, notifier);
-        },
-      );
+      return const PlayerUI();
     },
-    routes: <RouteBase>[
-      GoRoute(
-        path: ':id',
-        builder: (ctx, state) {
-          final mediaIdStr = state.pathParameters['id']!;
-          final mediaId = int.tryParse(mediaIdStr);
-          return Consumer(
-            builder: (ctx, ref, _) {
-              ref.read(dbPrefProvider.notifier).setPlayingId(mediaId);
-              final notifier = ref.read(playerProvider.notifier);
-              return PlayerUI(playerProvider, notifier);
-            },
-          );
-        },
-      ),
-    ],
+    // routes: <RouteBase>[
+    //   GoRoute(
+    //     path: ':id',
+    //     builder: (ctx, state) {
+    //       final mediaIdStr = state.pathParameters['id']!;
+    //       final mediaId = int.tryParse(mediaIdStr);
+    //       return Consumer(
+    //         builder: (ctx, ref, _) {
+    //           ref.read(dbPrefProvider.notifier).setPlayingId(mediaId);
+    //           final notifier = ref.read(playerProvider.notifier);
+    //           return PlayerUI(playerProvider, notifier);
+    //         },
+    //       );
+    //     },
+    //   ),
+    // ],
   );
 
   static GoRoute _settingsRoute() => GoRoute(
