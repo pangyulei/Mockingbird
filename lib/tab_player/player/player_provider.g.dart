@@ -40,7 +40,7 @@ final class PlayerProvider extends $NotifierProvider<Player, PlayerState?> {
   }
 }
 
-String _$playerHash() => r'bf274035d873b327cbf895445f40fb9934136a0d';
+String _$playerHash() => r'45c201e5d866108310a116102d58a0fcd1677407';
 
 abstract class _$Player extends $Notifier<PlayerState?> {
   PlayerState? build();
@@ -92,7 +92,7 @@ final class PlayerVideoProvider
   }
 }
 
-String _$playerVideoHash() => r'861b4ceb13ed6fed2f9995a1d36831d31ef84215';
+String _$playerVideoHash() => r'a6405674e63fd782e07d0eccaabcbf0e56ad5508';
 
 abstract class _$PlayerVideo extends $Notifier<PlayerVideoState?> {
   PlayerVideoState? build();

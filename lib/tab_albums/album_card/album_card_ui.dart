@@ -4,11 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/db/entities/en_album.dart';
-import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 enum _MoreItem {
   delete('delete'),
@@ -19,24 +16,12 @@ enum _MoreItem {
   const _MoreItem(this.raw);
 }
 
-abstract interface class AlbumCardNotifierITF {
-  EnAlbum? get album;
-
-  Future<void> delete();
-}
-
 class AlbumCardUI extends ConsumerWidget {
-  final ProviderListenable<AlbumCardState> _provider;
-  final AlbumCardNotifierITF _notifier;
+  final int? _id;
+  const AlbumCardUI(this._id, {super.key});
 
-  const AlbumCardUI(
-    this._provider,
-    this._notifier, {
-    super.key,
-  });
-
-  void _onTap(BuildContext ctx) {
-    final id = _notifier.album?.id;
+  void _onTap(BuildContext ctx, WidgetRef ref) {
+    final id = ref.read(albumCardProvider(_id).notifier).album?.id;
     if (id != null) ctx.go(AppRoute.albumById(id));
   }
 
@@ -46,15 +31,12 @@ class AlbumCardUI extends ConsumerWidget {
 
   void _onDelete(BuildContext ctx, WidgetRef ref) async {
     if (await confirmDelete(ctx, ref)) {
-      await _notifier.delete();
+      await ref.read(albumCardProvider(_id).notifier).delete();
     }
   }
 
-  Future<bool> confirmDelete(
-    BuildContext ctx,
-    WidgetRef ref,
-  ) async {
-    final name = _notifier.album?.name;
+  Future<bool> confirmDelete(BuildContext ctx, WidgetRef ref) async {
+    final name = ref.read(albumCardProvider(_id).notifier).album?.name;
     if (name == null) {
       return false;
     }
@@ -73,9 +55,7 @@ class AlbumCardUI extends ConsumerWidget {
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(
-                context,
-              ).colorScheme.error,
+              backgroundColor: Theme.of(context).colorScheme.error,
             ),
             child: const Text('Delete'),
           ),
@@ -89,19 +69,13 @@ class AlbumCardUI extends ConsumerWidget {
     return true;
   }
 
-  Future<void> _showEditAlbumDialog(
-    BuildContext ctx,
-  ) async {
+  Future<void> _showEditAlbumDialog(BuildContext ctx) async {
     await showDialog(
       context: ctx,
       builder: (ctx) {
         return Consumer(
           builder: (context, ref, child) {
-            final provider = editAlbumProvider(
-              _notifier.album,
-            );
-            final notifier = ref.read(provider.notifier);
-            return EditAlbumUI(provider, notifier);
+            return EditAlbumUI(_id);
           },
         );
       },
@@ -114,7 +88,7 @@ class AlbumCardUI extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
 
     return InkWell(
-      onTap: () => _onTap(ctx),
+      onTap: () => _onTap(ctx, ref),
       borderRadius: BorderRadius.circular(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,9 +101,7 @@ class AlbumCardUI extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: 0.2,
-                    ),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -139,9 +111,7 @@ class AlbumCardUI extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
                 child: Stack(
                   children: [
-                    Positioned.fill(
-                      child: _cover(ctx, ref),
-                    ),
+                    Positioned.fill(child: _cover(ctx, ref)),
                     Positioned.fill(
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -150,19 +120,13 @@ class AlbumCardUI extends ConsumerWidget {
                             end: Alignment.bottomCenter,
                             colors: [
                               Colors.transparent,
-                              Colors.black.withValues(
-                                alpha: 0.3,
-                              ),
+                              Colors.black.withValues(alpha: 0.3),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: _menu(ctx, ref),
-                    ),
+                    Positioned(top: 8, right: 8, child: _menu(ctx, ref)),
                   ],
                 ),
               ),
@@ -170,27 +134,19 @@ class AlbumCardUI extends ConsumerWidget {
           ),
           // Name and song count below cover
           Padding(
-            padding: const EdgeInsets.fromLTRB(
-              16,
-              0,
-              16,
-              12,
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Consumer(
                   builder: (context, ref, child) {
-                    final name = ref.watch(
-                      _provider.select((s) => s.name),
-                    );
+                    final name = ref.watch(albumCardProvider(_id).select((s) => s.name));
                     return Text(
                       name,
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: -0.2,
-                          ),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.2,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     );
@@ -200,17 +156,14 @@ class AlbumCardUI extends ConsumerWidget {
                 Consumer(
                   builder: (context, ref, child) {
                     final mediasCount = ref.watch(
-                      _provider.select(
-                        (s) => s.mediasCount,
-                      ),
+                      albumCardProvider(_id).select((s) => s.mediasCount),
                     );
                     return Text(
                       '$mediasCount Medias',
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(
-                            color: colorScheme.outline,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.outline,
+                        fontWeight: FontWeight.w500,
+                      ),
                     );
                   },
                 ),
@@ -225,11 +178,7 @@ class AlbumCardUI extends ConsumerWidget {
   Widget _menu(BuildContext ctx, WidgetRef ref) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return PopupMenuButton<String>(
-      icon: const Icon(
-        Icons.more_horiz,
-        size: 20,
-        color: Colors.white,
-      ),
+      icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
       onSelected: (value) {
         if (value == _MoreItem.edit.raw) {
           _onEdit(ctx);
@@ -252,24 +201,15 @@ class AlbumCardUI extends ConsumerWidget {
           value: _MoreItem.delete.raw,
           child: Row(
             children: [
-              Icon(
-                Icons.delete_outline,
-                size: 18,
-                color: colorScheme.error,
-              ),
+              Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
               const SizedBox(width: 12),
-              Text(
-                'Delete',
-                style: TextStyle(color: colorScheme.error),
-              ),
+              Text('Delete', style: TextStyle(color: colorScheme.error)),
             ],
           ),
         ),
       ],
       style: IconButton.styleFrom(
-        backgroundColor: Colors.black.withValues(
-          alpha: 0.3,
-        ),
+        backgroundColor: Colors.black.withValues(alpha: 0.3),
         minimumSize: const Size(32, 32),
         padding: EdgeInsets.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -278,9 +218,7 @@ class AlbumCardUI extends ConsumerWidget {
   }
 
   Widget _cover(BuildContext ctx, WidgetRef ref) {
-    final cover = ref.watch(
-      _provider.select((s) => s.cover),
-    );
+    final cover = ref.watch(albumCardProvider(_id).select((s) => s.cover));
     final colorScheme = Theme.of(ctx).colorScheme;
     if (cover != null) {
       return Image.file(File(cover), fit: BoxFit.cover);
@@ -290,9 +228,7 @@ class AlbumCardUI extends ConsumerWidget {
         child: Center(
           child: Icon(
             Icons.album_rounded,
-            color: colorScheme.primary.withValues(
-              alpha: 0.5,
-            ),
+            color: colorScheme.primary.withValues(alpha: 0.5),
             size: 48,
           ),
         ),

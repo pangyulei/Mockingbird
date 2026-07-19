@@ -2,43 +2,56 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'edit_album_provider.g.dart';
 
-@Riverpod()
-class EditAlbum extends _$EditAlbum implements EditAlbumNotifierITF {
-  late TextEditingController _nameController;
+@riverpod
+class EditAlbum extends _$EditAlbum {
   @override
-  EditAlbumState build(EnAlbum? album) {
-    _nameController = TextEditingController();
+  EditAlbumState build(int? id) {
+    final album = ref.watch(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
+    final nameController = TextEditingController();
     debugPrint('edit album provider build:\n$album\n');
     ref.onDispose(() {
       debugPrint('edit album provider dispose:\n$album\n');
-      _nameController.dispose();
+      nameController.dispose();
     });
     if (album == null) {
-      _nameController.text = '';
-      return EditAlbumState.add(_nameController);
+      nameController.text = '';
+      return EditAlbumState.add(nameController);
     } else {
-      _nameController.text = album.name;
+      nameController.text = album.name;
       final cover = album.cover;
       return EditAlbumState.edit(
         cover == null ? null : File(cover),
-        _nameController,
+        nameController,
       );
     }
   }
 
-  @override
+  EnAlbum? get _album {
+    return ref.read(
+      dbAlbumListProvider
+          .select((av) => av.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
+  }
+
   Future<void> submit() async {
     EasyLoading.show(maskType: .clear);
-    final album = this.album;
+    final album = _album;
     if (album == null) {
       //creating
       await ref
@@ -57,7 +70,6 @@ class EditAlbum extends _$EditAlbum implements EditAlbumNotifierITF {
     EasyLoading.dismiss();
   }
 
-  @override
   Future<void> pickCover() async {
     final XFile? xImage = await ImagePicker().pickImage(
       source: ImageSource.gallery,
@@ -73,7 +85,6 @@ class EditAlbum extends _$EditAlbum implements EditAlbumNotifierITF {
     _updateCover(newCover);
   }
 
-  @override
   void removeCover() {
     _updateCover(null);
   }
@@ -83,15 +94,14 @@ class EditAlbum extends _$EditAlbum implements EditAlbumNotifierITF {
       final enableSubmit = _isSubmitEnable(
         state.nameController.text,
         newCover,
-        album,
+        _album,
       );
       state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
   }
 
-  @override
   void updateName(String newName) {
-    final enableSubmit = _isSubmitEnable(newName, state.cover, album);
+    final enableSubmit = _isSubmitEnable(newName, state.cover, _album);
     state = state.copyWith(enableSubmit: enableSubmit);
   }
 

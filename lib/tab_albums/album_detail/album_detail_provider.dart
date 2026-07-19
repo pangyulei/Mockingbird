@@ -9,13 +9,12 @@ import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'album_detail_provider.g.dart';
 
 @riverpod
-class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
+class AlbumDetail extends _$AlbumDetail {
   @override
   AlbumDetailState build(int? id) {
     if (id == null) return const AlbumDetailState.empty();
@@ -35,14 +34,13 @@ class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
     );
   }
 
-  @override
   Future<void> import() async {
     final id = this.id;
     if (id == null) {
       return;
     }
     final files = await _pickMediasAndSubtitleFiles();
-    final album = this.album;
+    final album = _album;
     if (files.isNotEmpty && album != null) {
       EasyLoading.show(maskType: .clear);
       await ref
@@ -51,9 +49,8 @@ class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
       EasyLoading.dismiss();
     }
   }
-  
-  @override
-  EnAlbum? get album {
+
+  EnAlbum? get _album {
     final id = this.id;
     if (id == null) return null;
     return ref.read(
@@ -64,14 +61,13 @@ class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
     );
   }
 
-  @override
   Future<void> addCover() async {
     final id = this.id;
     if (id == null) {
       return;
     }
     final newCover = await _pickImage();
-    final album = this.album;
+    final album = _album;
     if (newCover != null && album != null) {
       EasyLoading.show(maskType: .clear);
       await ref
@@ -81,13 +77,8 @@ class AlbumDetail extends _$AlbumDetail implements AlbumDetailNotifierITF {
     }
   }
 
-  @override
-  EnMedia? mediaAtIndex(int i) {
-    final id = this.id;
-    if (id == null) {
-      return null;
-    }
-    return album?.medias.elementAtOrNull(i);
+  int? mediaIdAtIndex(int i) {
+    return _album?.medias.elementAtOrNull(i)?.id;
   }
 
   Future<List<File>> _pickMediasAndSubtitleFiles() async {

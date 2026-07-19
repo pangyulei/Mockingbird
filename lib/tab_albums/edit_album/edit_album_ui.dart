@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 
-abstract interface class EditAlbumNotifierITF {
-  Future<void> pickCover();
-  void removeCover();
-  void updateName(String newName);
-  Future<void> submit();
-}
 
 class EditAlbumUI extends ConsumerWidget {
-  final ProviderListenable<EditAlbumState> _provider;
-  final EditAlbumNotifierITF _notifier;
-
-  const EditAlbumUI(this._provider, this._notifier, {super.key});
+  final int? _id;
+  const EditAlbumUI(this._id, {super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
@@ -26,7 +17,9 @@ class EditAlbumUI extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Consumer(
         builder: (context, ref, child) {
-          final title = ref.watch(_provider.select((s) => s.title));
+          final title = ref.watch(
+            editAlbumProvider(_id).select((s) => s.title),
+          );
           return Text(
             title,
             style: const TextStyle(fontWeight: FontWeight.bold),
@@ -43,10 +36,11 @@ class EditAlbumUI extends ConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final nameController = ref.watch(
-                  _provider.select((st) => st.nameController),
+                  editAlbumProvider(_id).select((st) => st.nameController),
                 );
+                //nameController.addListner
                 return TextField(
-                  onChanged: _onNameChanged,
+                  onChanged: (newName) => _onNameChanged(ref, newName),
                   controller: nameController,
                   cursorColor: Theme.of(ctx).colorScheme.primary,
                   style: const TextStyle(fontSize: 16),
@@ -92,11 +86,13 @@ class EditAlbumUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              _provider.select((s) => (s.enableSubmit, s.submitTitle)),
+              editAlbumProvider(
+                _id,
+              ).select((s) => (s.enableSubmit, s.submitTitle)),
             );
             if (enable) {
               return FilledButton(
-                onPressed: () => _onSubmit(ctx),
+                onPressed: () => _onSubmit(ctx, ref),
                 child: Text(submitTitle),
               );
             } else {
@@ -111,11 +107,11 @@ class EditAlbumUI extends ConsumerWidget {
   Widget _cover(BuildContext ctx) {
     return Consumer(
       builder: (ctx, ref, child) {
-        final cover = ref.watch(_provider.select((s) => s.cover));
+        final cover = ref.watch(editAlbumProvider(_id).select((s) => s.cover));
         return Stack(
           children: [
             GestureDetector(
-              onTap: _onPickCover,
+              onTap: () => _onPickCover(ref),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 100),
                 width: double.infinity,
@@ -139,18 +135,18 @@ class EditAlbumUI extends ConsumerWidget {
               ),
             ),
             if (cover != null)
-              Positioned(top: 8, right: 8, child: _removeCoverButton(ctx)),
+              Positioned(top: 8, right: 8, child: _removeCoverButton(ctx, ref)),
           ],
         );
       },
     );
   }
 
-  Widget _removeCoverButton(BuildContext ctx) {
+  Widget _removeCoverButton(BuildContext ctx, WidgetRef ref) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: _onRemoveCover,
+        onTap: () => _onRemoveCover(ref),
         borderRadius: BorderRadius.circular(20),
         child: Container(
           padding: const EdgeInsets.all(8),
@@ -190,20 +186,20 @@ class EditAlbumUI extends ConsumerWidget {
     );
   }
 
-  void _onPickCover() async {
-    await _notifier.pickCover();
+  void _onPickCover(WidgetRef ref) async {
+    await ref.read(editAlbumProvider(_id).notifier).pickCover();
   }
 
-  void _onNameChanged(String newName) {
-    _notifier.updateName(newName);
+  void _onNameChanged(WidgetRef ref, String newName) {
+    ref.read(editAlbumProvider(_id).notifier).updateName(newName);
   }
 
-  void _onRemoveCover() {
-    _notifier.removeCover();
+  void _onRemoveCover(WidgetRef ref) {
+    ref.read(editAlbumProvider(_id).notifier).removeCover();
   }
 
-  void _onSubmit(BuildContext ctx) async {
-    await _notifier.submit();
+  void _onSubmit(BuildContext ctx, WidgetRef ref) async {
+    await ref.read(editAlbumProvider(_id).notifier).submit();
     if (ctx.mounted) {
       Navigator.of(ctx).pop();
     }

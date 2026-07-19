@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_provider.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
@@ -40,7 +39,8 @@ class AppRoute {
     initialLocation: AppRoute.albums,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
-        builder: (ctx, state, shell) => _indexesStackScaffold(ctx, shell, onAppTab),
+        builder: (ctx, state, shell) =>
+            _indexesStackScaffold(ctx, shell, onAppTab),
         branches: [
           StatefulShellBranch(routes: [_albumsRoute()]),
           StatefulShellBranch(routes: [_playerRoute()]),
@@ -62,11 +62,11 @@ class AppRoute {
         builder: (BuildContext context, GoRouterState state) {
           return Consumer(
             builder: (context, ref, child) {
-              final albumIdStr = state.pathParameters['id']!;
-              final albumId = int.tryParse(albumIdStr);
-              final provider = albumDetailProvider(albumId);
-              final notifier = ref.read(provider.notifier);
-              return AlbumDetailUI(provider, notifier);
+              final albumIdStr = state.pathParameters['id'];
+              final albumId = albumIdStr == null
+                  ? null
+                  : int.tryParse(albumIdStr);
+              return AlbumDetailUI(albumId);
             },
           );
         },

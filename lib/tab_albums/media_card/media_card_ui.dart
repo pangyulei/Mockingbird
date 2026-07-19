@@ -3,9 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import 'media_card_state.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
 
 enum _MoreItem {
   rename('rename'),
@@ -18,42 +16,30 @@ enum _MoreItem {
   const _MoreItem(this.raw);
 }
 
-abstract interface class MediaCardNotifierITF {
-  Future<void> play();
-
-  Future<void> deleteSubtitle();
-
-  Future<void> updateSubtitle();
-
-  Future<void> deleteMedia();
-}
-
 class MediaCardUI extends ConsumerWidget {
-  final ProviderListenable<MediaCardState> _provider;
-  final MediaCardNotifierITF _notifier;
+  final int? _id;
+  const MediaCardUI(this._id, {super.key});
 
-  const MediaCardUI(this._provider, this._notifier, {super.key});
-
-  void _onPlay(BuildContext ctx) async {
-    await _notifier.play();
+  void _onPlay(BuildContext ctx, WidgetRef ref) async {
+    await ref.read(mediaCardProvider(_id).notifier).play();
     if (ctx.mounted) {
       ctx.go(AppRoute.player);
     }
   }
 
-  void _onUpdateSubtitle() async {
-    await _notifier.updateSubtitle();
+  void _onUpdateSubtitle(WidgetRef ref) async {
+    await ref.read(mediaCardProvider(_id).notifier).updateSubtitle();
   }
 
-  void _onDeleteSubtitle() async {
-    await _notifier.deleteSubtitle();
+  void _onDeleteSubtitle(WidgetRef ref) async {
+    await ref.read(mediaCardProvider(_id).notifier).deleteSubtitle();
   }
 
-  void _onDeleteMedia() async {
-    await _notifier.deleteMedia();
+  void _onDeleteMedia(WidgetRef ref) async {
+    await ref.read(mediaCardProvider(_id).notifier).deleteMedia();
   }
 
-  void _onRenameMedia() async {
+  void _onRenameMedia(WidgetRef ref) async {
     //TODO popup rename media dialog
   }
 
@@ -61,7 +47,7 @@ class MediaCardUI extends ConsumerWidget {
   Widget build(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final isPlaying = ref.watch(_provider.select((s) => s.isPlaying));
+    final isPlaying = ref.watch(mediaCardProvider(_id).select((s) => s.isPlaying));
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -81,7 +67,7 @@ class MediaCardUI extends ConsumerWidget {
         child: Stack(
           children: [
             InkWell(
-              onTap: () => _onPlay(ctx),
+              onTap: () => _onPlay(ctx, ref),
               child: Padding(
                 padding: const EdgeInsets.only(
                   top: 12,
@@ -121,7 +107,7 @@ class MediaCardUI extends ConsumerWidget {
         final theme = Theme.of(ctx);
         final colorScheme = theme.colorScheme;
         final (name, isPlaying) = ref.watch(
-          _provider.select((s) => (s.name.trim(), s.isPlaying)),
+          mediaCardProvider(_id).select((s) => (s.name.trim(), s.isPlaying)),
         );
         if (isPlaying && name.isNotEmpty) {
           return SizedBox(
@@ -162,7 +148,7 @@ class MediaCardUI extends ConsumerWidget {
           final theme = Theme.of(ctx);
           final colorScheme = theme.colorScheme;
           final (hasSubtitle, type, isPlaying) = ref.watch(
-            _provider.select((s) => (s.hasSubtitle, s.type, s.isPlaying)),
+            mediaCardProvider(_id).select((s) => (s.hasSubtitle, s.type, s.isPlaying)),
           );
           return Row(
             children: [
@@ -196,7 +182,7 @@ class MediaCardUI extends ConsumerWidget {
   Widget _playButton(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final isPlaying = ref.watch(_provider.select((s) => s.isPlaying));
+    final isPlaying = ref.watch(mediaCardProvider(_id).select((s) => s.isPlaying));
     return Container(
       width: 48,
       height: 48,
@@ -219,18 +205,18 @@ class MediaCardUI extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     return Consumer(
       builder: (context, ref, child) {
-        final hasSubtitle = ref.watch(_provider.select((s) => s.hasSubtitle));
+        final hasSubtitle = ref.watch(mediaCardProvider(_id).select((s) => s.hasSubtitle));
         return PopupMenuButton<String>(
           icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
           onSelected: (value) {
             if (value == _MoreItem.updateSubtitle.raw) {
-              _onUpdateSubtitle();
+              _onUpdateSubtitle(ref);
             } else if (value == _MoreItem.deleteSubtitle.raw) {
-              _onDeleteSubtitle();
+              _onDeleteSubtitle(ref);
             } else if (value == _MoreItem.deleteMedia.raw) {
-              _onDeleteMedia();
+              _onDeleteMedia(ref);
             } else if (value == _MoreItem.rename.raw) {
-              _onRenameMedia();
+              _onRenameMedia(ref);
             }
           },
           itemBuilder: (context) => [
@@ -253,7 +239,7 @@ class MediaCardUI extends ConsumerWidget {
                   Consumer(
                     builder: (context, ref, child) {
                       final hasSubtitle = ref.watch(
-                        _provider.select((s) => s.hasSubtitle),
+                        mediaCardProvider(_id).select((s) => s.hasSubtitle),
                       );
                       return Text(
                         hasSubtitle ? 'Change Subtitle' : 'Add Subtitle',

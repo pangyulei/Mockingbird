@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/entities/en_album.dart';
-import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
-abstract interface class AlbumListNotifierITF {
-  EnAlbum? albumAtIndex(int i);
-}
 
 class AlbumListUI extends ConsumerWidget {
   const AlbumListUI({super.key});
@@ -76,10 +70,8 @@ class AlbumListUI extends ConsumerWidget {
         childAspectRatio: 1,
       ),
       itemBuilder: (ctx, i) {
-        final album = ref.read(albumListProvider.notifier).albumAtIndex(i);
-        final provider = albumCardProvider(album?.id);
-        final notifier = ref.read(provider.notifier);
-        return AlbumCardUI(provider, notifier);
+        final albumId = ref.read(albumListProvider.notifier).albumIdAtIndex(i);
+        return AlbumCardUI(albumId);
       },
     );
   }
@@ -90,9 +82,7 @@ class AlbumListUI extends ConsumerWidget {
       builder: (context) {
         return Consumer(
           builder: (context, ref, child) {
-            final provider = editAlbumProvider(null);
-            final notifier = ref.read(provider.notifier);
-            return EditAlbumUI(provider, notifier);
+            return const EditAlbumUI(null);
           },
         );
       },

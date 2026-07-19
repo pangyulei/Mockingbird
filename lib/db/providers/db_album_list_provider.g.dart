@@ -33,7 +33,7 @@ final class DBAlbumListProvider
   DBAlbumList create() => DBAlbumList();
 }
 
-String _$dBAlbumListHash() => r'5b797218f3e973c79ddfd5397afc8ccc0f40581a';
+String _$dBAlbumListHash() => r'3b2ec84ee34733150a49db8737638af3b036da81';
 
 abstract class _$DBAlbumList extends $AsyncNotifier<List<EnAlbum>> {
   FutureOr<List<EnAlbum>> build();

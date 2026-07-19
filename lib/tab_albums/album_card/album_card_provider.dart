@@ -10,7 +10,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'album_card_provider.g.dart';
 
 @riverpod
-class AlbumCard extends _$AlbumCard implements AlbumCardNotifierITF {
+class AlbumCard extends _$AlbumCard {
   EnAlbum? _album;
 
   @override

@@ -14,7 +14,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'media_card_provider.g.dart';
 
 @riverpod
-class MediaCard extends _$MediaCard implements MediaCardNotifierITF {
+class MediaCard extends _$MediaCard {
   @override
   MediaCardState build(int? id) {
     if (id == null) return const MediaCardState.empty();

@@ -22,7 +22,7 @@ part 'player_provider.g.dart';
 class Player extends _$Player {
   PlayerVideoState? get _videoState => state?.videoState;
 
-  VideoPlayerController? get _videoController => state?.videoState?.controller;
+  VideoPlayerController? get _videoController => _videoState?.controller;
 
   ItemScrollController? get _scrollController => state?.scrollController;
 
@@ -49,13 +49,6 @@ class Player extends _$Player {
   }
 
   void _updateVideoState(PlayerVideoState? videoState) {
-    // if (videoState != null) {
-    //   debugPrint(
-    //     'update position to ${Duration(microseconds: videoState.positionMicro)}',
-    //   );
-    // } else {
-    //   debugPrint('update position to null');
-    // }
     state = state?.copyWith(videoState: () => videoState);
   }
 

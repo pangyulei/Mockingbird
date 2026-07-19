@@ -16,7 +16,7 @@ final class EditAlbumProvider
     extends $NotifierProvider<EditAlbum, EditAlbumState> {
   EditAlbumProvider._({
     required EditAlbumFamily super.from,
-    required EnAlbum? super.argument,
+    required int? super.argument,
   }) : super(
          retry: null,
          name: r'editAlbumProvider',
@@ -58,7 +58,7 @@ final class EditAlbumProvider
   }
 }
 
-String _$editAlbumHash() => r'24eba9b9af296c93a72f4648e8fbb1466e573b90';
+String _$editAlbumHash() => r'9fe4a991833e982f2aeeddf4ae5754f88e4e2fba';
 
 final class EditAlbumFamily extends $Family
     with
@@ -67,7 +67,7 @@ final class EditAlbumFamily extends $Family
           EditAlbumState,
           EditAlbumState,
           EditAlbumState,
-          EnAlbum?
+          int?
         > {
   EditAlbumFamily._()
     : super(
@@ -78,18 +78,18 @@ final class EditAlbumFamily extends $Family
         isAutoDispose: true,
       );
 
-  EditAlbumProvider call(EnAlbum? album) =>
-      EditAlbumProvider._(argument: album, from: this);
+  EditAlbumProvider call(int? id) =>
+      EditAlbumProvider._(argument: id, from: this);
 
   @override
   String toString() => r'editAlbumProvider';
 }
 
 abstract class _$EditAlbum extends $Notifier<EditAlbumState> {
-  late final _$args = ref.$arg as EnAlbum?;
-  EnAlbum? get album => _$args;
+  late final _$args = ref.$arg as int?;
+  int? get id => _$args;
 
-  EditAlbumState build(EnAlbum? album);
+  EditAlbumState build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {

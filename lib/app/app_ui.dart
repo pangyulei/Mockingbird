@@ -4,19 +4,21 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
 
-abstract interface class AppUIOutputITF {
-  void app_selectedIndex(int index, StatefulNavigationShell shell);
-}
-
 class AppUI extends StatelessWidget {
-  final AppUIOutputITF _logic;
-  const AppUI(this._logic, {super.key});
+  const AppUI({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRoute(_logic.app_selectedIndex).router,
+      routerConfig: AppRoute((index, shell) {
+        // ➔ 切换 Tab 的核心方法
+        shell.goBranch(
+          index,
+          initialLocation:
+              index == shell.currentIndex, // 重复点击当前 Tab 会回到该 Tab 的根路由
+        );
+      },).router,
       theme: _theme(),
       builder: EasyLoading.init(),
       // builder: (context, child) => _home(),

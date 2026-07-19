@@ -9,7 +9,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'album_list_provider.g.dart';
 
 @Riverpod(name: 'albumListProvider')
-class AlbumList extends _$AlbumList implements AlbumListNotifierITF {
+class AlbumList extends _$AlbumList {
   @override
   Future<AlbumListState> build() async {
     debugPrint('album list provider build\n');
@@ -22,9 +22,8 @@ class AlbumList extends _$AlbumList implements AlbumListNotifierITF {
     return AlbumListState(albumCount: albumCount);
   }
 
-  @override
-  EnAlbum? albumAtIndex(int i) {
+  int? albumIdAtIndex(int i) {
     final albums = ref.read(dbAlbumListProvider).value ?? [];
-    return albums.elementAtOrNull(i);
+    return albums.elementAtOrNull(i)?.id;
   }
 }
