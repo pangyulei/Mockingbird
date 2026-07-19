@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/tab_player/player/player_provider.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -24,16 +25,8 @@ class SentenceCard extends _$SentenceCard {
           .select((senm) => senm[id]),
     );
     if (sentence == null) return const SentenceCardState.empty();
-    return sentence.toCardState();
-  }
-
-  void setPlaying(bool isPlaying) {
-    state = state.copyWith(isPlaying: isPlaying);
-  }
-}
-
-extension on EnSentence {
-  SentenceCardState toCardState() {
+    final int? playingSentenceId = ref.watch(playerProvider.select((st)=>st?.playingSentenceId));
+  
     String formatDuration(Duration d) {
       final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
       final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -42,9 +35,11 @@ extension on EnSentence {
     }
 
     return SentenceCardState(
-      text: text,
-      period: '${formatDuration(start)} - ${formatDuration(end)}',
-      isPlaying: false,
+      text: sentence.text,
+      period: '${formatDuration(sentence.start)} - ${formatDuration(sentence.end)}',
+      isPlaying: sentence.id == playingSentenceId,
     );
   }
+
 }
+

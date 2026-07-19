@@ -10,7 +10,6 @@ import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
-import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
@@ -35,11 +34,13 @@ class Player extends _$Player {
     if (videoState == null) return null;
     final playingMedia = ref.watch(playerMediaProvider);
     if (playingMedia == null) return null;
+    final sentenceList = playingMedia.subtitles.firstOrNull?.sentences;
     return PlayerState(
       title: playingMedia.name,
-      sentenceCount: playingMedia.subtitles.firstOrNull?.sentences.length ?? 0,
+      sentenceCount: sentenceList?.length ?? 0,
       videoState: videoState,
       scrollController: ItemScrollController(),
+      playingSentenceId: sentenceList?.isEmpty == true ? null : 0,
     );
   }
 
@@ -79,6 +80,36 @@ class Player extends _$Player {
   int? sentenceIdAtIndex(int i) {
     final media = ref.read(playerMediaProvider);
     return media?.subtitles.firstOrNull?.sentences.elementAtOrNull(i)?.id;
+  }
+
+  void scrollToTop() {
+    _scrollController?._scrollTo(0);
+  }
+
+  void scrollToPlayingSentence() {
+    final sentenceList = ref
+        .read(playerMediaProvider)
+        ?.subtitles
+        .firstOrNull
+        ?.sentences;
+    if (sentenceList == null || sentenceList.isEmpty) return;
+    final position = _videoState?.positionMicro;
+    if (position == null) return;
+    final playingSentenceIndex = _sentenceIndexByPosition(
+      Duration(microseconds: position),
+    );
+    if (playingSentenceIndex == null) return;
+    _scrollController?._scrollTo(playingSentenceIndex);
+  }
+
+  void scrollToBottom() {
+    final sentenceList = ref
+        .read(playerMediaProvider)
+        ?.subtitles
+        .firstOrNull
+        ?.sentences;
+    if (sentenceList == null || sentenceList.isEmpty) return;
+    _scrollController?._scrollTo(sentenceList.length - 1);
   }
 
   Future<void> decSpeed() async {
@@ -124,12 +155,17 @@ class Player extends _$Player {
       Duration(microseconds: position),
     );
     _updateVideoState(
-      _videoState?.copyWith(loopingIndex: () => playingSentenceIndex, loop: true),
+      _videoState?.copyWith(
+        loopingIndex: () => playingSentenceIndex,
+        loop: true,
+      ),
     );
   }
 
   void unloop() {
-    _updateVideoState(_videoState?.copyWith(loopingIndex: () => null, loop: false));
+    _updateVideoState(
+      _videoState?.copyWith(loopingIndex: () => null, loop: false),
+    );
   }
 
   Future<void> videoPositionChanged(
@@ -206,17 +242,11 @@ class Player extends _$Player {
         .firstOrNull
         ?.sentences;
     if (sentenceList == null || sentenceList.isEmpty) return;
-    if (index != null) {
+    if (index == null) {
+      state = state?.copyWith(playingSentenceId: () => null);
+    } else {
       int? id = sentenceList.elementAtOrNull(index)?.id;
-      final isPlaying = ref.read(sentenceCardProvider(id)).isPlaying;
-      if (isPlaying) {
-        return;
-      }
-    }
-    for (int i = 0; i < sentenceList.length; i++) {
-      final bool mark = index == i;
-      int? id = sentenceList.elementAtOrNull(i)?.id;
-      ref.read(sentenceCardProvider(id).notifier).setPlaying(mark);
+      state = state?.copyWith(playingSentenceId: () => id);
     }
   }
 
@@ -310,7 +340,7 @@ class Player extends _$Player {
     } else {
       seekTo = position;
     }
-    
+
     await _syncVideoWithSlider(seekTo);
     if (seekTo < duration) {
       debugPrint('end of slide: play');

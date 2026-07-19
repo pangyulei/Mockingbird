@@ -49,8 +49,10 @@ class PlayerState {
   final int sentenceCount;
   final ItemScrollController scrollController;
   final PlayerVideoState? videoState;
+  final int? playingSentenceId;
 
   const PlayerState({
+    required this.playingSentenceId,
     required this.scrollController,
     required this.videoState,
     required this.title,
@@ -58,11 +60,15 @@ class PlayerState {
   });
 
   PlayerState copyWith({
+    int? Function()? playingSentenceId,
     String? title,
     int? sentenceCount,
     PlayerVideoState? Function()? videoState,
   }) {
     return PlayerState(
+      playingSentenceId: playingSentenceId == null
+          ? this.playingSentenceId
+          : playingSentenceId(),
       title: title ?? this.title,
       sentenceCount: sentenceCount ?? this.sentenceCount,
       videoState: videoState == null ? this.videoState : videoState(),
