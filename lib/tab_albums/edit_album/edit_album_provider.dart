@@ -13,22 +13,22 @@ part 'edit_album_provider.g.dart';
 
 @riverpod
 class EditAlbum extends _$EditAlbum {
+  EnAlbum? _album;
   @override
   EditAlbumState build(int? id) {
+    final nameController = TextEditingController();
+    ref.onDispose(() {
+      nameController.dispose();
+    });
+    if (id == null) return EditAlbumState.add(nameController);
     final album = ref.watch(
       dbAlbumListProvider
           .select((av) => av.value ?? [])
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
-    final nameController = TextEditingController();
-    debugPrint('edit album provider build:\n$album\n');
-    ref.onDispose(() {
-      debugPrint('edit album provider dispose:\n$album\n');
-      nameController.dispose();
-    });
+    _album = album;
     if (album == null) {
-      nameController.text = '';
       return EditAlbumState.add(nameController);
     } else {
       nameController.text = album.name;
@@ -38,15 +38,6 @@ class EditAlbum extends _$EditAlbum {
         nameController,
       );
     }
-  }
-
-  EnAlbum? get _album {
-    return ref.read(
-      dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => {for (final a in al) a.id: a})
-          .select((am) => am[id]),
-    );
   }
 
   Future<void> submit() async {
@@ -92,21 +83,22 @@ class EditAlbum extends _$EditAlbum {
   void _updateCover(File? newCover) {
     if (newCover?.path != state.cover?.path) {
       final enableSubmit = _isSubmitEnable(
+        _album,
         state.nameController.text,
         newCover,
-        _album,
       );
       state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
   }
 
   void updateName(String newName) {
-    final enableSubmit = _isSubmitEnable(newName, state.cover, _album);
+    final enableSubmit = _isSubmitEnable(_album, newName, state.cover);
     state = state.copyWith(enableSubmit: enableSubmit);
   }
 
-  bool _isSubmitEnable(String name, File? cover, EnAlbum? album) {
-    if (name.trim().isEmpty) {
+  bool _isSubmitEnable(EnAlbum? album, String newName, File? newCover) {
+    final trimmedNewName = newName.trim();
+    if (trimmedNewName.isEmpty) {
       return false;
     }
     if (album == null) {
@@ -114,8 +106,8 @@ class EditAlbum extends _$EditAlbum {
       return true;
     }
     //is editing, name or cover is different then able to update
-    if (name.trim() != album.name) return true;
-    if (cover?.path != album.cover) return true;
+    if (trimmedNewName != album.name) return true;
+    if (newCover?.path != album.cover) return true;
     return false;
   }
 }

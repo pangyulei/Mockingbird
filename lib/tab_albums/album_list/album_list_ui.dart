@@ -4,7 +4,6 @@ import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
-
 class AlbumListUI extends ConsumerWidget {
   const AlbumListUI({super.key});
 
@@ -76,20 +75,7 @@ class AlbumListUI extends ConsumerWidget {
     );
   }
 
-  Future<void> _showAddAlbumDialog(BuildContext ctx) async {
-    await showDialog(
-      context: ctx,
-      builder: (context) {
-        return Consumer(
-          builder: (context, ref, child) {
-            return const EditAlbumUI(null);
-          },
-        );
-      },
-    );
-  }
-
   void _onAddAlbum(BuildContext ctx) async {
-    await _showAddAlbumDialog(ctx);
+    await showDialog(context: ctx, builder: (context) => const EditAlbumUI(null));
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
@@ -27,7 +26,10 @@ class AppRoute {
 
   static String get albums => '/albums';
 
-  static String albumById(int id) => '$albums/$id';
+  // static String get addAlbum => '$albums/new';
+  static String albumDetail(int id) => '$albums/$id';
+
+  // static String editAlbum(int id) => '$albums/$id/edit';
 
   static String get player => '/player';
 
@@ -39,8 +41,7 @@ class AppRoute {
     initialLocation: AppRoute.albums,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
-        builder: (ctx, state, shell) =>
-            _indexesStackScaffold(ctx, shell, onAppTab),
+        builder: (ctx, state, shell) => _indexesStackScaffold(ctx, shell, onAppTab),
         branches: [
           StatefulShellBranch(routes: [_albumsRoute()]),
           StatefulShellBranch(routes: [_playerRoute()]),
@@ -51,26 +52,29 @@ class AppRoute {
   );
 
   static GoRoute _albumsRoute() => GoRoute(
-    path: AppRoute.albums,
-    builder: (BuildContext context, GoRouterState state) {
-      return const AlbumListUI();
-    },
+    path: albums,
+    builder: (context, state) => const AlbumListUI(),
     routes: <RouteBase>[
-      // Sub-route: Accessible via '/details'
+      // GoRoute(
+      //   path: 'new',
+      //   builder: (context, state) => const EditAlbumUI(null),
+      // ),
       GoRoute(
         path: ':id',
         builder: (BuildContext context, GoRouterState state) {
-          return Consumer(
-            builder: (context, ref, child) {
-              final albumIdStr = state.pathParameters['id'];
-              final albumId = albumIdStr == null
-                  ? null
-                  : int.tryParse(albumIdStr);
-              return AlbumDetailUI(albumId);
-            },
-          );
+          final albumIdStr = state.pathParameters['id'];
+          final albumId = albumIdStr == null ? null : int.tryParse(albumIdStr);
+          return AlbumDetailUI(albumId);
         },
       ),
+      // GoRoute(
+      //   path: ':id/edit',
+      //   builder: (context, state) {
+      //     final albumIdStr = state.pathParameters['id'];
+      //     final albumId = albumIdStr == null ? null : int.tryParse(albumIdStr);
+      //     return EditAlbumUI(albumId);
+      //   },
+      // ),
     ],
   );
 
@@ -79,22 +83,6 @@ class AppRoute {
     builder: (BuildContext context, GoRouterState state) {
       return const PlayerUI();
     },
-    // routes: <RouteBase>[
-    //   GoRoute(
-    //     path: ':id',
-    //     builder: (ctx, state) {
-    //       final mediaIdStr = state.pathParameters['id']!;
-    //       final mediaId = int.tryParse(mediaIdStr);
-    //       return Consumer(
-    //         builder: (ctx, ref, _) {
-    //           ref.read(dbPrefProvider.notifier).setPlayingId(mediaId);
-    //           final notifier = ref.read(playerProvider.notifier);
-    //           return PlayerUI(playerProvider, notifier);
-    //         },
-    //       );
-    //     },
-    //   ),
-    // ],
   );
 
   static GoRoute _settingsRoute() => GoRoute(

@@ -18,15 +18,16 @@ enum _MoreItem {
 
 class AlbumCardUI extends ConsumerWidget {
   final int? _id;
+
   const AlbumCardUI(this._id, {super.key});
 
   void _onTap(BuildContext ctx, WidgetRef ref) {
-    final id = ref.read(albumCardProvider(_id).notifier).album?.id;
-    if (id != null) ctx.go(AppRoute.albumById(id));
+    final id = _id;
+    if (id != null) ctx.go(AppRoute.albumDetail(id));
   }
 
   void _onEdit(BuildContext ctx) async {
-    await _showEditAlbumDialog(ctx);
+    await showDialog(context: ctx, builder: (context) => EditAlbumUI(_id));
   }
 
   void _onDelete(BuildContext ctx, WidgetRef ref) async {
@@ -36,7 +37,7 @@ class AlbumCardUI extends ConsumerWidget {
   }
 
   Future<bool> confirmDelete(BuildContext ctx, WidgetRef ref) async {
-    final name = ref.read(albumCardProvider(_id).notifier).album?.name;
+    final name = ref.read(albumCardProvider(_id).notifier).albumName;
     if (name == null) {
       return false;
     }
@@ -44,19 +45,12 @@ class AlbumCardUI extends ConsumerWidget {
       context: ctx,
       builder: (context) => AlertDialog(
         title: const Text('Delete Album'),
-        content: Text(
-          'Are you sure you want to delete "$name"? This action cannot be undone.',
-        ),
+        content: Text('Are you sure you want to delete "$name"? This action cannot be undone.'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
             child: const Text('Delete'),
           ),
         ],
@@ -67,19 +61,6 @@ class AlbumCardUI extends ConsumerWidget {
       return false;
     }
     return true;
-  }
-
-  Future<void> _showEditAlbumDialog(BuildContext ctx) async {
-    await showDialog(
-      context: ctx,
-      builder: (ctx) {
-        return Consumer(
-          builder: (context, ref, child) {
-            return EditAlbumUI(_id);
-          },
-        );
-      },
-    );
   }
 
   @override
@@ -118,10 +99,7 @@ class AlbumCardUI extends ConsumerWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.3),
-                            ],
+                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.3)],
                           ),
                         ),
                       ),

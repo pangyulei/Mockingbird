@@ -24,16 +24,16 @@ class DBAlbumList extends _$DBAlbumList {
     }
   }
 
-  Future<void> updateAlbum(
-    EnAlbum album, {
-    String? name,
-    File? Function()? cover,
-  }) async {
-    final updatedAlbum = await DBLogic().updateAlbum(
-      album,
-      name: name,
-      cover: cover,
-    );
+  Future<void> updateMedia(EnMedia media, String newName) async {
+    final updatedMedia = await DBLogic().updateMedia(media, newName);
+    final album = updatedMedia.albums.first;
+    final index = album.medias.indexWhere((m) => m.id == updatedMedia.id);
+    album.medias[index] = updatedMedia;
+    _replaceAlbum(album);
+  }
+
+  Future<void> updateAlbum(EnAlbum album, {String? name, File? Function()? cover}) async {
+    final updatedAlbum = await DBLogic().updateAlbum(album, name: name, cover: cover);
     if (updatedAlbum != album) {
       _replaceAlbum(updatedAlbum);
     }
@@ -41,15 +41,16 @@ class DBAlbumList extends _$DBAlbumList {
 
   Future<void> deleteAlbum(EnAlbum album) async {
     await DBLogic().deleteAlbum(album);
-    final albums = state.value ?? [];
-    albums.removeWhere((a) => a.id == album.id);
-    state = AsyncData(albums);
+    final albumList = state.value ?? [];
+    albumList.removeWhere((a) => a.id == album.id);
+    state = AsyncData([...albumList]);
   }
 
   void _replaceAlbum(EnAlbum album) {
-    var albums = state.value ?? [];
-    albums = albums.map((a) => a.id == album.id ? album : a).toList();
-    state = AsyncData(albums);
+    final albumList = state.value ?? [];
+    final index = albumList.indexWhere((a) => a.id == album.id);
+    albumList[index] = album;
+    state = AsyncData([...albumList]);
   }
 
   Future<void> importResourcesIntoAlbum(EnAlbum album, List<File> files) async {

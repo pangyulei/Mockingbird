@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'album_card_provider.dart';
+part of 'edit_media_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,47 +9,47 @@ part of 'album_card_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(AlbumCard)
-final albumCardProvider = AlbumCardFamily._();
+@ProviderFor(EditMedia)
+final editMediaProvider = EditMediaFamily._();
 
-final class AlbumCardProvider
-    extends $NotifierProvider<AlbumCard, AlbumCardState> {
-  AlbumCardProvider._({
-    required AlbumCardFamily super.from,
+final class EditMediaProvider
+    extends $NotifierProvider<EditMedia, EditMediaState> {
+  EditMediaProvider._({
+    required EditMediaFamily super.from,
     required int? super.argument,
   }) : super(
          retry: null,
-         name: r'albumCardProvider',
+         name: r'editMediaProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$albumCardHash();
+  String debugGetCreateSourceHash() => _$editMediaHash();
 
   @override
   String toString() {
-    return r'albumCardProvider'
+    return r'editMediaProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  AlbumCard create() => AlbumCard();
+  EditMedia create() => EditMedia();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AlbumCardState value) {
+  Override overrideWithValue(EditMediaState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AlbumCardState>(value),
+      providerOverride: $SyncValueProvider<EditMediaState>(value),
     );
   }
 
   @override
   bool operator ==(Object other) {
-    return other is AlbumCardProvider && other.argument == argument;
+    return other is EditMediaProvider && other.argument == argument;
   }
 
   @override
@@ -58,47 +58,47 @@ final class AlbumCardProvider
   }
 }
 
-String _$albumCardHash() => r'898f39c0b0670323446adb0f14b6eedc08363324';
+String _$editMediaHash() => r'9d49c3a53c1483a269c84a61a600cc124026f1d0';
 
-final class AlbumCardFamily extends $Family
+final class EditMediaFamily extends $Family
     with
         $ClassFamilyOverride<
-          AlbumCard,
-          AlbumCardState,
-          AlbumCardState,
-          AlbumCardState,
+          EditMedia,
+          EditMediaState,
+          EditMediaState,
+          EditMediaState,
           int?
         > {
-  AlbumCardFamily._()
+  EditMediaFamily._()
     : super(
         retry: null,
-        name: r'albumCardProvider',
+        name: r'editMediaProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  AlbumCardProvider call(int? id) =>
-      AlbumCardProvider._(argument: id, from: this);
+  EditMediaProvider call(int? id) =>
+      EditMediaProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'albumCardProvider';
+  String toString() => r'editMediaProvider';
 }
 
-abstract class _$AlbumCard extends $Notifier<AlbumCardState> {
+abstract class _$EditMedia extends $Notifier<EditMediaState> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  AlbumCardState build(int? id);
+  EditMediaState build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AlbumCardState, AlbumCardState>;
+    final ref = this.ref as $Ref<EditMediaState, EditMediaState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AlbumCardState, AlbumCardState>,
-              AlbumCardState,
+              AnyNotifier<EditMediaState, EditMediaState>,
+              EditMediaState,
               Object?,
               Object?
             >;

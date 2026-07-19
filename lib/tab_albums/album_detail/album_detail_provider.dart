@@ -15,6 +15,7 @@ part 'album_detail_provider.g.dart';
 
 @riverpod
 class AlbumDetail extends _$AlbumDetail {
+  EnAlbum? _album;
   @override
   AlbumDetailState build(int? id) {
     if (id == null) return const AlbumDetailState.empty();
@@ -24,6 +25,7 @@ class AlbumDetail extends _$AlbumDetail {
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
+    _album = album;
     if (album == null) return const AlbumDetailState.empty();
     final coverPath = album.cover;
     return AlbumDetailState(
@@ -48,17 +50,6 @@ class AlbumDetail extends _$AlbumDetail {
           .importResourcesIntoAlbum(album, files);
       EasyLoading.dismiss();
     }
-  }
-
-  EnAlbum? get _album {
-    final id = this.id;
-    if (id == null) return null;
-    return ref.read(
-      dbAlbumListProvider
-          .select((st) => st.value ?? [])
-          .select((al) => {for (final a in al) a.id: a})
-          .select((am) => am[id]),
-    );
   }
 
   Future<void> addCover() async {

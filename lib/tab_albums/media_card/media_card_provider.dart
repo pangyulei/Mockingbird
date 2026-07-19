@@ -7,7 +7,6 @@ import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
-import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -51,7 +50,6 @@ class MediaCard extends _$MediaCard {
     );
   }
 
-  @override
   Future<void> deleteSubtitle() async {
     final media = _media;
     if (media == null) return;
@@ -60,7 +58,6 @@ class MediaCard extends _$MediaCard {
     EasyLoading.dismiss();
   }
 
-  @override
   Future<void> updateSubtitle() async {
     final media = _media;
     if (media == null) return;
@@ -75,7 +72,6 @@ class MediaCard extends _$MediaCard {
     EasyLoading.dismiss();
   }
 
-  @override
   Future<void> deleteMedia() async {
     final media = _media;
     if (media == null) return;
@@ -84,7 +80,6 @@ class MediaCard extends _$MediaCard {
     EasyLoading.dismiss();
   }
 
-  @override
   Future<void> play() async {
     EasyLoading.show(maskType: .clear);
     await ref.read(dbPrefProvider.notifier).setPlayingId(id);

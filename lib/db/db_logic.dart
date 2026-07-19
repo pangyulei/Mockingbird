@@ -157,8 +157,11 @@ class DBLogic {
     ]);
   }
 
-  Future<EnMedia> updateMedia(EnMedia media) async {
-    return await _store.box<EnMedia>().putAndGetAsync(media);
+  Future<EnMedia> updateMedia(EnMedia media, String newName) async {
+    final trimmedNewName = newName.trim();
+    if (trimmedNewName.isEmpty) return media;
+    if (trimmedNewName == media.name) return media;
+    return await _store.box<EnMedia>().putAndGetAsync(media.copyWith(name: trimmedNewName));
   }
 
   Future<EnMedia> updateSubtitle(EnMedia media, EnSubtitle subtitle) async {

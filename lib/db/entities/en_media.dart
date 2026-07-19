@@ -9,7 +9,6 @@ class EnMedia {
   @Id()
   int id;
 
-  // int versionId;
   final albums = ToMany<EnAlbum>();
   final String path; // Full path to the media file
   final String name;
@@ -17,40 +16,16 @@ class EnMedia {
   final subtitles = ToMany<EnSubtitle>();
 
   //objectbox will use this default constructor
-  EnMedia({
-    required this.path,
-    required this.name,
-    required this.id,
-    // required this.versionId,
-  });
+  EnMedia({required this.path, required this.name, required this.id});
 
-  MediaType get type =>
-      MediaType.fromExtension(p.extension(path));
+  MediaType get type => MediaType.fromExtension(p.extension(path));
 
-  EnMedia copyWith({
-    // int? versionId,
-    String? path,
-    String? name,
-    List<EnSubtitle>? subtitles,
-    List<EnAlbum>? albums,
-  }) {
-    final media = EnMedia(
-      id: id,
-      // versionId: versionId ?? this.versionId,
-      path: path ?? this.path,
-      name: name ?? this.name,
-    );
-    media.subtitles.addAll(subtitles ?? this.subtitles);
-    media.albums.addAll(albums ?? this.albums);
+  EnMedia copyWith({String? name}) {
+    final media = EnMedia(id: id, path: path, name: name ?? this.name);
+    media.subtitles.addAll(subtitles);
+    media.albums.addAll(albums);
     return media;
   }
-
-  // EnMedia incVersion() {
-  //   return copyWith(versionId: versionId + 1);
-  // }
-
-  // @override
-  // List<Object?> get props => [id, versionId];
 
   @override
   String toString() {
@@ -69,10 +44,8 @@ enum MediaType {
   static MediaType fromExtension(String ext) {
     if (ext.startsWith('.')) ext = ext.substring(1);
     ext = ext.toLowerCase();
-    if (kVideoExtensions.contains(ext))
-      return MediaType.video;
-    if (kAudioExtensions.contains(ext))
-      return MediaType.audio;
+    if (kVideoExtensions.contains(ext)) return MediaType.video;
+    if (kAudioExtensions.contains(ext)) return MediaType.audio;
     throw ArgumentError('Unsupported file extension: $ext');
   }
 }
@@ -87,13 +60,5 @@ const kAudioExtensions = {
   'flac',
   'amr',
 };
-const kVideoExtensions = {
-  'mp4',
-  'm4v',
-  'mkv',
-  'webm',
-  '3gp',
-  'ts',
-  'flv',
-};
+const kVideoExtensions = {'mp4', 'm4v', 'mkv', 'webm', '3gp', 'ts', 'flv'};
 const kSubtitleExtensions = {'srt', 'vtt'};

@@ -9,10 +9,6 @@ class EditAlbumUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    return Stack(children: [_dialog(ctx)]);
-  }
-
-  Widget _dialog(BuildContext ctx) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Consumer(

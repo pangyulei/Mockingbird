@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/app/app_route.dart';
+import 'package:mockingbird/tab_albums/edit_media/edit_media_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
 
 enum _MoreItem {
@@ -18,6 +19,7 @@ enum _MoreItem {
 
 class MediaCardUI extends ConsumerWidget {
   final int? _id;
+
   const MediaCardUI(this._id, {super.key});
 
   void _onPlay(BuildContext ctx, WidgetRef ref) async {
@@ -39,8 +41,8 @@ class MediaCardUI extends ConsumerWidget {
     await ref.read(mediaCardProvider(_id).notifier).deleteMedia();
   }
 
-  void _onRenameMedia(WidgetRef ref) async {
-    //TODO popup rename media dialog
+  void _onRenameMedia(BuildContext ctx) async {
+    await showDialog(context: ctx, builder: (context) => EditMediaUI(_id));
   }
 
   @override
@@ -69,12 +71,7 @@ class MediaCardUI extends ConsumerWidget {
             InkWell(
               onTap: () => _onPlay(ctx, ref),
               child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 12,
-                  bottom: 12,
-                  left: 16,
-                  right: 52,
-                ),
+                padding: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 52),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -153,9 +150,7 @@ class MediaCardUI extends ConsumerWidget {
           return Row(
             children: [
               Icon(
-                hasSubtitle
-                    ? Icons.subtitles_rounded
-                    : Icons.subtitles_off_rounded,
+                hasSubtitle ? Icons.subtitles_rounded : Icons.subtitles_off_rounded,
                 color: hasSubtitle ? colorScheme.outline : colorScheme.error,
                 size: 14,
               ),
@@ -187,9 +182,7 @@ class MediaCardUI extends ConsumerWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: isPlaying
-            ? colorScheme.primary
-            : colorScheme.surfaceContainerHighest,
+        color: isPlaying ? colorScheme.primary : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
@@ -216,18 +209,14 @@ class MediaCardUI extends ConsumerWidget {
             } else if (value == _MoreItem.deleteMedia.raw) {
               _onDeleteMedia(ref);
             } else if (value == _MoreItem.rename.raw) {
-              _onRenameMedia(ref);
+              _onRenameMedia(ctx);
             }
           },
           itemBuilder: (context) => [
             PopupMenuItem(
               value: _MoreItem.rename.raw,
               child: const Row(
-                children: [
-                  Icon(Icons.edit_rounded, size: 18),
-                  SizedBox(width: 12),
-                  Text('Rename'),
-                ],
+                children: [Icon(Icons.edit_rounded, size: 18), SizedBox(width: 12), Text('Rename')],
               ),
             ),
             PopupMenuItem(
@@ -241,9 +230,7 @@ class MediaCardUI extends ConsumerWidget {
                       final hasSubtitle = ref.watch(
                         mediaCardProvider(_id).select((s) => s.hasSubtitle),
                       );
-                      return Text(
-                        hasSubtitle ? 'Change Subtitle' : 'Add Subtitle',
-                      );
+                      return Text(hasSubtitle ? 'Change Subtitle' : 'Add Subtitle');
                     },
                   ),
                 ],
@@ -254,16 +241,9 @@ class MediaCardUI extends ConsumerWidget {
                 value: _MoreItem.deleteSubtitle.raw,
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.subtitles_off_rounded,
-                      size: 18,
-                      color: colorScheme.error,
-                    ),
+                    Icon(Icons.subtitles_off_rounded, size: 18, color: colorScheme.error),
                     const SizedBox(width: 12),
-                    Text(
-                      'Delete Subtitle',
-                      style: TextStyle(color: colorScheme.error),
-                    ),
+                    Text('Delete Subtitle', style: TextStyle(color: colorScheme.error)),
                   ],
                 ),
               ),
@@ -272,16 +252,9 @@ class MediaCardUI extends ConsumerWidget {
               value: _MoreItem.deleteMedia.raw,
               child: Row(
                 children: [
-                  Icon(
-                    Icons.delete_outline_rounded,
-                    size: 18,
-                    color: colorScheme.error,
-                  ),
+                  Icon(Icons.delete_outline_rounded, size: 18, color: colorScheme.error),
                   const SizedBox(width: 12),
-                  Text(
-                    'Delete Media',
-                    style: TextStyle(color: colorScheme.error),
-                  ),
+                  Text('Delete Media', style: TextStyle(color: colorScheme.error)),
                 ],
               ),
             ),
@@ -311,10 +284,7 @@ class _PlayingIndicator extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 1),
           width: 2,
           height: 8 + (index % 2 == 0 ? 4 : 0),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(1),
-          ),
+          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(1)),
         );
       }),
     );

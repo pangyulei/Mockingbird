@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
 
@@ -15,10 +14,9 @@ class AppUI extends StatelessWidget {
         // ➔ 切换 Tab 的核心方法
         shell.goBranch(
           index,
-          initialLocation:
-              index == shell.currentIndex, // 重复点击当前 Tab 会回到该 Tab 的根路由
+          initialLocation: index == shell.currentIndex, // 重复点击当前 Tab 会回到该 Tab 的根路由
         );
-      },).router,
+      }).router,
       theme: _theme(),
       builder: EasyLoading.init(),
       // builder: (context, child) => _home(),
@@ -76,11 +74,7 @@ class AppUI extends StatelessWidget {
         foregroundColor: textPrimary,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: textPrimary,
-        ),
+        titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textPrimary),
       ),
       cardTheme: CardThemeData(
         color: surface,
