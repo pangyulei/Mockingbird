@@ -111,11 +111,7 @@ class DBLogic {
       int i = e.key;
       final dirMediaFile = e.value;
       final mediaName = p.basenameWithoutExtension(mfsfList[i].mediaFile.path);
-      final media = EnMedia(
-        path: dirMediaFile.path,
-        name: mediaName,
-        id: 0,
-      );
+      final media = EnMedia(path: dirMediaFile.path, name: mediaName, id: 0);
       media.albums.add(album);
       final subtitle = subtitlesWithoutId[i];
       if ((subtitle != null)) {
@@ -165,7 +161,7 @@ class DBLogic {
     return await _store.box<EnMedia>().putAndGetAsync(media);
   }
 
-  Future<EnMedia> addSubtitle(EnMedia media, EnSubtitle subtitle) async {
+  Future<EnMedia> updateSubtitle(EnMedia media, EnSubtitle subtitle) async {
     media = await _store.runInTransactionAsync<EnMedia, int>(TxMode.write, (
       Store store,
       int mediaId,
@@ -177,11 +173,11 @@ class DBLogic {
       }
       final subtitleBox = store.box<EnSubtitle>();
       final sentenceBox = store.box<EnSentence>();
-      final sentences = media.subtitles
+      final sentenceList = media.subtitles
           .map((st) => st.sentences)
           .expand((e) => e)
           .toList();
-      sentenceBox.removeMany(sentences.map((s) => s.id).toList());
+      sentenceBox.removeMany(sentenceList.map((s) => s.id).toList());
       subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
       media.subtitles.clear();
       media.subtitles.add(subtitle);

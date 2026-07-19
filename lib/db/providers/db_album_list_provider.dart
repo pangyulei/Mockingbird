@@ -68,8 +68,8 @@ class DBAlbumList extends _$DBAlbumList {
     _replaceAlbum(album);
   }
 
-  Future<void> addSubtitle(EnMedia media, EnSubtitle subtitle) async {
-    final updatedMedia = await DBLogic().addSubtitle(media, subtitle);
+  Future<void> updateSubtitle(EnMedia media, EnSubtitle subtitle) async {
+    final updatedMedia = await DBLogic().updateSubtitle(media, subtitle);
     final updatedAlbum = updatedMedia.albums.firstOrNull;
     if (updatedAlbum != null) {
       _replaceAlbum(updatedAlbum);

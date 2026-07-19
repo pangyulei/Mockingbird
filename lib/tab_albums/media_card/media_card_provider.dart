@@ -61,7 +61,7 @@ class MediaCard extends _$MediaCard implements MediaCardNotifierITF {
   }
 
   @override
-  Future<void> addSubtitle() async {
+  Future<void> updateSubtitle() async {
     final media = _media;
     if (media == null) return;
     final subtitlePath = await _pickOneSubtitle();
@@ -70,7 +70,7 @@ class MediaCard extends _$MediaCard implements MediaCardNotifierITF {
     EasyLoading.show(maskType: .clear);
     final subtitle = await SubtitleParser.parsePath(subtitlePath);
     if (subtitle != null) {
-      await ref.read(dbAlbumListProvider.notifier).addSubtitle(media, subtitle);
+      await ref.read(dbAlbumListProvider.notifier).updateSubtitle(media, subtitle);
     }
     EasyLoading.dismiss();
   }

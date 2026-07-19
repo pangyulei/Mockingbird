@@ -8,23 +8,30 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'media_card_state.dart';
 
 enum _MoreItem {
-  addSubtitle('add subtitle'),
+  rename('rename'),
+  updateSubtitle('update subtitle'),
   deleteSubtitle('delete subtitle'),
   deleteMedia('delete media');
+
   final String raw;
+
   const _MoreItem(this.raw);
 }
 
 abstract interface class MediaCardNotifierITF {
   Future<void> play();
+
   Future<void> deleteSubtitle();
-  Future<void> addSubtitle();
+
+  Future<void> updateSubtitle();
+
   Future<void> deleteMedia();
 }
 
 class MediaCardUI extends ConsumerWidget {
   final ProviderListenable<MediaCardState> _provider;
   final MediaCardNotifierITF _notifier;
+
   const MediaCardUI(this._provider, this._notifier, {super.key});
 
   void _onPlay(BuildContext ctx) async {
@@ -34,8 +41,8 @@ class MediaCardUI extends ConsumerWidget {
     }
   }
 
-  void _onAddSubtitle() async {
-    await _notifier.addSubtitle();
+  void _onUpdateSubtitle() async {
+    await _notifier.updateSubtitle();
   }
 
   void _onDeleteSubtitle() async {
@@ -46,12 +53,15 @@ class MediaCardUI extends ConsumerWidget {
     await _notifier.deleteMedia();
   }
 
+  void _onRenameMedia() async {
+    //TODO popup rename media dialog
+  }
+
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final isPlaying =
-        ref.watch(_provider.select((s) => s.isPlaying));
+    final isPlaying = ref.watch(_provider.select((s) => s.isPlaying));
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -88,7 +98,7 @@ class MediaCardUI extends ConsumerWidget {
                         child: Column(
                           mainAxisAlignment: .center,
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [_title(ctx, ref), _subtitle(ctx, ref)],
+                          children: [_title(), _subtitle()],
                         ),
                       ),
                     ),
@@ -105,58 +115,54 @@ class MediaCardUI extends ConsumerWidget {
     );
   }
 
-  Widget _title(BuildContext ctx, WidgetRef ref) {
-    final theme = Theme.of(ctx);
-    final colorScheme = theme.colorScheme;
-    final (name, isPlaying) = ref.watch(
-      _provider.select(
-        (s) => (s.name.trim(), s.isPlaying),
-      ),
+  Widget _title() {
+    return Consumer(
+      builder: (ctx, ref, child) {
+        final theme = Theme.of(ctx);
+        final colorScheme = theme.colorScheme;
+        final (name, isPlaying) = ref.watch(
+          _provider.select((s) => (s.name.trim(), s.isPlaying)),
+        );
+        if (isPlaying && name.isNotEmpty) {
+          return SizedBox(
+            height: 20,
+            child: Marquee(
+              text: name,
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.primary,
+              ),
+              scrollAxis: .horizontal,
+              blankSpace: 20,
+              velocity: 30,
+            ),
+          );
+          // fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.w600,
+          // color: _state.isPlaying ? colorScheme.primary : colorScheme.onSurface,
+        } else {
+          return Text(
+            name,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          );
+        }
+      },
     );
-    if (isPlaying && name.isNotEmpty) {
-      return SizedBox(
-        height: 20,
-        child: Marquee(
-          text: name,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: colorScheme.primary,
-          ),
-          scrollAxis: .horizontal,
-          blankSpace: 20,
-          velocity: 30,
-        ),
-      );
-      // fontWeight: _state.isPlaying ? FontWeight.bold : FontWeight.w600,
-      // color: _state.isPlaying ? colorScheme.primary : colorScheme.onSurface,
-    } else {
-      return Text(
-        name,
-        style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface,
-        ),
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-      );
-    }
   }
 
-  Widget _subtitle(BuildContext ctx, WidgetRef ref) {
-    final theme = Theme.of(ctx);
-    final colorScheme = theme.colorScheme;
+  Widget _subtitle() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Consumer(
-        builder: (context, ref, child) {
+        builder: (ctx, ref, child) {
+          final theme = Theme.of(ctx);
+          final colorScheme = theme.colorScheme;
           final (hasSubtitle, type, isPlaying) = ref.watch(
-            _provider.select(
-              (s) => (
-                s.hasSubtitle,
-                s.type,
-                s.isPlaying,
-              ),
-            ),
+            _provider.select((s) => (s.hasSubtitle, s.type, s.isPlaying)),
           );
           return Row(
             children: [
@@ -190,9 +196,7 @@ class MediaCardUI extends ConsumerWidget {
   Widget _playButton(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final isPlaying = ref.watch(
-      _provider.select((s) => s.isPlaying),
-    );
+    final isPlaying = ref.watch(_provider.select((s) => s.isPlaying));
     return Container(
       width: 48,
       height: 48,
@@ -215,23 +219,33 @@ class MediaCardUI extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     return Consumer(
       builder: (context, ref, child) {
-        final hasSubtitle = ref.watch(
-          _provider.select((s) => s.hasSubtitle),
-        );
+        final hasSubtitle = ref.watch(_provider.select((s) => s.hasSubtitle));
         return PopupMenuButton<String>(
           icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
           onSelected: (value) {
-            if (value == _MoreItem.addSubtitle.raw) {
-              _onAddSubtitle();
+            if (value == _MoreItem.updateSubtitle.raw) {
+              _onUpdateSubtitle();
             } else if (value == _MoreItem.deleteSubtitle.raw) {
               _onDeleteSubtitle();
             } else if (value == _MoreItem.deleteMedia.raw) {
               _onDeleteMedia();
+            } else if (value == _MoreItem.rename.raw) {
+              _onRenameMedia();
             }
           },
           itemBuilder: (context) => [
             PopupMenuItem(
-              value: _MoreItem.addSubtitle.raw,
+              value: _MoreItem.rename.raw,
+              child: const Row(
+                children: [
+                  Icon(Icons.edit_rounded, size: 18),
+                  SizedBox(width: 12),
+                  Text('Rename'),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: _MoreItem.updateSubtitle.raw,
               child: Row(
                 children: [
                   const Icon(Icons.subtitles_rounded, size: 18),
@@ -295,7 +309,6 @@ class MediaCardUI extends ConsumerWidget {
       },
     );
   }
-
 }
 
 class _PlayingIndicator extends StatelessWidget {
