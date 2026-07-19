@@ -69,7 +69,7 @@ class Player extends _$Player {
     if (index == null || sentence == null) return;
 
     _scrollController?._scrollTo(index);
-    if (videoState.loopingIndex != null) {
+    if (videoState.loop) {
       _updateVideoState(videoState.copyWith(loopingIndex: () => index));
     }
     await videoController.seekTo(sentence.start);
@@ -124,12 +124,12 @@ class Player extends _$Player {
       Duration(microseconds: position),
     );
     _updateVideoState(
-      _videoState?.copyWith(loopingIndex: () => playingSentenceIndex),
+      _videoState?.copyWith(loopingIndex: () => playingSentenceIndex, loop: true),
     );
   }
 
   void unloop() {
-    _updateVideoState(_videoState?.copyWith(loopingIndex: () => null));
+    _updateVideoState(_videoState?.copyWith(loopingIndex: () => null, loop: false));
   }
 
   Future<void> videoPositionChanged(
@@ -177,8 +177,7 @@ class Player extends _$Player {
     }
 
     //handle scroll
-    final loopingIndex = videoState.loopingIndex;
-    if (loopingIndex == null && isSentenceChanged) {
+    if (!videoState.loop && isSentenceChanged) {
       debugPrint(
         'positon changing scrollto ${playingSentence ?? sentenceList.last}',
       );
@@ -187,7 +186,8 @@ class Player extends _$Player {
       );
     }
     //handle loop seek to begin
-    if (loopingIndex != null) {
+    final loopingIndex = videoState.loopingIndex;
+    if (videoState.loop && loopingIndex != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       final sentence = sentenceList.elementAtOrNull(loopingIndex);
       debugPrint('position changing loop $sentence');
@@ -246,7 +246,7 @@ class Player extends _$Player {
         ?.sentences;
     if (sentenceList == null || sentenceList.isEmpty) return;
     final playingSentenceIndex = _sentenceIndexByPosition(position);
-    if (_videoState?.loopingIndex != null) {
+    if (_videoState?.loop == true) {
       debugPrint(
         'sliding loop ${ref.read(playerMediaProvider)?.subtitles.firstOrNull?.sentences.elementAtOrNull(playingSentenceIndex ?? 9999)}',
       );
@@ -302,7 +302,7 @@ class Player extends _$Player {
     //seek to sentence start
     final Duration seekTo;
     final playingSentenceIndex = _sentenceIndexByPosition(position);
-    if (_videoState?.loopingIndex != null) {
+    if (_videoState?.loop == true) {
       final playingSentence = playingSentenceIndex == null
           ? null
           : sentenceList.elementAtOrNull(playingSentenceIndex);
@@ -383,6 +383,7 @@ class PlayerVideo extends _$PlayerVideo {
     return PlayerVideoState(
       positionMicro: 0,
       loopingIndex: null,
+      loop: false,
       showVolumeSlider: false,
       controller: videoController,
       isPlaying: true,

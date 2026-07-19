@@ -550,7 +550,7 @@ class PlayerUI extends ConsumerWidget {
         final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
         if (sentenceCount == 0) return const SizedBox.shrink();
         final bool loop = ref.watch(
-          playerProvider.select((st) => st?.videoState?.loopingIndex != null),
+          playerProvider.select((st) => st?.videoState?.loop ?? false),
         );
         return IconButton(
           onPressed: () {

@@ -2,6 +2,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 class PlayerVideoState {
+  final bool loop;
   final int? loopingIndex;
   final bool showVolumeSlider;
   final VideoPlayerController controller;
@@ -11,6 +12,7 @@ class PlayerVideoState {
   final int positionMicro;
 
   const PlayerVideoState({
+    required this.loop,
     required this.positionMicro,
     required this.isPlaying,
     required this.speed,
@@ -21,6 +23,7 @@ class PlayerVideoState {
   });
 
   PlayerVideoState copyWith({
+    bool? loop,
     int? positionMicro,
     int? Function()? loopingIndex,
     bool? isPlaying,
@@ -29,6 +32,7 @@ class PlayerVideoState {
     bool? showVolumeSlider,
   }) {
     return PlayerVideoState(
+      loop: loop ?? this.loop,
       positionMicro: positionMicro ?? this.positionMicro,
       controller: controller,
       speed: speed ?? this.speed,
