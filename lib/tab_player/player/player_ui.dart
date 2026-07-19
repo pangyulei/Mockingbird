@@ -377,8 +377,9 @@ class PlayerUI extends ConsumerWidget {
             value: position.clamp(0, duration),
             max: duration,
             onChangeStart: (val) => _onVideoSliderStartChanged(ref, val),
-            onChangeEnd: (val) => _onVideoSliderEndChanged(ref, val),
             onChanged: (val) => _onVideoSliderChanging(ref, val),
+            onChangeEnd: (val) => _onVideoSliderEndChanged(ref, val),
+            allowedInteraction: SliderInteraction.tapAndSlide,
           );
         },
       ),

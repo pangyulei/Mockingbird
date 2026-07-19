@@ -24,6 +24,7 @@ class Player extends _$Player {
   PlayerVideoState? get _videoState => state?.videoState;
 
   VideoPlayerController? get _videoController => state?.videoState?.controller;
+  ItemScrollController? get _scrollController => state?.scrollController;
 
   int? _prevPlayingSentenceIndex;
   bool _isDraggingVideoSlider = false;
@@ -43,6 +44,13 @@ class Player extends _$Player {
   }
 
   void _updateVideoState(PlayerVideoState? videoState) {
+    if (videoState != null) {
+      debugPrint(
+        'update position to ${Duration(microseconds: videoState.positionMicro)}',
+      );
+    } else {
+      debugPrint('update position to null');
+    }
     state = state?.copyWith(videoState: () => videoState);
   }
 
@@ -52,14 +60,15 @@ class Player extends _$Player {
     final videoState = _videoState;
     if (videoState == null) return;
     final media = ref.read(playerMediaProvider);
-    final entry = media?.subtitles.firstOrNull?.sentences.asMap().entries.firstWhereOrNull(
-      (e) => e.value.id == sentenceId,
-    );
+    final entry = media?.subtitles.firstOrNull?.sentences
+        .asMap()
+        .entries
+        .firstWhereOrNull((e) => e.value.id == sentenceId);
     final index = entry?.key;
     final sentence = entry?.value;
     if (index == null || sentence == null) return;
 
-    state?.scrollController._scrollTo(index);
+    _scrollController?._scrollTo(index);
     if (videoState.loopingIndex != null) {
       _updateVideoState(videoState.copyWith(loopingIndex: () => index));
     }
@@ -74,14 +83,20 @@ class Player extends _$Player {
 
   Future<void> decSpeed() async {
     final currSpeed = state?.videoState?.speed ?? 1;
-    final double nextSpeed = (currSpeed - _kStepPlaySpeed).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
+    final double nextSpeed = (currSpeed - _kStepPlaySpeed).clamp(
+      _kMinPlaySpeed,
+      _kMaxPlaySpeed,
+    );
     _updateVideoState(_videoState?.copyWith(speed: nextSpeed));
     await _videoController?.setPlaybackSpeed(nextSpeed);
   }
 
   Future<void> incSpeed() async {
     final currSpeed = state?.videoState?.speed ?? 1;
-    final double nextSpeed = (currSpeed + _kStepPlaySpeed).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
+    final double nextSpeed = (currSpeed + _kStepPlaySpeed).clamp(
+      _kMinPlaySpeed,
+      _kMaxPlaySpeed,
+    );
     _updateVideoState(_videoState?.copyWith(speed: nextSpeed));
     await _videoController?.setPlaybackSpeed(nextSpeed);
   }
@@ -105,21 +120,30 @@ class Player extends _$Player {
   void loop() {
     final position = _videoState?.positionMicro;
     if (position == null) return;
-    final playingSentenceIndex = _sentenceIndexByPosition(Duration(microseconds: position));
-    _updateVideoState(_videoState?.copyWith(loopingIndex: () => playingSentenceIndex));
+    final playingSentenceIndex = _sentenceIndexByPosition(
+      Duration(microseconds: position),
+    );
+    _updateVideoState(
+      _videoState?.copyWith(loopingIndex: () => playingSentenceIndex),
+    );
   }
 
   void unloop() {
     _updateVideoState(_videoState?.copyWith(loopingIndex: () => null));
   }
 
-  Future<void> videoPositionChanged(VideoPlayerController videoController) async {
+  Future<void> videoPositionChanged(
+    VideoPlayerController videoController,
+  ) async {
     final state = this.state;
     final videoState = state?.videoState;
     if (state == null || videoState == null) return;
+    if (_isDraggingVideoSlider) return;
     final position = videoController.value.position;
     //for video slider moving along with playing
-    _updateVideoState(videoState.copyWith(positionMicro: position.inMicroseconds));
+    _updateVideoState(
+      videoState.copyWith(positionMicro: position.inMicroseconds),
+    );
     final duration = videoController.value.duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
@@ -127,10 +151,17 @@ class Player extends _$Player {
     }
     //prevent videoController.play() but _state not setuped fully.
     if (state.sentenceCount == 0) return;
-    final sentenceList = ref.read(playerMediaProvider)?.subtitles.firstOrNull?.sentences;
+    final sentenceList = ref
+        .read(playerMediaProvider)
+        ?.subtitles
+        .firstOrNull
+        ?.sentences;
     if (sentenceList == null || sentenceList.isEmpty) return;
 
     final playingSentenceIndex = _sentenceIndexByPosition(position);
+    final playingSentence = playingSentenceIndex == null
+        ? null
+        : sentenceList.elementAtOrNull(playingSentenceIndex);
     final isSentenceChanged = playingSentenceIndex != _prevPlayingSentenceIndex;
 
     //debug message
@@ -139,26 +170,29 @@ class Player extends _$Player {
     //     : sentenceList[_prevPlayingSentenceIndex!];
     // final now = playingSentenceIndex == null ? null : sentenceList[playingSentenceIndex];
     // debugPrint('$prev => $now');
-
     //handle mark
     if (isSentenceChanged) {
+      debugPrint('positon changing mark $playingSentence');
       _markSentence(playingSentenceIndex);
     }
 
     //handle scroll
     final loopingIndex = videoState.loopingIndex;
-    if (isSentenceChanged) {
-      if (_isDraggingVideoSlider) {
-        state.scrollController._jumpTo(playingSentenceIndex ?? sentenceList.length - 1);
-      } else if (loopingIndex == null) {
-        state.scrollController._scrollTo(playingSentenceIndex ?? sentenceList.length - 1);
-      }
+    if (loopingIndex == null && isSentenceChanged) {
+      debugPrint(
+        'positon changing scrollto ${playingSentence ?? sentenceList.last}',
+      );
+      _scrollController?._scrollTo(
+        playingSentenceIndex ?? sentenceList.length - 1,
+      );
     }
     //handle loop seek to begin
-    if (loopingIndex != null && !_isDraggingVideoSlider) {
+    if (loopingIndex != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       final sentence = sentenceList.elementAtOrNull(loopingIndex);
+      debugPrint('position changing loop $sentence');
       if (sentence != null && position > sentence.end) {
+        debugPrint('positon changing loop seek to ${sentence.start}');
         await videoController.seekTo(sentence.start);
       }
     }
@@ -166,8 +200,19 @@ class Player extends _$Player {
   }
 
   void _markSentence(int? index) {
-    final sentenceList = ref.read(playerMediaProvider)?.subtitles.firstOrNull?.sentences;
+    final sentenceList = ref
+        .read(playerMediaProvider)
+        ?.subtitles
+        .firstOrNull
+        ?.sentences;
     if (sentenceList == null || sentenceList.isEmpty) return;
+    if (index != null) {
+      int? id = sentenceList.elementAtOrNull(index)?.id;
+      final isPlaying = ref.read(sentenceCardProvider(id)).isPlaying;
+      if (isPlaying == true) {
+        return;
+      }
+    }
     for (int i = 0; i < sentenceList.length; i++) {
       final bool mark = index == i;
       int? id = sentenceList.elementAtOrNull(i)?.id;
@@ -176,7 +221,11 @@ class Player extends _$Player {
   }
 
   int? _sentenceIndexByPosition(Duration position) {
-    final sentenceList = ref.read(playerMediaProvider)?.subtitles.firstOrNull?.sentences;
+    final sentenceList = ref
+        .read(playerMediaProvider)
+        ?.subtitles
+        .firstOrNull
+        ?.sentences;
     if (sentenceList == null || sentenceList.isEmpty) return null;
     for (int i = 0; i < sentenceList.length; i++) {
       EnSentence? prev = i == 0 ? null : sentenceList[i - 1];
@@ -189,45 +238,91 @@ class Player extends _$Player {
     return null;
   }
 
+  Future<void> _syncVideoWithSlider(Duration position) async {
+    final sentenceList = ref
+        .read(playerMediaProvider)
+        ?.subtitles
+        .firstOrNull
+        ?.sentences;
+    if (sentenceList == null || sentenceList.isEmpty) return;
+    final playingSentenceIndex = _sentenceIndexByPosition(position);
+    if (_videoState?.loopingIndex != null) {
+      debugPrint(
+        'sliding loop ${ref.read(playerMediaProvider)?.subtitles.firstOrNull?.sentences.elementAtOrNull(playingSentenceIndex ?? 9999)}',
+      );
+      _updateVideoState(
+        _videoState?.copyWith(loopingIndex: () => playingSentenceIndex),
+      );
+    }
+    final playingSentence = playingSentenceIndex == null
+        ? null
+        : sentenceList.elementAtOrNull(playingSentenceIndex);
+    debugPrint('sliding jumpto ${playingSentence ?? sentenceList.last}');
+    _markSentence(playingSentenceIndex);
+    if (playingSentenceIndex == null) {
+      _scrollController?._scrollTo(sentenceList.length - 1);
+    } else {
+      _scrollController?._jumpTo(playingSentenceIndex);
+    }
+    _updateVideoState(
+      _videoState?.copyWith(positionMicro: position.inMicroseconds),
+    );
+    await _videoController?.seekTo(position);
+  }
+
   Future<void> videoSliderStartChanged(double valMicro) async {
     _isDraggingVideoSlider = true;
-    // debugPrint('video duration ${_videoController?.value.duration.inMicroseconds.toDouble()}');
-    // _updateVideoState(_videoState?.copyWith(isPlaying: false, positionMicro: valMicro.toInt()));
+    debugPrint('start of slide: pause');
+    _updateVideoState(_videoState?.copyWith(isPlaying: false));
     await _videoController?.pause();
-    // await _videoController?.seekTo(Duration(microseconds: valMicro.toInt()));
+
+    await _syncVideoWithSlider(Duration(microseconds: valMicro.toInt()));
   }
 
   Future<void> videoSliderChanging(double valMicro) async {
     // debugPrint('videoSliderChanging $valMicro');
-    await _videoController?.seekTo(Duration(microseconds: valMicro.toInt()));
+    await _syncVideoWithSlider(Duration(microseconds: valMicro.toInt()));
   }
 
   Future<void> videoSliderEndChanged(double valMicro) async {
-    _isDraggingVideoSlider = false;
     final videoController = _videoController;
-    if (videoController == null) return;
+    final sentenceList = ref
+        .read(playerMediaProvider)
+        ?.subtitles
+        .firstOrNull
+        ?.sentences;
+    if (videoController == null ||
+        sentenceList == null ||
+        sentenceList.isEmpty) {
+      _isDraggingVideoSlider = false;
+      return;
+    }
     final duration = videoController.value.duration;
     final position = Duration(microseconds: valMicro.toInt());
-    debugPrint('pos $position dur $duration');
     //seek to sentence start
-    final sentenceList = ref.read(playerMediaProvider)?.subtitles.firstOrNull?.sentences;
+    final Duration seekTo;
     final playingSentenceIndex = _sentenceIndexByPosition(position);
-    final playingSentence = playingSentenceIndex == null
-        ? null
-        : sentenceList?.elementAtOrNull(playingSentenceIndex);
-    final seekTo = playingSentence == null ? position : playingSentence.start;
-    debugPrint('seek to $seekTo');
-    await _videoController?.seekTo(seekTo);
     if (_videoState?.loopingIndex != null) {
-      _updateVideoState(_videoState?.copyWith(loopingIndex: () => playingSentenceIndex));
+      final playingSentence = playingSentenceIndex == null
+          ? null
+          : sentenceList.elementAtOrNull(playingSentenceIndex);
+      seekTo = playingSentence == null ? position : playingSentence.start;
+    } else {
+      seekTo = position;
     }
-    if (position < duration) {
+    
+    await _syncVideoWithSlider(seekTo);
+    if (seekTo < duration) {
+      debugPrint('end of slide: play');
       _updateVideoState(_videoState?.copyWith(isPlaying: true));
       await _videoController?.play();
     } else {
-      //如果没play，就不会走进 videoPositionChanged, state的position就不会更新，导致进度条不同步
-      _updateVideoState(_videoState?.copyWith(positionMicro: seekTo.inMicroseconds));
+      // _updateVideoState(
+      //   _videoState?.copyWith(positionMicro: seekTo.inMicroseconds),
+      // );
     }
+    debugPrint('end of slide: isdragging false');
+    _isDraggingVideoSlider = false;
   }
 
   Future<void> updateVolume(double newVolume) async {
@@ -263,7 +358,10 @@ class Player extends _$Player {
         allowMultiple: false,
       );
       final subtitlePath = pickedFiles?.files
-          .firstWhereOrNull((f) => kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''))
+          .firstWhereOrNull(
+            (f) =>
+                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+          )
           ?.path;
       return subtitlePath;
     } catch (e) {
@@ -277,7 +375,9 @@ class Player extends _$Player {
 class PlayerVideo extends _$PlayerVideo {
   @override
   PlayerVideoState? build() {
-    final videoController = ref.watch(playerVideoControllerProvider.select((av) => av.value));
+    final videoController = ref.watch(
+      playerVideoControllerProvider.select((av) => av.value),
+    );
     if (videoController == null) return null;
     videoController.play();
     return PlayerVideoState(
@@ -311,7 +411,9 @@ class PlayerVideoController extends _$PlayerVideoController {
 class PlayerMedia extends _$PlayerMedia {
   @override
   EnMedia? build() {
-    final playingId = ref.watch(dbPrefProvider.select((av) => av.value?.playingId));
+    final playingId = ref.watch(
+      dbPrefProvider.select((av) => av.value?.playingId),
+    );
     if (playingId == null) return null;
     final EnMedia? media = ref.watch(
       dbAlbumListProvider
@@ -335,7 +437,7 @@ extension on EnSentence {
     //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
     final start = prev == null ? const Duration(microseconds: 0) : this.start;
     if (next == null) {
-      return start <= position && position <= this.end;
+      return start <= position && position <= end;
     } else {
       return start <= position && position < next.start;
     }
@@ -359,7 +461,9 @@ extension on ItemScrollController {
         alignment: index == 0 ? 0 : 0.3,
       );
     } else {
-      debugPrint('${identityHashCode(this)} scroll fail, scroll is not attached');
+      debugPrint(
+        '${identityHashCode(this)} scroll fail, scroll is not attached',
+      );
     }
   }
 }
