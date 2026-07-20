@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../entities/en_album.dart';
+import 'db_pref_provider.dart';
 
 part 'db_album_list_provider.g.dart';
 
@@ -24,16 +27,23 @@ class DBAlbumList extends _$DBAlbumList {
     }
   }
 
-  Future<void> updateMedia(EnMedia media, String newName) async {
-    final updatedMedia = await DBLogic().updateMedia(media, newName);
-    final album = updatedMedia.albums.first;
-    final index = album.medias.indexWhere((m) => m.id == updatedMedia.id);
-    album.medias[index] = updatedMedia;
-    _replaceAlbum(album);
+  Future<void> updateMedia(
+    EnMedia media, {
+    String? name,
+    EnSubtitle? Function()? subtitleFunc,
+  }) async {
+    final updatedMedia = await DBLogic().updateMedia(media, name: name, subtitleFunc: subtitleFunc);
+    final album = updatedMedia.albums.firstOrNull;
+    if (album == null) return;
+    final newMediaList = album.medias
+        .map((m) => m.id == updatedMedia.id ? updatedMedia : m)
+        .toList();
+    final newAlbum = album.copyWith(medias: newMediaList);
+    _replaceAlbum(newAlbum);
   }
 
   Future<void> updateAlbum(EnAlbum album, {String? name, File? Function()? cover}) async {
-    final updatedAlbum = await DBLogic().updateAlbum(album, name: name, cover: cover);
+    final updatedAlbum = await DBLogic().updateAlbum(album, name: name, coverFunc: cover);
     if (updatedAlbum != album) {
       _replaceAlbum(updatedAlbum);
     }
@@ -42,15 +52,12 @@ class DBAlbumList extends _$DBAlbumList {
   Future<void> deleteAlbum(EnAlbum album) async {
     await DBLogic().deleteAlbum(album);
     final albumList = state.value ?? [];
-    albumList.removeWhere((a) => a.id == album.id);
-    state = AsyncData([...albumList]);
+    state = AsyncData(albumList.where((a) => a.id != album.id).toList());
   }
 
   void _replaceAlbum(EnAlbum album) {
     final albumList = state.value ?? [];
-    final index = albumList.indexWhere((a) => a.id == album.id);
-    albumList[index] = album;
-    state = AsyncData([...albumList]);
+    state = AsyncData(albumList.map((a) => a.id == album.id ? album : a).toList());
   }
 
   Future<void> importResourcesIntoAlbum(EnAlbum album, List<File> files) async {
@@ -62,26 +69,17 @@ class DBAlbumList extends _$DBAlbumList {
   }
 
   Future<void> deleteMedia(EnMedia media) async {
-    await DBLogic().deleteMedia(media);
     final album = media.albums.firstOrNull;
     if (album == null) return;
-    album.medias.removeWhere((m) => m.id == media.id);
-    _replaceAlbum(album);
-  }
+    final newMediaList = album.medias.where((m) => m.id != media.id).toList();
+    final newAlbum = album.copyWith(medias: newMediaList);
+    _replaceAlbum(newAlbum);
+    await DBLogic().deleteMedia(media);
 
-  Future<void> updateSubtitle(EnMedia media, EnSubtitle subtitle) async {
-    final updatedMedia = await DBLogic().updateSubtitle(media, subtitle);
-    final updatedAlbum = updatedMedia.albums.firstOrNull;
-    if (updatedAlbum != null) {
-      _replaceAlbum(updatedAlbum);
-    }
-  }
-
-  Future<void> deleteSubtitle(EnMedia media) async {
-    final updatedMedia = await DBLogic().deleteSubtitle(media);
-    final updatedAlbum = updatedMedia.albums.firstOrNull;
-    if (updatedAlbum != null) {
-      _replaceAlbum(updatedAlbum);
+    // clear playing id if playing media has deleted.
+    final playingId = ref.read(dbPrefProvider.select((av) => av.value?.playingId));
+    if (playingId == media.id) {
+      await ref.read(dbPrefProvider.notifier).setPlayingId(null);
     }
   }
 }

@@ -14,6 +14,8 @@ part 'media_card_provider.g.dart';
 
 @riverpod
 class MediaCard extends _$MediaCard {
+  EnMedia? _media;
+
   @override
   MediaCardState build(int? id) {
     if (id == null) return const MediaCardState.empty();
@@ -25,10 +27,10 @@ class MediaCard extends _$MediaCard {
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[id]),
     );
+    _media = media;
+    debugPrint('${identityHashCode(media)} $media');
     if (media == null) return const MediaCardState.empty();
-    final playingId = ref.watch(
-      dbPrefProvider.select((av) => av.value?.playingId),
-    );
+    final playingId = ref.watch(dbPrefProvider.select((av) => av.value?.playingId));
     return MediaCardState(
       name: media.name,
       type: media.type,
@@ -37,24 +39,11 @@ class MediaCard extends _$MediaCard {
     );
   }
 
-  EnMedia? get _media {
-    final id = this.id;
-    if (id == null) return null;
-    return ref.read(
-      dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => [for (final a in al) a.medias])
-          .select((mll) => mll.expand((e) => e))
-          .select((ml) => {for (final m in ml) m.id: m})
-          .select((mm) => mm[id]),
-    );
-  }
-
   Future<void> deleteSubtitle() async {
     final media = _media;
     if (media == null) return;
     EasyLoading.show(maskType: .clear);
-    await ref.read(dbAlbumListProvider.notifier).deleteSubtitle(media);
+    await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitleFunc: () => null);
     EasyLoading.dismiss();
   }
 
@@ -67,9 +56,13 @@ class MediaCard extends _$MediaCard {
     EasyLoading.show(maskType: .clear);
     final subtitle = await SubtitleParser.parsePath(subtitlePath);
     if (subtitle != null) {
-      await ref.read(dbAlbumListProvider.notifier).updateSubtitle(media, subtitle);
+      await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitleFunc: () => subtitle);
     }
     EasyLoading.dismiss();
+  }
+
+  Future<void> addSubtitle() async {
+    await updateSubtitle();
   }
 
   Future<void> deleteMedia() async {
@@ -94,10 +87,7 @@ class MediaCard extends _$MediaCard {
         allowMultiple: false,
       );
       final subtitlePath = pickedFiles?.files
-          .firstWhereOrNull(
-            (f) =>
-                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
-          )
+          .firstWhereOrNull((f) => kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''))
           ?.path;
       return subtitlePath;
     } catch (e) {

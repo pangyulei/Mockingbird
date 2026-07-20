@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
@@ -22,10 +21,6 @@ class AlbumCard extends _$AlbumCard {
           .select((am) => am[id]),
     );
     _album = album;
-    debugPrint('album card provider build:\n$album\n');
-    ref.onDispose(() {
-      debugPrint('album card provider dispose:\n$album\n');
-    });
     if (album == null) return const AlbumCardState.empty();
     return album.toCardState();
   }

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
@@ -76,10 +75,7 @@ class DBLogic {
     return (mfsfList: mfsfList, msfList: msfList);
   }
 
-  Future<List<EnMedia>> _mediasMadeFromMFSFList(
-    EnAlbum album,
-    List<MF_SF> mfsfList,
-  ) async {
+  Future<List<EnMedia>> _mediasMadeFromMFSFList(EnAlbum album, List<MF_SF> mfsfList) async {
     if (mfsfList.isEmpty) return [];
 
     final appDir = await getApplicationDocumentsDirectory();
@@ -94,16 +90,12 @@ class DBLogic {
       final timestamp = DateTime.now().microsecondsSinceEpoch;
       final uniqueName = "${timestamp}_$i";
       final mediaFile = e.value.mediaFile;
-      return mediaFile.copy(
-        p.join(mediaDir.path, "$uniqueName${p.extension(mediaFile.path)}"),
-      );
+      return mediaFile.copy(p.join(mediaDir.path, "$uniqueName${p.extension(mediaFile.path)}"));
     });
     final dirMediaFiles = await Future.wait(saveMediasToDir);
     final makeSubtitles = mfsfList.map((mfsf) {
       final subtitleFile = mfsf.subtitleFile;
-      return subtitleFile == null
-          ? Future.value(null)
-          : SubtitleParser.parseFile(subtitleFile);
+      return subtitleFile == null ? Future.value(null) : SubtitleParser.parseFile(subtitleFile);
     });
     final subtitlesWithoutId = await Future.wait(makeSubtitles);
     //construct media models, prepared for save them to db
@@ -122,10 +114,7 @@ class DBLogic {
     return mediasWithoutId;
   }
 
-  Future<List<EnMedia>> _mediasFilledSubtitleFromMSFList(
-    EnAlbum album,
-    List<M_SF> msfList,
-  ) async {
+  Future<List<EnMedia>> _mediasFilledSubtitleFromMSFList(EnAlbum album, List<M_SF> msfList) async {
     if (msfList.isEmpty) return [];
     final makeSubtitles = msfList
         .map((msf) => msf.subtitleFile)
@@ -145,27 +134,19 @@ class DBLogic {
   }
 
   Future<void> importMediaAndSubtitles(EnAlbum album, List<File> files) async {
-    final (:mfsfList, :msfList) = _processMediaSubtitleFiles(
-      album.medias,
-      files,
-    );
+    final (:mfsfList, :msfList) = _processMediaSubtitleFiles(album.medias, files);
     final mediasMade = await _mediasMadeFromMFSFList(album, mfsfList);
     final mediasFilled = await _mediasFilledSubtitleFromMSFList(album, msfList);
-    await _store.box<EnMedia>().putAndGetManyAsync([
-      ...mediasMade,
-      ...mediasFilled,
-    ]);
+    await _store.box<EnMedia>().putAndGetManyAsync([...mediasMade, ...mediasFilled]);
   }
 
-  Future<EnMedia> updateMedia(EnMedia media, String newName) async {
-    final trimmedNewName = newName.trim();
-    if (trimmedNewName.isEmpty) return media;
-    if (trimmedNewName == media.name) return media;
-    return await _store.box<EnMedia>().putAndGetAsync(media.copyWith(name: trimmedNewName));
-  }
-
-  Future<EnMedia> updateSubtitle(EnMedia media, EnSubtitle subtitle) async {
-    media = await _store.runInTransactionAsync<EnMedia, int>(TxMode.write, (
+  Future<EnMedia> updateMedia(
+    EnMedia media, {
+    String? name,
+    EnSubtitle? Function()? subtitleFunc,
+  }) async {
+    if (name == null && subtitleFunc == null) return media;
+    final updatedMedia = await _store.runInTransactionAsync<EnMedia, int>(TxMode.write, (
       Store store,
       int mediaId,
     ) {
@@ -176,28 +157,34 @@ class DBLogic {
       }
       final subtitleBox = store.box<EnSubtitle>();
       final sentenceBox = store.box<EnSentence>();
-      final sentenceList = media.subtitles
-          .map((st) => st.sentences)
-          .expand((e) => e)
-          .toList();
-      sentenceBox.removeMany(sentenceList.map((s) => s.id).toList());
-      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
-      media.subtitles.clear();
-      media.subtitles.add(subtitle);
-      mediaBox.put(media);
-      return media;
+
+      EnMedia updatedMedia = media.copyWith();
+      if (name != null) {
+        //want to update name
+        final trimmedNewName = name.trim();
+        if (trimmedNewName.isNotEmpty && trimmedNewName != media.name) {
+          updatedMedia = updatedMedia.copyWith(name: trimmedNewName);
+        }
+      }
+      if (subtitleFunc != null) {
+        //want to update subtitle
+        final subtitleList = media.subtitles;
+        final sentenceList = subtitleList.map((st) => st.sentences).expand((e) => e).toList();
+        final subtitleIdList = [for (final sub in subtitleList) sub.id];
+        final sentenceIdList = [for (final sen in sentenceList) sen.id];
+        sentenceBox.removeMany(sentenceIdList);
+        subtitleBox.removeMany(subtitleIdList);
+
+        updatedMedia = updatedMedia.copyWith(subtitleFunc: subtitleFunc);
+      }
+      mediaBox.put(updatedMedia);
+      return updatedMedia;
     }, media.id);
-    return media;
+    return updatedMedia;
   }
 
   Future<void> deleteMedia(EnMedia media) async {
-    debugPrint(
-      'before delete media(${media.id}):\nalbum(${media.albums.firstOrNull?.id}, ${media.albums.firstOrNull?.name})',
-    );
-    await _store.runInTransactionAsync<void, int>(TxMode.write, (
-      Store store,
-      int mediaId,
-    ) {
+    await _store.runInTransactionAsync<void, int>(TxMode.write, (Store store, int mediaId) {
       final mediaBox = store.box<EnMedia>();
       final media = mediaBox.get(mediaId);
       if (media == null) {
@@ -205,13 +192,14 @@ class DBLogic {
       }
       final subtitleBox = store.box<EnSubtitle>();
       final sentenceBox = store.box<EnSentence>();
-      final sentences = media.subtitles
-          .map((st) => st.sentences)
-          .expand((e) => e)
-          .toList();
+
+      final subtitleList = media.subtitles;
+      final sentenceList = subtitleList.map((st) => st.sentences).expand((e) => e).toList();
+      final subtitleIdList = [for (final sub in subtitleList) sub.id];
+      final sentenceIdList = sentenceList.map((sen) => sen.id).toList();
       mediaBox.remove(mediaId);
-      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
-      sentenceBox.removeMany(sentences.map((s) => s.id).toList());
+      subtitleBox.removeMany(subtitleIdList);
+      sentenceBox.removeMany(sentenceIdList);
     }, media.id);
 
     // Remove file
@@ -219,35 +207,6 @@ class DBLogic {
     if (await file.exists()) {
       await file.delete();
     }
-    debugPrint(
-      'after delete media(${media.id}):\nalbum(${media.albums.firstOrNull?.id}, ${media.albums.firstOrNull?.name})',
-    );
-  }
-
-  Future<EnMedia> deleteSubtitle(EnMedia media) async {
-    if (media.subtitles.isEmpty) return media;
-    media = await _store.runInTransactionAsync<EnMedia, int>(TxMode.write, (
-      Store store,
-      int mediaId,
-    ) {
-      final mediaBox = store.box<EnMedia>();
-      final media = mediaBox.get(mediaId);
-      if (media == null) {
-        throw ArgumentError('mediaId $mediaId not existed');
-      }
-      final subtitleBox = store.box<EnSubtitle>();
-      final sentenceBox = store.box<EnSentence>();
-      final sentences = media.subtitles
-          .map((st) => st.sentences)
-          .expand((e) => e)
-          .toList();
-      sentenceBox.removeMany(sentences.map((s) => s.id).toList());
-      subtitleBox.removeMany(media.subtitles.map((s) => s.id).toList());
-      media.subtitles.clear();
-      mediaBox.put(media);
-      return media;
-    }, media.id);
-    return media;
   }
 
   Future<Directory> get _albumCoversDir async {
@@ -282,26 +241,17 @@ class DBLogic {
     }
     //获取 最大SortOrder
     final albumBox = _store.box<EnAlbum>();
-    final query = albumBox
-        .query()
-        .order(EnAlbum_.sortOrder, flags: Order.descending)
-        .build();
+    final query = albumBox.query().order(EnAlbum_.sortOrder, flags: Order.descending).build();
     final maxSortOrderAlbum = await query.findFirstAsync();
     query.close();
 
-    final sortOrder = maxSortOrderAlbum != null
-        ? maxSortOrderAlbum.sortOrder + 1
-        : 0;
+    final sortOrder = maxSortOrderAlbum != null ? maxSortOrderAlbum.sortOrder + 1 : 0;
     return await _store.box<EnAlbum>().putAndGetAsync(
       EnAlbum(name: trimmedName, sortOrder: sortOrder, cover: coverPath, id: 0),
     );
   }
 
-  Future<EnAlbum> updateAlbum(
-    EnAlbum album, {
-    String? name,
-    File? Function()? cover,
-  }) async {
+  Future<EnAlbum> updateAlbum(EnAlbum album, {String? name, File? Function()? coverFunc}) async {
     EnAlbum updatedAlbum = album.copyWith();
     if (name != null) {
       //update name
@@ -310,9 +260,9 @@ class DBLogic {
         updatedAlbum = updatedAlbum.copyWith(name: trimmedName);
       }
     }
-    if (cover != null) {
+    if (coverFunc != null) {
       //update cover
-      final newCover = cover();
+      final newCover = coverFunc();
       if (newCover == null) {
         //remove cover
         updatedAlbum = await _deleteAlbumCoverFile(updatedAlbum);
@@ -321,7 +271,7 @@ class DBLogic {
         updatedAlbum = await _deleteAlbumCoverFile(updatedAlbum);
         final newCoverPath = await _newAlbumCoverPath();
         await newCover.copy(newCoverPath);
-        updatedAlbum = updatedAlbum.copyWith(cover: () => newCoverPath);
+        updatedAlbum = updatedAlbum.copyWith(coverFunc: () => newCoverPath);
       }
     }
     if (updatedAlbum.cover != album.cover || updatedAlbum.name != album.name) {
@@ -337,7 +287,7 @@ class DBLogic {
       if (await oldCover.exists()) {
         await oldCover.delete();
       }
-      return album.copyWith(cover: () => null);
+      return album.copyWith(coverFunc: () => null);
     } else {
       return album;
     }
@@ -360,10 +310,7 @@ class DBLogic {
     return album;
   }
 
-  Future<(EnAlbum, EnAlbum)> swapAlbumsOrder(
-    EnAlbum aAlbum,
-    EnAlbum bAlbum,
-  ) async {
+  Future<(EnAlbum, EnAlbum)> swapAlbumsOrder(EnAlbum aAlbum, EnAlbum bAlbum) async {
     final aSortOrder = aAlbum.sortOrder;
     aAlbum = aAlbum.copyWith(sortOrder: bAlbum.sortOrder);
     bAlbum = bAlbum.copyWith(sortOrder: aSortOrder);
@@ -379,10 +326,7 @@ class DBLogic {
     if (albums.isEmpty) return;
     albums = albums.where((a) => a.id > 0).toList();
 
-    await _store.runInTransactionAsync(TxMode.write, (
-      Store store,
-      List<int> albumIds,
-    ) {
+    await _store.runInTransactionAsync(TxMode.write, (Store store, List<int> albumIds) {
       final mediaBox = store.box<EnMedia>();
       final subtitleBox = store.box<EnSubtitle>();
       final sentenceBox = store.box<EnSentence>();
@@ -398,15 +342,9 @@ class DBLogic {
           .where((m) => m.albums.isEmpty)
           .toList();
       final mediaIds = medias.map((m) => m.id).toList();
-      final subtitles = medias
-          .map((m) => m.subtitles)
-          .expand((e) => e)
-          .toList();
+      final subtitles = medias.map((m) => m.subtitles).expand((e) => e).toList();
       final subtitleIds = subtitles.map((s) => s.id).toList();
-      final sentences = subtitles
-          .map((st) => st.sentences)
-          .expand((e) => e)
-          .toList();
+      final sentences = subtitles.map((st) => st.sentences).expand((e) => e).toList();
       final sentenceIds = sentences.map((s) => s.id).toList();
       albumBox.removeMany(albumIds);
       mediaBox.removeMany(mediaIds);
@@ -415,9 +353,7 @@ class DBLogic {
     }, [for (final a in albums) a.id]);
 
     // Delete cover files for removed playlists
-    final uselessCovers = albums
-        .where((a) => a.cover != null)
-        .map((a) => File(a.cover!));
+    final uselessCovers = albums.where((a) => a.cover != null).map((a) => File(a.cover!));
 
     final removeCovers = uselessCovers.map((cover) async {
       if (await cover.exists()) {

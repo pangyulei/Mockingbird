@@ -6,6 +6,7 @@ import 'en_media.dart';
 class EnAlbum {
   @Id()
   int id;
+
   // final int versionId;
   final String name;
   final String? cover;
@@ -26,17 +27,15 @@ class EnAlbum {
 
   EnAlbum copyWith({
     String? name,
-    String? Function()? cover,
+    String? Function()? coverFunc,
     int? sortOrder,
-    Iterable<EnMedia>? medias,
-    // int? versionId,
+    List<EnMedia>? medias,
   }) {
     final album = EnAlbum(
       id: id,
-      // versionId: versionId ?? this.versionId,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
-      cover: cover != null ? cover() : this.cover,
+      cover: coverFunc == null ? cover : coverFunc(),
     );
     album.medias.addAll(medias ?? this.medias);
     return album;

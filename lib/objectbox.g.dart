@@ -196,12 +196,6 @@ final _entities = <obx_int.ModelEntity>[
         type: 6,
         flags: 0,
       ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 967088597097392464),
-        name: 'versionId',
-        type: 6,
-        flags: 0,
-      ),
     ],
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
@@ -373,6 +367,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       235818499227633718,
       1987327048821258978,
       4321953774055709715,
+      967088597097392464,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -618,7 +613,6 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.startTable(4);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.playingId);
-        fbb.addInt64(2, object.versionId);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -636,17 +630,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           rootOffset,
           6,
         );
-        final versionIdParam = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          8,
-          0,
-        );
-        final object = EnPref(
-          id: idParam,
-          playingId: playingIdParam,
-          versionId: versionIdParam,
-        );
+        final object = EnPref(id: idParam, playingId: playingIdParam);
 
         return object;
       },
@@ -763,10 +747,5 @@ class EnPref_ {
   /// See [EnPref.playingId].
   static final playingId = obx.QueryIntegerProperty<EnPref>(
     _entities[4].properties[1],
-  );
-
-  /// See [EnPref.versionId].
-  static final versionId = obx.QueryIntegerProperty<EnPref>(
-    _entities[4].properties[2],
   );
 }

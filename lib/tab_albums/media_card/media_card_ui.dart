@@ -7,10 +7,11 @@ import 'package:mockingbird/tab_albums/edit_media/edit_media_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
 
 enum _MoreItem {
-  rename('rename'),
-  updateSubtitle('update subtitle'),
-  deleteSubtitle('delete subtitle'),
-  deleteMedia('delete media');
+  rename('Rename'),
+  addSubtitle('Add Subtitle'),
+  updateSubtitle('Update Subtitle'),
+  deleteSubtitle('Delete Subtitle'),
+  deleteMedia('Delete Media');
 
   final String raw;
 
@@ -27,6 +28,10 @@ class MediaCardUI extends ConsumerWidget {
     if (ctx.mounted) {
       ctx.go(AppRoute.player);
     }
+  }
+
+  void _onAddSubtitle(WidgetRef ref) async {
+    await ref.read(mediaCardProvider(_id).notifier).addSubtitle();
   }
 
   void _onUpdateSubtitle(WidgetRef ref) async {
@@ -49,7 +54,9 @@ class MediaCardUI extends ConsumerWidget {
   Widget build(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final isPlaying = ref.watch(mediaCardProvider(_id).select((s) => s.isPlaying));
+    final isPlaying = ref.watch(
+      mediaCardProvider(_id).select((s) => s.isPlaying),
+    );
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -71,7 +78,12 @@ class MediaCardUI extends ConsumerWidget {
             InkWell(
               onTap: () => _onPlay(ctx, ref),
               child: Padding(
-                padding: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 52),
+                padding: const EdgeInsets.only(
+                  top: 12,
+                  bottom: 12,
+                  left: 16,
+                  right: 52,
+                ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -145,12 +157,16 @@ class MediaCardUI extends ConsumerWidget {
           final theme = Theme.of(ctx);
           final colorScheme = theme.colorScheme;
           final (hasSubtitle, type, isPlaying) = ref.watch(
-            mediaCardProvider(_id).select((s) => (s.hasSubtitle, s.type, s.isPlaying)),
+            mediaCardProvider(
+              _id,
+            ).select((s) => (s.hasSubtitle, s.type, s.isPlaying)),
           );
           return Row(
             children: [
               Icon(
-                hasSubtitle ? Icons.subtitles_rounded : Icons.subtitles_off_rounded,
+                hasSubtitle
+                    ? Icons.subtitles_rounded
+                    : Icons.subtitles_off_rounded,
                 color: hasSubtitle ? colorScheme.outline : colorScheme.error,
                 size: 14,
               ),
@@ -177,12 +193,16 @@ class MediaCardUI extends ConsumerWidget {
   Widget _playButton(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final isPlaying = ref.watch(mediaCardProvider(_id).select((s) => s.isPlaying));
+    final isPlaying = ref.watch(
+      mediaCardProvider(_id).select((s) => s.isPlaying),
+    );
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: isPlaying ? colorScheme.primary : colorScheme.surfaceContainerHighest,
+        color: isPlaying
+            ? colorScheme.primary
+            : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
@@ -198,12 +218,16 @@ class MediaCardUI extends ConsumerWidget {
     final colorScheme = theme.colorScheme;
     return Consumer(
       builder: (context, ref, child) {
-        final hasSubtitle = ref.watch(mediaCardProvider(_id).select((s) => s.hasSubtitle));
+        final hasSubtitle = ref.watch(
+          mediaCardProvider(_id).select((s) => s.hasSubtitle),
+        );
         return PopupMenuButton<String>(
           icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
           onSelected: (value) {
             if (value == _MoreItem.updateSubtitle.raw) {
               _onUpdateSubtitle(ref);
+            } else if (value == _MoreItem.addSubtitle.raw) {
+              _onAddSubtitle(ref);
             } else if (value == _MoreItem.deleteSubtitle.raw) {
               _onDeleteSubtitle(ref);
             } else if (value == _MoreItem.deleteMedia.raw) {
@@ -215,35 +239,50 @@ class MediaCardUI extends ConsumerWidget {
           itemBuilder: (context) => [
             PopupMenuItem(
               value: _MoreItem.rename.raw,
-              child: const Row(
-                children: [Icon(Icons.edit_rounded, size: 18), SizedBox(width: 12), Text('Rename')],
-              ),
-            ),
-            PopupMenuItem(
-              value: _MoreItem.updateSubtitle.raw,
               child: Row(
                 children: [
-                  const Icon(Icons.subtitles_rounded, size: 18),
+                  const Icon(Icons.edit_rounded, size: 18),
                   const SizedBox(width: 12),
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final hasSubtitle = ref.watch(
-                        mediaCardProvider(_id).select((s) => s.hasSubtitle),
-                      );
-                      return Text(hasSubtitle ? 'Change Subtitle' : 'Add Subtitle');
-                    },
-                  ),
+                  Text(_MoreItem.rename.raw),
                 ],
               ),
             ),
-            if (hasSubtitle)
+            if (hasSubtitle) ...[
+              PopupMenuItem(
+                value: _MoreItem.updateSubtitle.raw,
+                child: Row(
+                  children: [
+                    const Icon(Icons.subtitles_rounded, size: 18),
+                    const SizedBox(width: 12),
+                    Text(_MoreItem.updateSubtitle.raw),
+                  ],
+                ),
+              ),
               PopupMenuItem(
                 value: _MoreItem.deleteSubtitle.raw,
                 child: Row(
                   children: [
-                    Icon(Icons.subtitles_off_rounded, size: 18, color: colorScheme.error),
+                    Icon(
+                      Icons.subtitles_off_rounded,
+                      size: 18,
+                      color: colorScheme.error,
+                    ),
                     const SizedBox(width: 12),
-                    Text('Delete Subtitle', style: TextStyle(color: colorScheme.error)),
+                    Text(
+                      _MoreItem.deleteSubtitle.raw,
+                      style: TextStyle(color: colorScheme.error),
+                    ),
+                  ],
+                ),
+              ),
+            ] else
+              PopupMenuItem(
+                value: _MoreItem.addSubtitle.raw,
+                child: Row(
+                  children: [
+                    const Icon(Icons.subtitles_rounded, size: 18),
+                    const SizedBox(width: 12),
+                    Text(_MoreItem.addSubtitle.raw),
                   ],
                 ),
               ),
@@ -252,9 +291,16 @@ class MediaCardUI extends ConsumerWidget {
               value: _MoreItem.deleteMedia.raw,
               child: Row(
                 children: [
-                  Icon(Icons.delete_outline_rounded, size: 18, color: colorScheme.error),
+                  Icon(
+                    Icons.delete_outline_rounded,
+                    size: 18,
+                    color: colorScheme.error,
+                  ),
                   const SizedBox(width: 12),
-                  Text('Delete Media', style: TextStyle(color: colorScheme.error)),
+                  Text(
+                    _MoreItem.deleteMedia.raw,
+                    style: TextStyle(color: colorScheme.error),
+                  ),
                 ],
               ),
             ),
@@ -284,7 +330,10 @@ class _PlayingIndicator extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 1),
           width: 2,
           height: 8 + (index % 2 == 0 ? 4 : 0),
-          decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(1)),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(1),
+          ),
         );
       }),
     );

@@ -20,9 +20,18 @@ class EnMedia {
 
   MediaType get type => MediaType.fromExtension(p.extension(path));
 
-  EnMedia copyWith({String? name}) {
+  EnMedia copyWith({String? name, EnSubtitle? Function()? subtitleFunc}) {
     final media = EnMedia(id: id, path: path, name: name ?? this.name);
-    media.subtitles.addAll(subtitles);
+    if (subtitleFunc == null) {
+      media.subtitles.addAll(subtitles);
+    } else {
+      final subtitle = subtitleFunc();
+      if (subtitle == null) {
+        //already empty, nothing need to do
+      } else {
+        media.subtitles.add(subtitle);
+      }
+    }
     media.albums.addAll(albums);
     return media;
   }
@@ -50,15 +59,6 @@ enum MediaType {
   }
 }
 
-const kAudioExtensions = {
-  'mp3',
-  'm4a',
-  'aac',
-  'wav',
-  'ogg',
-  'oga',
-  'flac',
-  'amr',
-};
+const kAudioExtensions = {'mp3', 'm4a', 'aac', 'wav', 'ogg', 'oga', 'flac', 'amr'};
 const kVideoExtensions = {'mp4', 'm4v', 'mkv', 'webm', '3gp', 'ts', 'flv'};
 const kSubtitleExtensions = {'srt', 'vtt'};

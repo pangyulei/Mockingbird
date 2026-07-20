@@ -11,15 +11,13 @@ part 'edit_media_provider.g.dart';
 @riverpod
 class EditMedia extends _$EditMedia {
   EnMedia? _media;
+
   @override
   EditMediaState build(int? id) {
     final nameController = TextEditingController();
     ref.onDispose(() => nameController.dispose());
     if (id == null) {
-      return EditMediaState(
-        nameController: nameController,
-        enableSubmit: false,
-      );
+      return EditMediaState(nameController: nameController, enableSubmit: false);
     }
     final EnMedia? media = ref.watch(
       dbAlbumListProvider
@@ -31,10 +29,7 @@ class EditMedia extends _$EditMedia {
     );
     _media = media;
     if (media == null) {
-      return EditMediaState(
-        nameController: nameController,
-        enableSubmit: false,
-      );
+      return EditMediaState(nameController: nameController, enableSubmit: false);
     }
     nameController.text = media.name;
     return EditMediaState(nameController: nameController, enableSubmit: false);
@@ -47,7 +42,7 @@ class EditMedia extends _$EditMedia {
     EasyLoading.show(maskType: .clear);
     await ref
         .read(dbAlbumListProvider.notifier)
-        .updateMedia(media, state.nameController.text);
+        .updateMedia(media, name: state.nameController.text);
     EasyLoading.dismiss();
   }
 
