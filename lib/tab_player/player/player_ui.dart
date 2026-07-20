@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/tab_player/player/player_provider.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_ui.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
+
+import '../../app/app_route.dart';
 
 class PlayerUI extends ConsumerWidget {
   const PlayerUI({super.key});
@@ -46,13 +49,8 @@ class PlayerUI extends ConsumerWidget {
     await ref.read(playerProvider.notifier).resetSpeed();
   }
 
-  void _onVideoPositionChanged(
-    WidgetRef ref,
-    VideoPlayerController videoController,
-  ) async {
-    await ref
-        .read(playerProvider.notifier)
-        .videoPositionChanged(videoController);
+  void _onVideoPositionChanged(WidgetRef ref, VideoPlayerController videoController) async {
+    await ref.read(playerProvider.notifier).videoPositionChanged(videoController);
   }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
@@ -87,8 +85,8 @@ class PlayerUI extends ConsumerWidget {
     ref.read(playerProvider.notifier).volumeTapped();
   }
 
-  void _onGoToAlbums() {
-    // context.go(AppRoute.albums);
+  void _onGoToAlbums(BuildContext ctx) {
+    ctx.go(AppRoute.albums);
   }
 
   Widget _page(BuildContext ctx) {
@@ -112,9 +110,7 @@ class PlayerUI extends ConsumerWidget {
           playerProvider.select((st) => st?.videoState?.controller),
         );
         if (videoController == null) return const SizedBox.shrink();
-        videoController.addListener(
-          () => _onVideoPositionChanged(ref, videoController),
-        );
+        videoController.addListener(() => _onVideoPositionChanged(ref, videoController));
         return Container(
           decoration: BoxDecoration(
             color: Colors.black,
@@ -137,11 +133,7 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _displayer(
-    BuildContext ctx,
-    WidgetRef ref,
-    VideoPlayerController videoController,
-  ) {
+  Widget _displayer(BuildContext ctx, WidgetRef ref, VideoPlayerController videoController) {
     return AspectRatio(
       aspectRatio: videoController.value.aspectRatio,
       child: Stack(
@@ -179,12 +171,7 @@ class PlayerUI extends ConsumerWidget {
                   bottom: 8.5,
                   child: _videoSlider(ctx, videoController),
                 ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  top: 0,
-                  child: _volumeComponent(ref),
-                ),
+                Positioned(right: 0, bottom: 0, top: 0, child: _volumeComponent(ref)),
               ],
             ),
           ),
@@ -199,9 +186,7 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final sentenceCount = ref.watch(
-              playerProvider.select((st) => st?.sentenceCount ?? 0),
-            );
+            final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
             if (sentenceCount == 0) {
               return _noSubtitle(ctx, ref);
             }
@@ -214,9 +199,7 @@ class PlayerUI extends ConsumerWidget {
                   itemCount: sentenceCount,
                   itemScrollController: scrollController,
                   itemBuilder: (context, i) {
-                    final sentenceId = ref
-                        .read(playerProvider.notifier)
-                        .sentenceIdAtIndex(i);
+                    final sentenceId = ref.read(playerProvider.notifier).sentenceIdAtIndex(i);
                     return SentenceCardUI(sentenceId);
                   },
                 );
@@ -266,9 +249,7 @@ class PlayerUI extends ConsumerWidget {
   Widget? _floatingButtons() {
     return Consumer(
       builder: (context, ref, child) {
-        final sentenceCount = ref.watch(
-          playerProvider.select((st) => st?.sentenceCount ?? 0),
-        );
+        final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
         if (sentenceCount == 0) {
           return const SizedBox.shrink();
         } else {
@@ -312,9 +293,7 @@ class PlayerUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
-              playerProvider.select(
-                (st) => st?.videoState?.showVolumeSlider ?? false,
-              ),
+              playerProvider.select((st) => st?.videoState?.showVolumeSlider ?? false),
             );
             if (showVolumeSlider) {
               return Flexible(child: _volumeSlider(ctx));
@@ -327,12 +306,8 @@ class PlayerUI extends ConsumerWidget {
           onPressed: () => _onVolumeTap(ref),
           icon: Consumer(
             builder: (context, ref, child) {
-              final volume = ref.watch(
-                playerProvider.select((st) => st?.videoState?.volume ?? 1),
-              );
-              final icon = volume == 0
-                  ? Icons.volume_off_rounded
-                  : Icons.volume_up_rounded;
+              final volume = ref.watch(playerProvider.select((st) => st?.videoState?.volume ?? 1));
+              final icon = volume == 0 ? Icons.volume_off_rounded : Icons.volume_up_rounded;
               return Icon(icon);
             },
           ),
@@ -358,9 +333,7 @@ class PlayerUI extends ConsumerWidget {
         ),
         child: Consumer(
           builder: (context, ref, child) {
-            final volume = ref.watch(
-              playerProvider.select((st) => st?.videoState?.volume ?? 1),
-            );
+            final volume = ref.watch(playerProvider.select((st) => st?.videoState?.volume ?? 1));
             return Slider(
               value: volume,
               onChanged: (newVolume) => _onVolumeChanged(ref, newVolume),
@@ -385,14 +358,9 @@ class PlayerUI extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final position = ref.watch(
-            playerProvider.select(
-              (st) => (st?.videoState?.positionMicro ?? 0).toDouble(),
-            ),
+            playerProvider.select((st) => (st?.videoState?.positionMicro ?? 0).toDouble()),
           );
-          final duration = videoController.value.duration.inMicroseconds
-              .toDouble();
-          // debugPrint('slider pos: ${position} pos.clamp: ${position.clamp(0, duration)}');
-          // debugPrint('slider max: ${videoController.value.duration}');
+          final duration = videoController.value.duration.inMicroseconds.toDouble();
           return Slider(
             value: position.clamp(0, duration),
             max: duration,
@@ -408,12 +376,12 @@ class PlayerUI extends ConsumerWidget {
 
   Widget _empty() {
     return Consumer(
-      builder: (context, ref, child) {
+      builder: (ctx, ref, child) {
         final st = ref.watch(playerProvider);
         if (st != null) return const SizedBox.shrink();
 
-        final colorScheme = Theme.of(context).colorScheme;
-        final textTheme = Theme.of(context).textTheme;
+        final colorScheme = Theme.of(ctx).colorScheme;
+        final textTheme = Theme.of(ctx).textTheme;
         return Scaffold(
           backgroundColor: colorScheme.surface,
           appBar: AppBar(
@@ -430,16 +398,10 @@ class PlayerUI extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer.withValues(
-                        alpha: 0.3,
-                      ),
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.3),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.auto_stories_rounded,
-                      size: 80,
-                      color: colorScheme.primary,
-                    ),
+                    child: Icon(Icons.auto_stories_rounded, size: 80, color: colorScheme.primary),
                   ),
                   const SizedBox(height: 40),
                   Text(
@@ -469,7 +431,7 @@ class PlayerUI extends ConsumerWidget {
                   ),
                   const SizedBox(height: 32),
                   FilledButton.icon(
-                    onPressed: _onGoToAlbums,
+                    onPressed: () => _onGoToAlbums(ctx),
                     icon: const Icon(Icons.library_music_rounded),
                     label: const Text('Go to Albums'),
                   ),
@@ -496,9 +458,7 @@ class PlayerUI extends ConsumerWidget {
       height: 24,
       child: Consumer(
         builder: (ctx, ref, _) {
-          final title = ref.watch(
-            playerProvider.select((st) => st?.title ?? ''),
-          );
+          final title = ref.watch(playerProvider.select((st) => st?.title ?? ''));
           if (title.isEmpty) {
             return const Text('');
           } else {
@@ -519,18 +479,12 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _controlBar(
-    BuildContext ctx,
-    WidgetRef ref,
-    VideoPlayerController videoController,
-  ) {
+  Widget _controlBar(BuildContext ctx, WidgetRef ref, VideoPlayerController videoController) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(color: colorScheme.primary.withValues(alpha: 0.3)),
-        ),
+        border: Border(bottom: BorderSide(color: colorScheme.primary.withValues(alpha: 0.3))),
       ),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
@@ -564,10 +518,7 @@ class PlayerUI extends ConsumerWidget {
               _onPlay(ref);
             }
           },
-          icon: Icon(
-            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            size: 24,
-          ),
+          icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 24),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.primary,
             foregroundColor: Colors.white,
@@ -584,13 +535,9 @@ class PlayerUI extends ConsumerWidget {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
       builder: (ctx, ref, child) {
-        final sentenceCount = ref.watch(
-          playerProvider.select((st) => st?.sentenceCount ?? 0),
-        );
+        final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
         if (sentenceCount == 0) return const SizedBox.shrink();
-        final bool loop = ref.watch(
-          playerProvider.select((st) => st?.videoState?.loop ?? false),
-        );
+        final bool loop = ref.watch(playerProvider.select((st) => st?.videoState?.loop ?? false));
         return IconButton(
           onPressed: () {
             if (loop) {
@@ -645,9 +592,7 @@ class PlayerUI extends ConsumerWidget {
         ),
         child: Consumer(
           builder: (ctx, ref, _) {
-            final speed = ref.watch(
-              playerProvider.select((st) => st?.videoState?.speed ?? 1),
-            );
+            final speed = ref.watch(playerProvider.select((st) => st?.videoState?.speed ?? 1));
             return Text(
               '${speed}x',
               style: TextStyle(

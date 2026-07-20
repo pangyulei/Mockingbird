@@ -17,24 +17,19 @@ class AlbumDetailUI extends ConsumerWidget {
   }
 
   Widget _page(BuildContext ctx, WidgetRef ref) {
-    final theme = Theme.of(ctx);
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           _sliverAppBar(ctx),
           Consumer(
             builder: (context, ref, child) {
-              final mediaCount = ref.watch(
-                albumDetailProvider(_id).select((s) => s.mediaCount),
-              );
+              final mediaCount = ref.watch(albumDetailProvider(_id).select((s) => s.mediaCount));
               if (mediaCount > 0) {
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, i) {
-                      final mediaId = ref
-                          .read(albumDetailProvider(_id).notifier)
-                          .mediaIdAtIndex(i);
+                      final mediaId = ref.read(albumDetailProvider(_id).notifier).mediaIdAtIndex(i);
                       return MediaCardUI(mediaId);
                     }, childCount: mediaCount),
                   ),
@@ -59,24 +54,16 @@ class AlbumDetailUI extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.library_add_outlined,
-                size: 64,
-                color: theme.colorScheme.outlineVariant,
-              ),
+              Icon(Icons.library_add_outlined, size: 64, color: theme.colorScheme.outlineVariant),
               const SizedBox(height: 16),
               Text(
                 'No media in this album',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
+                style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.outline),
               ),
               const SizedBox(height: 8),
               Text(
                 'Tap the + button to import audio or video files',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.outline,
-                ),
+                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
               ),
             ],
           ),
@@ -107,12 +94,7 @@ class AlbumDetailUI extends ConsumerWidget {
                 color: cover != null ? Colors.white : colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
                 shadows: cover != null
-                    ? [
-                        Shadow(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          blurRadius: 8,
-                        ),
-                      ]
+                    ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 8)]
                     : null,
               ),
             );
@@ -120,9 +102,7 @@ class AlbumDetailUI extends ConsumerWidget {
         ),
         background: Consumer(
           builder: (ctx, ref, child) {
-            final cover = ref.watch(
-              albumDetailProvider(_id).select((s) => s.cover),
-            );
+            final cover = ref.watch(albumDetailProvider(_id).select((s) => s.cover));
             if (cover == null) {
               return _noCoverBanner(ctx, ref);
             } else {
@@ -141,9 +121,7 @@ class AlbumDetailUI extends ConsumerWidget {
       actions: [
         Consumer(
           builder: (ctx, ref, child) {
-            final showImport = ref.watch(
-              albumDetailProvider(_id).select((st) => st.showImport),
-            );
+            final showImport = ref.watch(albumDetailProvider(_id).select((st) => st.showImport));
             if (showImport) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0),
@@ -175,12 +153,7 @@ class AlbumDetailUI extends ConsumerWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 stops: [0.0, 0.3, 0.7, 1.0],
-                colors: [
-                  Colors.black38,
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.black87,
-                ],
+                colors: [Colors.black38, Colors.transparent, Colors.transparent, Colors.black87],
               ),
             ),
           ),
@@ -209,10 +182,7 @@ class AlbumDetailUI extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            colorScheme.primaryContainer,
-            colorScheme.surfaceContainerHighest,
-          ],
+          colors: [colorScheme.primaryContainer, colorScheme.surfaceContainerHighest],
         ),
       ),
       child: Stack(
