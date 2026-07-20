@@ -7,67 +7,77 @@ applyTo: "**/*"
 ## Project Overview
 Mockingbird is a Flutter language shadowing app featuring a 3-tab navigation system: **Albums**, **Player**, and **Settings**.
 It is designed for language learning through shadowing audio/video clips with synchronized subtitles.
-The app follows a **Clean Architecture** influenced "Logic-State" pattern, now fully integrated with **Riverpod** for state management and **ObjectBox** for persistence.
+The app follows a **Clean Architecture** influenced "Logic-State" pattern, fully integrated with **Riverpod** and **ObjectBox**.
 
-## Architecture Summary
+## Architecture Summary (Riverpod Architecture)
 
-### State Management Pattern (Riverpod + UI Interface)
-The app uses Riverpod (with `riverpod_generator`) to manage state, while maintaining a decoupled UI via interfaces.
+### 1. Data Layer (ObjectBox Entities & DB Providers)
+- **Entities**: Located in `lib/db/entities/`. Prefixed with `En` (e.g., `EnAlbum`, `EnMedia`, `EnSubtitle`, `EnSentence`, `EnPref`). Use `Equatable` for value comparison.
+- **Logic Layer**: `DBLogic` handles direct database operations.
+- **DB Providers**: Located in `lib/db/providers/`. Reactive wrappers around DB operations using `@riverpod`. 
+  - Example: `dbAlbumListProvider` provides a stream/future of all albums.
+
+### 2. UI State Management Layer (Riverpod Notifiers)
+- **UI State**: Immutable classes named `{Feature}State` (e.g., `AlbumListState`).
+- **UI Providers**: Use `@riverpod` Notifiers to transform DB data into specific UI states.
+  - Pattern: `ref.watch(dbProvider.select(...))` is used for fine-grained reactivity.
+  - Providers are responsible for UI-specific logic (e.g., finding an ID by index).
+
+### 3. Presentation Layer (Decoupled UI Pattern)
+The app strictly decouples visual rendering from side-effect heavy logic (navigation, dialogs).
+
+- **UI Widget (`{Feature}UI`)**: 
+  - Extends `ConsumerWidget`.
+  - Watches providers for state.
+  - Takes an interface for user actions: `final {Feature}UIOutputITF _logic`.
+  - Purely visual; does not handle navigation or show dialogs directly.
+- **UI Output Interface (`{Feature}UIOutputITF`)**: 
+  - Abstract interface class defining user interaction callbacks (e.g., `onAddAlbum`, `onTapMedia`).
+- **Screen (`{Feature}Screen`)**: 
+  - Extends `ConsumerStatefulWidget`.
+  - Its `State` class **implements** `{Feature}UIOutputITF`.
+  - Orchestrates the `UI Widget`, passing itself as the `_logic` implementation.
+  - Handles side effects: `GoRouter` navigation, `showDialog`, `SnackBar`, etc.
 
 ```
-UI (ConsumerWidget) → Interface (UIOutputITF) → Screen (Logic Implementation)
-         ↓
-State (Riverpod Providers)
+DB Provider → UI Provider → UI State
+                               ↓
+UI Widget (ConsumerWidget) ← Screen (Logic Implementation / Implementation of ITF)
 ```
 
-**Key Components:**
-- **UI State**: Immutable classes named `{Feature}State` with `copyWith()` methods.
-- **Providers**: Use `@riverpod` (Async)Notifiers to handle UI business logic and state updates.
-- **UI Output Interface**: Defined as `abstract interface class {Feature}UIOutputITF`. This decouples the visual UI from side-effect heavy logic (like navigation or dialogs).
-- **UI Widget**: A `ConsumerWidget` named `{Feature}UI` that watches providers for state and takes an interface for actions.
-- **Screen**: A `ConsumerStatefulWidget` named `{Feature}Screen` whose `State` class implements `{Feature}UIOutputITF`. It handles navigation and builds the UI widget.
+## Naming & Coding Standards
+- **Entities**: `En{Name}` (e.g., `EnMedia`).
+- **UI State**: `{Feature}State` (e.g., `PlayerState`).
+- **UI Widgets**: `{Feature}UI` (ConsumerWidget).
+- **Interfaces**: `{Feature}UIOutputITF`.
+- **Screens**: `{Feature}Screen` (ConsumerStatefulWidget).
+- **Providers**: Defined using `riverpod_generator`. Files named `{feature}_provider.dart`.
+- **Reactivity**: Prefer `ref.watch(provider.select((s) => s.relevantField))` to minimize rebuilds.
 
-### Data Layer (ObjectBox & DB Providers)
-- **Entities**: Managed in `lib/db/entities/` (Album, Media, Subtitle, Sentence).
-- **Logic Layer**: `DBLogic` (in `lib/db/db_logic.dart`) handles direct database operations.
-- **DB Providers**: Riverpod providers (e.g., `dbAlbumsAsyncProvider`) wrap `DBLogic` to provide reactive access to the database across the app.
-- **Relationships**:
-  - `Album` ↔ `Media` (Many-to-Many).
-  - `Media` → `Subtitle` (One-to-One).
-  - `Subtitle` → `Sentence` (One-to-Many).
-
-### Navigation
-- **Router**: Managed via `go_router`.
-- **Tabs**: `StatefulShellRoute.indexedStack` manages Albums, Player, and Settings.
-- **Theme**: Premium **Dark Theme** (Telegram-inspired) with deep navy (`#0E1621`) and surface blue (`#17212B`) palette.
-
-## File Structure Conventions
-
-### Directory Structure
+## Directory Structure
 ```
 lib/
-├── app/                    # Routing, Global UI, and Theme
-├── db/                     # Entities, direct DB logic, and DB providers
-├── model/                  # Legacy/Helper models
-├── tab_albums/             # Albums feature (Grid, Detail, Edit)
-├── tab_player/             # Player feature (Playback logic, Shadowing tracking)
+├── app/                    # Global UI, Theme, Routing
+├── db/
+│   ├── entities/           # ObjectBox @Entity classes (EnAlbum, EnMedia, etc.)
+│   └── providers/          # DB-access Riverpod providers
+├── tab_albums/             # Albums feature folders (album_list, album_detail, etc.)
+├── tab_player/             # Player feature folders (player, sentence_card)
 ├── tab_settings/           # Settings feature
-└── main.dart              # Entry point with ProviderScope
+└── tool/                   # Parsers, formatters, and utility classes
 ```
 
-### Naming & Coding Standards
-- **Providers**: Defined in `{feature}_provider.dart`. Use `riverpod_generator`.
-- **UI Widgets**: Named `{Feature}UI`. Always extend `ConsumerWidget`.
-- **Logic Interfaces**: Named `{Feature}UIOutputITF`.
-- **Screens**: Named `{Feature}Screen`. Orchestrates the UI and navigation.
-- **State**: Always immutable. Use `AsyncValue` for data that might be loading or have errors.
+## Theme & Design
+- **Theme**: Premium **Dark Theme** (Telegram-inspired).
+- **Palette**: Background (`#0E1621`), Surface (`#17212B`), Primary (`#5288C1`), Text Secondary (`#7F91A4`).
+- **Components**: High-end visuals with custom gradients, smooth transitions, and pixel-perfect borders.
 
 ## Workflow for New Features
-1. **DB**: Define entities in `lib/db/entities/` and DB logic in `lib/db/db_logic.dart`.
-2. **DB Provider**: Create a Riverpod provider in `lib/db/providers/` to expose the data.
+1. **DB Entity**: Define in `lib/db/entities/`.
+2. **DB Provider**: Create reactive access in `lib/db/providers/`.
 3. **UI State**: Define the immutable state in `{feature}_state.dart`.
-4. **UI Provider**: Create a provider in the feature folder that transforms DB data into UI state.
-5. **Interface**: Define the user interaction contract in `{feature}_ui.dart` as an interface.
-6. **UI**: Implement the visual layout in `{feature}_ui.dart` as a `ConsumerWidget`.
-7. **Screen**: Create the `{feature}_screen.dart` to implement the interface and build the UI.
-8. **Route**: Register the new screen in `app_ui.dart` and `app_route.dart`.
+4. **UI Provider**: Create the notifier in `{feature}_provider.dart`.
+5. **Logic Interface**: Define the interaction contract in `{feature}_ui.dart`.
+6. **UI Widget**: Implement the visual layout in `{feature}_ui.dart`.
+7. **Screen**: Implement the interface and build the UI in `{feature}_screen.dart`.
+8. **Route**: Register in `app_ui.dart`.
