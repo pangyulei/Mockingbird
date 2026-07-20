@@ -19,11 +19,61 @@ class AlbumListUI extends ConsumerWidget {
         if (!isEmpty) {
           return const SizedBox.shrink();
         }
+        final theme = Theme.of(ctx);
+        final colorScheme = theme.colorScheme;
         return Scaffold(
           appBar: _appBar(ctx, ref),
-          body: const Center(
-            child: Text('no data, make me mroe beautiful'),
-          ), //TODO make me mroe beautiful
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 48),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primaryContainer.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.collections_bookmark_rounded,
+                      size: 80,
+                      color: colorScheme.primary.withValues(alpha: 0.8),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'No Albums Found',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Organize your audio and video clips into albums for better shadowing practice.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.outline,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+                  FilledButton.icon(
+                    onPressed: () => _onAddAlbum(ctx),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Create Your First Album'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
