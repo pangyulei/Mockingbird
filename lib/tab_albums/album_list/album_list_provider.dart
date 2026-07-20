@@ -1,22 +1,24 @@
-import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../db/entities/en_album.dart';
+
 part 'album_list_provider.g.dart';
 
-@Riverpod(name: 'albumListProvider')
+@riverpod
 class AlbumList extends _$AlbumList {
+  List<EnAlbum> _albumList = [];
+
   @override
-  Future<AlbumListState> build() async {
-    EasyLoading.show(maskType: .clear);
-    final albumCount = await ref.watch(dbAlbumListProvider.selectAsync((s) => s.length));
-    EasyLoading.dismiss();
-    return AlbumListState(albumCount: albumCount);
+  AlbumListState build() {
+    final List<EnAlbum> albumList = ref.watch(dbAlbumListProvider.select((av) => av.value ?? []));
+    _albumList = albumList;
+    return AlbumListState(albumCount: albumList.length);
   }
 
   int? albumIdAtIndex(int i) {
-    final albums = ref.read(dbAlbumListProvider).value ?? [];
-    return albums.elementAtOrNull(i)?.id;
+    return _albumList.elementAtOrNull(i)?.id;
   }
 }

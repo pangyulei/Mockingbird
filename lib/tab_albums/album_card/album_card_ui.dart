@@ -8,8 +8,10 @@ import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
 enum _MoreItem {
-  delete('delete'),
-  edit('edit');
+  edit('Edit'),
+  first('First'),
+  last('Last'),
+  delete('Delete');
 
   final String raw;
 
@@ -34,6 +36,14 @@ class AlbumCardUI extends ConsumerWidget {
     if (await confirmDelete(ctx, ref)) {
       await ref.read(albumCardProvider(_id).notifier).delete();
     }
+  }
+
+  void _onSortToFirst(WidgetRef ref) async {
+    await ref.read(albumCardProvider(_id).notifier).sortToFirst();
+  }
+
+  void _onSortToLast(WidgetRef ref) async {
+    await ref.read(albumCardProvider(_id).notifier).sortToLast();
   }
 
   Future<bool> confirmDelete(BuildContext ctx, WidgetRef ref) async {
@@ -162,16 +172,40 @@ class AlbumCardUI extends ConsumerWidget {
           _onEdit(ctx);
         } else if (value == _MoreItem.delete.raw) {
           _onDelete(ctx, ref);
+        } else if (value == _MoreItem.first.raw) {
+          _onSortToFirst(ref);
+        } else if (value == _MoreItem.last.raw) {
+          _onSortToLast(ref);
         }
       },
       itemBuilder: (context) => [
         PopupMenuItem(
           value: _MoreItem.edit.raw,
-          child: const Row(
+          child: Row(
             children: [
-              Icon(Icons.edit_outlined, size: 18),
-              SizedBox(width: 12),
-              Text('Edit Album'),
+              const Icon(Icons.edit_outlined, size: 18),
+              const SizedBox(width: 12),
+              Text(_MoreItem.edit.raw),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: _MoreItem.first.raw,
+          child: Row(
+            children: [
+              const Icon(Icons.vertical_align_top_outlined, size: 18),
+              const SizedBox(width: 12),
+              Text(_MoreItem.first.raw),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: _MoreItem.last.raw,
+          child: Row(
+            children: [
+              const Icon(Icons.vertical_align_bottom_outlined, size: 18),
+              const SizedBox(width: 12),
+              Text(_MoreItem.last.raw),
             ],
           ),
         ),
@@ -181,7 +215,7 @@ class AlbumCardUI extends ConsumerWidget {
             children: [
               Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
               const SizedBox(width: 12),
-              Text('Delete', style: TextStyle(color: colorScheme.error)),
+              Text(_MoreItem.delete.raw, style: TextStyle(color: colorScheme.error)),
             ],
           ),
         ),

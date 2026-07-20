@@ -13,7 +13,7 @@ part of 'album_list_provider.dart';
 final albumListProvider = AlbumListProvider._();
 
 final class AlbumListProvider
-    extends $AsyncNotifierProvider<AlbumList, AlbumListState> {
+    extends $NotifierProvider<AlbumList, AlbumListState> {
   AlbumListProvider._()
     : super(
         from: null,
@@ -31,21 +31,29 @@ final class AlbumListProvider
   @$internal
   @override
   AlbumList create() => AlbumList();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(AlbumListState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<AlbumListState>(value),
+    );
+  }
 }
 
-String _$albumListHash() => r'1545430fb7185d1c568c1ca41a6c7699d87a7870';
+String _$albumListHash() => r'718b8f6410d4010e8f2fe1cc83a6bbcb1e0c5631';
 
-abstract class _$AlbumList extends $AsyncNotifier<AlbumListState> {
-  FutureOr<AlbumListState> build();
+abstract class _$AlbumList extends $Notifier<AlbumListState> {
+  AlbumListState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<AlbumListState>, AlbumListState>;
+    final ref = this.ref as $Ref<AlbumListState, AlbumListState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AlbumListState>, AlbumListState>,
-              AsyncValue<AlbumListState>,
+              AnyNotifier<AlbumListState, AlbumListState>,
+              AlbumListState,
               Object?,
               Object?
             >;

@@ -240,18 +240,49 @@ class DBLogic {
       coverPath = null;
     }
     //获取 最大SortOrder
-    final albumBox = _store.box<EnAlbum>();
-    final query = albumBox.query().order(EnAlbum_.sortOrder, flags: Order.descending).build();
-    final maxSortOrderAlbum = await query.findFirstAsync();
-    query.close();
-
-    final sortOrder = maxSortOrderAlbum != null ? maxSortOrderAlbum.sortOrder + 1 : 0;
+    final maxSortOrder = await _albumMaxSortOrder;
+    final sortOrder = maxSortOrder == null ? 0 : maxSortOrder + 1;
     return await _store.box<EnAlbum>().putAndGetAsync(
       EnAlbum(name: trimmedName, sortOrder: sortOrder, cover: coverPath, id: 0),
     );
   }
 
-  Future<EnAlbum> updateAlbum(EnAlbum album, {String? name, File? Function()? coverFunc}) async {
+  Future<int?> get _albumMinSortOrder async {
+    final albumBox = _store.box<EnAlbum>();
+    final query = albumBox.query().order(EnAlbum_.sortOrder).build();
+    query.limit = 1;
+    final minSortOrder = (await query.findFirstAsync())?.sortOrder;
+    query.close();
+    return minSortOrder;
+  }
+
+  Future<int?> get _albumMaxSortOrder async {
+    final albumBox = _store.box<EnAlbum>();
+    final query = albumBox.query().order(EnAlbum_.sortOrder, flags: Order.descending).build();
+    query.limit = 1;
+    final maxSortOrder = (await query.findFirstAsync())?.sortOrder;
+    query.close();
+    return maxSortOrder;
+  }
+
+  Future<EnAlbum> sortAlbumToFirst(EnAlbum album) async {
+    final maxSortOrder = await _albumMaxSortOrder;
+    final sortOrder = maxSortOrder == null ? 0 : maxSortOrder + 1;
+    return await updateAlbum(album, sortOrder: sortOrder);
+  }
+
+  Future<EnAlbum> sortAlbumToLast(EnAlbum album) async {
+    final minSortOrder = await _albumMinSortOrder;
+    final sortOrder = minSortOrder == null ? 0 : minSortOrder - 1;
+    return await updateAlbum(album, sortOrder: sortOrder);
+  }
+
+  Future<EnAlbum> updateAlbum(
+    EnAlbum album, {
+    String? name,
+    File? Function()? coverFunc,
+    int? sortOrder,
+  }) async {
     EnAlbum updatedAlbum = album.copyWith();
     if (name != null) {
       //update name
@@ -274,7 +305,13 @@ class DBLogic {
         updatedAlbum = updatedAlbum.copyWith(coverFunc: () => newCoverPath);
       }
     }
-    if (updatedAlbum.cover != album.cover || updatedAlbum.name != album.name) {
+    if (sortOrder != null) {
+      //want to update sortOrder
+      updatedAlbum = updatedAlbum.copyWith(sortOrder: sortOrder);
+    }
+    if (updatedAlbum.cover != album.cover ||
+        updatedAlbum.name != album.name ||
+        updatedAlbum.sortOrder != album.sortOrder) {
       return await _store.box<EnAlbum>().putAndGetAsync(updatedAlbum);
     } else {
       return album;

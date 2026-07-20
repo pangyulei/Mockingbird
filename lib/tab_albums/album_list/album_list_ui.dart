@@ -15,13 +15,15 @@ class AlbumListUI extends ConsumerWidget {
   Widget _empty() {
     return Consumer(
       builder: (ctx, ref, child) {
-        final isEmpty = ref.watch(albumListProvider.select((s) => s.value?.albumCount == 0));
+        final isEmpty = ref.watch(albumListProvider.select((st) => st.albumCount == 0));
         if (!isEmpty) {
           return const SizedBox.shrink();
         }
         return Scaffold(
           appBar: _appBar(ctx, ref),
-          body: const Center(child: Text('no data, make me mroe beautiful')),
+          body: const Center(
+            child: Text('no data, make me mroe beautiful'),
+          ), //TODO make me mroe beautiful
         );
       },
     );
@@ -39,7 +41,7 @@ class AlbumListUI extends ConsumerWidget {
           const Text('Albums'),
           Consumer(
             builder: (context, ref, child) {
-              final count = ref.watch(albumListProvider.select((s) => s.value?.albumCount ?? 0));
+              final count = ref.watch(albumListProvider.select((st) => st.albumCount));
               return Text(
                 '$count created albums',
                 style: Theme.of(
@@ -58,10 +60,11 @@ class AlbumListUI extends ConsumerWidget {
   }
 
   Widget _grid(WidgetRef ref) {
-    final count = ref.watch(albumListProvider.select((s) => s.value?.albumCount ?? 0));
+    //grid has to watch whole albumlist, because its order may change, but count stay same.
+    final st = ref.watch(albumListProvider);
     return GridView.builder(
       padding: const EdgeInsets.all(12),
-      itemCount: count,
+      itemCount: st.albumCount,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         mainAxisSpacing: 4,

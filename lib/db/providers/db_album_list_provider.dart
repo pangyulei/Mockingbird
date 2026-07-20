@@ -49,6 +49,18 @@ class DBAlbumList extends _$DBAlbumList {
     }
   }
 
+  Future<void> sortAlbumToFirst(EnAlbum album) async {
+    await DBLogic().sortAlbumToFirst(album);
+    final albumList = state.value ?? [];
+    state = AsyncData([album, ...albumList.where((a) => a.id != album.id).toList()]);
+  }
+
+  Future<void> sortAlbumToLast(EnAlbum album) async {
+    await DBLogic().sortAlbumToLast(album);
+    final albumList = state.value ?? [];
+    state = AsyncData([...albumList.where((a) => a.id != album.id).toList(), album]);
+  }
+
   Future<void> deleteAlbum(EnAlbum album) async {
     await DBLogic().deleteAlbum(album);
     final albumList = state.value ?? [];

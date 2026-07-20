@@ -25,6 +25,22 @@ class AlbumCard extends _$AlbumCard {
     return album.toCardState();
   }
 
+  Future<void> sortToFirst() async {
+    final album = _album;
+    if (album == null) return;
+    EasyLoading.show(maskType: .clear);
+    await ref.read(dbAlbumListProvider.notifier).sortAlbumToFirst(album);
+    EasyLoading.dismiss();
+  }
+
+  Future<void> sortToLast() async {
+    final album = _album;
+    if (album == null) return;
+    EasyLoading.show(maskType: .clear);
+    await ref.read(dbAlbumListProvider.notifier).sortAlbumToLast(album);
+    EasyLoading.dismiss();
+  }
+
   Future<void> delete() async {
     final album = _album;
     if (album == null) return;
