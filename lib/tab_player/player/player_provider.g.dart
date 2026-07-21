@@ -12,7 +12,8 @@ part of 'player_provider.dart';
 @ProviderFor(Player)
 final playerProvider = PlayerProvider._();
 
-final class PlayerProvider extends $NotifierProvider<Player, PlayerState?> {
+final class PlayerProvider
+    extends $NotifierProvider<Player, UIStateNullable<PlayerState>> {
   PlayerProvider._()
     : super(
         from: null,
@@ -32,27 +33,32 @@ final class PlayerProvider extends $NotifierProvider<Player, PlayerState?> {
   Player create() => Player();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(PlayerState? value) {
+  Override overrideWithValue(UIStateNullable<PlayerState> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<PlayerState?>(value),
+      providerOverride: $SyncValueProvider<UIStateNullable<PlayerState>>(value),
     );
   }
 }
 
-String _$playerHash() => r'c82d7b87fbbbaec074a2563cf7f3eb3e4cb655fb';
+String _$playerHash() => r'2202c0be6218776ca7f0f0f6b21e964eb3d5c212';
 
-abstract class _$Player extends $Notifier<PlayerState?> {
-  PlayerState? build();
+abstract class _$Player extends $Notifier<UIStateNullable<PlayerState>> {
+  UIStateNullable<PlayerState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<PlayerState?, PlayerState?>;
+    final ref =
+        this.ref
+            as $Ref<UIStateNullable<PlayerState>, UIStateNullable<PlayerState>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<PlayerState?, PlayerState?>,
-              PlayerState?,
+              AnyNotifier<
+                UIStateNullable<PlayerState>,
+                UIStateNullable<PlayerState>
+              >,
+              UIStateNullable<PlayerState>,
               Object?,
               Object?
             >;
@@ -84,7 +90,7 @@ final class PlayerVideoProvider
   PlayerVideo create() => PlayerVideo();
 }
 
-String _$playerVideoHash() => r'3f4fbabca23502e90fe2fca6450bda41fc20dfee';
+String _$playerVideoHash() => r'e37c1f067077c42404e02a404ebf6809814d5f89';
 
 abstract class _$PlayerVideo extends $AsyncNotifier<PlayerVideoState?> {
   FutureOr<PlayerVideoState?> build();

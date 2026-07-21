@@ -8,10 +8,10 @@ class PlayerVideoState {
   final double speed;
   final double volume;
   final int positionMicro;
-  final int? loopingIndex;
+  final int? loopIndex;
 
   const PlayerVideoState({
-    required this.loopingIndex,
+    required this.loopIndex,
     required this.positionMicro,
     required this.isPlaying,
     required this.speed,
@@ -20,19 +20,18 @@ class PlayerVideoState {
     required this.controller,
   });
 
-  bool get loop => loopingIndex != null;
+  bool get isLoop => loopIndex != null;
 
   PlayerVideoState copyWith({
-    bool? loop,
     int? positionMicro,
-    int? Function()? loopingIndex,
+    int? Function()? loopIndex,
     bool? isPlaying,
     double? speed,
     double? volume,
     bool? showVolumeSlider,
   }) {
     return PlayerVideoState(
-      loopingIndex: loopingIndex == null ? this.loopingIndex : loopingIndex(),
+      loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       positionMicro: positionMicro ?? this.positionMicro,
       controller: controller,
       speed: speed ?? this.speed,
@@ -65,7 +64,9 @@ class PlayerState {
     PlayerVideoState? videoState,
   }) {
     return PlayerState(
-      playingSentenceId: playingSentenceId == null ? this.playingSentenceId : playingSentenceId(),
+      playingSentenceId: playingSentenceId == null
+          ? this.playingSentenceId
+          : playingSentenceId(),
       title: title ?? this.title,
       sentenceCount: sentenceCount ?? this.sentenceCount,
       videoState: videoState ?? this.videoState,
