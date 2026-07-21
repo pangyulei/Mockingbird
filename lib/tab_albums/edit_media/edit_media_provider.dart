@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
@@ -39,11 +38,10 @@ class EditMedia extends _$EditMedia {
     final media = _media;
     if (media == null) return;
 
-    EasyLoading.show(maskType: .clear);
     await ref
         .read(dbAlbumListProvider.notifier)
         .updateMedia(media, name: state.nameController.text);
-    EasyLoading.dismiss();
+    ;
   }
 
   void updateName(String newName) {

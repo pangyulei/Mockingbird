@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
@@ -33,8 +32,6 @@ class Player extends _$Player {
 
   @override
   Future<PlayerState?> build() async {
-    EasyLoading.show(maskType: .clear);
-
     final videoState = await ref.watch(playerVideoProvider.future);
     if (videoState == null) return null;
     final playingMedia = await ref.watch(playerMediaProvider.future);
@@ -45,7 +42,6 @@ class Player extends _$Player {
         ? null
         : sentenceList.first.id;
 
-    EasyLoading.dismiss();
     return PlayerState(
       title: playingMedia.name,
       sentenceCount: sentenceList?.length ?? 0,
@@ -318,12 +314,10 @@ class Player extends _$Player {
     final subtitlePath = await _pickOneSubtitle();
     if (subtitlePath == null) return;
 
-    EasyLoading.show(maskType: .clear);
     final subtitle = await SubtitleParser.parsePath(subtitlePath);
     if (subtitle != null) {
       await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitle: () => subtitle);
     }
-    EasyLoading.dismiss();
   }
 
   Future<String?> _pickOneSubtitle() async {

@@ -1,4 +1,3 @@
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
@@ -28,25 +27,20 @@ class AlbumCard extends _$AlbumCard {
   Future<void> sortToFirst() async {
     final album = _album;
     if (album == null) return;
-    EasyLoading.show(maskType: .clear);
     await ref.read(dbAlbumListProvider.notifier).sortAlbumToFirst(album);
-    EasyLoading.dismiss();
   }
 
   Future<void> sortToLast() async {
     final album = _album;
     if (album == null) return;
-    EasyLoading.show(maskType: .clear);
     await ref.read(dbAlbumListProvider.notifier).sortAlbumToLast(album);
-    EasyLoading.dismiss();
   }
 
   Future<void> delete() async {
     final album = _album;
     if (album == null) return;
-    EasyLoading.show(maskType: .clear);
     await ref.read(dbAlbumListProvider.notifier).deleteAlbum(album);
-    EasyLoading.dismiss();
+    ;
   }
 
   String? get albumName => _album?.name;

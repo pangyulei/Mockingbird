@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
@@ -39,7 +38,6 @@ class EditAlbum extends _$EditAlbum {
   }
 
   Future<void> submit() async {
-    EasyLoading.show(maskType: .clear);
     final album = _album;
     if (album == null) {
       //creating
@@ -52,7 +50,7 @@ class EditAlbum extends _$EditAlbum {
           .read(dbAlbumListProvider.notifier)
           .updateAlbum(album, name: state.nameController.text, cover: () => state.cover);
     }
-    EasyLoading.dismiss();
+    ;
   }
 
   Future<void> pickCover() async {

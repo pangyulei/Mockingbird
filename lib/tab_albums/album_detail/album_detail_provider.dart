@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
@@ -45,9 +44,8 @@ class AlbumDetail extends _$AlbumDetail {
     final files = await _pickMediasAndSubtitleFiles();
     final album = _album;
     if (files.isNotEmpty && album != null) {
-      EasyLoading.show(maskType: .clear);
       await ref.read(dbAlbumListProvider.notifier).importResourcesIntoAlbum(album, files);
-      EasyLoading.dismiss();
+      ;
     }
   }
 
@@ -59,9 +57,8 @@ class AlbumDetail extends _$AlbumDetail {
     final newCover = await _pickImage();
     final album = _album;
     if (newCover != null && album != null) {
-      EasyLoading.show(maskType: .clear);
       await ref.read(dbAlbumListProvider.notifier).updateAlbum(album, cover: () => newCover);
-      EasyLoading.dismiss();
+      ;
     }
   }
 
