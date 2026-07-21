@@ -58,7 +58,7 @@ final class MediaCardProvider
   }
 }
 
-String _$mediaCardHash() => r'a6dfe2975ac417dc6a26b8f69a397bde23962910';
+String _$mediaCardHash() => r'876735fc53ca0e90d38c66bb4ea2dc5bbe7e73a4';
 
 final class MediaCardFamily extends $Family
     with

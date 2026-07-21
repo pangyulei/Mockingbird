@@ -15,7 +15,7 @@ class AlbumListUI extends ConsumerWidget {
   Widget _empty() {
     return Consumer(
       builder: (ctx, ref, child) {
-        final albumCount = ref.watch(albumListProvider.select((st) => st.value?.albumCount ?? 0));
+        final albumCount = ref.watch(albumListProvider.select((st) => st.albumCount));
         if (albumCount > 0) {
           return const SizedBox.shrink();
         }
@@ -89,7 +89,7 @@ class AlbumListUI extends ConsumerWidget {
           const Text('Albums'),
           Consumer(
             builder: (context, ref, child) {
-              final albumCount = ref.watch(albumListProvider.select((st) => st.value?.albumCount));
+              final albumCount = ref.watch(albumListProvider.select((st) => st?.albumCount));
               return Text(
                 '$albumCount created albums',
                 style: Theme.of(
@@ -113,10 +113,10 @@ class AlbumListUI extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         //watch all, albumCount may not change but the list already change
-        final st = ref.watch(albumListProvider).value;
+        final st = ref.watch(albumListProvider);
         return GridView.builder(
           padding: const EdgeInsets.all(12),
-          itemCount: st?.albumCount ?? 0,
+          itemCount: st.albumCount,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 4,

@@ -12,8 +12,7 @@ part of 'player_provider.dart';
 @ProviderFor(Player)
 final playerProvider = PlayerProvider._();
 
-final class PlayerProvider
-    extends $AsyncNotifierProvider<Player, PlayerState?> {
+final class PlayerProvider extends $NotifierProvider<Player, PlayerState?> {
   PlayerProvider._()
     : super(
         from: null,
@@ -31,21 +30,29 @@ final class PlayerProvider
   @$internal
   @override
   Player create() => Player();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PlayerState? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PlayerState?>(value),
+    );
+  }
 }
 
-String _$playerHash() => r'2e48dcf8df95705ad765ec3142780b80adee9138';
+String _$playerHash() => r'c82d7b87fbbbaec074a2563cf7f3eb3e4cb655fb';
 
-abstract class _$Player extends $AsyncNotifier<PlayerState?> {
-  FutureOr<PlayerState?> build();
+abstract class _$Player extends $Notifier<PlayerState?> {
+  PlayerState? build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<PlayerState?>, PlayerState?>;
+    final ref = this.ref as $Ref<PlayerState?, PlayerState?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<PlayerState?>, PlayerState?>,
-              AsyncValue<PlayerState?>,
+              AnyNotifier<PlayerState?, PlayerState?>,
+              PlayerState?,
               Object?,
               Object?
             >;
@@ -77,7 +84,7 @@ final class PlayerVideoProvider
   PlayerVideo create() => PlayerVideo();
 }
 
-String _$playerVideoHash() => r'38d6ccba82a9a4b84c175bf2429af30abeddaaa3';
+String _$playerVideoHash() => r'3f4fbabca23502e90fe2fca6450bda41fc20dfee';
 
 abstract class _$PlayerVideo extends $AsyncNotifier<PlayerVideoState?> {
   FutureOr<PlayerVideoState?> build();
@@ -124,7 +131,7 @@ final class PlayerVideoControllerProvider
 }
 
 String _$playerVideoControllerHash() =>
-    r'438eab93663c911c14e587f55161a36cc91a7543';
+    r'7c013047548c54b0c01e7ddba822e458a1559d8b';
 
 abstract class _$PlayerVideoController
     extends $AsyncNotifier<VideoPlayerController?> {
@@ -143,50 +150,6 @@ abstract class _$PlayerVideoController
                 VideoPlayerController?
               >,
               AsyncValue<VideoPlayerController?>,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(PlayerMedia)
-final playerMediaProvider = PlayerMediaProvider._();
-
-final class PlayerMediaProvider
-    extends $AsyncNotifierProvider<PlayerMedia, EnMedia?> {
-  PlayerMediaProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'playerMediaProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$playerMediaHash();
-
-  @$internal
-  @override
-  PlayerMedia create() => PlayerMedia();
-}
-
-String _$playerMediaHash() => r'2500c1e218d9ed15eed8d3bb16a18d850b80520f';
-
-abstract class _$PlayerMedia extends $AsyncNotifier<EnMedia?> {
-  FutureOr<EnMedia?> build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EnMedia?>, EnMedia?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EnMedia?>, EnMedia?>,
-              AsyncValue<EnMedia?>,
               Object?,
               Object?
             >;

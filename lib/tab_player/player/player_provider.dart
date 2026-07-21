@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mockingbird/db/db_logic.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
@@ -20,21 +21,21 @@ part 'player_provider.g.dart';
 
 @riverpod
 class Player extends _$Player {
-  PlayerVideoState? get _videoState => state.value?.videoState;
+  PlayerVideoState? get _videoState => state?.videoState;
 
   VideoPlayerController? get _videoController => _videoState?.controller;
 
-  ItemScrollController? get _scrollController => state.value?.scrollController;
+  ItemScrollController? get _scrollController => state?.scrollController;
 
   int? _prevPlayingSentenceIndex;
   bool _isDraggingVideoSlider = false;
   EnMedia? _media;
 
   @override
-  Future<PlayerState?> build() async {
-    final videoState = await ref.watch(playerVideoProvider.future);
+  PlayerState? build() {
+    final PlayerVideoState? videoState = ref.watch(playerVideoProvider).value;
     if (videoState == null) return null;
-    final playingMedia = await ref.watch(playerMediaProvider.future);
+    final EnMedia? playingMedia = ref.watch(playingMediaProvider).value;
     _media = playingMedia;
     if (playingMedia == null) return null;
     final sentenceList = playingMedia.subtitleList.firstOrNull?.sentenceList;
@@ -52,7 +53,7 @@ class Player extends _$Player {
   }
 
   void _updateVideoState(PlayerVideoState? videoState) {
-    state = AsyncData(state.value?.copyWith(videoState: videoState));
+    state = state?.copyWith(videoState: videoState);
   }
 
   void tapSentence(int? sentenceId) async {
@@ -147,9 +148,8 @@ class Player extends _$Player {
   }
 
   Future<void> videoPositionChanged(VideoPlayerController videoController) async {
-    final value = state.value;
     final videoState = _videoState;
-    if (value == null || videoState == null) return;
+    if (videoState == null) return;
     if (_isDraggingVideoSlider) return;
     final position = videoController.value.position;
     //for video slider moving along with playing
@@ -160,7 +160,7 @@ class Player extends _$Player {
       _updateVideoState(videoState.copyWith(isPlaying: false));
     }
     //prevent videoController.play() but _state not setuped fully.
-    if (value.sentenceCount == 0) return;
+    if (state == null || state?.sentenceCount == 0) return;
     final sentenceList = _media?.subtitleList.firstOrNull?.sentenceList;
     if (sentenceList == null || sentenceList.isEmpty) return;
 
@@ -205,10 +205,10 @@ class Player extends _$Player {
     final sentenceList = _media?.subtitleList.firstOrNull?.sentenceList;
     if (sentenceList == null || sentenceList.isEmpty) return;
     if (index == null) {
-      state = AsyncData(state.value?.copyWith(playingSentenceId: () => null));
+      state = state?.copyWith(playingSentenceId: () => null);
     } else {
       int? id = sentenceList.elementAtOrNull(index)?.id;
-      state = AsyncData(state.value?.copyWith(playingSentenceId: () => id));
+      state = state?.copyWith(playingSentenceId: () => id);
     }
   }
 
@@ -342,9 +342,10 @@ class Player extends _$Player {
 class PlayerVideo extends _$PlayerVideo {
   @override
   Future<PlayerVideoState?> build() async {
-    final videoController = await ref.watch(playerVideoControllerProvider.future);
+    final VideoPlayerController? videoController = ref.watch(playerVideoControllerProvider).value;
     if (videoController == null) return null;
-    final media = await ref.watch(playerMediaProvider.future);
+    final EnMedia? media = ref.watch(playingMediaProvider).value;
+    //because of this is read and have to await, this has to be a AsyncNotifier
     final loop = await ref.read(dbPrefProvider.selectAsync((pref) => pref.loop));
     final int? loopingIndex;
     if (loop) {
@@ -369,26 +370,16 @@ class PlayerVideo extends _$PlayerVideo {
 class PlayerVideoController extends _$PlayerVideoController {
   @override
   Future<VideoPlayerController?> build() async {
-    final String? path = await ref.watch(playerMediaProvider.selectAsync((m) => m?.path));
+    final String? path = ref.watch(playingMediaProvider.select((st) => st.value?.path));
     if (path == null || path.isEmpty) return null;
     final videoController = VideoPlayerController.file(File(path));
-    await videoController.initialize();
     ref.onDispose(() {
       videoController.dispose();
     });
+    //its neccessary to await initialize, otherwise aspectratio etc will wrong
+    await videoController.initialize();
     await videoController.play();
     return videoController;
-  }
-}
-
-@riverpod
-class PlayerMedia extends _$PlayerMedia {
-  @override
-  Future<EnMedia?> build() async {
-    final playingId = await ref.watch(dbPrefProvider.selectAsync((st) => st.playingId));
-    if (playingId == null) return null;
-    final EnMedia? media = await DBLogic().loadMedia(playingId);
-    return media;
   }
 }
 

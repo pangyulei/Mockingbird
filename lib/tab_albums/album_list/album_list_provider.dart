@@ -11,11 +11,9 @@ class AlbumList extends _$AlbumList {
   List<EnAlbum> _albumList = [];
 
   @override
-  Future<AlbumListState> build() async {
-    final List<EnAlbum> albumList = await ref.watch(dbAlbumListProvider.future);
+  AlbumListState build() {
+    final List<EnAlbum> albumList = ref.watch(dbAlbumListProvider).value ?? [];
     _albumList = albumList;
-
-    ;
     return AlbumListState(albumCount: albumList.length);
   }
 

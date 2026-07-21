@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'settings_provider.dart';
+part of 'db_playing_media_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,43 +9,43 @@ part of 'settings_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(Settings)
-final settingsProvider = SettingsProvider._();
+@ProviderFor(PlayingMedia)
+final playingMediaProvider = PlayingMediaProvider._();
 
-final class SettingsProvider
-    extends $AsyncNotifierProvider<Settings, SettingsState> {
-  SettingsProvider._()
+final class PlayingMediaProvider
+    extends $AsyncNotifierProvider<PlayingMedia, EnMedia?> {
+  PlayingMediaProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'settingsProvider',
+        name: r'playingMediaProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$settingsHash();
+  String debugGetCreateSourceHash() => _$playingMediaHash();
 
   @$internal
   @override
-  Settings create() => Settings();
+  PlayingMedia create() => PlayingMedia();
 }
 
-String _$settingsHash() => r'00a6b89b07fccb2dda56768beef4d3a3e301a188';
+String _$playingMediaHash() => r'56ab05625ab2498a8a25b3e6ef4430f18f0c6a4e';
 
-abstract class _$Settings extends $AsyncNotifier<SettingsState> {
-  FutureOr<SettingsState> build();
+abstract class _$PlayingMedia extends $AsyncNotifier<EnMedia?> {
+  FutureOr<EnMedia?> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<SettingsState>, SettingsState>;
+    final ref = this.ref as $Ref<AsyncValue<EnMedia?>, EnMedia?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<SettingsState>, SettingsState>,
-              AsyncValue<SettingsState>,
+              AnyNotifier<AsyncValue<EnMedia?>, EnMedia?>,
+              AsyncValue<EnMedia?>,
               Object?,
               Object?
             >;
