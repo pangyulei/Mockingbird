@@ -2,25 +2,25 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 class PlayerVideoState {
-  final bool loop;
-  final int? loopingIndex;
   final bool showVolumeSlider;
   final VideoPlayerController controller;
   final bool isPlaying;
   final double speed;
   final double volume;
   final int positionMicro;
+  final int? loopingIndex;
 
   const PlayerVideoState({
-    required this.loop,
+    required this.loopingIndex,
     required this.positionMicro,
     required this.isPlaying,
     required this.speed,
     required this.volume,
-    required this.loopingIndex,
     required this.showVolumeSlider,
     required this.controller,
   });
+
+  bool get loop => loopingIndex != null;
 
   PlayerVideoState copyWith({
     bool? loop,
@@ -32,12 +32,11 @@ class PlayerVideoState {
     bool? showVolumeSlider,
   }) {
     return PlayerVideoState(
-      loop: loop ?? this.loop,
+      loopingIndex: loopingIndex == null ? this.loopingIndex : loopingIndex(),
       positionMicro: positionMicro ?? this.positionMicro,
       controller: controller,
       speed: speed ?? this.speed,
       volume: volume ?? this.volume,
-      loopingIndex: loopingIndex == null ? this.loopingIndex : loopingIndex(),
       isPlaying: isPlaying ?? this.isPlaying,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
     );
@@ -48,7 +47,7 @@ class PlayerState {
   final String title;
   final int sentenceCount;
   final ItemScrollController scrollController;
-  final PlayerVideoState? videoState;
+  final PlayerVideoState videoState;
   final int? playingSentenceId;
 
   const PlayerState({
@@ -63,15 +62,13 @@ class PlayerState {
     int? Function()? playingSentenceId,
     String? title,
     int? sentenceCount,
-    PlayerVideoState? Function()? videoState,
+    PlayerVideoState? videoState,
   }) {
     return PlayerState(
-      playingSentenceId: playingSentenceId == null
-          ? this.playingSentenceId
-          : playingSentenceId(),
+      playingSentenceId: playingSentenceId == null ? this.playingSentenceId : playingSentenceId(),
       title: title ?? this.title,
       sentenceCount: sentenceCount ?? this.sentenceCount,
-      videoState: videoState == null ? this.videoState : videoState(),
+      videoState: videoState ?? this.videoState,
       scrollController: scrollController,
     );
   }

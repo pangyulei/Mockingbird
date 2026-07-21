@@ -15,8 +15,8 @@ class AlbumListUI extends ConsumerWidget {
   Widget _empty() {
     return Consumer(
       builder: (ctx, ref, child) {
-        final isEmpty = ref.watch(albumListProvider.select((st) => st.albumCount == 0));
-        if (!isEmpty) {
+        final albumCount = ref.watch(albumListProvider.select((st) => st.value?.albumCount ?? 0));
+        if (albumCount > 0) {
           return const SizedBox.shrink();
         }
         final theme = Theme.of(ctx);
@@ -65,9 +65,7 @@ class AlbumListUI extends ConsumerWidget {
                     label: const Text('Create Your First Album'),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                   ),
                 ],
@@ -80,7 +78,7 @@ class AlbumListUI extends ConsumerWidget {
   }
 
   Widget _page(BuildContext ctx, WidgetRef ref) {
-    return Scaffold(appBar: _appBar(ctx, ref), body: _grid(ref));
+    return Scaffold(appBar: _appBar(ctx, ref), body: _grid());
   }
 
   AppBar _appBar(BuildContext ctx, WidgetRef ref) {
@@ -91,9 +89,9 @@ class AlbumListUI extends ConsumerWidget {
           const Text('Albums'),
           Consumer(
             builder: (context, ref, child) {
-              final count = ref.watch(albumListProvider.select((st) => st.albumCount));
+              final albumCount = ref.watch(albumListProvider.select((st) => st.value?.albumCount));
               return Text(
-                '$count created albums',
+                '$albumCount created albums',
                 style: Theme.of(
                   ctx,
                 ).textTheme.bodySmall?.copyWith(color: Theme.of(ctx).colorScheme.outline),
@@ -109,21 +107,27 @@ class AlbumListUI extends ConsumerWidget {
     );
   }
 
-  Widget _grid(WidgetRef ref) {
+  Widget _grid() {
     //grid has to watch whole albumlist, because its order may change, but count stay same.
-    final st = ref.watch(albumListProvider);
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: st.albumCount,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 4,
-        crossAxisSpacing: 4,
-        childAspectRatio: 1,
-      ),
-      itemBuilder: (ctx, i) {
-        final albumId = ref.read(albumListProvider.notifier).albumIdAtIndex(i);
-        return AlbumCardUI(albumId);
+
+    return Consumer(
+      builder: (context, ref, child) {
+        //watch all, albumCount may not change but the list already change
+        final st = ref.watch(albumListProvider).value;
+        return GridView.builder(
+          padding: const EdgeInsets.all(12),
+          itemCount: st?.albumCount ?? 0,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 4,
+            crossAxisSpacing: 4,
+            childAspectRatio: 1,
+          ),
+          itemBuilder: (ctx, i) {
+            final albumId = ref.read(albumListProvider.notifier).albumIdAtIndex(i);
+            return AlbumCardUI(albumId);
+          },
+        );
       },
     );
   }

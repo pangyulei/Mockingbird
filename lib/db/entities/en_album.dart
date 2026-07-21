@@ -11,25 +11,19 @@ class EnAlbum {
   final String name;
   final String? cover;
 
-  @Backlink('albums')
-  final medias = ToMany<EnMedia>();
+  @Backlink('albumList')
+  final mediaList = ToMany<EnMedia>();
 
   @Index()
   final int sortOrder;
 
-  EnAlbum({
-    required this.name,
-    required this.sortOrder,
-    required this.id,
-    required this.cover,
-    // required this.versionId,
-  });
+  EnAlbum({required this.name, required this.sortOrder, required this.id, required this.cover});
 
   EnAlbum copyWith({
     String? name,
     String? Function()? coverFunc,
     int? sortOrder,
-    List<EnMedia>? medias,
+    List<EnMedia>? mediaList,
   }) {
     final album = EnAlbum(
       id: id,
@@ -37,7 +31,7 @@ class EnAlbum {
       sortOrder: sortOrder ?? this.sortOrder,
       cover: coverFunc == null ? cover : coverFunc(),
     );
-    album.medias.addAll(medias ?? this.medias);
+    album.mediaList.addAll(mediaList ?? this.mediaList);
     return album;
   }
 

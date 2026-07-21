@@ -15,18 +15,20 @@ class SentenceCard extends _$SentenceCard {
     if (id == null) return const SentenceCardState.empty();
     final EnSentence? sentence = ref.watch(
       dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => [for (final a in al) a.medias])
+          .select((st) => st.value ?? [])
+          .select((al) => [for (final a in al) a.mediaList])
           .select((mll) => mll.expand((e) => e))
-          .select((ml) => [for (final m in ml) m.subtitles.firstOrNull].whereType<EnSubtitle>())
-          .select((subl) => [for (final sub in subl) sub.sentences])
+          .select((ml) => [for (final m in ml) m.subtitleList.firstOrNull].whereType<EnSubtitle>())
+          .select((subl) => [for (final sub in subl) sub.sentenceList])
           .select((senll) => senll.expand((e) => e))
           .select((senl) => {for (final sen in senl) sen.id: sen})
           .select((senm) => senm[id]),
     );
     if (sentence == null) return const SentenceCardState.empty();
-    final int? playingSentenceId = ref.watch(playerProvider.select((st)=>st?.playingSentenceId));
-  
+    final int? playingSentenceId = ref.watch(
+      playerProvider.select((st) => st.value?.playingSentenceId),
+    );
+
     String formatDuration(Duration d) {
       final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
       final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -40,6 +42,4 @@ class SentenceCard extends _$SentenceCard {
       isPlaying: sentence.id == playingSentenceId,
     );
   }
-
 }
-

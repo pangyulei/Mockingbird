@@ -3,7 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
-import 'package:mockingbird/tab_settings/tab_settings_widget.dart';
+import 'package:mockingbird/tab_settings/about_ui.dart';
+
+import '../tab_settings/settings_ui.dart';
 
 typedef OnAppTab = void Function(int index, StatefulNavigationShell shell);
 
@@ -36,6 +38,8 @@ class AppRoute {
   // static String playerById(int id) => '$player/$id';
 
   static String get settings => '/settings';
+
+  static String get about => '$settings/about';
 
   static GoRouter _router(OnAppTab onAppTab) => GoRouter(
     initialLocation: AppRoute.albums,
@@ -88,8 +92,9 @@ class AppRoute {
   static GoRoute _settingsRoute() => GoRoute(
     path: AppRoute.settings,
     builder: (BuildContext context, GoRouterState state) {
-      return const TabSettingsWidget();
+      return const SettingsUI();
     },
+    routes: [GoRoute(path: 'about', builder: (context, state) => const AboutUI())],
   );
 
   static Widget _indexesStackScaffold(

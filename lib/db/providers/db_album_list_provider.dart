@@ -22,53 +22,49 @@ class DBAlbumList extends _$DBAlbumList {
   Future<void> addAlbum(String name, {File? cover}) async {
     final newAlbum = await DBLogic().createAlbum(name, cover: cover);
     if (newAlbum != null) {
-      final albums = state.value ?? [];
-      state = AsyncData([newAlbum, ...albums]);
+      final albumList = await future;
+      state = AsyncData([newAlbum, ...albumList]);
     }
   }
 
-  Future<void> updateMedia(
-    EnMedia media, {
-    String? name,
-    EnSubtitle? Function()? subtitleFunc,
-  }) async {
-    final updatedMedia = await DBLogic().updateMedia(media, name: name, subtitleFunc: subtitleFunc);
-    final album = updatedMedia.albums.firstOrNull;
+  Future<void> updateMedia(EnMedia media, {String? name, EnSubtitle? Function()? subtitle}) async {
+    final updatedMedia = await DBLogic().updateMedia(media, name: name, subtitle: subtitle);
+    final album = updatedMedia.albumList.firstOrNull;
     if (album == null) return;
-    final newMediaList = album.medias
+    final newMediaList = album.mediaList
         .map((m) => m.id == updatedMedia.id ? updatedMedia : m)
         .toList();
-    final newAlbum = album.copyWith(medias: newMediaList);
-    _replaceAlbum(newAlbum);
+    final newAlbum = album.copyWith(mediaList: newMediaList);
+    await _replaceAlbum(newAlbum);
   }
 
   Future<void> updateAlbum(EnAlbum album, {String? name, File? Function()? cover}) async {
     final updatedAlbum = await DBLogic().updateAlbum(album, name: name, coverFunc: cover);
     if (updatedAlbum != album) {
-      _replaceAlbum(updatedAlbum);
+      await _replaceAlbum(updatedAlbum);
     }
   }
 
   Future<void> sortAlbumToFirst(EnAlbum album) async {
     await DBLogic().sortAlbumToFirst(album);
-    final albumList = state.value ?? [];
+    final albumList = await future;
     state = AsyncData([album, ...albumList.where((a) => a.id != album.id).toList()]);
   }
 
   Future<void> sortAlbumToLast(EnAlbum album) async {
     await DBLogic().sortAlbumToLast(album);
-    final albumList = state.value ?? [];
+    final albumList = await future;
     state = AsyncData([...albumList.where((a) => a.id != album.id).toList(), album]);
   }
 
   Future<void> deleteAlbum(EnAlbum album) async {
     await DBLogic().deleteAlbum(album);
-    final albumList = state.value ?? [];
+    final albumList = await future;
     state = AsyncData(albumList.where((a) => a.id != album.id).toList());
   }
 
-  void _replaceAlbum(EnAlbum album) {
-    final albumList = state.value ?? [];
+  Future<void> _replaceAlbum(EnAlbum album) async {
+    final albumList = await future;
     state = AsyncData(albumList.map((a) => a.id == album.id ? album : a).toList());
   }
 
@@ -76,20 +72,20 @@ class DBAlbumList extends _$DBAlbumList {
     await DBLogic().importMediaAndSubtitles(album, files);
     final updatedAlbum = await DBLogic().loadAlbum(album.id);
     if (updatedAlbum != null) {
-      _replaceAlbum(updatedAlbum);
+      await _replaceAlbum(updatedAlbum);
     }
   }
 
   Future<void> deleteMedia(EnMedia media) async {
-    final album = media.albums.firstOrNull;
+    final album = media.albumList.firstOrNull;
     if (album == null) return;
-    final newMediaList = album.medias.where((m) => m.id != media.id).toList();
-    final newAlbum = album.copyWith(medias: newMediaList);
-    _replaceAlbum(newAlbum);
+    final newMediaList = album.mediaList.where((m) => m.id != media.id).toList();
+    final newAlbum = album.copyWith(mediaList: newMediaList);
+    await _replaceAlbum(newAlbum);
     await DBLogic().deleteMedia(media);
 
     // clear playing id if playing media has deleted.
-    final playingId = ref.read(dbPrefProvider.select((av) => av.value?.playingId));
+    final playingId = ref.read(dbPrefProvider.select((st) => st.value?.playingId));
     if (playingId == media.id) {
       await ref.read(dbPrefProvider.notifier).setPlayingId(null);
     }

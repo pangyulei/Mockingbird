@@ -21,8 +21,8 @@ class MediaCard extends _$MediaCard {
     if (id == null) return const MediaCardState.empty();
     final EnMedia? media = ref.watch(
       dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => [for (final a in al) a.medias])
+          .select((st) => st.value ?? [])
+          .select((al) => [for (final a in al) a.mediaList])
           .select((mll) => mll.expand((e) => e))
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[id]),
@@ -30,11 +30,11 @@ class MediaCard extends _$MediaCard {
     _media = media;
     debugPrint('${identityHashCode(media)} $media');
     if (media == null) return const MediaCardState.empty();
-    final playingId = ref.watch(dbPrefProvider.select((av) => av.value?.playingId));
+    final playingId = ref.watch(dbPrefProvider.select((st) => st.value?.playingId));
     return MediaCardState(
       name: media.name,
       type: media.type,
-      hasSubtitle: media.subtitles.isNotEmpty,
+      hasSubtitle: media.subtitleList.isNotEmpty,
       isPlaying: media.id == playingId,
     );
   }
@@ -43,7 +43,7 @@ class MediaCard extends _$MediaCard {
     final media = _media;
     if (media == null) return;
     EasyLoading.show(maskType: .clear);
-    await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitleFunc: () => null);
+    await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitle: () => null);
     EasyLoading.dismiss();
   }
 
@@ -56,7 +56,7 @@ class MediaCard extends _$MediaCard {
     EasyLoading.show(maskType: .clear);
     final subtitle = await SubtitleParser.parsePath(subtitlePath);
     if (subtitle != null) {
-      await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitleFunc: () => subtitle);
+      await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitle: () => subtitle);
     }
     EasyLoading.dismiss();
   }

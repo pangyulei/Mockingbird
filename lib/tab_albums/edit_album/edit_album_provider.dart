@@ -14,6 +14,7 @@ part 'edit_album_provider.g.dart';
 @riverpod
 class EditAlbum extends _$EditAlbum {
   EnAlbum? _album;
+
   @override
   EditAlbumState build(int? id) {
     final nameController = TextEditingController();
@@ -23,7 +24,7 @@ class EditAlbum extends _$EditAlbum {
     if (id == null) return EditAlbumState.add(nameController);
     final album = ref.watch(
       dbAlbumListProvider
-          .select((av) => av.value ?? [])
+          .select((st) => st.value ?? [])
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
@@ -33,10 +34,7 @@ class EditAlbum extends _$EditAlbum {
     } else {
       nameController.text = album.name;
       final cover = album.cover;
-      return EditAlbumState.edit(
-        cover == null ? null : File(cover),
-        nameController,
-      );
+      return EditAlbumState.edit(cover == null ? null : File(cover), nameController);
     }
   }
 
@@ -52,11 +50,7 @@ class EditAlbum extends _$EditAlbum {
       //editing
       await ref
           .read(dbAlbumListProvider.notifier)
-          .updateAlbum(
-            album,
-            name: state.nameController.text,
-            cover: () => state.cover,
-          );
+          .updateAlbum(album, name: state.nameController.text, cover: () => state.cover);
     }
     EasyLoading.dismiss();
   }
@@ -82,11 +76,7 @@ class EditAlbum extends _$EditAlbum {
 
   void _updateCover(File? newCover) {
     if (newCover?.path != state.cover?.path) {
-      final enableSubmit = _isSubmitEnable(
-        _album,
-        state.nameController.text,
-        newCover,
-      );
+      final enableSubmit = _isSubmitEnable(_album, state.nameController.text, newCover);
       state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
   }

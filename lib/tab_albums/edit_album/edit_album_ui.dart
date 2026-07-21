@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 
-
 class EditAlbumUI extends ConsumerWidget {
   final int? _id;
+
   const EditAlbumUI(this._id, {super.key});
 
   @override
@@ -13,13 +13,8 @@ class EditAlbumUI extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Consumer(
         builder: (context, ref, child) {
-          final title = ref.watch(
-            editAlbumProvider(_id).select((s) => s.title),
-          );
-          return Text(
-            title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          );
+          final title = ref.watch(editAlbumProvider(_id).select((s) => s.title));
+          return Text(title, style: const TextStyle(fontWeight: FontWeight.bold));
         },
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -43,29 +38,23 @@ class EditAlbumUI extends ConsumerWidget {
                   decoration: InputDecoration(
                     labelText: 'Album Name',
                     labelStyle: TextStyle(
-                      color: Theme.of(
-                        ctx,
-                      ).colorScheme.primary.withValues(alpha: 0.7),
+                      color: Theme.of(ctx).colorScheme.primary.withValues(alpha: 0.7),
                     ),
                     hintText: 'Enter Album name',
-                    hintStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.2),
-                    ),
+                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.2)),
                     prefixIcon: Icon(
                       Icons.edit_note_rounded,
                       color: Theme.of(ctx).colorScheme.primary,
                     ),
                     filled: true,
-                    fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
+                    fillColor: Theme.of(
+                      ctx,
+                    ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 0,
-                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                   ),
                   autofocus: true,
                 );
@@ -75,22 +64,14 @@ class EditAlbumUI extends ConsumerWidget {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => _onCancel(ctx),
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: () => _onCancel(ctx), child: const Text('Cancel')),
         Consumer(
           builder: (ctx, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              editAlbumProvider(
-                _id,
-              ).select((s) => (s.enableSubmit, s.submitTitle)),
+              editAlbumProvider(_id).select((s) => (s.enableSubmit, s.submitTitle)),
             );
             if (enable) {
-              return FilledButton(
-                onPressed: () => _onSubmit(ctx, ref),
-                child: Text(submitTitle),
-              );
+              return FilledButton(onPressed: () => _onSubmit(ctx, ref), child: Text(submitTitle));
             } else {
               return FilledButton(onPressed: null, child: Text(submitTitle));
             }
@@ -113,25 +94,17 @@ class EditAlbumUI extends ConsumerWidget {
                 width: double.infinity,
                 height: 160,
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    ctx,
-                  ).colorScheme.primaryContainer.withValues(alpha: 0.1),
+                  color: Theme.of(ctx).colorScheme.primaryContainer.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    width: 1,
-                  ),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: cover != null
-                      ? Image.file(cover, fit: BoxFit.cover)
-                      : _noImage(ctx),
+                  child: cover != null ? Image.file(cover, fit: BoxFit.cover) : _noImage(ctx),
                 ),
               ),
             ),
-            if (cover != null)
-              Positioned(top: 8, right: 8, child: _removeCoverButton(ctx, ref)),
+            if (cover != null) Positioned(top: 8, right: 8, child: _removeCoverButton(ctx, ref)),
           ],
         );
       },

@@ -16,12 +16,13 @@ part 'album_detail_provider.g.dart';
 @riverpod
 class AlbumDetail extends _$AlbumDetail {
   EnAlbum? _album;
+
   @override
   AlbumDetailState build(int? id) {
     if (id == null) return const AlbumDetailState.empty();
     final album = ref.watch(
       dbAlbumListProvider
-          .select((av) => av.value ?? [])
+          .select((st) => st.value ?? [])
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
@@ -31,7 +32,7 @@ class AlbumDetail extends _$AlbumDetail {
     return AlbumDetailState(
       name: album.name,
       cover: coverPath == null ? null : File(coverPath),
-      mediaCount: album.medias.length,
+      mediaCount: album.mediaList.length,
       showImport: true,
     );
   }
@@ -45,9 +46,7 @@ class AlbumDetail extends _$AlbumDetail {
     final album = _album;
     if (files.isNotEmpty && album != null) {
       EasyLoading.show(maskType: .clear);
-      await ref
-          .read(dbAlbumListProvider.notifier)
-          .importResourcesIntoAlbum(album, files);
+      await ref.read(dbAlbumListProvider.notifier).importResourcesIntoAlbum(album, files);
       EasyLoading.dismiss();
     }
   }
@@ -61,24 +60,18 @@ class AlbumDetail extends _$AlbumDetail {
     final album = _album;
     if (newCover != null && album != null) {
       EasyLoading.show(maskType: .clear);
-      await ref
-          .read(dbAlbumListProvider.notifier)
-          .updateAlbum(album, cover: () => newCover);
+      await ref.read(dbAlbumListProvider.notifier).updateAlbum(album, cover: () => newCover);
       EasyLoading.dismiss();
     }
   }
 
   int? mediaIdAtIndex(int i) {
-    return _album?.medias.elementAtOrNull(i)?.id;
+    return _album?.mediaList.elementAtOrNull(i)?.id;
   }
 
   Future<List<File>> _pickMediasAndSubtitleFiles() async {
     try {
-      final allowedExtensions = [
-        ...kAudioExtensions,
-        ...kVideoExtensions,
-        ...kSubtitleExtensions,
-      ];
+      final allowedExtensions = [...kAudioExtensions, ...kVideoExtensions, ...kSubtitleExtensions];
       final pickedFiles = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: allowedExtensions,

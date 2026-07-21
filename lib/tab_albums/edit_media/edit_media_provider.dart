@@ -21,8 +21,8 @@ class EditMedia extends _$EditMedia {
     }
     final EnMedia? media = ref.watch(
       dbAlbumListProvider
-          .select((av) => av.value ?? [])
-          .select((al) => [for (final a in al) a.medias])
+          .select((st) => st.value ?? [])
+          .select((al) => [for (final a in al) a.mediaList])
           .select((mll) => mll.expand((e) => e))
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[id]),

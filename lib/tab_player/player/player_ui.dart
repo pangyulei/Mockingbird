@@ -21,12 +21,8 @@ class PlayerUI extends ConsumerWidget {
     await ref.read(playerProvider.notifier).addSubtitle();
   }
 
-  void _onUnloop(WidgetRef ref) {
-    ref.read(playerProvider.notifier).loop();
-  }
-
-  void _onLoop(WidgetRef ref) {
-    ref.read(playerProvider.notifier).unloop();
+  void _onToggleLoop(WidgetRef ref) {
+    ref.read(playerProvider.notifier).toggleLoop();
   }
 
   void _onPause(WidgetRef ref) async {
@@ -81,8 +77,8 @@ class PlayerUI extends ConsumerWidget {
     await ref.read(playerProvider.notifier).updateVolume(newVolume);
   }
 
-  void _onVolumeTap(WidgetRef ref) {
-    ref.read(playerProvider.notifier).volumeTapped();
+  void _onToggleVolume(WidgetRef ref) {
+    ref.read(playerProvider.notifier).toggleVolume();
   }
 
   void _onGoToAlbums(BuildContext ctx) {
@@ -107,10 +103,11 @@ class PlayerUI extends ConsumerWidget {
     return Consumer(
       builder: (ctx, ref, child) {
         final videoController = ref.watch(
-          playerProvider.select((st) => st?.videoState?.controller),
+          playerProvider.select((st) => st.value?.videoState.controller),
         );
         if (videoController == null) return const SizedBox.shrink();
         videoController.addListener(() => _onVideoPositionChanged(ref, videoController));
+        videoController.play();
         return Container(
           decoration: BoxDecoration(
             color: Colors.black,
@@ -186,14 +183,16 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
+            final sentenceCount = ref.watch(
+              playerProvider.select((st) => st.value?.sentenceCount ?? 0),
+            );
             if (sentenceCount == 0) {
               return _noSubtitle(ctx, ref);
             }
             return Consumer(
               builder: (context, ref, child) {
                 final scrollController = ref.watch(
-                  playerProvider.select((st) => st?.scrollController),
+                  playerProvider.select((st) => st.value?.scrollController),
                 );
                 return ScrollablePositionedList.builder(
                   itemCount: sentenceCount,
@@ -249,7 +248,9 @@ class PlayerUI extends ConsumerWidget {
   Widget? _floatingButtons() {
     return Consumer(
       builder: (context, ref, child) {
-        final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
+        final sentenceCount = ref.watch(
+          playerProvider.select((st) => st.value?.sentenceCount ?? 0),
+        );
         if (sentenceCount == 0) {
           return const SizedBox.shrink();
         } else {
@@ -293,7 +294,7 @@ class PlayerUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
-              playerProvider.select((st) => st?.videoState?.showVolumeSlider ?? false),
+              playerProvider.select((st) => st.value?.videoState.showVolumeSlider ?? false),
             );
             if (showVolumeSlider) {
               return Flexible(child: _volumeSlider(ctx));
@@ -303,10 +304,12 @@ class PlayerUI extends ConsumerWidget {
           },
         ),
         IconButton(
-          onPressed: () => _onVolumeTap(ref),
+          onPressed: () => _onToggleVolume(ref),
           icon: Consumer(
             builder: (context, ref, child) {
-              final volume = ref.watch(playerProvider.select((st) => st?.videoState?.volume ?? 1));
+              final volume = ref.watch(
+                playerProvider.select((st) => st.value?.videoState.volume ?? 1),
+              );
               final icon = volume == 0 ? Icons.volume_off_rounded : Icons.volume_up_rounded;
               return Icon(icon);
             },
@@ -333,7 +336,9 @@ class PlayerUI extends ConsumerWidget {
         ),
         child: Consumer(
           builder: (context, ref, child) {
-            final volume = ref.watch(playerProvider.select((st) => st?.videoState?.volume ?? 1));
+            final volume = ref.watch(
+              playerProvider.select((st) => st.value?.videoState.volume ?? 1),
+            );
             return Slider(
               value: volume,
               onChanged: (newVolume) => _onVolumeChanged(ref, newVolume),
@@ -358,7 +363,7 @@ class PlayerUI extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final position = ref.watch(
-            playerProvider.select((st) => (st?.videoState?.positionMicro ?? 0).toDouble()),
+            playerProvider.select((st) => (st.value?.videoState.positionMicro ?? 0).toDouble()),
           );
           final duration = videoController.value.duration.inMicroseconds.toDouble();
           return Slider(
@@ -377,7 +382,7 @@ class PlayerUI extends ConsumerWidget {
   Widget _empty() {
     return Consumer(
       builder: (ctx, ref, child) {
-        final st = ref.watch(playerProvider);
+        final st = ref.watch(playerProvider).value;
         if (st != null) return const SizedBox.shrink();
 
         final colorScheme = Theme.of(ctx).colorScheme;
@@ -458,7 +463,7 @@ class PlayerUI extends ConsumerWidget {
       height: 24,
       child: Consumer(
         builder: (ctx, ref, _) {
-          final title = ref.watch(playerProvider.select((st) => st?.title ?? ''));
+          final title = ref.watch(playerProvider.select((st) => st.value?.title ?? ''));
           if (title.isEmpty) {
             return const Text('');
           } else {
@@ -508,7 +513,7 @@ class PlayerUI extends ConsumerWidget {
     return Consumer(
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
-          playerProvider.select((st) => st?.videoState?.isPlaying ?? false),
+          playerProvider.select((st) => st.value?.videoState.isPlaying ?? false),
         );
         return IconButton.filled(
           onPressed: () {
@@ -535,17 +540,15 @@ class PlayerUI extends ConsumerWidget {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
       builder: (ctx, ref, child) {
-        final sentenceCount = ref.watch(playerProvider.select((st) => st?.sentenceCount ?? 0));
+        final sentenceCount = ref.watch(
+          playerProvider.select((st) => st.value?.sentenceCount ?? 0),
+        );
         if (sentenceCount == 0) return const SizedBox.shrink();
-        final bool loop = ref.watch(playerProvider.select((st) => st?.videoState?.loop ?? false));
+        final bool loop = ref.watch(
+          playerProvider.select((st) => st.value?.videoState.loop ?? false),
+        );
         return IconButton(
-          onPressed: () {
-            if (loop) {
-              _onLoop(ref);
-            } else {
-              _onUnloop(ref);
-            }
-          },
+          onPressed: () => _onToggleLoop(ref),
           icon: Icon(
             loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
             color: loop ? colorScheme.primary : colorScheme.outline,
@@ -592,7 +595,7 @@ class PlayerUI extends ConsumerWidget {
         ),
         child: Consumer(
           builder: (ctx, ref, _) {
-            final speed = ref.watch(playerProvider.select((st) => st?.videoState?.speed ?? 1));
+            final speed = ref.watch(playerProvider.select((st) => st.value?.videoState.speed ?? 1));
             return Text(
               '${speed}x',
               style: TextStyle(

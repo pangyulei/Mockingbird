@@ -9,10 +9,9 @@ class EnSubtitle {
   int id;
 
   @Backlink('subtitle')
-  final sentences = ToMany<EnSentence>();
+  final sentenceList = ToMany<EnSentence>();
 
   final media = ToOne<EnMedia>();
 
   EnSubtitle({required this.id});
-
 }

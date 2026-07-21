@@ -9,30 +9,21 @@ class EnMedia {
   @Id()
   int id;
 
-  final albums = ToMany<EnAlbum>();
   final String path; // Full path to the media file
   final String name;
+  final albumList = ToMany<EnAlbum>();
   @Backlink('media')
-  final subtitles = ToMany<EnSubtitle>();
+  final subtitleList = ToMany<EnSubtitle>();
 
   //objectbox will use this default constructor
   EnMedia({required this.path, required this.name, required this.id});
 
   MediaType get type => MediaType.fromExtension(p.extension(path));
 
-  EnMedia copyWith({String? name, EnSubtitle? Function()? subtitleFunc}) {
+  EnMedia copyWith({String? name, List<EnSubtitle>? subtitleList}) {
     final media = EnMedia(id: id, path: path, name: name ?? this.name);
-    if (subtitleFunc == null) {
-      media.subtitles.addAll(subtitles);
-    } else {
-      final subtitle = subtitleFunc();
-      if (subtitle == null) {
-        //already empty, nothing need to do
-      } else {
-        media.subtitles.add(subtitle);
-      }
-    }
-    media.albums.addAll(albums);
+    media.subtitleList.addAll(subtitleList ?? this.subtitleList);
+    media.albumList.addAll(albumList);
     return media;
   }
 

@@ -7,52 +7,50 @@ applyTo: "**/*"
 ## Project Overview
 Mockingbird is a Flutter language shadowing app featuring a 3-tab navigation system: **Albums**, **Player**, and **Settings**.
 It is designed for language learning through shadowing audio/video clips with synchronized subtitles.
-The app follows a **Clean Architecture** influenced "Logic-State" pattern, fully integrated with **Riverpod** and **ObjectBox**.
+The app follows a strict **Logic-State** pattern integrated with **Riverpod** and **ObjectBox**.
 
 ## Architecture Summary (Riverpod Architecture)
 
-### 1. Data Layer (ObjectBox Entities & DB Providers)
-- **Entities**: Located in `lib/db/entities/`. Prefixed with `En` (e.g., `EnAlbum`, `EnMedia`, `EnSubtitle`, `EnSentence`, `EnPref`). Use `Equatable` for value comparison.
-- **Logic Layer**: `DBLogic` handles direct database operations.
-- **DB Providers**: Located in `lib/db/providers/`. Reactive wrappers around DB operations using `@riverpod`. 
-  - Example: `dbAlbumListProvider` provides a stream/future of all albums.
+### 1. Data Layer (Persistence & Global State)
+- **Entities**: Located in `lib/db/entities/`. Prefixed with `En` (e.g., `EnAlbum`, `EnMedia`). Use `Equatable` for comparison.
+- **Logic Layer**: `DBLogic` (in `lib/db/db_logic.dart`) handles direct database operations.
+- **DB Providers**: Located in `lib/db/providers/`. Reactive wrappers around DB operations.
+  - They maintain the "Source of Truth" in memory.
+  - They depend on `DBLogic` for disk I/O and update their own state to notify listeners.
 
-### 2. UI State Management Layer (Riverpod Notifiers)
+### 2. UI State Management Layer (Business Logic)
 - **UI State**: Immutable classes named `{Feature}State` (e.g., `AlbumListState`).
-- **UI Providers**: Use `@riverpod` Notifiers to transform DB data into specific UI states.
-  - Pattern: `ref.watch(dbProvider.select(...))` is used for fine-grained reactivity.
-  - Providers are responsible for UI-specific logic (e.g., finding an ID by index).
+- **UI Providers**: Riverpod Notifiers (usually in `{feature}_provider.dart`).
+  - **Responsibilities**: Contain all business logic. They do NOT need a separate "Screen" or "Controller" class.
+  - **Dependencies**: They `ref.watch` or `ref.read` **DB Providers** to access data and perform actions.
+  - **Transformation**: They transform complex DB data into simplified, flat state objects suitable for the UI.
 
-### 3. Presentation Layer (Decoupled UI Pattern)
-The app strictly decouples visual rendering from side-effect heavy logic (navigation, dialogs).
-
-- **UI Widget (`{Feature}UI`)**: 
+### 3. Presentation Layer (Unified UI Component)
+- **UI Component (`{Feature}UI`)**: 
   - Extends `ConsumerWidget`.
-  - Watches providers for state.
-  - Takes an interface for user actions: `final {Feature}UIOutputITF _logic`.
-  - Purely visual; does not handle navigation or show dialogs directly.
-- **UI Output Interface (`{Feature}UIOutputITF`)**: 
-  - Abstract interface class defining user interaction callbacks (e.g., `onAddAlbum`, `onTapMedia`).
-- **Screen (`{Feature}Screen`)**: 
-  - Extends `ConsumerStatefulWidget`.
-  - Its `State` class **implements** `{Feature}UIOutputITF`.
-  - Orchestrates the `UI Widget`, passing itself as the `_logic` implementation.
-  - Handles side effects: `GoRouter` navigation, `showDialog`, `SnackBar`, etc.
+  - **Role**: Purely responsible for rendering visuals and **passing user events** to the UI Provider.
+  - **Reactivity**: Uses `ref.watch(uiProvider.select((s) => s.relevantField))` to rebuild only when necessary.
+  - **No Logic**: Does not contain business logic. Event handlers (e.g., `onTap`) should call methods on the UI Provider's notifier (e.g., `ref.read(uiProvider.notifier).handleTap()`).
+  - **Side Effects**: UI-specific side effects (navigation, `showDialog`, `SnackBar`) are triggered within these event handlers in the UI component.
 
 ```
-DB Provider → UI Provider → UI State
-                               ↓
-UI Widget (ConsumerWidget) ← Screen (Logic Implementation / Implementation of ITF)
+DB Provider (Global State) 
+    ^
+    | (ref.watch / ref.read)
+    |
+UI Provider (UI Logic & Transformation) 
+    ^
+    | (ref.read(notifier).doSomething())
+    |
+UI Component (Visual Rendering & Event Dispatching)
 ```
 
 ## Naming & Coding Standards
 - **Entities**: `En{Name}` (e.g., `EnMedia`).
 - **UI State**: `{Feature}State` (e.g., `PlayerState`).
-- **UI Widgets**: `{Feature}UI` (ConsumerWidget).
-- **Interfaces**: `{Feature}UIOutputITF`.
-- **Screens**: `{Feature}Screen` (ConsumerStatefulWidget).
+- **UI Components**: `{Feature}UI` (ConsumerWidget).
 - **Providers**: Defined using `riverpod_generator`. Files named `{feature}_provider.dart`.
-- **Reactivity**: Prefer `ref.watch(provider.select((s) => s.relevantField))` to minimize rebuilds.
+- **Logic**: All non-visual logic belongs in the `UI Provider`.
 
 ## Directory Structure
 ```
@@ -61,23 +59,16 @@ lib/
 ├── db/
 │   ├── entities/           # ObjectBox @Entity classes (EnAlbum, EnMedia, etc.)
 │   └── providers/          # DB-access Riverpod providers
-├── tab_albums/             # Albums feature folders (album_list, album_detail, etc.)
-├── tab_player/             # Player feature folders (player, sentence_card)
+├── tab_albums/             # Albums feature folders
+├── tab_player/             # Player feature folders
 ├── tab_settings/           # Settings feature
-└── tool/                   # Parsers, formatters, and utility classes
+└── tool/                   # Utility classes (Parsers, etc.)
 ```
 
-## Theme & Design
-- **Theme**: Premium **Dark Theme** (Telegram-inspired).
-- **Palette**: Background (`#0E1621`), Surface (`#17212B`), Primary (`#5288C1`), Text Secondary (`#7F91A4`).
-- **Components**: High-end visuals with custom gradients, smooth transitions, and pixel-perfect borders.
-
 ## Workflow for New Features
-1. **DB Entity**: Define in `lib/db/entities/`.
-2. **DB Provider**: Create reactive access in `lib/db/providers/`.
+1. **DB**: Define `EnEntity` and add methods to `DBLogic`.
+2. **DB Provider**: Create a provider in `lib/db/providers/` to expose the data.
 3. **UI State**: Define the immutable state in `{feature}_state.dart`.
-4. **UI Provider**: Create the notifier in `{feature}_provider.dart`.
-5. **Logic Interface**: Define the interaction contract in `{feature}_ui.dart`.
-6. **UI Widget**: Implement the visual layout in `{feature}_ui.dart`.
-7. **Screen**: Implement the interface and build the UI in `{feature}_screen.dart`.
-8. **Route**: Register in `app_ui.dart`.
+4. **UI Provider**: Create the notifier in `{feature}_provider.dart` to manage logic and state.
+5. **UI Component**: Implement visuals in `{feature}_ui.dart` and connect interactions to the provider.
+6. **Route**: Register in `app_route.dart`.

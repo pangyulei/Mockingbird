@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'db_pref_provider.dart';
+part of 'settings_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,42 +9,43 @@ part of 'db_pref_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBPref)
-final dbPrefProvider = DBPrefProvider._();
+@ProviderFor(Settings)
+final settingsProvider = SettingsProvider._();
 
-final class DBPrefProvider extends $AsyncNotifierProvider<DBPref, EnPref> {
-  DBPrefProvider._()
+final class SettingsProvider
+    extends $AsyncNotifierProvider<Settings, SettingsState> {
+  SettingsProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'dbPrefProvider',
-        isAutoDispose: false,
+        name: r'settingsProvider',
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$dBPrefHash();
+  String debugGetCreateSourceHash() => _$settingsHash();
 
   @$internal
   @override
-  DBPref create() => DBPref();
+  Settings create() => Settings();
 }
 
-String _$dBPrefHash() => r'def404b8f9335856cb6e3bd68faab2ff9f9a5351';
+String _$settingsHash() => r'372168f45a4b5ea12390374d3d6593fd6baed563';
 
-abstract class _$DBPref extends $AsyncNotifier<EnPref> {
-  FutureOr<EnPref> build();
+abstract class _$Settings extends $AsyncNotifier<SettingsState> {
+  FutureOr<SettingsState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EnPref>, EnPref>;
+    final ref = this.ref as $Ref<AsyncValue<SettingsState>, SettingsState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EnPref>, EnPref>,
-              AsyncValue<EnPref>,
+              AnyNotifier<AsyncValue<SettingsState>, SettingsState>,
+              AsyncValue<SettingsState>,
               Object?,
               Object?
             >;

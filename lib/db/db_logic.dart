@@ -7,10 +7,11 @@ import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_pref.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
-import 'package:mockingbird/objectbox.g.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+
+import '../objectbox.g.dart';
 
 typedef MF_SF = ({File mediaFile, File? subtitleFile});
 typedef M_SF = ({EnMedia media, File subtitleFile});
@@ -61,7 +62,7 @@ class DBLogic {
     final unmatchedSubtitleFiles = subtitleFiles.where(
       (sf) => !matchedSubtitlePaths.contains(sf.path),
     );
-    final mediasWithoutSubtitle = albumMedias.where((m) => m.subtitles.isEmpty);
+    final mediasWithoutSubtitle = albumMedias.where((m) => m.subtitleList.isEmpty);
     final msfList = mediasWithoutSubtitle
         .map((m) {
           final subtitleFile = unmatchedSubtitleFiles.firstWhereOrNull((sf) {
@@ -104,10 +105,10 @@ class DBLogic {
       final dirMediaFile = e.value;
       final mediaName = p.basenameWithoutExtension(mfsfList[i].mediaFile.path);
       final media = EnMedia(path: dirMediaFile.path, name: mediaName, id: 0);
-      media.albums.add(album);
+      media.albumList.add(album);
       final subtitle = subtitlesWithoutId[i];
       if ((subtitle != null)) {
-        media.subtitles.add(subtitle);
+        media.subtitleList.add(subtitle);
       }
       return media;
     }).toList();
@@ -125,8 +126,8 @@ class DBLogic {
       final media = e.value.media;
       final subtitleWithoutId = subtitlesWithoutId[i];
       if (subtitleWithoutId != null) {
-        media.subtitles.clear();
-        media.subtitles.add(subtitleWithoutId);
+        media.subtitleList.clear();
+        media.subtitleList.add(subtitleWithoutId);
       }
       return media;
     }).toList();
@@ -134,7 +135,7 @@ class DBLogic {
   }
 
   Future<void> importMediaAndSubtitles(EnAlbum album, List<File> files) async {
-    final (:mfsfList, :msfList) = _processMediaSubtitleFiles(album.medias, files);
+    final (:mfsfList, :msfList) = _processMediaSubtitleFiles(album.mediaList, files);
     final mediasMade = await _mediasMadeFromMFSFList(album, mfsfList);
     final mediasFilled = await _mediasFilledSubtitleFromMSFList(album, msfList);
     await _store.box<EnMedia>().putAndGetManyAsync([...mediasMade, ...mediasFilled]);
@@ -143,9 +144,9 @@ class DBLogic {
   Future<EnMedia> updateMedia(
     EnMedia media, {
     String? name,
-    EnSubtitle? Function()? subtitleFunc,
+    EnSubtitle? Function()? subtitle,
   }) async {
-    if (name == null && subtitleFunc == null) return media;
+    if (name == null && subtitle == null) return media;
     final updatedMedia = await _store.runInTransactionAsync<EnMedia, int>(TxMode.write, (
       Store store,
       int mediaId,
@@ -166,16 +167,18 @@ class DBLogic {
           updatedMedia = updatedMedia.copyWith(name: trimmedNewName);
         }
       }
-      if (subtitleFunc != null) {
+      if (subtitle != null) {
         //want to update subtitle
-        final subtitleList = media.subtitles;
-        final sentenceList = subtitleList.map((st) => st.sentences).expand((e) => e).toList();
+        final subtitleList = media.subtitleList;
+        final sentenceList = subtitleList.map((st) => st.sentenceList).expand((e) => e).toList();
         final subtitleIdList = [for (final sub in subtitleList) sub.id];
         final sentenceIdList = [for (final sen in sentenceList) sen.id];
         sentenceBox.removeMany(sentenceIdList);
         subtitleBox.removeMany(subtitleIdList);
 
-        updatedMedia = updatedMedia.copyWith(subtitleFunc: subtitleFunc);
+        final newSubtitle = subtitle();
+        final newSubtitleList = newSubtitle == null ? <EnSubtitle>[] : [newSubtitle];
+        updatedMedia = updatedMedia.copyWith(subtitleList: newSubtitleList);
       }
       mediaBox.put(updatedMedia);
       return updatedMedia;
@@ -193,8 +196,8 @@ class DBLogic {
       final subtitleBox = store.box<EnSubtitle>();
       final sentenceBox = store.box<EnSentence>();
 
-      final subtitleList = media.subtitles;
-      final sentenceList = subtitleList.map((st) => st.sentences).expand((e) => e).toList();
+      final subtitleList = media.subtitleList;
+      final sentenceList = subtitleList.map((st) => st.sentenceList).expand((e) => e).toList();
       final subtitleIdList = [for (final sub in subtitleList) sub.id];
       final sentenceIdList = sentenceList.map((sen) => sen.id).toList();
       mediaBox.remove(mediaId);
@@ -373,15 +376,15 @@ class DBLogic {
       final medias = mediaBox
           .getAll()
           .map((m) {
-            m.albums.removeWhere((a) => albumIdsSet.contains(a.id));
+            m.albumList.removeWhere((a) => albumIdsSet.contains(a.id));
             return m;
           })
-          .where((m) => m.albums.isEmpty)
+          .where((m) => m.albumList.isEmpty)
           .toList();
       final mediaIds = medias.map((m) => m.id).toList();
-      final subtitles = medias.map((m) => m.subtitles).expand((e) => e).toList();
+      final subtitles = medias.map((m) => m.subtitleList).expand((e) => e).toList();
       final subtitleIds = subtitles.map((s) => s.id).toList();
-      final sentences = subtitles.map((st) => st.sentences).expand((e) => e).toList();
+      final sentences = subtitles.map((st) => st.sentenceList).expand((e) => e).toList();
       final sentenceIds = sentences.map((s) => s.id).toList();
       albumBox.removeMany(albumIds);
       mediaBox.removeMany(mediaIds);
@@ -407,6 +410,6 @@ class DBLogic {
 
 extension on EnAlbum {
   void sortMedias() {
-    medias.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    mediaList.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   }
 }

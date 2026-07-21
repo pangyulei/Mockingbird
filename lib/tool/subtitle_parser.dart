@@ -19,9 +19,7 @@ class SubtitleParser {
     } else if (file.path.endsWith('.vtt')) {
       return _parseVtt(content);
     }
-    debugPrint(
-      'We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}',
-    );
+    debugPrint('We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}');
     return null;
   }
 
@@ -74,7 +72,7 @@ class SubtitleParser {
     }
     if (sentences.isNotEmpty) {
       final subtitle = EnSubtitle(id: 0);
-      subtitle.sentences.addAll(sentences);
+      subtitle.sentenceList.addAll(sentences);
       return subtitle;
     } else {
       return null;
@@ -88,16 +86,9 @@ class SubtitleParser {
     final minutes = int.parse(parts[1]);
     final secondsParts = parts[2].replaceFirst(',', '.').split('.');
     final seconds = int.parse(secondsParts[0]);
-    final milliseconds = int.parse(
-      secondsParts[1].padRight(3, '0').substring(0, 3),
-    );
+    final milliseconds = int.parse(secondsParts[1].padRight(3, '0').substring(0, 3));
 
-    return Duration(
-      hours: hours,
-      minutes: minutes,
-      seconds: seconds,
-      milliseconds: milliseconds,
-    );
+    return Duration(hours: hours, minutes: minutes, seconds: seconds, milliseconds: milliseconds);
   }
 
   static EnSubtitle? _parseVtt(String content) {
@@ -147,7 +138,7 @@ class SubtitleParser {
     }
     if (sentences.isNotEmpty) {
       final subtitle = EnSubtitle(id: 0);
-      subtitle.sentences.addAll(sentences);
+      subtitle.sentenceList.addAll(sentences);
       return subtitle;
     } else {
       return null;
@@ -175,16 +166,9 @@ class SubtitleParser {
     final secondsParts = lastPart.split('.');
     final seconds = int.parse(secondsParts[0]);
     final milliseconds = int.parse(
-      secondsParts.length > 1
-          ? secondsParts[1].padRight(3, '0').substring(0, 3)
-          : '0',
+      secondsParts.length > 1 ? secondsParts[1].padRight(3, '0').substring(0, 3) : '0',
     );
 
-    return Duration(
-      hours: hours,
-      minutes: minutes,
-      seconds: seconds,
-      milliseconds: milliseconds,
-    );
+    return Duration(hours: hours, minutes: minutes, seconds: seconds, milliseconds: milliseconds);
   }
 }

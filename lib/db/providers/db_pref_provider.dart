@@ -22,4 +22,16 @@ class DBPref extends _$DBPref {
       });
     }
   }
+
+  Future<void> setLoop(bool value) async {
+    final pref = await future;
+    if (pref.loop != value) {
+      state = await AsyncValue.guard(() async {
+        final updatedPref = await DBLogic().updatePref(
+          pref.copyWith(loop: value),
+        );
+        return updatedPref;
+      });
+    }
+  }
 }

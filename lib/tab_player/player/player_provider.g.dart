@@ -12,7 +12,8 @@ part of 'player_provider.dart';
 @ProviderFor(Player)
 final playerProvider = PlayerProvider._();
 
-final class PlayerProvider extends $NotifierProvider<Player, PlayerState?> {
+final class PlayerProvider
+    extends $AsyncNotifierProvider<Player, PlayerState?> {
   PlayerProvider._()
     : super(
         from: null,
@@ -30,29 +31,21 @@ final class PlayerProvider extends $NotifierProvider<Player, PlayerState?> {
   @$internal
   @override
   Player create() => Player();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(PlayerState? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<PlayerState?>(value),
-    );
-  }
 }
 
-String _$playerHash() => r'9016a6d48823cb008907ce284fc208b3c1400abc';
+String _$playerHash() => r'2e48dcf8df95705ad765ec3142780b80adee9138';
 
-abstract class _$Player extends $Notifier<PlayerState?> {
-  PlayerState? build();
+abstract class _$Player extends $AsyncNotifier<PlayerState?> {
+  FutureOr<PlayerState?> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<PlayerState?, PlayerState?>;
+    final ref = this.ref as $Ref<AsyncValue<PlayerState?>, PlayerState?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<PlayerState?, PlayerState?>,
-              PlayerState?,
+              AnyNotifier<AsyncValue<PlayerState?>, PlayerState?>,
+              AsyncValue<PlayerState?>,
               Object?,
               Object?
             >;
@@ -64,7 +57,7 @@ abstract class _$Player extends $Notifier<PlayerState?> {
 final playerVideoProvider = PlayerVideoProvider._();
 
 final class PlayerVideoProvider
-    extends $NotifierProvider<PlayerVideo, PlayerVideoState?> {
+    extends $AsyncNotifierProvider<PlayerVideo, PlayerVideoState?> {
   PlayerVideoProvider._()
     : super(
         from: null,
@@ -82,29 +75,22 @@ final class PlayerVideoProvider
   @$internal
   @override
   PlayerVideo create() => PlayerVideo();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(PlayerVideoState? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<PlayerVideoState?>(value),
-    );
-  }
 }
 
-String _$playerVideoHash() => r'a6405674e63fd782e07d0eccaabcbf0e56ad5508';
+String _$playerVideoHash() => r'38d6ccba82a9a4b84c175bf2429af30abeddaaa3';
 
-abstract class _$PlayerVideo extends $Notifier<PlayerVideoState?> {
-  PlayerVideoState? build();
+abstract class _$PlayerVideo extends $AsyncNotifier<PlayerVideoState?> {
+  FutureOr<PlayerVideoState?> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<PlayerVideoState?, PlayerVideoState?>;
+    final ref =
+        this.ref as $Ref<AsyncValue<PlayerVideoState?>, PlayerVideoState?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<PlayerVideoState?, PlayerVideoState?>,
-              PlayerVideoState?,
+              AnyNotifier<AsyncValue<PlayerVideoState?>, PlayerVideoState?>,
+              AsyncValue<PlayerVideoState?>,
               Object?,
               Object?
             >;
@@ -138,7 +124,7 @@ final class PlayerVideoControllerProvider
 }
 
 String _$playerVideoControllerHash() =>
-    r'2d44af38cdbc8cc5803d415969c2f327879517ac';
+    r'438eab93663c911c14e587f55161a36cc91a7543';
 
 abstract class _$PlayerVideoController
     extends $AsyncNotifier<VideoPlayerController?> {
@@ -168,7 +154,7 @@ abstract class _$PlayerVideoController
 final playerMediaProvider = PlayerMediaProvider._();
 
 final class PlayerMediaProvider
-    extends $NotifierProvider<PlayerMedia, EnMedia?> {
+    extends $AsyncNotifierProvider<PlayerMedia, EnMedia?> {
   PlayerMediaProvider._()
     : super(
         from: null,
@@ -186,29 +172,21 @@ final class PlayerMediaProvider
   @$internal
   @override
   PlayerMedia create() => PlayerMedia();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(EnMedia? value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<EnMedia?>(value),
-    );
-  }
 }
 
-String _$playerMediaHash() => r'4e67274d3da5a04b414b532880f4ffd189231ca6';
+String _$playerMediaHash() => r'2500c1e218d9ed15eed8d3bb16a18d850b80520f';
 
-abstract class _$PlayerMedia extends $Notifier<EnMedia?> {
-  EnMedia? build();
+abstract class _$PlayerMedia extends $AsyncNotifier<EnMedia?> {
+  FutureOr<EnMedia?> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<EnMedia?, EnMedia?>;
+    final ref = this.ref as $Ref<AsyncValue<EnMedia?>, EnMedia?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<EnMedia?, EnMedia?>,
-              EnMedia?,
+              AnyNotifier<AsyncValue<EnMedia?>, EnMedia?>,
+              AsyncValue<EnMedia?>,
               Object?,
               Object?
             >;
