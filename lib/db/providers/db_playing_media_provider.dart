@@ -1,7 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'db_playing_media_provider.g.dart';
@@ -14,12 +17,13 @@ class DBPlayingMedia extends _$DBPlayingMedia {
       dbPrefProvider.selectAsync((st) => st.playingId),
     );
     if (playingId == null) return null;
-    return await DBLogic().loadMedia(playingId);
-  }
-
-  void updateByMediaUpdated(EnMedia updatedMedia) {
-    if (updatedMedia.id == state.value?.id) {
-      state = AsyncData(updatedMedia);
-    }
+    final EnMedia? media = await ref.watch(
+      dbAlbumListProvider.selectAsync((al) {
+        final mediaList = al.map((a) => a.mediaList).flattened;
+        final mediaMap = {for (final m in mediaList) m.id: m};
+        return mediaMap[playingId];
+      }),
+    );
+    return media;
   }
 }

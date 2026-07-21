@@ -47,11 +47,6 @@ class DBAlbumList extends _$DBAlbumList {
         .toList();
     final newAlbum = album.copyWith(mediaList: newMediaList);
     await _replaceAlbum(newAlbum);
-
-    //update playing media if matched
-    ref
-        .read(dbPlayingMediaProvider.notifier)
-        .updateByMediaUpdated(updatedMedia);
   }
 
   Future<void> updateAlbum(

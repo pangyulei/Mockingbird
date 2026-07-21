@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
@@ -17,15 +18,13 @@ class SentenceCard extends _$SentenceCard {
     final EnSentence? sentence = ref.watch(
       dbAlbumListProvider
           .select((st) => st.value ?? [])
-          .select((al) => [for (final a in al) a.mediaList])
-          .select((mll) => mll.expand((e) => e))
+          .select((al) => al.map((a) => a.mediaList).flattened)
           .select(
-            (ml) => [
-              for (final m in ml) m.subtitleList.firstOrNull,
-            ].whereType<EnSubtitle>(),
+            (ml) => ml
+                .map((m) => m.subtitleList.firstOrNull)
+                .whereType<EnSubtitle>(),
           )
-          .select((subl) => [for (final sub in subl) sub.sentenceList])
-          .select((senll) => senll.expand((e) => e))
+          .select((subl) => subl.map((sub) => sub.sentenceList).flattened)
           .select((senl) => {for (final sen in senl) sen.id: sen})
           .select((senm) => senm[id]),
     );

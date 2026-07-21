@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
@@ -21,8 +22,7 @@ class EditMedia extends _$EditMedia {
     final EnMedia? media = ref.watch(
       dbAlbumListProvider
           .select((st) => st.value ?? [])
-          .select((al) => [for (final a in al) a.mediaList])
-          .select((mll) => mll.expand((e) => e))
+          .select((al) => al.map((a)=>a.mediaList).flattened)
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[id]),
     );

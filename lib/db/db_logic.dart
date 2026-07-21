@@ -170,7 +170,7 @@ class DBLogic {
       if (subtitle != null) {
         //want to update subtitle
         final subtitleList = media.subtitleList;
-        final sentenceList = subtitleList.map((st) => st.sentenceList).expand((e) => e).toList();
+        final sentenceList = subtitleList.map((st) => st.sentenceList).flattenedToList;
         final subtitleIdList = [for (final sub in subtitleList) sub.id];
         final sentenceIdList = [for (final sen in sentenceList) sen.id];
         sentenceBox.removeMany(sentenceIdList);
@@ -197,7 +197,7 @@ class DBLogic {
       final sentenceBox = store.box<EnSentence>();
 
       final subtitleList = media.subtitleList;
-      final sentenceList = subtitleList.map((st) => st.sentenceList).expand((e) => e).toList();
+      final sentenceList = subtitleList.map((st) => st.sentenceList).flattenedToList;
       final subtitleIdList = [for (final sub in subtitleList) sub.id];
       final sentenceIdList = sentenceList.map((sen) => sen.id).toList();
       mediaBox.remove(mediaId);
@@ -366,14 +366,14 @@ class DBLogic {
     if (albums.isEmpty) return;
     albums = albums.where((a) => a.id > 0).toList();
 
-    await _store.runInTransactionAsync(TxMode.write, (Store store, List<int> albumIds) {
+    await _store.runInTransactionAsync(TxMode.write, (Store store, List<int> albumIdList) {
       final mediaBox = store.box<EnMedia>();
       final subtitleBox = store.box<EnSubtitle>();
       final sentenceBox = store.box<EnSentence>();
       final albumBox = store.box<EnAlbum>();
 
-      final albumIdsSet = albumIds.toSet();
-      final medias = mediaBox
+      final albumIdsSet = albumIdList.toSet();
+      final mediaList = mediaBox
           .getAll()
           .map((m) {
             m.albumList.removeWhere((a) => albumIdsSet.contains(a.id));
@@ -381,15 +381,15 @@ class DBLogic {
           })
           .where((m) => m.albumList.isEmpty)
           .toList();
-      final mediaIds = medias.map((m) => m.id).toList();
-      final subtitles = medias.map((m) => m.subtitleList).expand((e) => e).toList();
-      final subtitleIds = subtitles.map((s) => s.id).toList();
-      final sentences = subtitles.map((st) => st.sentenceList).expand((e) => e).toList();
-      final sentenceIds = sentences.map((s) => s.id).toList();
-      albumBox.removeMany(albumIds);
-      mediaBox.removeMany(mediaIds);
-      subtitleBox.removeMany(subtitleIds);
-      sentenceBox.removeMany(sentenceIds);
+      final mediaIdList = mediaList.map((m) => m.id).toList();
+      final subtitleList = mediaList.map((m) => m.subtitleList).flattenedToList;
+      final subtitleIdList = subtitleList.map((s) => s.id).toList();
+      final sentenceList = subtitleList.map((st) => st.sentenceList).flattenedToList;
+      final sentenceIdList = sentenceList.map((s) => s.id).toList();
+      albumBox.removeMany(albumIdList);
+      mediaBox.removeMany(mediaIdList);
+      subtitleBox.removeMany(subtitleIdList);
+      sentenceBox.removeMany(sentenceIdList);
     }, [for (final a in albums) a.id]);
 
     // Delete cover files for removed playlists

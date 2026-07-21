@@ -21,8 +21,7 @@ class MediaCard extends _$MediaCard {
     final EnMedia? media = ref.watch(
       dbAlbumListProvider
           .select((st) => st.value ?? [])
-          .select((al) => [for (final a in al) a.mediaList])
-          .select((mll) => mll.expand((e) => e))
+          .select((al) => al.map((a)=>a.mediaList).flattened)
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[id]),
     );
