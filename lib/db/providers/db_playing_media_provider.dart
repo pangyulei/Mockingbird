@@ -6,12 +6,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'db_playing_media_provider.g.dart';
 
-@riverpod
-class PlayingMedia extends _$PlayingMedia {
+@Riverpod(name: 'dbPlayingMediaProvider')
+class DBPlayingMedia extends _$DBPlayingMedia {
   @override
   Future<EnMedia?> build() async {
-    final int? playingId = ref.watch(
-      dbPrefProvider.select((st) => st.value?.playingId),
+    final int? playingId = await ref.watch(
+      dbPrefProvider.selectAsync((st) => st.playingId),
     );
     if (playingId == null) return null;
     return await DBLogic().loadMedia(playingId);

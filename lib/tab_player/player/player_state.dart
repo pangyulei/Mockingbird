@@ -1,7 +1,32 @@
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-class PlayerVideoState {
+sealed class PlayerState {
+  const PlayerState();
+}
+
+class PlayerNull extends PlayerState {
+  const PlayerNull();
+}
+
+class PlayerData extends PlayerState {
+  final String title;
+  final PlayerVideoData videoData;
+
+  const PlayerData({required this.videoData, required this.title});
+
+  PlayerData copyWith({String? title, PlayerVideoData? videoData}) {
+    return PlayerData(
+      title: title ?? this.title,
+      videoData: videoData ?? this.videoData,
+    );
+  }
+}
+
+class PlayerVideoData {
+  final int sentenceCount;
+  final ItemScrollController scrollController;
+  final int? playingSentenceId;
   final bool showVolumeSlider;
   final VideoPlayerController controller;
   final bool isPlaying;
@@ -10,7 +35,10 @@ class PlayerVideoState {
   final int positionMicro;
   final int? loopIndex;
 
-  const PlayerVideoState({
+  const PlayerVideoData({
+    required this.playingSentenceId,
+    required this.scrollController,
+    required this.sentenceCount,
     required this.loopIndex,
     required this.positionMicro,
     required this.isPlaying,
@@ -22,7 +50,9 @@ class PlayerVideoState {
 
   bool get isLoop => loopIndex != null;
 
-  PlayerVideoState copyWith({
+  PlayerVideoData copyWith({
+    int? Function()? playingSentenceId,
+    int? sentenceCount,
     int? positionMicro,
     int? Function()? loopIndex,
     bool? isPlaying,
@@ -30,7 +60,12 @@ class PlayerVideoState {
     double? volume,
     bool? showVolumeSlider,
   }) {
-    return PlayerVideoState(
+    return PlayerVideoData(
+      playingSentenceId: playingSentenceId == null
+          ? this.playingSentenceId
+          : playingSentenceId(),
+      sentenceCount: sentenceCount ?? this.sentenceCount,
+      scrollController: scrollController,
       loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       positionMicro: positionMicro ?? this.positionMicro,
       controller: controller,
@@ -38,39 +73,6 @@ class PlayerVideoState {
       volume: volume ?? this.volume,
       isPlaying: isPlaying ?? this.isPlaying,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
-    );
-  }
-}
-
-class PlayerState {
-  final String title;
-  final int sentenceCount;
-  final ItemScrollController scrollController;
-  final PlayerVideoState videoState;
-  final int? playingSentenceId;
-
-  const PlayerState({
-    required this.playingSentenceId,
-    required this.scrollController,
-    required this.videoState,
-    required this.title,
-    required this.sentenceCount,
-  });
-
-  PlayerState copyWith({
-    int? Function()? playingSentenceId,
-    String? title,
-    int? sentenceCount,
-    PlayerVideoState? videoState,
-  }) {
-    return PlayerState(
-      playingSentenceId: playingSentenceId == null
-          ? this.playingSentenceId
-          : playingSentenceId(),
-      title: title ?? this.title,
-      sentenceCount: sentenceCount ?? this.sentenceCount,
-      videoState: videoState ?? this.videoState,
-      scrollController: scrollController,
     );
   }
 }

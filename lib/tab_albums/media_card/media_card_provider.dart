@@ -69,7 +69,6 @@ class MediaCard extends _$MediaCard {
 
   Future<void> play() async {
     await ref.read(dbPrefProvider.notifier).setPlayingId(id);
-    ;
   }
 
   Future<String?> _pickOneSubtitle() async {

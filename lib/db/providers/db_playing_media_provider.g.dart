@@ -9,33 +9,33 @@ part of 'db_playing_media_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(PlayingMedia)
-final playingMediaProvider = PlayingMediaProvider._();
+@ProviderFor(DBPlayingMedia)
+final dbPlayingMediaProvider = DBPlayingMediaProvider._();
 
-final class PlayingMediaProvider
-    extends $AsyncNotifierProvider<PlayingMedia, EnMedia?> {
-  PlayingMediaProvider._()
+final class DBPlayingMediaProvider
+    extends $AsyncNotifierProvider<DBPlayingMedia, EnMedia?> {
+  DBPlayingMediaProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'playingMediaProvider',
+        name: r'dbPlayingMediaProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$playingMediaHash();
+  String debugGetCreateSourceHash() => _$dBPlayingMediaHash();
 
   @$internal
   @override
-  PlayingMedia create() => PlayingMedia();
+  DBPlayingMedia create() => DBPlayingMedia();
 }
 
-String _$playingMediaHash() => r'56ab05625ab2498a8a25b3e6ef4430f18f0c6a4e';
+String _$dBPlayingMediaHash() => r'd50ccc5b76e3a39e247113a8d8136522c66e1ccf';
 
-abstract class _$PlayingMedia extends $AsyncNotifier<EnMedia?> {
+abstract class _$DBPlayingMedia extends $AsyncNotifier<EnMedia?> {
   FutureOr<EnMedia?> build();
   @$mustCallSuper
   @override
