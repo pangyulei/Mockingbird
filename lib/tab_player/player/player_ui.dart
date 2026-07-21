@@ -107,7 +107,6 @@ class PlayerUI extends ConsumerWidget {
         );
         if (videoController == null) return const SizedBox.shrink();
         videoController.addListener(() => _onVideoPositionChanged(ref, videoController));
-        videoController.play();
         return Container(
           decoration: BoxDecoration(
             color: Colors.black,

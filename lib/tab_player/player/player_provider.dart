@@ -376,6 +376,7 @@ class PlayerVideoController extends _$PlayerVideoController {
     ref.onDispose(() {
       videoController.dispose();
     });
+    await videoController.play();
     return videoController;
   }
 }
