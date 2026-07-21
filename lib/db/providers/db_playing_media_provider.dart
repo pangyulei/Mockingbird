@@ -16,4 +16,10 @@ class DBPlayingMedia extends _$DBPlayingMedia {
     if (playingId == null) return null;
     return await DBLogic().loadMedia(playingId);
   }
+
+  void updateByMediaUpdated(EnMedia updatedMedia) {
+    if (updatedMedia.id == state.value?.id) {
+      state = AsyncData(updatedMedia);
+    }
+  }
 }

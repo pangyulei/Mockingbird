@@ -33,7 +33,7 @@ final class DBPlayingMediaProvider
   DBPlayingMedia create() => DBPlayingMedia();
 }
 
-String _$dBPlayingMediaHash() => r'd50ccc5b76e3a39e247113a8d8136522c66e1ccf';
+String _$dBPlayingMediaHash() => r'c0380900464cfd9af85186af7335e27695e38dfe';
 
 abstract class _$DBPlayingMedia extends $AsyncNotifier<EnMedia?> {
   FutureOr<EnMedia?> build();

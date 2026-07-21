@@ -41,7 +41,6 @@ class EditMedia extends _$EditMedia {
     await ref
         .read(dbAlbumListProvider.notifier)
         .updateMedia(media, name: state.nameController.text);
-    ;
   }
 
   void updateName(String newName) {
