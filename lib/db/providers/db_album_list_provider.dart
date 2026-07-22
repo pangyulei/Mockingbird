@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
-import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../entities/en_album.dart';
@@ -69,7 +68,7 @@ class DBAlbumList extends _$DBAlbumList {
     final albumList = await future;
     state = AsyncData([
       album,
-      ...albumList.where((a) => a.id != album.id).toList(),
+      ...albumList.where((a) => a.id != album.id),
     ]);
   }
 
@@ -77,7 +76,7 @@ class DBAlbumList extends _$DBAlbumList {
     await DBLogic().sortAlbumToLast(album);
     final albumList = await future;
     state = AsyncData([
-      ...albumList.where((a) => a.id != album.id).toList(),
+      ...albumList.where((a) => a.id != album.id),
       album,
     ]);
   }

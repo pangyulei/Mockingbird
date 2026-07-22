@@ -49,7 +49,7 @@ class AlbumDetail extends _$AlbumDetail {
     final album = _album;
     if (files.isNotEmpty && album != null) {
       await ref.read(dbAlbumListProvider.notifier).importResourcesIntoAlbum(album, files);
-      ;
+      
     }
   }
 
@@ -62,7 +62,7 @@ class AlbumDetail extends _$AlbumDetail {
     final album = _album;
     if (newCover != null && album != null) {
       await ref.read(dbAlbumListProvider.notifier).updateAlbum(album, cover: () => newCover);
-      ;
+      
     }
   }
 

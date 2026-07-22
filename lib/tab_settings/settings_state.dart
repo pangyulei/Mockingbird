@@ -1,4 +1,3 @@
-import 'package:mockingbird/tab_settings/settings_provider.dart';
 
 sealed class SettingsState {
   const SettingsState();

@@ -46,7 +46,6 @@ class AlbumCard extends _$AlbumCard {
     final album = _album;
     if (album == null) return;
     await ref.read(dbAlbumListProvider.notifier).deleteAlbum(album);
-    ;
   }
 
   String? get albumName => _album?.name;
