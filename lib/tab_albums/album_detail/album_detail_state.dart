@@ -19,13 +19,13 @@ class AlbumDetailState {
   AlbumDetailState copyWith({
     bool? showImport,
     String? name,
-    File? Function()? getCover,
+    File? Function()? cover,
     List<int>? mediaIdList,
   }) {
     return AlbumDetailState(
       showImport: showImport ?? this.showImport,
       name: name ?? this.name,
-      cover: getCover == null ? cover : getCover(),
+      cover: cover == null ? this.cover : cover(),
       mediaIdList: mediaIdList ?? this.mediaIdList,
     );
   }

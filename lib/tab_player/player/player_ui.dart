@@ -35,7 +35,7 @@ class PlayerUI extends ConsumerWidget {
         return _page(ctx);
       default:
         debugPrint('playerui no such state $stateType');
-        return const SizedBox.shrink();
+        return Scaffold(appBar: _appBar());
     }
   }
 
@@ -240,6 +240,7 @@ class PlayerUI extends ConsumerWidget {
             if (sentenceIdList.isEmpty) {
               return _noSubtitle(ctx, ref);
             }
+            debugPrint('subtitle sentence list build');
             return ScrollablePositionedList.builder(
               itemCount: sentenceIdList.length,
               itemScrollController: scrollController,
@@ -519,7 +520,10 @@ class PlayerUI extends ConsumerWidget {
       child: Consumer(
         builder: (ctx, ref, _) {
           final title = ref.watch(
-            playerProvider.select((st) => (st.value as PlayerData).title),
+            playerProvider.select((st) {
+              final data = st.value;
+              return data is PlayerData ? data.title : '';
+            }),
           );
           if (title.isEmpty) {
             return const Text('');

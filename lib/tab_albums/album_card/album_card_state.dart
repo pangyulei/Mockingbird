@@ -13,13 +13,13 @@ class AlbumCardState {
 
   AlbumCardState copyWith({
     int? mediasCount,
-    String? Function()? getCover,
+    String? Function()? cover,
     String? name,
   }) {
     return AlbumCardState(
       mediasCount: mediasCount ?? this.mediasCount,
       name: name ?? this.name,
-      cover: getCover == null ? cover : getCover(),
+      cover: cover == null ? this.cover : cover(),
     );
   }
 }

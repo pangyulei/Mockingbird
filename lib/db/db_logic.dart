@@ -336,7 +336,7 @@ class DBLogic {
         updatedAlbum = await _deleteAlbumCoverFile(updatedAlbum);
         final newCoverPath = await _newAlbumCoverPath();
         await newCover.copy(newCoverPath);
-        updatedAlbum = updatedAlbum.copyWith(getCover: () => newCoverPath);
+        updatedAlbum = updatedAlbum.copyWith(cover: () => newCoverPath);
       }
     }
     if (sortOrder != null) {
@@ -358,7 +358,7 @@ class DBLogic {
       if (await oldCover.exists()) {
         await oldCover.delete();
       }
-      return album.copyWith(getCover: () => null);
+      return album.copyWith(cover: () => null);
     } else {
       return album;
     }

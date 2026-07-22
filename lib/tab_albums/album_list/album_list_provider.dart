@@ -8,12 +8,10 @@ part 'album_list_provider.g.dart';
 
 @riverpod
 class AlbumList extends _$AlbumList {
-  List<EnAlbum> _albumList = [];
 
   @override
   Future<AlbumListState> build() async {
     final List<EnAlbum> albumList = await ref.watch(dbAlbumListProvider.future);
-    _albumList = albumList;
     if (albumList.isEmpty) return const AlbumListNull();
     return AlbumListData(albumIdList: albumList.map((a)=>a.id).toList());
   }

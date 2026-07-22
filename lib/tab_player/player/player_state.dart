@@ -52,8 +52,8 @@ class PlayerVideoData {
 
   PlayerVideoData copyWith({
     int? positionMicro,
-    int? Function()? getLoopIndex,
-    int? Function()? getPlayingSentenceId,
+    int? Function()? loopIndex,
+    int? Function()? playingSentenceId,
     bool? isPlaying,
     double? speed,
     double? volume,
@@ -62,16 +62,16 @@ class PlayerVideoData {
   }) {
     return PlayerVideoData(
       sentenceIdList: sentenceIdList ?? this.sentenceIdList,
-      loopIndex: getLoopIndex == null ? loopIndex : getLoopIndex(),
+      loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       positionMicro: positionMicro ?? this.positionMicro,
       videoController: videoController,
       speed: speed ?? this.speed,
       volume: volume ?? this.volume,
       isPlaying: isPlaying ?? this.isPlaying,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
-      playingSentenceId: getPlayingSentenceId == null
-          ? playingSentenceId
-          : getPlayingSentenceId(),
+      playingSentenceId: playingSentenceId == null
+          ? this.playingSentenceId
+          : playingSentenceId(),
       scrollController: scrollController,
     );
   }

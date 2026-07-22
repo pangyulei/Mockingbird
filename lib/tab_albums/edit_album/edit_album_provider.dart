@@ -89,10 +89,7 @@ class EditAlbum extends _$EditAlbum {
         state.nameController.text,
         newCover,
       );
-      state = state.copyWith(
-        getCover: () => newCover,
-        enableSubmit: enableSubmit,
-      );
+      state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
     }
   }
 

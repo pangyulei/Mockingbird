@@ -27,10 +27,8 @@ class EditAlbumState {
         enableSubmit: false,
       );
 
-  const EditAlbumState.edit(
-    File? cover,
-    TextEditingController nameController,
-  ) : this(
+  const EditAlbumState.edit(File? cover, TextEditingController nameController)
+    : this(
         nameController: nameController,
         title: 'Edit Album',
         submitTitle: 'Save',
@@ -38,12 +36,9 @@ class EditAlbumState {
         enableSubmit: false,
       );
 
-  EditAlbumState copyWith({
-    bool? enableSubmit,
-    File? Function()? getCover,
-  }) {
+  EditAlbumState copyWith({bool? enableSubmit, File? Function()? cover}) {
     return EditAlbumState(
-      cover: getCover == null ? cover : getCover(),
+      cover: cover == null ? this.cover : cover(),
       enableSubmit: enableSubmit ?? this.enableSubmit,
       title: title,
       submitTitle: submitTitle,

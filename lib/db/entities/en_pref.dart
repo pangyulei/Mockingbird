@@ -11,10 +11,10 @@ class EnPref {
 
   EnPref.empty() : this(id: 0, playingId: null, isLoop: false);
 
-  EnPref copyWith({int? Function()? getPlayingId, bool? isLoop}) {
+  EnPref copyWith({int? Function()? playingId, bool? isLoop}) {
     return EnPref(
       id: id,
-      playingId: getPlayingId == null ? playingId : getPlayingId(),
+      playingId: playingId == null ? this.playingId : playingId(),
       isLoop: isLoop ?? this.isLoop,
     );
   }

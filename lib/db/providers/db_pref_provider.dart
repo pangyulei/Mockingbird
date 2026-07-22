@@ -16,7 +16,7 @@ class DBPref extends _$DBPref {
     if (pref.playingId != id) {
       state = await AsyncValue.guard(() async {
         final updatedPref = await DBLogic().updatePref(
-          pref.copyWith(getPlayingId: () => id),
+          pref.copyWith(playingId: () => id),
         );
         return updatedPref;
       });

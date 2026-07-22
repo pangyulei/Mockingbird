@@ -32,7 +32,7 @@ class AlbumListUI extends ConsumerWidget {
       default:
         //Null/null, means its asyncloading without data, initial load situation
         debugPrint('albumlist stateType: $stateType');
-        return const SizedBox.shrink();
+        return Scaffold(appBar: _appBar(ctx, ref),);
     }
   }
 

@@ -26,7 +26,7 @@ class EnAlbum {
 
   EnAlbum copyWith({
     String? name,
-    String? Function()? getCover,
+    String? Function()? cover,
     int? sortOrder,
     List<EnMedia>? mediaList,
   }) {
@@ -34,7 +34,7 @@ class EnAlbum {
       id: id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
-      cover: getCover == null ? cover : getCover(),
+      cover: cover == null ? this.cover : cover(),
     );
     album.mediaList.addAll(mediaList ?? this.mediaList);
     return album;
