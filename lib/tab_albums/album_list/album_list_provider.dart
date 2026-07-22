@@ -15,10 +15,7 @@ class AlbumList extends _$AlbumList {
     final List<EnAlbum> albumList = await ref.watch(dbAlbumListProvider.future);
     _albumList = albumList;
     if (albumList.isEmpty) return const AlbumListNull();
-    return AlbumListData(albumCount: albumList.length);
+    return AlbumListData(albumIdList: albumList.map((a)=>a.id).toList());
   }
-
-  int? albumIdAtIndex(int i) {
-    return _albumList.elementAtOrNull(i)?.id;
-  }
+  
 }

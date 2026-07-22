@@ -24,55 +24,55 @@ class PlayerData extends PlayerState {
 }
 
 class PlayerVideoData {
-  final int sentenceCount;
-  final ItemScrollController scrollController;
-  final int? playingSentenceId;
+  final List<int> sentenceIdList;
   final bool showVolumeSlider;
-  final VideoPlayerController controller;
+  final VideoPlayerController videoController;
   final bool isPlaying;
   final double speed;
   final double volume;
   final int positionMicro;
   final int? loopIndex;
+  final ItemScrollController scrollController;
+  final int? playingSentenceId;
 
   const PlayerVideoData({
+    required this.sentenceIdList,
     required this.playingSentenceId,
     required this.scrollController,
-    required this.sentenceCount,
     required this.loopIndex,
     required this.positionMicro,
     required this.isPlaying,
     required this.speed,
     required this.volume,
     required this.showVolumeSlider,
-    required this.controller,
+    required this.videoController,
   });
 
   bool get isLoop => loopIndex != null;
 
   PlayerVideoData copyWith({
-    int? Function()? getPlayingSentenceId,
-    int? sentenceCount,
     int? positionMicro,
     int? Function()? getLoopIndex,
+    int? Function()? getPlayingSentenceId,
     bool? isPlaying,
     double? speed,
     double? volume,
     bool? showVolumeSlider,
+    List<int>? sentenceIdList,
   }) {
     return PlayerVideoData(
-      playingSentenceId: getPlayingSentenceId == null
-          ? playingSentenceId
-          : getPlayingSentenceId(),
-      sentenceCount: sentenceCount ?? this.sentenceCount,
-      scrollController: scrollController,
+      sentenceIdList: sentenceIdList ?? this.sentenceIdList,
       loopIndex: getLoopIndex == null ? loopIndex : getLoopIndex(),
       positionMicro: positionMicro ?? this.positionMicro,
-      controller: controller,
+      videoController: videoController,
       speed: speed ?? this.speed,
       volume: volume ?? this.volume,
       isPlaying: isPlaying ?? this.isPlaying,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
+      playingSentenceId: getPlayingSentenceId == null
+          ? playingSentenceId
+          : getPlayingSentenceId(),
+      scrollController: scrollController,
     );
   }
 }

@@ -23,15 +23,14 @@ class AlbumDetailUI extends ConsumerWidget {
           _sliverAppBar(ctx),
           Consumer(
             builder: (context, ref, child) {
-              final mediaCount = ref.watch(albumDetailProvider(_id).select((s) => s.mediaCount));
-              if (mediaCount > 0) {
+              final mediaIdList = ref.watch(albumDetailProvider(_id).select((s) => s.mediaIdList));
+              if (mediaIdList.isNotEmpty) {
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, i) {
-                      final mediaId = ref.read(albumDetailProvider(_id).notifier).mediaIdAtIndex(i);
-                      return MediaCardUI(mediaId);
-                    }, childCount: mediaCount),
+                      return MediaCardUI(mediaIdList[i]);
+                    }, childCount: mediaIdList.length),
                   ),
                 );
               } else {

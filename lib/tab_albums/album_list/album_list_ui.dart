@@ -121,7 +121,7 @@ class AlbumListUI extends ConsumerWidget {
               final albumCount = ref.watch(
                 albumListProvider.select((st) {
                   final data = st.value;
-                  return data is AlbumListData ? data.albumCount : 0;
+                  return data is AlbumListData ? data.albumIdList.length : 0;
                 }),
               );
               return Text(
@@ -152,12 +152,12 @@ class AlbumListUI extends ConsumerWidget {
       builder: (context, ref, child) {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
-        final data = ref.watch(
-          albumListProvider.select((st) => st.value as AlbumListData),
+        final albumIdList = ref.watch(
+          albumListProvider.select((st) => (st.value as AlbumListData).albumIdList),
         );
         return GridView.builder(
           padding: const EdgeInsets.all(12),
-          itemCount: data.albumCount,
+          itemCount: albumIdList.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 4,
@@ -165,10 +165,7 @@ class AlbumListUI extends ConsumerWidget {
             childAspectRatio: 1,
           ),
           itemBuilder: (ctx, i) {
-            final albumId = ref
-                .read(albumListProvider.notifier)
-                .albumIdAtIndex(i);
-            return AlbumCardUI(albumId);
+            return AlbumCardUI(albumIdList[i]);
           },
         );
       },

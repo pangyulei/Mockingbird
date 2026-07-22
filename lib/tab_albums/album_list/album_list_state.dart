@@ -7,10 +7,10 @@ class AlbumListNull extends AlbumListState {
 }
 
 class AlbumListData extends AlbumListState {
-  final int albumCount;
-  const AlbumListData({required this.albumCount});
+  final List<int> albumIdList;
+  const AlbumListData({required this.albumIdList});
 
-  AlbumListData copyWith({int? albumCount}) {
-    return AlbumListData(albumCount: albumCount ?? this.albumCount);
+  AlbumListData copyWith({List<int>? albumIdList}) {
+    return AlbumListData(albumIdList: albumIdList ?? this.albumIdList);
   }
 }
