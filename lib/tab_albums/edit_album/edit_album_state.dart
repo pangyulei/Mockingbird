@@ -40,10 +40,10 @@ class EditAlbumState {
 
   EditAlbumState copyWith({
     bool? enableSubmit,
-    File? Function()? cover,
+    File? Function()? getCover,
   }) {
     return EditAlbumState(
-      cover: cover == null ? this.cover : cover(),
+      cover: getCover == null ? cover : getCover(),
       enableSubmit: enableSubmit ?? this.enableSubmit,
       title: title,
       submitTitle: submitTitle,

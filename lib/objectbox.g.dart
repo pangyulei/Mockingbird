@@ -620,7 +620,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.startTable(6);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.playingId);
-        fbb.addBool(4, object.loop);
+        fbb.addBool(4, object.isLoop);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -647,7 +647,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final object = EnPref(
           id: idParam,
           playingId: playingIdParam,
-          loop: loopParam,
+          isLoop: loopParam,
         );
 
         return object;
@@ -767,7 +767,7 @@ class EnPref_ {
     _entities[4].properties[1],
   );
 
-  /// See [EnPref.loop].
+  /// See [EnPref.isLoop].
   static final loop = obx.QueryBooleanProperty<EnPref>(
     _entities[4].properties[2],
   );

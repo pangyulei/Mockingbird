@@ -5,17 +5,17 @@ class EnPref {
   @Id()
   int id;
   final int? playingId;
-  final bool loop;
+  final bool isLoop;
 
-  EnPref({required this.id, required this.playingId, required this.loop});
+  EnPref({required this.id, required this.playingId, required this.isLoop});
 
-  EnPref.empty() : this(id: 0, playingId: null, loop: false);
+  EnPref.empty() : this(id: 0, playingId: null, isLoop: false);
 
-  EnPref copyWith({int? Function()? playingId, int? versionId, bool? loop}) {
+  EnPref copyWith({int? Function()? getPlayingId, bool? isLoop}) {
     return EnPref(
       id: id,
-      playingId: playingId == null ? this.playingId : playingId(),
-      loop: loop ?? this.loop,
+      playingId: getPlayingId == null ? playingId : getPlayingId(),
+      isLoop: isLoop ?? this.isLoop,
     );
   }
 }

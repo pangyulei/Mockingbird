@@ -1,9 +1,14 @@
-class SettingsState {
-  final bool loop;
+import 'package:mockingbird/tab_settings/settings_provider.dart';
 
-  const SettingsState({required this.loop});
+sealed class SettingsState {
+  const SettingsState();
+}
 
-  SettingsState copyWith({bool? loop}) {
-    return SettingsState(loop: loop ?? this.loop);
+class SettingsData extends SettingsState {
+  final bool isLoop;
+  const SettingsData({required this.isLoop});
+
+  SettingsData copyWith({bool? isLoop}) {
+    return SettingsData(isLoop: isLoop ?? this.isLoop);
   }
 }

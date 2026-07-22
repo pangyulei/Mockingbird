@@ -51,22 +51,22 @@ class PlayerVideoData {
   bool get isLoop => loopIndex != null;
 
   PlayerVideoData copyWith({
-    int? Function()? playingSentenceId,
+    int? Function()? getPlayingSentenceId,
     int? sentenceCount,
     int? positionMicro,
-    int? Function()? loopIndex,
+    int? Function()? getLoopIndex,
     bool? isPlaying,
     double? speed,
     double? volume,
     bool? showVolumeSlider,
   }) {
     return PlayerVideoData(
-      playingSentenceId: playingSentenceId == null
-          ? this.playingSentenceId
-          : playingSentenceId(),
+      playingSentenceId: getPlayingSentenceId == null
+          ? playingSentenceId
+          : getPlayingSentenceId(),
       sentenceCount: sentenceCount ?? this.sentenceCount,
       scrollController: scrollController,
-      loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
+      loopIndex: getLoopIndex == null ? loopIndex : getLoopIndex(),
       positionMicro: positionMicro ?? this.positionMicro,
       controller: controller,
       speed: speed ?? this.speed,

@@ -16,21 +16,19 @@ class DBPref extends _$DBPref {
     if (pref.playingId != id) {
       state = await AsyncValue.guard(() async {
         final updatedPref = await DBLogic().updatePref(
-          pref.copyWith(playingId: () => id),
+          pref.copyWith(getPlayingId: () => id),
         );
         return updatedPref;
       });
     }
   }
 
-  Future<void> setLoop(bool value) async {
+  Future<void> updatePref(EnPref Function(EnPref pref) getPref) async {
     final pref = await future;
-    if (pref.loop != value) {
+    final updatedPref = getPref(pref);
+    if (updatedPref != pref) {
       state = await AsyncValue.guard(() async {
-        final updatedPref = await DBLogic().updatePref(
-          pref.copyWith(loop: value),
-        );
-        return updatedPref;
+        return await DBLogic().updatePref(updatedPref);
       });
     }
   }

@@ -64,7 +64,9 @@ class Player extends _$Player {
 
     data.videoData.scrollController._scrollTo(sentenceIndex);
     if (data.videoData.isLoop) {
-      _updateVideoData(data.videoData.copyWith(loopIndex: () => sentenceIndex));
+      _updateVideoData(
+        data.videoData.copyWith(getLoopIndex: () => sentenceIndex),
+      );
     }
     await data.videoData.controller.seekTo(sentence.start);
     await data.videoData.controller.play();
@@ -152,7 +154,7 @@ class Player extends _$Player {
     final isLoop = data.videoData.isLoop;
     if (isLoop) {
       //unloop
-      _updateVideoData(data.videoData.copyWith(loopIndex: () => null));
+      _updateVideoData(data.videoData.copyWith(getLoopIndex: () => null));
     } else {
       //loop
       final position = data.videoData.positionMicro;
@@ -160,7 +162,7 @@ class Player extends _$Player {
         Duration(microseconds: position),
       );
       _updateVideoData(
-        data.videoData.copyWith(loopIndex: () => playingSentenceIndex),
+        data.videoData.copyWith(getLoopIndex: () => playingSentenceIndex),
       );
     }
   }
@@ -235,14 +237,14 @@ class Player extends _$Player {
     if (index == null) {
       state = AsyncData(
         data.copyWith(
-          videoData: data.videoData.copyWith(playingSentenceId: () => null),
+          videoData: data.videoData.copyWith(getPlayingSentenceId: () => null),
         ),
       );
     } else {
       int? id = sentenceList.elementAtOrNull(index)?.id;
       state = AsyncData(
         data.copyWith(
-          videoData: data.videoData.copyWith(playingSentenceId: () => id),
+          videoData: data.videoData.copyWith(getPlayingSentenceId: () => id),
         ),
       );
     }
@@ -273,7 +275,7 @@ class Player extends _$Player {
     final playingSentenceIndex = _sentenceIndexByPosition(position);
     if (data.videoData.isLoop == true) {
       _updateVideoData(
-        data.videoData.copyWith(loopIndex: () => playingSentenceIndex),
+        data.videoData.copyWith(getLoopIndex: () => playingSentenceIndex),
       );
     }
     final playingSentence = playingSentenceIndex == null
@@ -413,7 +415,7 @@ class PlayerVideoDataNotifier extends AsyncNotifier<PlayerVideoData?> {
       dbPlayingMediaProvider.selectAsync((st) => st?.subtitleList.firstOrNull),
     );
     final isLoop = await ref.read(
-      dbPrefProvider.selectAsync((pref) => pref.loop),
+      dbPrefProvider.selectAsync((pref) => pref.isLoop),
     );
     final int? loopingIndex;
     final sentenceList = subtitle?.sentenceList;

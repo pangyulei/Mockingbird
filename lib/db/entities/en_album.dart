@@ -17,11 +17,16 @@ class EnAlbum {
   @Index()
   final int sortOrder;
 
-  EnAlbum({required this.name, required this.sortOrder, required this.id, required this.cover});
+  EnAlbum({
+    required this.name,
+    required this.sortOrder,
+    required this.id,
+    required this.cover,
+  });
 
   EnAlbum copyWith({
     String? name,
-    String? Function()? coverFunc,
+    String? Function()? getCover,
     int? sortOrder,
     List<EnMedia>? mediaList,
   }) {
@@ -29,7 +34,7 @@ class EnAlbum {
       id: id,
       name: name ?? this.name,
       sortOrder: sortOrder ?? this.sortOrder,
-      cover: coverFunc == null ? cover : coverFunc(),
+      cover: getCover == null ? cover : getCover(),
     );
     album.mediaList.addAll(mediaList ?? this.mediaList);
     return album;

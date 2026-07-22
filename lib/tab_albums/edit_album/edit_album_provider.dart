@@ -13,11 +13,11 @@ part 'edit_album_provider.g.dart';
 @riverpod
 class EditAlbum extends _$EditAlbum {
   EnAlbum? get _album => ref.read(
-      dbAlbumListProvider
-          .select((st) => st.value ?? [])
-          .select((al) => {for (final a in al) a.id: a})
-          .select((am) => am[id]),
-    );
+    dbAlbumListProvider
+        .select((st) => st.value ?? [])
+        .select((al) => {for (final a in al) a.id: a})
+        .select((am) => am[id]),
+  );
 
   @override
   EditAlbumState build(int? id) {
@@ -37,7 +37,10 @@ class EditAlbum extends _$EditAlbum {
     } else {
       nameController.text = album.name;
       final cover = album.cover;
-      return EditAlbumState.edit(cover == null ? null : File(cover), nameController);
+      return EditAlbumState.edit(
+        cover == null ? null : File(cover),
+        nameController,
+      );
     }
   }
 
@@ -52,9 +55,12 @@ class EditAlbum extends _$EditAlbum {
       //editing
       await ref
           .read(dbAlbumListProvider.notifier)
-          .updateAlbum(album, name: state.nameController.text, cover: () => state.cover);
+          .updateAlbum(
+            album,
+            name: state.nameController.text,
+            cover: () => state.cover,
+          );
     }
-    ;
   }
 
   Future<void> pickCover() async {
@@ -78,8 +84,15 @@ class EditAlbum extends _$EditAlbum {
 
   void _updateCover(File? newCover) {
     if (newCover?.path != state.cover?.path) {
-      final enableSubmit = _isSubmitEnable(_album, state.nameController.text, newCover);
-      state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
+      final enableSubmit = _isSubmitEnable(
+        _album,
+        state.nameController.text,
+        newCover,
+      );
+      state = state.copyWith(
+        getCover: () => newCover,
+        enableSubmit: enableSubmit,
+      );
     }
   }
 

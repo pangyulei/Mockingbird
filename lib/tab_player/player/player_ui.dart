@@ -14,14 +14,6 @@ import '../../app/app_route.dart';
 class PlayerUI extends ConsumerWidget {
   const PlayerUI({super.key});
 
-  void _showLoading(bool show) {
-    if (show) {
-      EasyLoading.show(maskType: .clear);
-    } else {
-      EasyLoading.dismiss();
-    }
-  }
-
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
     final bool isLoading = ref.read(playerProvider.select((st) => st.isLoading));
@@ -38,9 +30,16 @@ class PlayerUI extends ConsumerWidget {
         debugPrint('playerui no such state $stateType');
         return const SizedBox.shrink();
     }
-    // return Stack(children: [_page(), _empty()]);
   }
 
+  void _showLoading(bool show) {
+    if (show) {
+      EasyLoading.show(maskType: .clear);
+    } else {
+      EasyLoading.dismiss();
+    }
+  }
+  
   void _onAddSubtitle(WidgetRef ref) async {
     await ref.read(playerProvider.notifier).addSubtitle();
   }
