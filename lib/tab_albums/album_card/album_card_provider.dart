@@ -8,7 +8,7 @@ part 'album_card_provider.g.dart';
 
 @riverpod
 class AlbumCard extends _$AlbumCard {
-  EnAlbum? _album;
+  
 
   @override
   AlbumCardState build(int? id) {
@@ -19,10 +19,16 @@ class AlbumCard extends _$AlbumCard {
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
-    _album = album;
     if (album == null) return const AlbumCardState.empty();
     return album.toCardState();
   }
+
+  EnAlbum? get _album => ref.read(
+      dbAlbumListProvider
+          .select((st) => st.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
 
   Future<void> sortToFirst() async {
     final album = _album;

@@ -14,7 +14,12 @@ part 'album_detail_provider.g.dart';
 
 @riverpod
 class AlbumDetail extends _$AlbumDetail {
-  EnAlbum? _album;
+  EnAlbum? get _album => ref.read(
+      dbAlbumListProvider
+          .select((st) => st.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
 
   @override
   AlbumDetailState build(int? id) {
@@ -25,7 +30,6 @@ class AlbumDetail extends _$AlbumDetail {
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
-    _album = album;
     if (album == null) return const AlbumDetailState.empty();
     final coverPath = album.cover;
     return AlbumDetailState(

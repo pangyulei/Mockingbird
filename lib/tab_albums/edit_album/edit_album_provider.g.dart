@@ -58,7 +58,7 @@ final class EditAlbumProvider
   }
 }
 
-String _$editAlbumHash() => r'0bfb6bca41faa600399b439be70828dee5ac2ad9';
+String _$editAlbumHash() => r'326e96f90038ebf4ed994bf72b964b1b56c3591f';
 
 final class EditAlbumFamily extends $Family
     with

@@ -12,7 +12,12 @@ part 'edit_album_provider.g.dart';
 
 @riverpod
 class EditAlbum extends _$EditAlbum {
-  EnAlbum? _album;
+  EnAlbum? get _album => ref.read(
+      dbAlbumListProvider
+          .select((st) => st.value ?? [])
+          .select((al) => {for (final a in al) a.id: a})
+          .select((am) => am[id]),
+    );
 
   @override
   EditAlbumState build(int? id) {
@@ -27,7 +32,6 @@ class EditAlbum extends _$EditAlbum {
           .select((al) => {for (final a in al) a.id: a})
           .select((am) => am[id]),
     );
-    _album = album;
     if (album == null) {
       return EditAlbumState.add(nameController);
     } else {

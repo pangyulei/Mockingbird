@@ -1,9 +1,16 @@
-class AlbumListState {
+sealed class AlbumListState {
+  const AlbumListState();
+}
+
+class AlbumListNull extends AlbumListState {
+  const AlbumListNull();
+}
+
+class AlbumListData extends AlbumListState {
   final int albumCount;
-  const AlbumListState({required this.albumCount});
+  const AlbumListData({required this.albumCount});
 
-  AlbumListState copyWith({int? albumCount}) {
-    return AlbumListState(albumCount: albumCount ?? this.albumCount);
+  AlbumListData copyWith({int? albumCount}) {
+    return AlbumListData(albumCount: albumCount ?? this.albumCount);
   }
-
 }

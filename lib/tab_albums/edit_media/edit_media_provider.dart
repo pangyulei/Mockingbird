@@ -10,29 +10,40 @@ part 'edit_media_provider.g.dart';
 
 @riverpod
 class EditMedia extends _$EditMedia {
-  EnMedia? _media;
-
   @override
   EditMediaState build(int? id) {
     final nameController = TextEditingController();
     ref.onDispose(() => nameController.dispose());
     if (id == null) {
-      return EditMediaState(nameController: nameController, enableSubmit: false);
+      return EditMediaState(
+        nameController: nameController,
+        enableSubmit: false,
+      );
     }
     final EnMedia? media = ref.watch(
       dbAlbumListProvider
           .select((st) => st.value ?? [])
-          .select((al) => al.map((a)=>a.mediaList).flattened)
+          .select((al) => al.map((a) => a.mediaList).flattened)
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[id]),
     );
-    _media = media;
     if (media == null) {
-      return EditMediaState(nameController: nameController, enableSubmit: false);
+      return EditMediaState(
+        nameController: nameController,
+        enableSubmit: false,
+      );
     }
     nameController.text = media.name;
     return EditMediaState(nameController: nameController, enableSubmit: false);
   }
+
+  EnMedia? get _media => ref.read(
+    dbAlbumListProvider
+        .select((st) => st.value ?? [])
+        .select((al) => al.map((a) => a.mediaList).flattened)
+        .select((ml) => {for (final m in ml) m.id: m})
+        .select((mm) => mm[id]),
+  );
 
   Future<void> submit() async {
     final media = _media;

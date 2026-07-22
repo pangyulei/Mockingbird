@@ -13,7 +13,6 @@ part 'media_card_provider.g.dart';
 
 @riverpod
 class MediaCard extends _$MediaCard {
-  EnMedia? _media;
 
   @override
   MediaCardState build(int? id) {
@@ -25,7 +24,6 @@ class MediaCard extends _$MediaCard {
           .select((ml) => {for (final m in ml) m.id: m})
           .select((mm) => mm[id]),
     );
-    _media = media;
     debugPrint('${identityHashCode(media)} $media');
     if (media == null) return const MediaCardState.empty();
     final playingId = ref.watch(dbPrefProvider.select((st) => st.value?.playingId));
@@ -37,11 +35,18 @@ class MediaCard extends _$MediaCard {
     );
   }
 
+  EnMedia? get _media => ref.read(
+      dbAlbumListProvider
+          .select((st) => st.value ?? [])
+          .select((al) => al.map((a)=>a.mediaList).flattened)
+          .select((ml) => {for (final m in ml) m.id: m})
+          .select((mm) => mm[id]),
+    );
+
   Future<void> deleteSubtitle() async {
     final media = _media;
     if (media == null) return;
     await ref.read(dbAlbumListProvider.notifier).updateMedia(media, subtitle: () => null);
-    ;
   }
 
   Future<void> updateSubtitle() async {

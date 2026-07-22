@@ -26,11 +26,9 @@ class PlayerUI extends ConsumerWidget {
   Widget build(BuildContext ctx, WidgetRef ref) {
     final bool isLoading = ref.read(playerProvider.select((st) => st.isLoading));
     _showLoading(isLoading);
-    ref.listen(playerProvider.select((st) => st.isLoading), (previous, next) {
-      _showLoading(next);
-    });
+    ref.listen(playerProvider.select((st) => st.isLoading), (previous, next) => _showLoading(next),);
     debugPrint('playerui build');
-    final stateType = ref.watch(playerProvider.select((st) => st.value.runtimeType));
+    final stateType = ref.watch(playerProvider.select((st) => st.value?.runtimeType));
     switch (stateType) {
       case PlayerNull:
         return _empty(ctx);
