@@ -161,9 +161,8 @@ class Player extends _$Player {
         videoData: _videoData.copyWith(positionMicro: position.inMicroseconds),
       ),
     );
-    if (_isDraggingVideoSlider) return;
     final duration = videoController.value.duration;
-    if (position >= duration) {
+    if (position >= duration && _videoData.isPlaying) {
       //if video end of duration, play/pause button should update
       state = AsyncData(
         _data.copyWith(videoData: _videoData.copyWith(isPlaying: false)),
@@ -182,18 +181,20 @@ class Player extends _$Player {
     //     : sentenceList[_prevPlayingSentenceIndex!];
     // final now = playingSentenceIndex == null ? null : sentenceList[playingSentenceIndex];
     // debugPrint('$prev => $now');
-    //handle mark
     if (isSentenceChanged) {
+      //handle mark
       debugPrint('positon changing mark $playingSentence');
       _markSentence(playingSentenceIndex);
-    }
-
-    //handle scroll
-    if (!_videoData.isLoop && isSentenceChanged) {
-      _scrollController._scrollTo(playingSentenceIndex);
+      //handle scroll
+      if (_isDraggingVideoSlider) {
+        _scrollController._jumpTo(playingSentenceIndex);
+      } else if (!_videoData.isLoop) {
+        //playing auto scroll to next sentence, not for loop mode
+        _scrollController._scrollTo(playingSentenceIndex);
+      }
     }
     //handle loop seek to begin
-    if (_videoData.isLoop) {
+    if (!_isDraggingVideoSlider && _videoData.isLoop) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       final sentence = _sentenceList[_videoData.loopIndex!];
       // debugPrint('position changing loop $sentence');
@@ -205,25 +206,12 @@ class Player extends _$Player {
     _prevPlayingSentenceIndex = playingSentenceIndex;
   }
 
-  void _markSentence(int? index) {
-    final data = state.value;
-    if (data is! PlayerData) return;
-    final sentenceList = _sentenceList;
-    if (sentenceList.isEmpty) return;
-    if (index == null) {
-      state = AsyncData(
-        data.copyWith(
-          videoData: data.videoData.copyWith(playingSentenceId: () => null),
-        ),
-      );
-    } else {
-      int? id = sentenceList.elementAtOrNull(index)?.id;
-      state = AsyncData(
-        data.copyWith(
-          videoData: data.videoData.copyWith(playingSentenceId: () => id),
-        ),
-      );
-    }
+  void _markSentence(int index) {
+    state = AsyncData(
+      _data.copyWith(
+        videoData: _videoData.copyWith(playingSentenceId: () => _sentenceList[index].id),
+      ),
+    );
   }
 
   int _sentenceIndexByPosition(Duration position) {
@@ -253,8 +241,8 @@ class Player extends _$Player {
         ),
       );
     }
-    _markSentence(playingSentenceIndex);
-    _scrollController._jumpTo(playingSentenceIndex);
+    // _markSentence(playingSentenceIndex);
+    // _scrollController._jumpTo(playingSentenceIndex);
   }
 
   Future<void> videoSliderStartChanged(double valMicro) async {
