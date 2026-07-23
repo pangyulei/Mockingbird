@@ -20,7 +20,9 @@ class AlbumCard extends _$AlbumCard {
           .select((am) => am[id]),
     );
     if (album == null) return const AlbumCardState.empty();
-    return album.toCardState();
+    final albumCount = ref.watch(dbAlbumListProvider.select((st) => st.value?.length ?? 0));
+    return AlbumCardState(mediasCount: album.mediaList.length, name: album.name, cover: album
+        .cover, canSort: albumCount >= 2);
   }
 
   EnAlbum? get _album => ref.read(
@@ -49,10 +51,4 @@ class AlbumCard extends _$AlbumCard {
   }
 
   String? get albumName => _album?.name;
-}
-
-extension on EnAlbum {
-  AlbumCardState toCardState() {
-    return AlbumCardState(mediasCount: mediaList.length, name: name, cover: cover);
-  }
 }

@@ -13,7 +13,7 @@ part of 'edit_album_provider.dart';
 final editAlbumProvider = EditAlbumFamily._();
 
 final class EditAlbumProvider
-    extends $NotifierProvider<EditAlbum, EditAlbumState> {
+    extends $AsyncNotifierProvider<EditAlbum, EditAlbumState> {
   EditAlbumProvider._({
     required EditAlbumFamily super.from,
     required int? super.argument,
@@ -39,14 +39,6 @@ final class EditAlbumProvider
   @override
   EditAlbum create() => EditAlbum();
 
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(EditAlbumState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<EditAlbumState>(value),
-    );
-  }
-
   @override
   bool operator ==(Object other) {
     return other is EditAlbumProvider && other.argument == argument;
@@ -58,15 +50,15 @@ final class EditAlbumProvider
   }
 }
 
-String _$editAlbumHash() => r'0d1c78dec119f460f3abafb26c9a46813ca93986';
+String _$editAlbumHash() => r'e1ff6476d711b8df6fe157de7f53d414a207e832';
 
 final class EditAlbumFamily extends $Family
     with
         $ClassFamilyOverride<
           EditAlbum,
+          AsyncValue<EditAlbumState>,
           EditAlbumState,
-          EditAlbumState,
-          EditAlbumState,
+          FutureOr<EditAlbumState>,
           int?
         > {
   EditAlbumFamily._()
@@ -85,20 +77,20 @@ final class EditAlbumFamily extends $Family
   String toString() => r'editAlbumProvider';
 }
 
-abstract class _$EditAlbum extends $Notifier<EditAlbumState> {
+abstract class _$EditAlbum extends $AsyncNotifier<EditAlbumState> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  EditAlbumState build(int? id);
+  FutureOr<EditAlbumState> build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<EditAlbumState, EditAlbumState>;
+    final ref = this.ref as $Ref<AsyncValue<EditAlbumState>, EditAlbumState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<EditAlbumState, EditAlbumState>,
-              EditAlbumState,
+              AnyNotifier<AsyncValue<EditAlbumState>, EditAlbumState>,
+              AsyncValue<EditAlbumState>,
               Object?,
               Object?
             >;

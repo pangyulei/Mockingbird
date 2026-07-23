@@ -165,68 +165,74 @@ class AlbumCardUI extends ConsumerWidget {
 
   Widget _menu(BuildContext ctx, WidgetRef ref) {
     final colorScheme = Theme.of(ctx).colorScheme;
-    return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
-      onSelected: (value) {
-        if (value == _MoreItem.edit.raw) {
-          _onEdit(ctx);
-        } else if (value == _MoreItem.delete.raw) {
-          _onDelete(ctx, ref);
-        } else if (value == _MoreItem.first.raw) {
-          _onSortToFirst(ref);
-        } else if (value == _MoreItem.last.raw) {
-          _onSortToLast(ref);
-        }
-      },
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: _MoreItem.edit.raw,
-          child: Row(
-            children: [
-              const Icon(Icons.edit_outlined, size: 18),
-              const SizedBox(width: 12),
-              Text(_MoreItem.edit.raw),
-            ],
+    return Consumer(builder: (context, ref, child) {
+      final bool canSort = ref.watch(albumCardProvider(_id).select((st) => st.canSort));
+      return PopupMenuButton<String>(
+        icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
+        onSelected: (value) {
+          if (value == _MoreItem.edit.raw) {
+            _onEdit(ctx);
+          } else if (value == _MoreItem.delete.raw) {
+            _onDelete(ctx, ref);
+          } else if (value == _MoreItem.first.raw) {
+            _onSortToFirst(ref);
+          } else if (value == _MoreItem.last.raw) {
+            _onSortToLast(ref);
+          }
+        },
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: _MoreItem.edit.raw,
+            child: Row(
+              children: [
+                const Icon(Icons.edit_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(_MoreItem.edit.raw),
+              ],
+            ),
           ),
-        ),
-        PopupMenuItem(
-          value: _MoreItem.first.raw,
-          child: Row(
-            children: [
-              const Icon(Icons.vertical_align_top_outlined, size: 18),
-              const SizedBox(width: 12),
-              Text(_MoreItem.first.raw),
-            ],
+          if (canSort) ...[
+            PopupMenuItem(
+              value: _MoreItem.first.raw,
+              child: Row(
+                children: [
+                  const Icon(Icons.vertical_align_top_outlined, size: 18),
+                  const SizedBox(width: 12),
+                  Text(_MoreItem.first.raw),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: _MoreItem.last.raw,
+              child: Row(
+                children: [
+                  const Icon(Icons.vertical_align_bottom_outlined, size: 18),
+                  const SizedBox(width: 12),
+                  Text(_MoreItem.last.raw),
+                ],
+              ),
+            ),
+          ],
+          PopupMenuItem(
+            value: _MoreItem.delete.raw,
+            child: Row(
+              children: [
+                Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
+                const SizedBox(width: 12),
+                Text(_MoreItem.delete.raw, style: TextStyle(color: colorScheme.error)),
+              ],
+            ),
           ),
+        ],
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.black.withValues(alpha: 0.3),
+          minimumSize: const Size(32, 32),
+          padding: EdgeInsets.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-        PopupMenuItem(
-          value: _MoreItem.last.raw,
-          child: Row(
-            children: [
-              const Icon(Icons.vertical_align_bottom_outlined, size: 18),
-              const SizedBox(width: 12),
-              Text(_MoreItem.last.raw),
-            ],
-          ),
-        ),
-        PopupMenuItem(
-          value: _MoreItem.delete.raw,
-          child: Row(
-            children: [
-              Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
-              const SizedBox(width: 12),
-              Text(_MoreItem.delete.raw, style: TextStyle(color: colorScheme.error)),
-            ],
-          ),
-        ),
-      ],
-      style: IconButton.styleFrom(
-        backgroundColor: Colors.black.withValues(alpha: 0.3),
-        minimumSize: const Size(32, 32),
-        padding: EdgeInsets.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      ),
-    );
+      );
+    },);
+
   }
 
   Widget _cover(BuildContext ctx, WidgetRef ref) {

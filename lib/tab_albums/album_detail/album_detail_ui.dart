@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_provider.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
+
+import '../../tool/extensions.dart';
 
 class AlbumDetailUI extends ConsumerWidget {
   final int? _id;
@@ -16,12 +17,12 @@ class AlbumDetailUI extends ConsumerWidget {
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
     // handle loading
-    _showLoading(
+    showLoading(
       ref.read(albumDetailProvider(_id).select((st) => st.isLoading)),
     );
     ref.listen(
       albumDetailProvider(_id).select((st) => st.isLoading),
-      (previous, next) => _showLoading(next),
+      (previous, next) => showLoading(next),
     );
 
     final stateType = ref.watch(
@@ -37,13 +38,6 @@ class AlbumDetailUI extends ConsumerWidget {
     }
   }
 
-  void _showLoading(bool show) {
-    if (show) {
-      EasyLoading.show(maskType: .clear);
-    } else {
-      EasyLoading.dismiss();
-    }
-  }
 
   Widget _albumNotFound() {
     return Scaffold(

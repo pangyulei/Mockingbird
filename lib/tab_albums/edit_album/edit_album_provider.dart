@@ -12,32 +12,32 @@ part 'edit_album_provider.g.dart';
 
 @riverpod
 class EditAlbum extends _$EditAlbum {
-  EnAlbum? get _album => ref.read(
+  EnAlbum? get _album =>
+      ref.read(
     dbAlbumListProvider
         .select((st) => st.value ?? [])
         .select((al) => {for (final a in al) a.id: a})
         .select((am) => am[id]),
   );
+  EditAlbumData get _data => state.value as EditAlbumData;
 
   @override
-  EditAlbumState build(int? id) {
+  Future<EditAlbumState> build(int? id) async {
     final nameController = TextEditingController();
     ref.onDispose(() {
       nameController.dispose();
     });
-    if (id == null) return EditAlbumState.add(nameController);
-    final album = ref.watch(
+    if (id == null) return EditAlbumData.add(nameController);
+    final EnAlbum? album = await ref.watch(
       dbAlbumListProvider
-          .select((st) => st.value ?? [])
-          .select((al) => {for (final a in al) a.id: a})
-          .select((am) => am[id]),
+          .selectAsync((al) => {for (final a in al) a.id: a}[id])
     );
     if (album == null) {
-      return EditAlbumState.add(nameController);
+      return EditAlbumData.add(nameController);
     } else {
       nameController.text = album.name;
       final cover = album.cover;
-      return EditAlbumState.edit(
+      return EditAlbumData.edit(
         cover == null ? null : File(cover),
         nameController,
       );
@@ -50,15 +50,15 @@ class EditAlbum extends _$EditAlbum {
       //creating
       await ref
           .read(dbAlbumListProvider.notifier)
-          .addAlbum(state.nameController.text, cover: state.cover);
+          .addAlbum(_data.nameController.text, cover: _data.cover);
     } else {
       //editing
       await ref
           .read(dbAlbumListProvider.notifier)
           .updateAlbum(
             album,
-            name: state.nameController.text,
-            cover: () => state.cover,
+            name: _data.nameController.text,
+            cover: () => _data.cover,
           );
     }
   }
@@ -83,19 +83,19 @@ class EditAlbum extends _$EditAlbum {
   }
 
   void _updateCover(File? newCover) {
-    if (newCover?.path != state.cover?.path) {
+    if (newCover?.path != _data.cover?.path) {
       final enableSubmit = _isSubmitEnable(
         _album,
-        state.nameController.text,
+        _data.nameController.text,
         newCover,
       );
-      state = state.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
+      state = AsyncData(_data.copyWith(cover: () => newCover, enableSubmit: enableSubmit));
     }
   }
 
   void updateName(String newName) {
-    final enableSubmit = _isSubmitEnable(_album, newName, state.cover);
-    state = state.copyWith(enableSubmit: enableSubmit);
+    final enableSubmit = _isSubmitEnable(_album, newName, _data.cover);
+    state = AsyncData(_data.copyWith(enableSubmit: enableSubmit));
   }
 
   bool _isSubmitEnable(EnAlbum? album, String newName, File? newCover) {

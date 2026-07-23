@@ -2,7 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-class EditAlbumState {
+sealed class EditAlbumState {
+  const EditAlbumState();
+}
+
+class EditAlbumData extends EditAlbumState {
   final String title;
   final String submitTitle;
 
@@ -10,7 +14,7 @@ class EditAlbumState {
   final File? cover;
   final bool enableSubmit;
 
-  const EditAlbumState({
+  const EditAlbumData({
     required this.nameController,
     required this.title,
     required this.submitTitle,
@@ -18,7 +22,7 @@ class EditAlbumState {
     required this.enableSubmit,
   });
 
-  const EditAlbumState.add(TextEditingController nameController)
+  const EditAlbumData.add(TextEditingController nameController)
     : this(
         nameController: nameController,
         title: 'Create Album',
@@ -27,7 +31,7 @@ class EditAlbumState {
         enableSubmit: false,
       );
 
-  const EditAlbumState.edit(File? cover, TextEditingController nameController)
+  const EditAlbumData.edit(File? cover, TextEditingController nameController)
     : this(
         nameController: nameController,
         title: 'Edit Album',
@@ -36,8 +40,8 @@ class EditAlbumState {
         enableSubmit: false,
       );
 
-  EditAlbumState copyWith({bool? enableSubmit, File? Function()? cover}) {
-    return EditAlbumState(
+  EditAlbumData copyWith({bool? enableSubmit, File? Function()? cover}) {
+    return EditAlbumData(
       cover: cover == null ? this.cover : cover(),
       enableSubmit: enableSubmit ?? this.enableSubmit,
       title: title,

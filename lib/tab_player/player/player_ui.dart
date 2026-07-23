@@ -10,19 +10,19 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../app/app_route.dart';
+import '../../tool/extensions.dart';
 
 class PlayerUI extends ConsumerWidget {
   const PlayerUI({super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    final bool isLoading = ref.read(
+    showLoading(ref.read(
       playerProvider.select((st) => st.isLoading),
-    );
-    _showLoading(isLoading);
+    ));
     ref.listen(
       playerProvider.select((st) => st.isLoading),
-      (previous, next) => _showLoading(next),
+      (previous, next) => showLoading(next),
     );
     debugPrint('playerui build');
     final stateType = ref.watch(
@@ -39,13 +39,7 @@ class PlayerUI extends ConsumerWidget {
     }
   }
 
-  void _showLoading(bool show) {
-    if (show) {
-      EasyLoading.show(maskType: .clear);
-    } else {
-      EasyLoading.dismiss();
-    }
-  }
+
 
   void _onAddSubtitle(WidgetRef ref) async {
     await ref.read(playerProvider.notifier).addSubtitle();

@@ -6,6 +6,8 @@ import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
+import '../../tool/extensions.dart';
+
 class AlbumListUI extends ConsumerWidget {
   const AlbumListUI({super.key});
 
@@ -14,10 +16,10 @@ class AlbumListUI extends ConsumerWidget {
     final bool isLoading = ref.read(
       albumListProvider.select((st) => st.isLoading),
     );
-    _showLoading(isLoading);
+    showLoading(isLoading);
     ref.listen(
       albumListProvider.select((st) => st.isLoading),
-      (previous, next) => _showLoading(next),
+      (previous, next) => showLoading(next),
     );
     final stateType = ref.watch(
       albumListProvider.select((st) => st.value?.runtimeType),
@@ -36,13 +38,6 @@ class AlbumListUI extends ConsumerWidget {
     }
   }
 
-  void _showLoading(bool show) {
-    if (show) {
-      EasyLoading.show(maskType: .clear);
-    } else {
-      EasyLoading.dismiss();
-    }
-  }
 
   Widget _empty(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);

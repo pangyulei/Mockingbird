@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
+import 'package:mockingbird/tool/extensions.dart';
+import 'edit_album_state.dart';
 
 class EditAlbumUI extends ConsumerWidget {
   final int? _id;
@@ -9,11 +11,25 @@ class EditAlbumUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
+    showLoading(ref.read(editAlbumProvider(_id).select((st) => st.isLoading)));
+    ref.listen(editAlbumProvider(_id).select((st) => st.isLoading), (previous, next) =>
+        showLoading(next));
+    final stateType = ref.watch(editAlbumProvider(_id).select((st) => st.value?.runtimeType));
+    switch (stateType) {
+      case EditAlbumData:
+        return _dialog(ctx);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _dialog(BuildContext ctx) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Consumer(
         builder: (context, ref, child) {
-          final title = ref.watch(editAlbumProvider(_id).select((s) => s.title));
+          final title = ref.watch(editAlbumProvider(_id).select((st) => (st.value as
+          EditAlbumData).title));
           return Text(title, style: const TextStyle(fontWeight: FontWeight.bold));
         },
       ),
@@ -27,7 +43,7 @@ class EditAlbumUI extends ConsumerWidget {
             Consumer(
               builder: (context, ref, child) {
                 final nameController = ref.watch(
-                  editAlbumProvider(_id).select((st) => st.nameController),
+                  editAlbumProvider(_id).select((st) => (st.value as EditAlbumData).nameController),
                 );
                 //nameController.addListner
                 return TextField(
@@ -68,7 +84,7 @@ class EditAlbumUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              editAlbumProvider(_id).select((s) => (s.enableSubmit, s.submitTitle)),
+              editAlbumProvider(_id).select((st) => st.value as EditAlbumData).select((st)=>(st.enableSubmit, st.submitTitle)),
             );
             if (enable) {
               return FilledButton(onPressed: () => _onSubmit(ctx, ref), child: Text(submitTitle));
@@ -84,7 +100,7 @@ class EditAlbumUI extends ConsumerWidget {
   Widget _cover(BuildContext ctx) {
     return Consumer(
       builder: (ctx, ref, child) {
-        final cover = ref.watch(editAlbumProvider(_id).select((s) => s.cover));
+        final cover = ref.watch(editAlbumProvider(_id).select((st) => (st.value as EditAlbumData).cover));
         return Stack(
           children: [
             GestureDetector(
@@ -168,8 +184,12 @@ class EditAlbumUI extends ConsumerWidget {
   }
 
   void _onSubmit(BuildContext ctx, WidgetRef ref) async {
+    debugPrint('edit album submit');
+    showLoading(true);
     await ref.read(editAlbumProvider(_id).notifier).submit();
+    showLoading(false);
     if (ctx.mounted) {
+      debugPrint('edit album poping');
       Navigator.of(ctx).pop();
     }
   }

@@ -6,18 +6,19 @@ import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/tab_settings/settings_provider.dart';
 import 'package:mockingbird/tab_settings/settings_state.dart';
 
+import '../tool/extensions.dart';
+
 class SettingsUI extends ConsumerWidget {
   const SettingsUI({super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    final bool isLoading = ref.read(
+    showLoading(ref.read(
       settingsProvider.select((st) => st.isLoading),
-    );
-    _showLoading(isLoading);
+    ));
     ref.listen(
       settingsProvider.select((st) => st.isLoading),
-      (previous, next) => _showLoading(next),
+      (previous, next) => showLoading(next),
     );
     final stateType = ref.watch(
       settingsProvider.select((st) => st.value?.runtimeType),
@@ -26,21 +27,17 @@ class SettingsUI extends ConsumerWidget {
       case SettingsData:
         return _page(ctx);
       default:
-        return const SizedBox.shrink();
+        return Scaffold(appBar: _appBar(),);
     }
   }
 
-  void _showLoading(bool show) {
-    if (show) {
-      EasyLoading.show(maskType: .clear);
-    } else {
-      EasyLoading.dismiss();
-    }
+  AppBar _appBar() {
+    return AppBar(title: const Text('Settings'));
   }
 
   Widget _page(BuildContext ctx) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: _appBar(),
       body: ListView(
         children: [
           _sectionHeader(ctx, 'Playback'),
