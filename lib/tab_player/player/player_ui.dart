@@ -392,25 +392,29 @@ class PlayerUI extends ConsumerWidget {
             }
           },
         ),
-        IconButton(
-          onPressed: () => _onToggleVolume(ref),
-          icon: Consumer(
-            builder: (context, ref, child) {
-              final volume = ref.watch(
-                playerProvider.select(
-                  (st) => (st.value as PlayerData).videoData.volume,
-                ),
-              );
-              final icon = volume == 0
-                  ? Icons.volume_off_rounded
-                  : Icons.volume_up_rounded;
-              return Icon(icon);
-            },
-          ),
-          color: Colors.white,
-          iconSize: 20,
-        ),
+        _volumeButton(ref);
       ],
+    );
+  }
+  
+  Widget _volumeButton(WidgetRef ref) {
+    return IconButton(
+      onPressed: () => _onToggleVolume(ref),
+      icon: Consumer(
+        builder: (context, ref, child) {
+          final volume = ref.watch(
+            playerProvider.select(
+                  (st) => (st.value as PlayerData).videoData.volume,
+            ),
+          );
+          final icon = volume == 0
+              ? Icons.volume_off_rounded
+              : Icons.volume_up_rounded;
+          return Icon(icon);
+        },
+      ),
+      color: Colors.white,
+      iconSize: 20,
     );
   }
 
