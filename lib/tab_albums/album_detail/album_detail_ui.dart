@@ -33,7 +33,7 @@ class AlbumDetailUI extends ConsumerWidget {
       case AlbumDetailNull:
         return _albumNotFound();
       default:
-        return Scaffold(appBar: AppBar());
+        return Scaffold(appBar: AppBar(automaticallyImplyLeading: false,));
     }
   }
 
