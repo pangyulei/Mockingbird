@@ -121,10 +121,10 @@ class PlayerUI extends ConsumerWidget {
   }
 
   Widget _body(BuildContext ctx) {
-    return Column(children: [_videoComponents(), _sentenceList(ctx)]);
+    return Column(children: [_videoWidgets(), _sentenceList(ctx)]);
   }
 
-  Widget _videoComponents() {
+  Widget _videoWidgets() {
     return Consumer(
       builder: (ctx, ref, child) {
         final videoController = ref.watch(
@@ -181,7 +181,7 @@ class PlayerUI extends ConsumerWidget {
     return AspectRatio(
       aspectRatio: 16 / 9.0,
       child: Stack(
-        alignment: Alignment.bottomCenter,
+        alignment: .center,
         children: [
           AspectRatio(
             aspectRatio: videoController.value.aspectRatio,
@@ -195,7 +195,12 @@ class PlayerUI extends ConsumerWidget {
               Expanded(
                 child: Column(
                   mainAxisAlignment: .end,
-                  children: [_progressSlider(ctx, videoController)],
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: _progressSlider(ctx, videoController),
+                    ),
+                  ],
                 ),
               ),
               _verticalVolumeWidgets(ref),
@@ -212,31 +217,22 @@ class PlayerUI extends ConsumerWidget {
     VideoPlayerController videoController,
   ) {
     return Stack(
-      alignment: Alignment.bottomCenter,
       children: [
         SizedBox(height: 100, child: VideoPlayer(videoController)),
         _gradientDisplayerOverlay(),
-        Positioned(
-          left: 8,
-          right: 8,
-          top: 0,
-          bottom: 0,
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                right: 48,
-                bottom: 8.5,
-                child: _progressSlider(ctx, videoController),
-              ),
-              Positioned(
-                right: 0,
-                bottom: 0,
-                top: 0,
-                child: _verticalVolumeWidgets(ref),
-              ),
-            ],
-          ),
+        Column(
+          mainAxisAlignment: .center,
+          crossAxisAlignment: .center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: _horizontalVolumeWidgets(ref),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 4.0, right: 8),
+              child: _progressSlider(ctx, videoController),
+            ),
+          ],
         ),
       ],
     );
@@ -383,13 +379,36 @@ class PlayerUI extends ConsumerWidget {
               ),
             );
             if (showVolumeSlider) {
-              return Expanded(child: _volumeSlider(ctx));
+              return Expanded(child: _verticalVolumeSlider(ctx));
             } else {
               return const SizedBox.shrink();
             }
           },
         ),
         _volumeButton(ref),
+      ],
+    );
+  }
+
+  Widget _horizontalVolumeWidgets(WidgetRef ref) {
+    return Row(
+      mainAxisAlignment: .start,
+      children: [
+        _volumeButton(ref),
+        Consumer(
+          builder: (ctx, ref, child) {
+            final showVolumeSlider = ref.watch(
+              playerProvider.select(
+                (st) => (st.value as PlayerData).videoData.showVolumeSlider,
+              ),
+            );
+            if (showVolumeSlider) {
+              return Expanded(child: _horizontalVolumeSlider(ctx));
+            } else {
+              return const SizedBox.shrink();
+            }
+          },
+        ),
       ],
     );
   }
@@ -415,32 +434,33 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _volumeSlider(BuildContext ctx) {
+  Widget _verticalVolumeSlider(BuildContext ctx) {
+    return RotatedBox(quarterTurns: 3, child: _horizontalVolumeSlider(ctx));
+  }
+
+  Widget _horizontalVolumeSlider(BuildContext ctx) {
     final colorScheme = Theme.of(ctx).colorScheme;
-    return RotatedBox(
-      quarterTurns: 3,
-      child: SliderTheme(
-        data: SliderTheme.of(ctx).copyWith(
-          trackHeight: 3.0,
-          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
-          overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
-          activeTrackColor: colorScheme.primary,
-          inactiveTrackColor: Colors.white24,
-          thumbColor: Colors.white,
-        ),
-        child: Consumer(
-          builder: (context, ref, child) {
-            final volume = ref.watch(
-              playerProvider.select(
-                (st) => (st.value as PlayerData).videoData.volume,
-              ),
-            );
-            return Slider(
-              value: volume,
-              onChanged: (newVolume) => _onVolumeChanged(ref, newVolume),
-            );
-          },
-        ),
+    return SliderTheme(
+      data: SliderTheme.of(ctx).copyWith(
+        trackHeight: 3.0,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+        activeTrackColor: colorScheme.primary,
+        inactiveTrackColor: Colors.white24,
+        thumbColor: Colors.white,
+      ),
+      child: Consumer(
+        builder: (context, ref, child) {
+          final volume = ref.watch(
+            playerProvider.select(
+              (st) => (st.value as PlayerData).videoData.volume,
+            ),
+          );
+          return Slider(
+            value: volume,
+            onChanged: (newVolume) => _onVolumeChanged(ref, newVolume),
+          );
+        },
       ),
     );
   }
@@ -452,9 +472,9 @@ class PlayerUI extends ConsumerWidget {
     final colorScheme = Theme.of(ctx).colorScheme;
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
-        trackHeight: 4.0,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 16.0),
+        trackHeight: 3.0,
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: Colors.white24,
         thumbColor: Colors.white,
