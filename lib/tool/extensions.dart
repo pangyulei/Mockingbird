@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 extension IterableExtension<E> on Iterable<E> {
   int? firstIndexWhereOrNull(bool Function(E) test) {

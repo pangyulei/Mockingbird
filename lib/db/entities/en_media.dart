@@ -1,5 +1,4 @@
 import 'package:objectbox/objectbox.dart';
-import 'package:path/path.dart' as p;
 
 import 'en_album.dart';
 import 'en_subtitle.dart';
