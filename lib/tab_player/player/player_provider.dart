@@ -242,11 +242,6 @@ class Player extends _$Player {
   }
 
   Future<void> _syncVideoWithSlider(Duration position) async {
-    // state = AsyncData(
-    //   _data.copyWith(
-    //     videoData: _videoData.copyWith(positionMicro: position.inMicroseconds),
-    //   ),
-    // );
     await _videoController.seekTo(position);
 
     if (_sentenceList.isEmpty) return;
