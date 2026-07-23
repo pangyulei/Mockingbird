@@ -28,7 +28,7 @@
 Developed with ❤️ by **pangyulei**.
 
 -   **Email**: [pangyulei@gmail.com](mailto:pangyulei@gmail.com)
--   **QQ**: 739912379
+-   **QQ频道**: m0ckingbird 大家可以分享整理好的音视频和字幕，因为网上的字幕多少有些匹配不上的小瑕疵
 
 ---
 
