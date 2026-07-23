@@ -14,57 +14,43 @@ part 'album_detail_provider.g.dart';
 
 @riverpod
 class AlbumDetail extends _$AlbumDetail {
-  EnAlbum? get _album => ref.read(
+  EnAlbum get _album => ref.read(
     dbAlbumListProvider
         .select((st) => st.value ?? [])
         .select((al) => {for (final a in al) a.id: a})
-        .select((am) => am[id]),
+        .select((am) => am[id]!),
   );
 
   @override
-  AlbumDetailState build(int? id) {
-    if (id == null) return const AlbumDetailState.empty();
-    final album = ref.watch(
+  Future<AlbumDetailState> build(int? id) async {
+    if (id == null) return const AlbumDetailNull();
+    final EnAlbum? album = await ref.watch(
       dbAlbumListProvider
-          .select((st) => st.value ?? [])
-          .select((al) => {for (final a in al) a.id: a})
-          .select((am) => am[id]),
+          .selectAsync((al) => {for (final a in al) a.id: a}[id])
     );
-    if (album == null) return const AlbumDetailState.empty();
+    if (album == null) return const AlbumDetailNull();
     final coverPath = album.cover;
-    return AlbumDetailState(
+    return AlbumDetailData(
       name: album.name,
       cover: coverPath == null ? null : File(coverPath),
       mediaIdList: album.mediaList.map((m) => m.id).toList(),
-      showImport: true,
     );
   }
 
   Future<void> import() async {
-    final id = this.id;
-    if (id == null) {
-      return;
-    }
     final files = await _pickMediasAndSubtitleFiles();
-    final album = _album;
-    if (files.isNotEmpty && album != null) {
-      await ref
-          .read(dbAlbumListProvider.notifier)
-          .importResourcesIntoAlbum(album, files);
-    }
+    await ref
+        .read(dbAlbumListProvider.notifier)
+        .importResourcesIntoAlbum(_album, files);
   }
 
   Future<void> addCover() async {
-    final id = this.id;
-    if (id == null) {
-      return;
-    }
     final newCover = await _pickImage();
-    final album = _album;
-    if (newCover != null && album != null) {
+    //newCover==null means didnt pick
+    if (newCover != null) {
       await ref
           .read(dbAlbumListProvider.notifier)
-          .updateAlbum(album, cover: () => newCover);
+          .updateAlbum(_album, cover: () => newCover);
     }
   }
 

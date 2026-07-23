@@ -147,6 +147,7 @@ class DBLogic {
   }
 
   Future<void> importMediaAndSubtitles(EnAlbum album, List<File> files) async {
+    if (files.isEmpty) return;
     final (:mfsfList, :msfList) = _processMediaSubtitleFiles(
       album.mediaList,
       files,

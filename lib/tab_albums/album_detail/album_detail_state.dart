@@ -1,29 +1,30 @@
 import 'dart:io';
 
-class AlbumDetailState {
+sealed class AlbumDetailState {
+  const AlbumDetailState();
+}
+
+class AlbumDetailNull extends AlbumDetailState {
+  const AlbumDetailNull();
+}
+
+class AlbumDetailData extends AlbumDetailState {
   final String name;
   final File? cover;
   final List<int> mediaIdList;
-  final bool showImport;
 
-  const AlbumDetailState({
-    required this.showImport,
+  const AlbumDetailData({
     required this.name,
     required this.cover,
     required this.mediaIdList,
   });
 
-  const AlbumDetailState.empty()
-    : this(cover: null, name: '', mediaIdList: const [], showImport: false);
-
-  AlbumDetailState copyWith({
-    bool? showImport,
+  AlbumDetailData copyWith({
     String? name,
     File? Function()? cover,
     List<int>? mediaIdList,
   }) {
-    return AlbumDetailState(
-      showImport: showImport ?? this.showImport,
+    return AlbumDetailData(
       name: name ?? this.name,
       cover: cover == null ? this.cover : cover(),
       mediaIdList: mediaIdList ?? this.mediaIdList,

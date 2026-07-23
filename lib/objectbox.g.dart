@@ -181,7 +181,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(27, 7767215884357716294),
     name: 'EnPref',
-    lastPropertyId: const obx_int.IdUid(5, 134427638610516138),
+    lastPropertyId: const obx_int.IdUid(6, 8528645236344410990),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -197,8 +197,8 @@ final _entities = <obx_int.ModelEntity>[
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 134427638610516138),
-        name: 'loop',
+        id: const obx_int.IdUid(6, 8528645236344410990),
+        name: 'isLoop',
         type: 1,
         flags: 0,
       ),
@@ -375,6 +375,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       4321953774055709715,
       967088597097392464,
       6827048680109433796,
+      134427638610516138,
     ],
     retiredRelationUids: const [7929255877846348169],
     modelVersion: 5,
@@ -617,10 +618,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (EnPref object, fb.Builder fbb) {
-        fbb.startTable(6);
+        fbb.startTable(7);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.playingId);
-        fbb.addBool(4, object.isLoop);
+        fbb.addBool(5, object.isLoop);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -638,16 +639,16 @@ obx_int.ModelDefinition getObjectBoxModel() {
           rootOffset,
           6,
         );
-        final loopParam = const fb.BoolReader().vTableGet(
+        final isLoopParam = const fb.BoolReader().vTableGet(
           buffer,
           rootOffset,
-          12,
+          14,
           false,
         );
         final object = EnPref(
           id: idParam,
           playingId: playingIdParam,
-          isLoop: loopParam,
+          isLoop: isLoopParam,
         );
 
         return object;
@@ -768,7 +769,7 @@ class EnPref_ {
   );
 
   /// See [EnPref.isLoop].
-  static final loop = obx.QueryBooleanProperty<EnPref>(
+  static final isLoop = obx.QueryBooleanProperty<EnPref>(
     _entities[4].properties[2],
   );
 }

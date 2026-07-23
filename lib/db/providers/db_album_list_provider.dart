@@ -95,6 +95,7 @@ class DBAlbumList extends _$DBAlbumList {
   }
 
   Future<void> importResourcesIntoAlbum(EnAlbum album, List<File> files) async {
+    if (files.isEmpty) return;
     await DBLogic().importMediaAndSubtitles(album, files);
     final updatedAlbum = await DBLogic().loadAlbum(album.id);
     if (updatedAlbum != null) {

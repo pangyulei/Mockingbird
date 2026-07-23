@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_provider.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 
@@ -13,17 +15,55 @@ class AlbumDetailUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    return Stack(children: [_page(ctx, ref)]);
+    // handle loading
+    _showLoading(
+      ref.read(albumDetailProvider(_id).select((st) => st.isLoading)),
+    );
+    ref.listen(
+      albumDetailProvider(_id).select((st) => st.isLoading),
+      (previous, next) => _showLoading(next),
+    );
+
+    final stateType = ref.watch(
+      albumDetailProvider(_id).select((st) => st.value?.runtimeType),
+    );
+    switch (stateType) {
+      case AlbumDetailData:
+        return _page(ctx, ref);
+      case AlbumDetailNull:
+        return _albumNotFound();
+      default:
+        return Scaffold(appBar: AppBar());
+    }
+  }
+
+  void _showLoading(bool show) {
+    if (show) {
+      EasyLoading.show(maskType: .clear);
+    } else {
+      EasyLoading.dismiss();
+    }
+  }
+
+  Widget _albumNotFound() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Album not found')),
+      body: const Center(child: Text('Album not found')),
+    );
   }
 
   Widget _page(BuildContext ctx, WidgetRef ref) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          _sliverAppBar(ctx),
+          _sliverAppBar(ctx, ref),
           Consumer(
             builder: (context, ref, child) {
-              final mediaIdList = ref.watch(albumDetailProvider(_id).select((s) => s.mediaIdList));
+              final mediaIdList = ref.watch(
+                albumDetailProvider(
+                  _id,
+                ).select((st) => (st.value as AlbumDetailData).mediaIdList),
+              );
               if (mediaIdList.isNotEmpty) {
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -53,16 +93,24 @@ class AlbumDetailUI extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.library_add_outlined, size: 64, color: theme.colorScheme.outlineVariant),
+              Icon(
+                Icons.library_add_outlined,
+                size: 64,
+                color: theme.colorScheme.outlineVariant,
+              ),
               const SizedBox(height: 16),
               Text(
                 'No media in this album',
-                style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.outline),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Tap the + button to import audio or video files',
-                style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.outline,
+                ),
               ),
             ],
           ),
@@ -71,7 +119,7 @@ class AlbumDetailUI extends ConsumerWidget {
     );
   }
 
-  Widget _sliverAppBar(BuildContext ctx) {
+  Widget _sliverAppBar(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
 
@@ -85,7 +133,9 @@ class AlbumDetailUI extends ConsumerWidget {
         title: Consumer(
           builder: (ctx, ref, child) {
             final (name, cover) = ref.watch(
-              albumDetailProvider(_id).select((s) => (s.name, s.cover)),
+              albumDetailProvider(_id)
+                  .select((st) => st.value as AlbumDetailData)
+                  .select((data) => (data.name, data.cover)),
             );
             return Text(
               name,
@@ -93,7 +143,12 @@ class AlbumDetailUI extends ConsumerWidget {
                 color: cover != null ? Colors.white : colorScheme.onSurface,
                 fontWeight: FontWeight.bold,
                 shadows: cover != null
-                    ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 8)]
+                    ? [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                        ),
+                      ]
                     : null,
               ),
             );
@@ -101,7 +156,11 @@ class AlbumDetailUI extends ConsumerWidget {
         ),
         background: Consumer(
           builder: (ctx, ref, child) {
-            final cover = ref.watch(albumDetailProvider(_id).select((s) => s.cover));
+            final cover = ref.watch(
+              albumDetailProvider(
+                _id,
+              ).select((st) => (st.value as AlbumDetailData).cover),
+            );
             if (cover == null) {
               return _noCoverBanner(ctx, ref);
             } else {
@@ -118,22 +177,13 @@ class AlbumDetailUI extends ConsumerWidget {
         ),
       ),
       actions: [
-        Consumer(
-          builder: (ctx, ref, child) {
-            final showImport = ref.watch(albumDetailProvider(_id).select((st) => st.showImport));
-            if (showImport) {
-              return Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton.filledTonal(
-                  icon: const Icon(Icons.add_rounded),
-                  onPressed: () => _onImport(ref),
-                  tooltip: 'Add Media',
-                ),
-              );
-            } else {
-              return const SizedBox.shrink();
-            }
-          },
+        Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: IconButton.filledTonal(
+            icon: const Icon(Icons.add_rounded),
+            onPressed: () => _onImport(ref),
+            tooltip: 'Add Media',
+          ),
         ),
       ],
     );
@@ -152,7 +202,12 @@ class AlbumDetailUI extends ConsumerWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 stops: [0.0, 0.3, 0.7, 1.0],
-                colors: [Colors.black38, Colors.transparent, Colors.transparent, Colors.black87],
+                colors: [
+                  Colors.black38,
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black87,
+                ],
               ),
             ),
           ),
@@ -181,7 +236,10 @@ class AlbumDetailUI extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [colorScheme.primaryContainer, colorScheme.surfaceContainerHighest],
+          colors: [
+            colorScheme.primaryContainer,
+            colorScheme.surfaceContainerHighest,
+          ],
         ),
       ),
       child: Stack(
