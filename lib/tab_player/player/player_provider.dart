@@ -67,6 +67,9 @@ class Player extends _$Player {
       );
     }
     await _videoController.seekTo(sentence.start);
+    state = AsyncData(
+      _data.copyWith(videoData: _data.videoData.copyWith(isPlaying: true)),
+    );
     await _videoController.play();
   }
 
@@ -209,7 +212,9 @@ class Player extends _$Player {
     debugPrint('mark: ${_sentenceList[index]}');
     state = AsyncData(
       _data.copyWith(
-        videoData: _videoData.copyWith(playingSentenceId: () => _sentenceList[index].id),
+        videoData: _videoData.copyWith(
+          playingSentenceId: () => _sentenceList[index].id,
+        ),
       ),
     );
   }
