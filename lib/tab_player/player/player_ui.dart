@@ -196,9 +196,8 @@ class PlayerUI extends ConsumerWidget {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(
-                        left: 32,
-                        right: 16,
-                        bottom: 16,
+                        left: 16,
+                        bottom: 8,
                       ),
                       child: _progressSlider(ctx, videoController),
                     ),
@@ -206,7 +205,7 @@ class PlayerUI extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 32, right: 16),
+                padding: const EdgeInsets.only(right: 16, bottom: 8),
                 child: _verticalVolumeWidgets(ref),
               ),
             ],
@@ -222,7 +221,7 @@ class PlayerUI extends ConsumerWidget {
     VideoPlayerController videoController,
   ) {
     return SizedBox(
-      height: 100,
+      height: 150,
       child: Stack(
         children: [
           VideoPlayer(videoController),
@@ -232,12 +231,12 @@ class PlayerUI extends ConsumerWidget {
             mainAxisAlignment: .start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 20, right: 50),
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
                 child: _horizontalVolumeWidgets(ref),
               ),
               const Spacer(),
               Padding(
-                padding: const EdgeInsets.only(left: 40, right: 50, bottom: 16),
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
                 child: _progressSlider(ctx, videoController),
               ),
             ],
@@ -439,7 +438,7 @@ class PlayerUI extends ConsumerWidget {
         },
       ),
       color: Colors.white,
-      iconSize: 20,
+      iconSize: 32,
     );
   }
 
@@ -452,12 +451,13 @@ class PlayerUI extends ConsumerWidget {
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
         trackHeight: 3.0,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+        // thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 24.0),
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: Colors.white24,
         thumbColor: Colors.white,
-        padding: EdgeInsets.zero,
+        // padding: EdgeInsets.zero,
+        thumbSize: WidgetStateProperty.all(const Size(20, 20)),
       ),
       child: Consumer(
         builder: (context, ref, child) {
@@ -483,21 +483,21 @@ class PlayerUI extends ConsumerWidget {
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
         trackHeight: 3.0,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
+        // thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+        overlayShape: const RoundSliderOverlayShape(overlayRadius: 24.0),
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: Colors.white24,
         thumbColor: Colors.white,
-        padding: EdgeInsets.zero,
+        // padding: EdgeInsets.zero,
+        thumbSize: WidgetStateProperty.all(const Size(20, 20)),
       ),
       child: Consumer(
         builder: (context, ref, child) {
           final position = ref.watch(
-            playerProvider.select((st) {
-              final data = st.value;
-              if (data is! PlayerData) return 0.0;
-              return data.videoData.positionMicro.toDouble();
-            }),
+            playerProvider.select(
+              (st) =>
+                  (st.value as PlayerData).videoData.positionMicro.toDouble(),
+            ),
           );
           final duration = videoController.value.duration.inMicroseconds
               .toDouble();
@@ -507,7 +507,6 @@ class PlayerUI extends ConsumerWidget {
             onChangeStart: (val) => _onVideoSliderStartChanged(ref, val),
             onChanged: (val) => _onVideoSliderChanging(ref, val),
             onChangeEnd: (val) => _onVideoSliderEndChanged(ref, val),
-            allowedInteraction: SliderInteraction.tapAndSlide,
           );
         },
       ),
