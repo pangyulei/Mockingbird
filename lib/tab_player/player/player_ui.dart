@@ -232,12 +232,12 @@ class PlayerUI extends ConsumerWidget {
             mainAxisAlignment: .start,
             children: [
               Padding(
-                padding: const EdgeInsets.only(right: 32.0),
+                padding: const EdgeInsets.only(left: 20, right: 50),
                 child: _horizontalVolumeWidgets(ref),
               ),
               const Spacer(),
               Padding(
-                padding: const EdgeInsets.only(left: 32, right: 32, bottom: 16),
+                padding: const EdgeInsets.only(left: 40, right: 50, bottom: 16),
                 child: _progressSlider(ctx, videoController),
               ),
             ],
@@ -452,7 +452,7 @@ class PlayerUI extends ConsumerWidget {
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
         trackHeight: 3.0,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: Colors.white24,
@@ -483,7 +483,7 @@ class PlayerUI extends ConsumerWidget {
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
         trackHeight: 3.0,
-        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6.0),
+        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 12.0),
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: Colors.white24,
