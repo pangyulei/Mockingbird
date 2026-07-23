@@ -199,7 +199,7 @@ class PlayerUI extends ConsumerWidget {
                   _progressSlider(ctx, videoController),
                 ],
               ),),
-              _volumeComponent(ref),
+              _verticalVolumeWidgets(ref),
             ],
           ),
         ],
@@ -234,7 +234,7 @@ class PlayerUI extends ConsumerWidget {
                 right: 0,
                 bottom: 0,
                 top: 0,
-                child: _volumeComponent(ref),
+                child: _verticalVolumeWidgets(ref),
               ),
             ],
           ),
@@ -373,9 +373,8 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _volumeComponent(WidgetRef ref) {
+  Widget _verticalVolumeWidgets(WidgetRef ref) {
     return Column(
-      mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Consumer(
@@ -392,7 +391,7 @@ class PlayerUI extends ConsumerWidget {
             }
           },
         ),
-        _volumeButton(ref);
+        _volumeButton(ref),
       ],
     );
   }
