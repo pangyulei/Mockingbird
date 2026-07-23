@@ -189,27 +189,18 @@ class PlayerUI extends ConsumerWidget {
           AspectRatio(aspectRatio: videoController.value.aspectRatio, child: VideoPlayer
             (videoController),),
           _gradientDisplayerOverlay(),
-          Positioned(
-            left: 8,
-            right: 8,
-            top: 0,
-            bottom: 0,
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  right: 48,
-                  bottom: 8.5,
-                  child: _progressSlider(ctx, videoController),
-                ),
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  top: 0,
-                  child: _volumeComponent(ref),
-                ),
-              ],
-            ),
+          Row(
+            mainAxisAlignment: .start,
+            crossAxisAlignment: .end,
+            children: [
+              Expanded(child: Column(
+                mainAxisAlignment: .end,
+                children: [
+                  _progressSlider(ctx, videoController),
+                ],
+              ),),
+              _volumeComponent(ref),
+            ],
           ),
         ],
       ),
