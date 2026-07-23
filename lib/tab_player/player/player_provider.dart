@@ -154,7 +154,6 @@ class Player extends _$Player {
   Future<void> videoPositionChanged(
     VideoPlayerController videoController,
   ) async {
-    if (_isDraggingVideoSlider) return;
     final position = videoController.value.position;
     //for video slider moving along with playing
     state = AsyncData(
@@ -162,6 +161,7 @@ class Player extends _$Player {
         videoData: _videoData.copyWith(positionMicro: position.inMicroseconds),
       ),
     );
+    if (_isDraggingVideoSlider) return;
     final duration = videoController.value.duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
@@ -242,11 +242,11 @@ class Player extends _$Player {
   }
 
   Future<void> _syncVideoWithSlider(Duration position) async {
-    state = AsyncData(
-      _data.copyWith(
-        videoData: _videoData.copyWith(positionMicro: position.inMicroseconds),
-      ),
-    );
+    // state = AsyncData(
+    //   _data.copyWith(
+    //     videoData: _videoData.copyWith(positionMicro: position.inMicroseconds),
+    //   ),
+    // );
     await _videoController.seekTo(position);
 
     if (_sentenceList.isEmpty) return;
