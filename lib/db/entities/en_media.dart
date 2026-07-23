@@ -18,7 +18,7 @@ class EnMedia {
   //objectbox will use this default constructor
   EnMedia({required this.path, required this.name, required this.id});
 
-  MediaType get type => MediaType.fromExtension(p.extension(path));
+  MediaType get type => MediaType.fromPath(path);
 
   EnMedia copyWith({String? name, List<EnSubtitle>? subtitleList}) {
     final media = EnMedia(id: id, path: path, name: name ?? this.name);
@@ -41,12 +41,11 @@ enum MediaType {
 
   const MediaType(this.raw);
 
-  static MediaType fromExtension(String ext) {
-    if (ext.startsWith('.')) ext = ext.substring(1);
-    ext = ext.toLowerCase();
-    if (kVideoExtensions.contains(ext)) return MediaType.video;
-    if (kAudioExtensions.contains(ext)) return MediaType.audio;
-    throw ArgumentError('Unsupported file extension: $ext');
+  static MediaType fromPath(String path) {
+    final String extension = path.toLowerCase().split('.').last;
+    if (kVideoExtensions.contains(extension)) return MediaType.video;
+    if (kAudioExtensions.contains(extension)) return MediaType.audio;
+    throw ArgumentError('Unsupported file extension: $extension');
   }
 }
 

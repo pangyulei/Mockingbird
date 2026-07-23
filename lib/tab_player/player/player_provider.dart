@@ -224,25 +224,20 @@ class Player extends _$Player {
         return i;
       }
     }
-    throw ErrorDescription(
-      '如果你有sentencelist你肯定会定位到其中一句字幕，如果你没有字幕，你根本不应该会用到这个方法',
-    );
+    throw Exception('no sentence found');
   }
 
   Future<void> _syncVideoWithSlider(Duration position) async {
     await _videoController.seekTo(position);
 
-    if (_sentenceList.isEmpty) return;
-    final playingSentenceIndex = _sentenceIndexByPosition(position);
     if (_videoData.isLoop) {
+      final playingSentenceIndex = _sentenceIndexByPosition(position);
       state = AsyncData(
         _data.copyWith(
           videoData: _videoData.copyWith(loopIndex: () => playingSentenceIndex),
         ),
       );
     }
-    // _markSentence(playingSentenceIndex);
-    // _scrollController._jumpTo(playingSentenceIndex);
   }
 
   Future<void> videoSliderStartChanged(double valMicro) async {
@@ -266,16 +261,12 @@ class Player extends _$Player {
         debugPrint('slider end');
       },
       () async {
-        if (_sentenceList.isEmpty) {
-          // _isDraggingVideoSlider = false;
-          return;
-        }
         final duration = _videoController.value.duration;
         final position = Duration(microseconds: valMicro.toInt());
         //seek to sentence start
         final Duration seekTo;
-        final playingSentenceIndex = _sentenceIndexByPosition(position);
-        if (_videoData.isLoop == true) {
+        if (_videoData.isLoop) {
+          final playingSentenceIndex = _sentenceIndexByPosition(position);
           final playingSentence = _sentenceList[playingSentenceIndex];
           seekTo = playingSentence.start;
         } else {
@@ -436,8 +427,8 @@ extension on EnSentence {
 }
 
 extension on ItemScrollController {
-  void _jumpTo(int index, {double alignment = 0}) {
-    if (isAttached) {
+  void _jumpTo(int? index, {double alignment = 0}) {
+    if (isAttached && index != null) {
       jumpTo(index: index, alignment: alignment);
     } else {
       debugPrint('${identityHashCode(this)} jump fail, scroll is not attached');
@@ -445,11 +436,11 @@ extension on ItemScrollController {
   }
 
   void _scrollTo(
-    int index, {
+    int? index, {
     double alignment = 0,
     Duration duration = const Duration(milliseconds: 250),
   }) {
-    if (isAttached) {
+    if (isAttached && index != null) {
       scrollTo(index: index, duration: duration, alignment: alignment);
     } else {
       debugPrint(

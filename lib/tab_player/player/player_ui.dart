@@ -3,6 +3,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
+import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/tab_player/player/player_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_ui.dart';
@@ -166,30 +167,29 @@ class PlayerUI extends ConsumerWidget {
     WidgetRef ref,
     VideoPlayerController videoController,
   ) {
+    final String mediaPath = videoController.dataSource;
+    final mediaType = MediaType.fromPath(mediaPath);
+    // final aspectRatio = mediaType == .video ? videoController.value.aspectRatio:
+    final aspectRatio = mediaType == .video ? 16/9.0 : 16/3.0;
+    if (mediaType == .video) {
+      return _videoDisplayer(ctx, ref, videoController);
+    } else {
+      return _audioDisplayer(ctx, ref, videoController);
+    }
+  }
+  
+  Widget _videoDisplayer(
+      BuildContext ctx,
+      WidgetRef ref,
+      VideoPlayerController videoController) {
     return AspectRatio(
-      aspectRatio: videoController.value.aspectRatio,
+      aspectRatio: 16/9.0,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          VideoPlayer(videoController),
-          // Custom gradient overlay for controls
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.4),
-                    Colors.transparent,
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.6),
-                  ],
-                  stops: const [0.0, 0.2, 0.7, 1.0],
-                ),
-              ),
-            ),
-          ),
+          AspectRatio(aspectRatio: videoController.value.aspectRatio, child: VideoPlayer
+            (videoController),),
+          _gradientDisplayerOverlay(),
           Positioned(
             left: 8,
             right: 8,
@@ -201,7 +201,7 @@ class PlayerUI extends ConsumerWidget {
                   left: 0,
                   right: 48,
                   bottom: 8.5,
-                  child: _videoSlider(ctx, videoController),
+                  child: _progressSlider(ctx, videoController),
                 ),
                 Positioned(
                   right: 0,
@@ -213,6 +213,63 @@ class PlayerUI extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _audioDisplayer(
+      BuildContext ctx,
+      WidgetRef ref,
+      VideoPlayerController videoController) {
+    return Stack(
+      alignment: Alignment.bottomCenter,
+      children: [
+        SizedBox(height: 100, child: VideoPlayer
+          (videoController),),
+        _gradientDisplayerOverlay(),
+        Positioned(
+          left: 8,
+          right: 8,
+          top: 0,
+          bottom: 0,
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 48,
+                bottom: 8.5,
+                child: _progressSlider(ctx, videoController),
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                top: 0,
+                child: _volumeComponent(ref),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  Widget _gradientDisplayerOverlay() {
+    return Positioned.fill(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withValues(alpha: 0.4),
+              Colors.transparent,
+              Colors.transparent,
+              Colors.black.withValues(alpha: 0.6),
+            ],
+            stops: const [0.0, 0.2, 0.7, 1.0],
+          ),
+        ),
       ),
     );
   }
@@ -397,7 +454,7 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _videoSlider(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _progressSlider(BuildContext ctx, VideoPlayerController videoController) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
