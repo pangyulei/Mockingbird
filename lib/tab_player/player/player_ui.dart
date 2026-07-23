@@ -17,9 +17,7 @@ class PlayerUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    showLoading(ref.read(
-      playerProvider.select((st) => st.isLoading),
-    ));
+    showLoading(ref.read(playerProvider.select((st) => st.isLoading)));
     ref.listen(
       playerProvider.select((st) => st.isLoading),
       (previous, next) => showLoading(next),
@@ -38,8 +36,6 @@ class PlayerUI extends ConsumerWidget {
         return Scaffold(appBar: _appBar());
     }
   }
-
-
 
   void _onAddSubtitle(WidgetRef ref) async {
     await ref.read(playerProvider.notifier).addSubtitle();
@@ -169,36 +165,39 @@ class PlayerUI extends ConsumerWidget {
     final String mediaPath = videoController.dataSource;
     final mediaType = MediaType.fromPath(mediaPath);
     // final aspectRatio = mediaType == .video ? videoController.value.aspectRatio:
-    final aspectRatio = mediaType == .video ? 16/9.0 : 16/3.0;
+    final aspectRatio = mediaType == .video ? 16 / 9.0 : 16 / 3.0;
     if (mediaType == .video) {
       return _videoDisplayer(ctx, ref, videoController);
     } else {
       return _audioDisplayer(ctx, ref, videoController);
     }
   }
-  
+
   Widget _videoDisplayer(
-      BuildContext ctx,
-      WidgetRef ref,
-      VideoPlayerController videoController) {
+    BuildContext ctx,
+    WidgetRef ref,
+    VideoPlayerController videoController,
+  ) {
     return AspectRatio(
-      aspectRatio: 16/9.0,
+      aspectRatio: 16 / 9.0,
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          AspectRatio(aspectRatio: videoController.value.aspectRatio, child: VideoPlayer
-            (videoController),),
+          AspectRatio(
+            aspectRatio: videoController.value.aspectRatio,
+            child: VideoPlayer(videoController),
+          ),
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .start,
             crossAxisAlignment: .end,
             children: [
-              Expanded(child: Column(
-                mainAxisAlignment: .end,
-                children: [
-                  _progressSlider(ctx, videoController),
-                ],
-              ),),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: .end,
+                  children: [_progressSlider(ctx, videoController)],
+                ),
+              ),
               _verticalVolumeWidgets(ref),
             ],
           ),
@@ -208,14 +207,14 @@ class PlayerUI extends ConsumerWidget {
   }
 
   Widget _audioDisplayer(
-      BuildContext ctx,
-      WidgetRef ref,
-      VideoPlayerController videoController) {
+    BuildContext ctx,
+    WidgetRef ref,
+    VideoPlayerController videoController,
+  ) {
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
-        SizedBox(height: 100, child: VideoPlayer
-          (videoController),),
+        SizedBox(height: 100, child: VideoPlayer(videoController)),
         _gradientDisplayerOverlay(),
         Positioned(
           left: 8,
@@ -242,7 +241,6 @@ class PlayerUI extends ConsumerWidget {
       ],
     );
   }
-
 
   Widget _gradientDisplayerOverlay() {
     return Positioned.fill(
@@ -385,7 +383,7 @@ class PlayerUI extends ConsumerWidget {
               ),
             );
             if (showVolumeSlider) {
-              return Flexible(child: _volumeSlider(ctx));
+              return Expanded(child: _volumeSlider(ctx));
             } else {
               return const SizedBox.shrink();
             }
@@ -395,7 +393,7 @@ class PlayerUI extends ConsumerWidget {
       ],
     );
   }
-  
+
   Widget _volumeButton(WidgetRef ref) {
     return IconButton(
       onPressed: () => _onToggleVolume(ref),
@@ -403,7 +401,7 @@ class PlayerUI extends ConsumerWidget {
         builder: (context, ref, child) {
           final volume = ref.watch(
             playerProvider.select(
-                  (st) => (st.value as PlayerData).videoData.volume,
+              (st) => (st.value as PlayerData).videoData.volume,
             ),
           );
           final icon = volume == 0
@@ -447,7 +445,10 @@ class PlayerUI extends ConsumerWidget {
     );
   }
 
-  Widget _progressSlider(BuildContext ctx, VideoPlayerController videoController) {
+  Widget _progressSlider(
+    BuildContext ctx,
+    VideoPlayerController videoController,
+  ) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
