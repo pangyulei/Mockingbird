@@ -183,7 +183,6 @@ class Player extends _$Player {
     // debugPrint('$prev => $now');
     if (isSentenceChanged) {
       //handle mark
-      debugPrint('positon changing mark $playingSentence');
       _markSentence(playingSentenceIndex);
       //handle scroll
       if (_isDraggingVideoSlider) {
@@ -207,6 +206,7 @@ class Player extends _$Player {
   }
 
   void _markSentence(int index) {
+    debugPrint('mark: ${_sentenceList[index]}');
     state = AsyncData(
       _data.copyWith(
         videoData: _videoData.copyWith(playingSentenceId: () => _sentenceList[index].id),
@@ -242,7 +242,7 @@ class Player extends _$Player {
 
   Future<void> videoSliderStartChanged(double valMicro) async {
     _isDraggingVideoSlider = true;
-    debugPrint('slider start');
+    debugPrint('slider: start');
     state = AsyncData(
       _data.copyWith(videoData: _videoData.copyWith(isPlaying: false)),
     );
@@ -258,7 +258,7 @@ class Player extends _$Player {
     await defer(
       () async {
         _isDraggingVideoSlider = false;
-        debugPrint('slider end');
+        debugPrint('slider: end');
       },
       () async {
         final duration = _videoController.value.duration;
