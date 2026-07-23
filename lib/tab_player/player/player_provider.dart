@@ -58,7 +58,7 @@ class Player extends _$Player {
     )!;
     final sentence = _sentenceList[sentenceIndex];
 
-    _scrollController._scrollTo(sentenceIndex);
+    _scrollController._scrollTo(sentenceIndex, alignment: 0.3);
     if (_data.videoData.isLoop) {
       state = AsyncData(
         _data.copyWith(
@@ -186,10 +186,10 @@ class Player extends _$Player {
       _markSentence(playingSentenceIndex);
       //handle scroll
       if (_isDraggingVideoSlider) {
-        _scrollController._jumpTo(playingSentenceIndex);
+        _scrollController._jumpTo(playingSentenceIndex, alignment: 0.3);
       } else if (!_videoData.isLoop) {
         //playing auto scroll to next sentence, not for loop mode
-        _scrollController._scrollTo(playingSentenceIndex);
+        _scrollController._scrollTo(playingSentenceIndex, alignment: 0.3);
       }
     }
     //handle loop seek to begin
