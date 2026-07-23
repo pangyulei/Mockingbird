@@ -164,8 +164,6 @@ class PlayerUI extends ConsumerWidget {
   ) {
     final String mediaPath = videoController.dataSource;
     final mediaType = MediaType.fromPath(mediaPath);
-    // final aspectRatio = mediaType == .video ? videoController.value.aspectRatio:
-    final aspectRatio = mediaType == .video ? 16 / 9.0 : 16 / 3.0;
     if (mediaType == .video) {
       return _videoDisplayer(ctx, ref, videoController);
     } else {
@@ -189,7 +187,7 @@ class PlayerUI extends ConsumerWidget {
           ),
           _gradientDisplayerOverlay(),
           Row(
-            mainAxisAlignment: .start,
+            mainAxisAlignment: .center,
             crossAxisAlignment: .end,
             children: [
               Expanded(
@@ -197,13 +195,20 @@ class PlayerUI extends ConsumerWidget {
                   mainAxisAlignment: .end,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.only(
+                        left: 32,
+                        right: 16,
+                        bottom: 16,
+                      ),
                       child: _progressSlider(ctx, videoController),
                     ),
                   ],
                 ),
               ),
-              _verticalVolumeWidgets(ref),
+              Padding(
+                padding: const EdgeInsets.only(top: 32, right: 16),
+                child: _verticalVolumeWidgets(ref),
+              ),
             ],
           ),
         ],
@@ -216,25 +221,29 @@ class PlayerUI extends ConsumerWidget {
     WidgetRef ref,
     VideoPlayerController videoController,
   ) {
-    return Stack(
-      children: [
-        SizedBox(height: 100, child: VideoPlayer(videoController)),
-        _gradientDisplayerOverlay(),
-        Column(
-          mainAxisAlignment: .center,
-          crossAxisAlignment: .center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: _horizontalVolumeWidgets(ref),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 4.0, right: 8),
-              child: _progressSlider(ctx, videoController),
-            ),
-          ],
-        ),
-      ],
+    return SizedBox(
+      height: 100,
+      child: Stack(
+        children: [
+          VideoPlayer(videoController),
+          _gradientDisplayerOverlay(),
+          Column(
+            mainAxisSize: .max,
+            mainAxisAlignment: .start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 32.0),
+                child: _horizontalVolumeWidgets(ref),
+              ),
+              const Spacer(),
+              Padding(
+                padding: const EdgeInsets.only(left: 32, right: 32, bottom: 16),
+                child: _progressSlider(ctx, videoController),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -448,6 +457,7 @@ class PlayerUI extends ConsumerWidget {
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: Colors.white24,
         thumbColor: Colors.white,
+        padding: EdgeInsets.zero,
       ),
       child: Consumer(
         builder: (context, ref, child) {
@@ -478,6 +488,7 @@ class PlayerUI extends ConsumerWidget {
         activeTrackColor: colorScheme.primary,
         inactiveTrackColor: Colors.white24,
         thumbColor: Colors.white,
+        padding: EdgeInsets.zero,
       ),
       child: Consumer(
         builder: (context, ref, child) {
