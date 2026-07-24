@@ -23,6 +23,15 @@
 
 ---
 
+## 🌟 Usage
+
+-   **[FFmpeg](https://github.com/ffmpeg/ffmpeg)**: If your videos are not fluent while playing in the app, transform your video into modern h264 mp4 format for better support at Android device.
+-   **[Whisper](https://github.com/openai/whisper)**: Use whisper to generate subtitle if you can't find subtitles for your media.
+-   **[LocalSend](https://localsend.org)**: Use LocalSend to send files between your PC and Phone.
+-   **Mockingbird**: Create your album, import your video/audio and subtitle into it, if your subtitle's file name matches your video/audio's name, it will auto related, **peppa.pig.s01e01.eng.srt** will match **peppa.pig.s01e01.mp4** because the subtitle name contains the media name.
+
+------
+
 ## 📩 Contact
 
 Developed with ❤️ by **pangyulei**.
