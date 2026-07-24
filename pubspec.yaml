@@ -28,6 +28,7 @@ dependencies:
   riverpod_annotation: ^4.0.2
   synchronized: ^3.4.1
   flutter_easyloading: ^3.0.5
+  package_info_plus: ^9.0.1
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_test:
