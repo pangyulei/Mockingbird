@@ -8,6 +8,7 @@ import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
+import 'package:mockingbird/tab_player/player/player_video.dart';
 import 'package:mockingbird/tab_player/player/player_video_provider.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -23,7 +24,7 @@ class Player extends _$Player {
   int? _prevPlayingSentenceIndex;
   bool _isDraggingVideoSlider = false;
   PlayerData get _data => state.requireValue as PlayerData;
-  PlayerVideo get _videoData => _data.videoData;
+  PlayerVideo get _videoData => _data.video;
   ItemScrollController get _scrollController => _videoData.scrollController;
   VideoPlayerController get _videoController => _videoData.videoController;
 
@@ -44,7 +45,7 @@ class Player extends _$Player {
     final String mediaName =
         await ref.watch(dbPlayingMediaProvider.selectAsync((st) => st?.name)) ??
         '';
-    return PlayerData(title: mediaName, videoData: videoData);
+    return PlayerData(title: mediaName, video: videoData);
   }
 
   void tapSentence(int? sentenceId) async {
@@ -54,16 +55,16 @@ class Player extends _$Player {
     final sentence = _sentenceList[sentenceIndex];
 
     _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
-    if (_data.videoData.isLoop) {
+    if (_data.video.isLoop) {
       state = AsyncData(
         _data.copyWith(
-          videoData: _data.videoData.copyWith(loopIndex: () => sentenceIndex),
+          video: _data.video.copyWith(loopIndex: () => sentenceIndex),
         ),
       );
     }
     await _videoController.seekTo(sentence.start);
     state = AsyncData(
-      _data.copyWith(videoData: _data.videoData.copyWith(isPlaying: true)),
+      _data.copyWith(video: _data.video.copyWith(isPlaying: true)),
     );
     await _videoController.play();
   }
@@ -90,7 +91,7 @@ class Player extends _$Player {
       _kMaxPlaySpeed,
     );
     state = AsyncData(
-      _data.copyWith(videoData: _videoData.copyWith(speed: nextSpeed)),
+      _data.copyWith(video: _videoData.copyWith(speed: nextSpeed)),
     );
     await _videoController.setPlaybackSpeed(nextSpeed);
   }
@@ -102,7 +103,7 @@ class Player extends _$Player {
       _kMaxPlaySpeed,
     );
     state = AsyncData(
-      _data.copyWith(videoData: _videoData.copyWith(speed: nextSpeed)),
+      _data.copyWith(video: _videoData.copyWith(speed: nextSpeed)),
     );
     await _videoController.setPlaybackSpeed(nextSpeed);
   }
@@ -110,21 +111,21 @@ class Player extends _$Player {
   Future<void> resetSpeed() async {
     final nextSpeed = (1.0).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
     state = AsyncData(
-      _data.copyWith(videoData: _videoData.copyWith(speed: nextSpeed)),
+      _data.copyWith(video: _videoData.copyWith(speed: nextSpeed)),
     );
     await _videoController.setPlaybackSpeed(nextSpeed);
   }
 
   Future<void> play() async {
     state = AsyncData(
-      _data.copyWith(videoData: _videoData.copyWith(isPlaying: true)),
+      _data.copyWith(video: _videoData.copyWith(isPlaying: true)),
     );
     await _videoController.play();
   }
 
   Future<void> pause() async {
     state = AsyncData(
-      _data.copyWith(videoData: _videoData.copyWith(isPlaying: false)),
+      _data.copyWith(video: _videoData.copyWith(isPlaying: false)),
     );
     await _videoController.pause();
   }
@@ -133,7 +134,7 @@ class Player extends _$Player {
     if (_videoData.isLoop) {
       //unloop
       state = AsyncData(
-        _data.copyWith(videoData: _videoData.copyWith(loopIndex: () => null)),
+        _data.copyWith(video: _videoData.copyWith(loopIndex: () => null)),
       );
     } else {
       //loop
@@ -143,7 +144,7 @@ class Player extends _$Player {
       );
       state = AsyncData(
         _data.copyWith(
-          videoData: _videoData.copyWith(loopIndex: () => playingSentenceIndex),
+          video: _videoData.copyWith(loopIndex: () => playingSentenceIndex),
         ),
       );
     }
@@ -156,14 +157,14 @@ class Player extends _$Player {
     //for video slider moving along with playing
     state = AsyncData(
       _data.copyWith(
-        videoData: _videoData.copyWith(positionMicro: position.inMicroseconds),
+        video: _videoData.copyWith(positionMicro: position.inMicroseconds),
       ),
     );
     final duration = videoController.value.duration;
     if (position >= duration && _videoData.isPlaying) {
       //if video end of duration, play/pause button should update
       state = AsyncData(
-        _data.copyWith(videoData: _videoData.copyWith(isPlaying: false)),
+        _data.copyWith(video: _videoData.copyWith(isPlaying: false)),
       );
     }
     //prevent videoController.play() but _state not setuped fully.
@@ -207,7 +208,7 @@ class Player extends _$Player {
     debugPrint('mark: ${_sentenceList[index]}');
     state = AsyncData(
       _data.copyWith(
-        videoData: _videoData.copyWith(
+        video: _videoData.copyWith(
           playingSentenceId: () => _sentenceList[index].id,
         ),
       ),
@@ -234,7 +235,7 @@ class Player extends _$Player {
       final playingSentenceIndex = _sentenceIndexByPosition(position);
       state = AsyncData(
         _data.copyWith(
-          videoData: _videoData.copyWith(loopIndex: () => playingSentenceIndex),
+          video: _videoData.copyWith(loopIndex: () => playingSentenceIndex),
         ),
       );
     }
@@ -244,7 +245,7 @@ class Player extends _$Player {
     _isDraggingVideoSlider = true;
     debugPrint('slider: start');
     state = AsyncData(
-      _data.copyWith(videoData: _videoData.copyWith(isPlaying: false)),
+      _data.copyWith(video: _videoData.copyWith(isPlaying: false)),
     );
     await _videoController.pause();
     await _syncVideoWithSlider(Duration(microseconds: valMicro.toInt()));
@@ -277,7 +278,7 @@ class Player extends _$Player {
         if (seekTo < duration) {
           debugPrint('slider: play');
           state = AsyncData(
-            _data.copyWith(videoData: _videoData.copyWith(isPlaying: true)),
+            _data.copyWith(video: _videoData.copyWith(isPlaying: true)),
           );
           await _videoController.play();
         }
@@ -287,7 +288,7 @@ class Player extends _$Player {
 
   Future<void> updateVolume(double newVolume) async {
     state = AsyncData(
-      _data.copyWith(videoData: _videoData.copyWith(volume: newVolume)),
+      _data.copyWith(video: _videoData.copyWith(volume: newVolume)),
     );
     await _videoController.setVolume(newVolume);
   }
@@ -295,9 +296,7 @@ class Player extends _$Player {
   void toggleVolume() {
     final visible = _videoData.showVolumeSlider;
     state = AsyncData(
-      _data.copyWith(
-        videoData: _videoData.copyWith(showVolumeSlider: !visible),
-      ),
+      _data.copyWith(video: _videoData.copyWith(showVolumeSlider: !visible)),
     );
   }
 

@@ -34,7 +34,7 @@ class SentenceCard extends _$SentenceCard {
       playerProvider.select((st) {
         final data = st.value;
         if (data is! PlayerData) return null;
-        return data.videoData.playingSentenceId;
+        return data.video.playingSentenceId;
       }),
     );
 

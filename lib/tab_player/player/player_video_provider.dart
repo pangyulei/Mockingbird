@@ -6,13 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
-import 'package:mockingbird/tab_player/player/player_state.dart';
+import 'package:mockingbird/tab_player/player/player_video.dart';
 import 'package:mockingbird/tool/extensions.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-part 'player_video_provider.g.dart';
 
 final playerVideoProvider = AsyncNotifierProvider.autoDispose(
   PlayerVideoNotifier.new,
@@ -60,8 +58,11 @@ class PlayerVideoNotifier extends AsyncNotifier<PlayerVideo?> {
   }
 }
 
-@riverpod
-class PlayerVideoController extends _$PlayerVideoController {
+final playerVideoControllerProvider = AsyncNotifierProvider(
+  PlayerVideoController.new,
+);
+
+class PlayerVideoController extends AsyncNotifier<VideoPlayerController?> {
   @override
   Future<VideoPlayerController?> build() async {
     // final String? path = (await ref.watch(dbPlayingMediaProvider.future))?.path;

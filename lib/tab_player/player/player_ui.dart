@@ -129,7 +129,7 @@ class PlayerUI extends ConsumerWidget {
       builder: (ctx, ref, child) {
         final videoController = ref.watch(
           playerProvider.select(
-            (st) => (st.value as PlayerData).videoData.videoController,
+            (st) => (st.value as PlayerData).video.videoController,
           ),
         );
         videoController.addListener(
@@ -195,10 +195,7 @@ class PlayerUI extends ConsumerWidget {
                   mainAxisAlignment: .end,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.only(
-                        left: 16,
-                        bottom: 8,
-                      ),
+                      padding: const EdgeInsets.only(left: 16, bottom: 8),
                       child: _progressSlider(ctx, videoController),
                     ),
                   ],
@@ -274,7 +271,7 @@ class PlayerUI extends ConsumerWidget {
           builder: (ctx, ref, child) {
             final (sentenceIdList, scrollController) = ref.watch(
               playerProvider
-                  .select((st) => (st.value as PlayerData).videoData)
+                  .select((st) => (st.value as PlayerData).video)
                   .select(
                     (videoData) =>
                         (videoData.sentenceIdList, videoData.scrollController),
@@ -337,7 +334,7 @@ class PlayerUI extends ConsumerWidget {
       builder: (context, ref, child) {
         final sentenceCount = ref.watch(
           playerProvider.select(
-            (st) => (st.value as PlayerData).videoData.sentenceIdList.length,
+            (st) => (st.value as PlayerData).video.sentenceIdList.length,
           ),
         );
         if (sentenceCount == 0) {
@@ -383,7 +380,7 @@ class PlayerUI extends ConsumerWidget {
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
               playerProvider.select(
-                (st) => (st.value as PlayerData).videoData.showVolumeSlider,
+                (st) => (st.value as PlayerData).video.showVolumeSlider,
               ),
             );
             if (showVolumeSlider) {
@@ -407,7 +404,7 @@ class PlayerUI extends ConsumerWidget {
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
               playerProvider.select(
-                (st) => (st.value as PlayerData).videoData.showVolumeSlider,
+                (st) => (st.value as PlayerData).video.showVolumeSlider,
               ),
             );
             if (showVolumeSlider) {
@@ -428,7 +425,7 @@ class PlayerUI extends ConsumerWidget {
         builder: (context, ref, child) {
           final volume = ref.watch(
             playerProvider.select(
-              (st) => (st.value as PlayerData).videoData.volume,
+              (st) => (st.value as PlayerData).video.volume,
             ),
           );
           final icon = volume == 0
@@ -463,7 +460,7 @@ class PlayerUI extends ConsumerWidget {
         builder: (context, ref, child) {
           final volume = ref.watch(
             playerProvider.select(
-              (st) => (st.value as PlayerData).videoData.volume,
+              (st) => (st.value as PlayerData).video.volume,
             ),
           );
           return Slider(
@@ -495,8 +492,7 @@ class PlayerUI extends ConsumerWidget {
         builder: (context, ref, child) {
           final position = ref.watch(
             playerProvider.select(
-              (st) =>
-                  (st.value as PlayerData).videoData.positionMicro.toDouble(),
+              (st) => (st.value as PlayerData).video.positionMicro.toDouble(),
             ),
           );
           final duration = videoController.value.duration.inMicroseconds
@@ -656,7 +652,7 @@ class PlayerUI extends ConsumerWidget {
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
           playerProvider.select(
-            (st) => (st.value as PlayerData).videoData.isPlaying,
+            (st) => (st.value as PlayerData).video.isPlaying,
           ),
         );
         return IconButton.filled(
@@ -690,14 +686,12 @@ class PlayerUI extends ConsumerWidget {
         debugPrint('playerui loopbutton build');
         final sentenceCount = ref.watch(
           playerProvider.select(
-            (st) => (st.value as PlayerData).videoData.sentenceIdList.length,
+            (st) => (st.value as PlayerData).video.sentenceIdList.length,
           ),
         );
         if (sentenceCount == 0) return const SizedBox.shrink();
         final bool isLoop = ref.watch(
-          playerProvider.select(
-            (st) => (st.value as PlayerData).videoData.isLoop,
-          ),
+          playerProvider.select((st) => (st.value as PlayerData).video.isLoop),
         );
         return IconButton(
           onPressed: () => _onToggleLoop(ref),
@@ -749,7 +743,7 @@ class PlayerUI extends ConsumerWidget {
           builder: (ctx, ref, _) {
             final speed = ref.watch(
               playerProvider.select(
-                (st) => (st.value as PlayerData).videoData.speed,
+                (st) => (st.value as PlayerData).video.speed,
               ),
             );
             return Text(
