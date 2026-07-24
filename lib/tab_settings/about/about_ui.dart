@@ -52,11 +52,8 @@ class AboutUI extends ConsumerWidget {
                 final version = ref.watch(
                   aboutProvider.select((st) => st.value?.version ?? ''),
                 );
-                final buildNumber = ref.watch(
-                  aboutProvider.select((st) => st.value?.buildNumber ?? ''),
-                );
                 return Text(
-                  'Version $version\nBuildNumber $buildNumber',
+                  'Version $version',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.outline,
                   ),

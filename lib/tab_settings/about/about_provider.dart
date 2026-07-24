@@ -12,7 +12,6 @@ class About extends _$About {
     return AboutState(
       version: packageInfo.version,
       appName: packageInfo.appName,
-      buildNumber: packageInfo.buildNumber,
     );
   }
 }

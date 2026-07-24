@@ -32,7 +32,7 @@ final class AboutProvider extends $AsyncNotifierProvider<About, AboutState> {
   About create() => About();
 }
 
-String _$aboutHash() => r'3ce703a2b984473b59a7893b750e0b1ee1c95c1e';
+String _$aboutHash() => r'9ee34271dc1fec9c63636b85e1144814776595a8';
 
 abstract class _$About extends $AsyncNotifier<AboutState> {
   FutureOr<AboutState> build();
