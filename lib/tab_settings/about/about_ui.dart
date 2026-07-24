@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/tab_settings/about/about_provider.dart';
 
-class AboutUI extends StatelessWidget {
+class AboutUI extends ConsumerWidget {
   const AboutUI({super.key});
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
 
@@ -23,20 +25,43 @@ class AboutUI extends StatelessWidget {
                 color: colorScheme.primaryContainer.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.auto_stories_rounded, size: 80, color: colorScheme.primary),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Mockingbird',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
+              child: Icon(
+                Icons.auto_stories_rounded,
+                size: 80,
+                color: colorScheme.primary,
               ),
             ),
+            const SizedBox(height: 24),
+            Consumer(
+              builder: (context, ref, child) {
+                final appName = ref.watch(
+                  aboutProvider.select((st) => st.value?.appName ?? ''),
+                );
+                return Text(
+                  appName,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 8),
-            Text(
-              'Version 0.1.0',
-              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.outline),
+            Consumer(
+              builder: (context, ref, child) {
+                final version = ref.watch(
+                  aboutProvider.select((st) => st.value?.version ?? ''),
+                );
+                final buildNumber = ref.watch(
+                  aboutProvider.select((st) => st.value?.buildNumber ?? ''),
+                );
+                return Text(
+                  'Version $version\nBuildNumber $buildNumber',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.outline,
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 32),
             Text(
@@ -68,9 +93,19 @@ class AboutUI extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        _contactItem(ctx, icon: Icons.email_outlined, label: 'Gmail', value: 'pangyulei@gmail.com'),
+        _contactItem(
+          ctx,
+          icon: Icons.email_outlined,
+          label: 'Gmail',
+          value: 'pangyulei@gmail.com',
+        ),
         const SizedBox(height: 12),
-        _contactItem(ctx, icon: Icons.chat_bubble_outline, label: 'QQ', value: '739912379'),
+        _contactItem(
+          ctx,
+          icon: Icons.chat_bubble_outline,
+          label: 'QQ频道',
+          value: 'm0ckingbird',
+        ),
       ],
     );
   }
@@ -114,11 +149,15 @@ class AboutUI extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: Theme.of(ctx).textTheme.labelSmall?.copyWith(color: colorScheme.outline),
+                  style: Theme.of(
+                    ctx,
+                  ).textTheme.labelSmall?.copyWith(color: colorScheme.outline),
                 ),
                 Text(
                   value,
-                  style: Theme.of(ctx).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: Theme.of(
+                    ctx,
+                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],
             ),

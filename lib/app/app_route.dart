@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
-import 'package:mockingbird/tab_settings/about_ui.dart';
+import 'package:mockingbird/tab_settings/about/about_ui.dart';
 
 import '../tab_settings/settings_ui.dart';
 
