@@ -11,11 +11,11 @@ class PlayerNull extends PlayerState {
 
 class PlayerData extends PlayerState {
   final String title;
-  final PlayerVideoData videoData;
+  final PlayerVideo videoData;
 
   const PlayerData({required this.videoData, required this.title});
 
-  PlayerData copyWith({String? title, PlayerVideoData? videoData}) {
+  PlayerData copyWith({String? title, PlayerVideo? videoData}) {
     return PlayerData(
       title: title ?? this.title,
       videoData: videoData ?? this.videoData,
@@ -23,7 +23,7 @@ class PlayerData extends PlayerState {
   }
 }
 
-class PlayerVideoData {
+class PlayerVideo {
   final List<int> sentenceIdList;
   final bool showVolumeSlider;
   final VideoPlayerController videoController;
@@ -35,7 +35,7 @@ class PlayerVideoData {
   final ItemScrollController scrollController;
   final int? playingSentenceId;
 
-  const PlayerVideoData({
+  const PlayerVideo({
     required this.sentenceIdList,
     required this.playingSentenceId,
     required this.scrollController,
@@ -50,7 +50,7 @@ class PlayerVideoData {
 
   bool get isLoop => loopIndex != null;
 
-  PlayerVideoData copyWith({
+  PlayerVideo copyWith({
     int? positionMicro,
     int? Function()? loopIndex,
     int? Function()? playingSentenceId,
@@ -60,7 +60,7 @@ class PlayerVideoData {
     bool? showVolumeSlider,
     List<int>? sentenceIdList,
   }) {
-    return PlayerVideoData(
+    return PlayerVideo(
       sentenceIdList: sentenceIdList ?? this.sentenceIdList,
       loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       positionMicro: positionMicro ?? this.positionMicro,

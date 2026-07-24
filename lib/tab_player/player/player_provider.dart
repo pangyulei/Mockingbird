@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:defer/defer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -7,11 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
-import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
-import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
+import 'package:mockingbird/tab_player/player/player_video_provider.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -26,7 +23,7 @@ class Player extends _$Player {
   int? _prevPlayingSentenceIndex;
   bool _isDraggingVideoSlider = false;
   PlayerData get _data => state.requireValue as PlayerData;
-  PlayerVideoData get _videoData => _data.videoData;
+  PlayerVideo get _videoData => _data.videoData;
   ItemScrollController get _scrollController => _videoData.scrollController;
   VideoPlayerController get _videoController => _videoData.videoController;
 
@@ -40,9 +37,7 @@ class Player extends _$Player {
 
   @override
   Future<PlayerState> build() async {
-    final PlayerVideoData? videoData = await ref.watch(
-      playerVideoDataProvider.future,
-    );
+    final PlayerVideo? videoData = await ref.watch(playerVideoProvider.future);
     if (videoData == null) {
       return const PlayerNull();
     }
@@ -58,7 +53,7 @@ class Player extends _$Player {
     )!;
     final sentence = _sentenceList[sentenceIndex];
 
-    _scrollController._scrollTo(sentenceIndex, alignment: 0.3);
+    _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
     if (_data.videoData.isLoop) {
       state = AsyncData(
         _data.copyWith(
@@ -74,18 +69,18 @@ class Player extends _$Player {
   }
 
   void scrollToTop() {
-    _scrollController._scrollTo(0);
+    _scrollController.safeScrollTo(0);
   }
 
   void scrollToPlayingSentence() {
     final positionMicro = _videoData.positionMicro;
     Duration position = Duration(microseconds: positionMicro);
     final playingSentenceIndex = _sentenceIndexByPosition(position);
-    _scrollController._scrollTo(playingSentenceIndex);
+    _scrollController.safeScrollTo(playingSentenceIndex);
   }
 
   void scrollToBottom() {
-    _scrollController._scrollTo(_sentenceList.length - 1);
+    _scrollController.safeScrollTo(_sentenceList.length - 1);
   }
 
   Future<void> decSpeed() async {
@@ -189,10 +184,10 @@ class Player extends _$Player {
       _markSentence(playingSentenceIndex);
       //handle scroll
       if (_isDraggingVideoSlider) {
-        _scrollController._jumpTo(playingSentenceIndex, alignment: 0.3);
+        _scrollController.safeJumpTo(playingSentenceIndex, alignment: 0.3);
       } else if (!_videoData.isLoop) {
         //playing auto scroll to next sentence, not for loop mode
-        _scrollController._scrollTo(playingSentenceIndex, alignment: 0.3);
+        _scrollController.safeScrollTo(playingSentenceIndex, alignment: 0.3);
       }
     }
     //handle loop seek to begin
@@ -341,74 +336,6 @@ class Player extends _$Player {
   }
 }
 
-//seperate with videocontroller provider, so if you update media's name or its subtitle,
-//the videocontroller wont rebuild
-final playerVideoDataProvider = AsyncNotifierProvider.autoDispose(
-  PlayerVideoDataNotifier.new,
-);
-
-class PlayerVideoDataNotifier extends AsyncNotifier<PlayerVideoData?> {
-  final _scrollController = ItemScrollController();
-  @override
-  Future<PlayerVideoData?> build() async {
-    //because of this is read and have to await, this has to be a AsyncNotifier
-    final VideoPlayerController? videoController = await ref.watch(
-      playerVideoControllerProvider.future,
-    );
-    if (videoController == null) return null;
-    final EnSubtitle? subtitle = await ref.watch(
-      dbPlayingMediaProvider.selectAsync((st) => st?.subtitleList.firstOrNull),
-    );
-    final isLoop = await ref.read(
-      dbPrefProvider.selectAsync((pref) => pref.isLoop),
-    );
-    final int? loopingIndex;
-    final sentenceList = subtitle?.sentenceList;
-    if (isLoop) {
-      //maybe no subtitle, try to set first sentence as loopIndex
-      loopingIndex = (sentenceList == null || sentenceList.isEmpty) ? null : 0;
-    } else {
-      loopingIndex = null;
-    }
-    final playingSentenceId = (sentenceList == null || sentenceList.isEmpty)
-        ? null
-        : sentenceList.first.id;
-    _scrollController._jumpTo(0);
-    return PlayerVideoData(
-      sentenceIdList: sentenceList?.map((sen) => sen.id).toList() ?? [],
-      scrollController: _scrollController,
-      playingSentenceId: playingSentenceId,
-      positionMicro: 0,
-      showVolumeSlider: false,
-      videoController: videoController,
-      isPlaying: true,
-      speed: 1,
-      volume: 1,
-      loopIndex: loopingIndex,
-    );
-  }
-}
-
-@riverpod
-class PlayerVideoController extends _$PlayerVideoController {
-  @override
-  Future<VideoPlayerController?> build() async {
-    // final String? path = (await ref.watch(dbPlayingMediaProvider.future))?.path;
-    final String? path = await ref.watch(
-      dbPlayingMediaProvider.selectAsync((st) => st?.path),
-    );
-    if (path == null || path.isEmpty) return null;
-    final videoController = VideoPlayerController.file(File(path));
-    ref.onDispose(() {
-      videoController.dispose();
-    });
-    //its neccessary to await initialize, otherwise aspectratio etc will wrong
-    await videoController.initialize();
-    await videoController.play();
-    return videoController;
-  }
-}
-
 const double _kMaxPlaySpeed = 3.0;
 const double _kMinPlaySpeed = 0.25;
 const double _kStepPlaySpeed = 0.25;
@@ -427,30 +354,6 @@ extension on EnSentence {
       return start <= position && position <= duration;
     } else {
       return start <= position && position < next.start;
-    }
-  }
-}
-
-extension on ItemScrollController {
-  void _jumpTo(int? index, {double alignment = 0}) {
-    if (isAttached && index != null) {
-      jumpTo(index: index, alignment: alignment);
-    } else {
-      debugPrint('${identityHashCode(this)} jump fail, scroll is not attached');
-    }
-  }
-
-  void _scrollTo(
-    int? index, {
-    double alignment = 0,
-    Duration duration = const Duration(milliseconds: 250),
-  }) {
-    if (isAttached && index != null) {
-      scrollTo(index: index, duration: duration, alignment: alignment);
-    } else {
-      debugPrint(
-        '${identityHashCode(this)} scroll fail, scroll is not attached',
-      );
     }
   }
 }

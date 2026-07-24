@@ -32,7 +32,7 @@ final class PlayerProvider extends $AsyncNotifierProvider<Player, PlayerState> {
   Player create() => Player();
 }
 
-String _$playerHash() => r'03239e7b94c5f17525e4f1f31db29f22d9d9b74c';
+String _$playerHash() => r'4e69fb1d5ba7ad8927be3fee4d41f9c03b438498';
 
 abstract class _$Player extends $AsyncNotifier<PlayerState> {
   FutureOr<PlayerState> build();
@@ -45,58 +45,6 @@ abstract class _$Player extends $AsyncNotifier<PlayerState> {
             as $ClassProviderElement<
               AnyNotifier<AsyncValue<PlayerState>, PlayerState>,
               AsyncValue<PlayerState>,
-              Object?,
-              Object?
-            >;
-    element.handleCreate(ref, build);
-  }
-}
-
-@ProviderFor(PlayerVideoController)
-final playerVideoControllerProvider = PlayerVideoControllerProvider._();
-
-final class PlayerVideoControllerProvider
-    extends
-        $AsyncNotifierProvider<PlayerVideoController, VideoPlayerController?> {
-  PlayerVideoControllerProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'playerVideoControllerProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$playerVideoControllerHash();
-
-  @$internal
-  @override
-  PlayerVideoController create() => PlayerVideoController();
-}
-
-String _$playerVideoControllerHash() =>
-    r'fe9afbbd5a2f21d237fb4544db86a035ff8a9d64';
-
-abstract class _$PlayerVideoController
-    extends $AsyncNotifier<VideoPlayerController?> {
-  FutureOr<VideoPlayerController?> build();
-  @$mustCallSuper
-  @override
-  void runBuild() {
-    final ref =
-        this.ref
-            as $Ref<AsyncValue<VideoPlayerController?>, VideoPlayerController?>;
-    final element =
-        ref.element
-            as $ClassProviderElement<
-              AnyNotifier<
-                AsyncValue<VideoPlayerController?>,
-                VideoPlayerController?
-              >,
-              AsyncValue<VideoPlayerController?>,
               Object?,
               Object?
             >;
