@@ -59,6 +59,8 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     );
   }
 
+  int? get playingSentenceIndex => _playingSentenceIndex;
+
   EnSentence? get loopSentence {
     final loopIndex = state.loopIndex;
     if (loopIndex == null) return null;
@@ -80,7 +82,7 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
   void scrollToPlayingSentence() {
     _scrollController.safeScrollTo(_playingSentenceIndex, alignment: 0.3);
   }
-  
+
   void jumpToPlayingSentence() {
     _scrollController.safeJumpTo(_playingSentenceIndex, alignment: 0.3);
   }
@@ -93,13 +95,9 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     if (sentenceIndex == null) return;
     final sentence = _sentenceList[sentenceIndex];
     await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
-    ref
-        .read(playerSubtitleProvider.notifier)
-        .scrollToPlayingSentence();
+    ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
     await ref.read(playerMediaProvider.notifier).play();
   }
-
-
 
   Future<void> addSubtitle() async {
     final media = ref.read(dbPlayingMediaProvider).value;
@@ -125,8 +123,8 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
       final subtitlePath = pickedFiles?.files
           .firstWhereOrNull(
             (f) =>
-            kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
-      )
+                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+          )
           ?.path;
       return subtitlePath;
     } catch (e) {
@@ -134,7 +132,6 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
       return null;
     }
   }
-  
 
   int? _sentenceIndexByPosition(
     Duration position,
@@ -150,8 +147,6 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     }
     return null;
   }
-
-  
 }
 
 extension on EnSentence {

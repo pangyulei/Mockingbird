@@ -3,6 +3,7 @@
 
 import 'package:defer/defer.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
@@ -16,6 +17,7 @@ final playerMediaProvider = AsyncNotifierProvider.autoDispose(
 
 class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
   bool _isDraggingVideoSlider = false;
+  int? _prevPlayingSentenceIndex;
 
   @override
   Future<PlayerMediaState> build() async {
@@ -84,6 +86,11 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     data = data.copyWith(positionMicro: position.inMicroseconds);
     state = AsyncData(data);
 
+    final int? playingSentenceIndex = ref
+        .read(playerSubtitleProvider.notifier)
+        .playingSentenceIndex;
+    final bool isSentenceChanged = playingSentenceIndex != _prevPlayingSentenceIndex;
+
     final duration = videoController.value.duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
@@ -93,11 +100,14 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     final isLoop = ref.read(
       playerSettingProvider.select((st) => st.value?.isLoop ?? false),
     );
-    if (_isDraggingVideoSlider) {
-      ref.read(playerSubtitleProvider.notifier).jumpToPlayingSentence();
-    } else if (!isLoop) {
-      //playing auto scroll to next sentence, not for loop mode
-      ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
+    //handle scroll
+    if (isSentenceChanged) {
+      if (_isDraggingVideoSlider) {
+        ref.read(playerSubtitleProvider.notifier).jumpToPlayingSentence();
+      } else if (!isLoop) {
+        //playing auto scroll to next sentence, not for loop mode
+        ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
+      }
     }
     //handle loop seek to begin
     final loopSentence = ref.read(playerSubtitleProvider.notifier).loopSentence;
@@ -109,6 +119,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
         await videoController.seekTo(loopSentence.start);
       }
     }
+    _prevPlayingSentenceIndex = playingSentenceIndex;
   }
 
   Future<void> videoSliderStartChanged(double valMicro) async {
