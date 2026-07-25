@@ -24,7 +24,9 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
       playerVideoControllerProvider.future,
     );
     if (videoController == null) return const PlayerMediaNull();
-
+    final setting = await ref.read(playerSettingProvider.future);
+    await videoController.setPlaybackSpeed(setting.speed);
+    await videoController.setVolume(setting.volume);
     return PlayerMediaData(
       positionMicro: 0,
       videoController: videoController,
@@ -73,8 +75,8 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
   }
 
   Future<void> videoPositionChanged(
-      VideoPlayerController videoController,
-      ) async {
+    VideoPlayerController videoController,
+  ) async {
     final position = videoController.value.position;
     //for video slider moving along with playing
     var data = state.value;
@@ -88,7 +90,9 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
       await pause();
     }
     //prevent videoController.play() but _state not setuped fully.
-    final isLoop = ref.read(playerSettingProvider.select((st)=>st.value?.isLoop ?? false));
+    final isLoop = ref.read(
+      playerSettingProvider.select((st) => st.value?.isLoop ?? false),
+    );
     if (_isDraggingVideoSlider) {
       ref.read(playerSubtitleProvider.notifier).jumpToPlayingSentence();
     } else if (!isLoop) {
@@ -122,15 +126,19 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
 
   Future<void> videoSliderEndChanged(double valMicro) async {
     await defer(
-          () async {
+      () async {
         _isDraggingVideoSlider = false;
         debugPrint('slider: end');
       },
-          () async {
+      () async {
         final position = Duration(microseconds: valMicro.toInt());
         //seek to sentence start
-        final loopSentence = ref.read(playerSubtitleProvider.notifier).loopSentence;
-        final Duration seekToPosition = loopSentence == null ? position : loopSentence.start;
+        final loopSentence = ref
+            .read(playerSubtitleProvider.notifier)
+            .loopSentence;
+        final Duration seekToPosition = loopSentence == null
+            ? position
+            : loopSentence.start;
         await seekTo(seekToPosition);
 
         final duration = this.duration;
