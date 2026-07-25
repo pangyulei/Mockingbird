@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
-import 'package:mockingbird/tab_player/player/player_state.dart';
-import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
-import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_state.dart';
+import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
+import '../player/providers/player_subtitle_provider.dart';
 
 part 'sentence_card_provider.g.dart';
 
@@ -31,11 +31,7 @@ class SentenceCard extends _$SentenceCard {
     if (sentence == null) return const SentenceCardState.empty();
 
     final int? playingSentenceId = ref.watch(
-      playerProvider.select((st) {
-        final data = st.value;
-        if (data is! PlayerData) return null;
-        return data.video.playingSentenceId;
-      }),
+      playerSubtitleProvider.select((st) => st.playingSentenceId),
     );
 
     String formatDuration(Duration d) {

@@ -7,31 +7,32 @@ import 'package:mockingbird/tab_player/player/providers/player_name_provider.dar
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_video.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../app/app_route.dart';
 import '../../tool/extensions.dart';
+import '../sentence_card/sentence_card_ui.dart';
 
 class PlayerUI extends ConsumerWidget {
   const PlayerUI({super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    showLoading(ref.read(playerProvider.select((st) => st.isLoading)));
-    ref.listen(
-      playerProvider.select((st) => st.isLoading),
-      (previous, next) => showLoading(next),
-    );
+    // showLoading(ref.read(playerProvider.select((st) => st.isLoading)));
+    // ref.listen(
+    //   playerProvider.select((st) => st.isLoading),
+    //   (previous, next) => showLoading(next),
+    // );
     debugPrint('playerui build');
     final stateType = ref.watch(
-      playerProvider.select((st) => st.value?.runtimeType),
+      playerMediaProvider.select((st) => st.value?.runtimeType),
     );
     switch (stateType) {
-      case PlayerNull:
+      case PlayerMediaNull:
         return _empty(ctx);
-      case PlayerData:
+      case PlayerMediaData:
         return _page(ctx);
       default:
         debugPrint('playerui no such state $stateType');
@@ -40,7 +41,7 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onAddSubtitle(WidgetRef ref) async {
-    await ref.read(playerProvider.notifier).addSubtitle();
+    await ref.read(playerSubtitleProvider.notifier).addSubtitle();
   }
 
   void _onToggleLoop(WidgetRef ref) {
@@ -131,10 +132,9 @@ class PlayerUI extends ConsumerWidget {
       builder: (ctx, ref, child) {
         final videoController = ref.watch(
           playerMediaProvider.select(
-            (st) => st.value?.videoController,
+            (st) => (st.value as PlayerMediaData).videoController,
           ),
         );
-        if (videoController == null) return const SizedBox.shrink();
         videoController.addListener(
           () => _onVideoPositionChanged(ref, videoController),
         );
@@ -274,11 +274,11 @@ class PlayerUI extends ConsumerWidget {
           builder: (ctx, ref, child) {
             final sentenceIdList = ref.watch(
               playerSubtitleProvider.select(
-                (st) => st.value?.sentenceIdList ?? [],
+                (st) => st.sentenceIdList,
               ),
             );
             final scrollController = ref.watch(
-              playerSubtitleProvider.select((st) => st.value?.scrollController),
+              playerSubtitleProvider.select((st) => st.scrollController),
             );
             if (sentenceIdList.isEmpty || scrollController == null) {
               return _noSubtitle(ctx, ref);
@@ -337,7 +337,7 @@ class PlayerUI extends ConsumerWidget {
       builder: (context, ref, child) {
         final sentenceIsEmpty = ref.watch(
           playerSubtitleProvider.select(
-            (st) => st.value?.sentenceIdList.isEmpty ?? true,
+            (st) => st.sentenceIdList.isEmpty,
           ),
         );
         if (sentenceIsEmpty) {
@@ -381,9 +381,9 @@ class PlayerUI extends ConsumerWidget {
       children: [
         Consumer(
           builder: (ctx, ref, child) {
-            final showVolumeSlider = ref.watch(
-              playerProvider.select(
-                (st) => (st.value as PlayerData).video.showVolumeSlider,
+            final bool showVolumeSlider = ref.watch(
+              playerSettingProvider.select(
+                (st) => st.value?.showVolumeSlider ?? false,
               ),
             );
             if (showVolumeSlider) {
@@ -406,8 +406,8 @@ class PlayerUI extends ConsumerWidget {
         Consumer(
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
-              playerProvider.select(
-                (st) => (st.value as PlayerData).video.showVolumeSlider,
+              playerSettingProvider.select(
+                (st) => st.value?.showVolumeSlider ?? false,
               ),
             );
             if (showVolumeSlider) {
@@ -427,8 +427,8 @@ class PlayerUI extends ConsumerWidget {
       icon: Consumer(
         builder: (context, ref, child) {
           final volume = ref.watch(
-            playerProvider.select(
-              (st) => (st.value as PlayerData).video.volume,
+            playerSettingProvider.select(
+              (st) => st.value?.volume ?? 1,
             ),
           );
           final icon = volume == 0
@@ -462,8 +462,8 @@ class PlayerUI extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final volume = ref.watch(
-            playerProvider.select(
-              (st) => (st.value as PlayerData).video.volume,
+            playerSettingProvider.select(
+              (st) => st.value?.volume ?? 1,
             ),
           );
           return Slider(
@@ -494,8 +494,9 @@ class PlayerUI extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final position = ref.watch(
-            playerProvider.select(
-              (st) => (st.value as PlayerData).video.positionMicro.toDouble(),
+            playerMediaProvider.select(
+              (st) =>
+                  (st.value as PlayerMediaData).positionMicro.toDouble(),
             ),
           );
           final duration = videoController.value.duration.inMicroseconds
@@ -593,12 +594,7 @@ class PlayerUI extends ConsumerWidget {
       height: 24,
       child: Consumer(
         builder: (ctx, ref, _) {
-          final title = ref.watch(
-            playerProvider.select((st) {
-              final data = st.value;
-              return data is PlayerData ? data.title : '';
-            }),
-          );
+          final title = ref.watch(playerNameProvider);
           if (title.isEmpty) {
             return const Text('');
           } else {
@@ -654,8 +650,8 @@ class PlayerUI extends ConsumerWidget {
     return Consumer(
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
-          playerProvider.select(
-            (st) => (st.value as PlayerData).video.isPlaying,
+          playerMediaProvider.select(
+            (st) => (st.value as PlayerMediaData).isPlaying,
           ),
         );
         return IconButton.filled(
@@ -689,12 +685,12 @@ class PlayerUI extends ConsumerWidget {
         debugPrint('playerui loopbutton build');
         final sentenceIsEmpty = ref.watch(
           playerSubtitleProvider.select(
-            (st) => st.value?.sentenceIdList.isEmpty ?? true,
+            (st) => st.sentenceIdList.isEmpty,
           ),
         );
         if (sentenceIsEmpty) return const SizedBox.shrink();
         final bool isLoop = ref.watch(
-          playerProvider.select((st) => (st.value as PlayerData).video.isLoop),
+          playerSettingProvider.select((st) => st.value?.isLoop ?? false),
         );
         return IconButton(
           onPressed: () => _onToggleLoop(ref),
@@ -745,8 +741,8 @@ class PlayerUI extends ConsumerWidget {
         child: Consumer(
           builder: (ctx, ref, _) {
             final speed = ref.watch(
-              playerProvider.select(
-                (st) => (st.value as PlayerData).video.speed,
+              playerSettingProvider.select(
+                (st) => st.value?.speed ?? 1,
               ),
             );
             return Text(
