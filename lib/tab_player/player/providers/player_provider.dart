@@ -7,34 +7,21 @@ import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
-import 'package:mockingbird/tab_player/player/player_state.dart';
-import 'package:mockingbird/tab_player/player/player_video.dart';
-import 'package:mockingbird/tab_player/player/player_video_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_video_provider.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../tool/subtitle_parser.dart';
+import '../../../tool/subtitle_parser.dart';
+import '../states/player_state.dart';
+import '../states/player_video.dart';
 
-part 'player_provider.g.dart';
 
-@riverpod
-class Player extends _$Player {
+final playerProvider = AsyncNotifierProvider.autoDispose(PlayerNotifier.new);
+class PlayerNotifier extends AsyncNotifier<PlayerState> {
   int? _prevPlayingSentenceIndex;
   bool _isDraggingVideoSlider = false;
-  PlayerData get _data => state.requireValue as PlayerData;
-  PlayerVideo get _videoData => _data.video;
-  ItemScrollController get _scrollController => _videoData.scrollController;
-  VideoPlayerController get _videoController => _videoData.videoController;
-
-  List<EnSentence> get _sentenceList =>
-      ref.read(
-        dbPlayingMediaProvider.select(
-          (st) => st.value?.subtitleList.firstOrNull?.sentenceList,
-        ),
-      ) ??
-      [];
 
   @override
   Future<PlayerState> build() async {
@@ -45,110 +32,10 @@ class Player extends _$Player {
     final String mediaName =
         await ref.watch(dbPlayingMediaProvider.selectAsync((st) => st?.name)) ??
         '';
-    return PlayerData(title: mediaName, video: videoData);
+    return PlayerData(title: mediaName);
   }
 
-  void tapSentence(int? sentenceId) async {
-    final sentenceIndex = _sentenceList.firstIndexWhereOrNull(
-      (sen) => sen.id == sentenceId,
-    )!;
-    final sentence = _sentenceList[sentenceIndex];
 
-    _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
-    if (_data.video.isLoop) {
-      state = AsyncData(
-        _data.copyWith(
-          video: _data.video.copyWith(loopIndex: () => sentenceIndex),
-        ),
-      );
-    }
-    await _videoController.seekTo(sentence.start);
-    state = AsyncData(
-      _data.copyWith(video: _data.video.copyWith(isPlaying: true)),
-    );
-    await _videoController.play();
-  }
-
-  void scrollToTop() {
-    _scrollController.safeScrollTo(0);
-  }
-
-  void scrollToPlayingSentence() {
-    final positionMicro = _videoData.positionMicro;
-    Duration position = Duration(microseconds: positionMicro);
-    final playingSentenceIndex = _sentenceIndexByPosition(position);
-    _scrollController.safeScrollTo(playingSentenceIndex);
-  }
-
-  void scrollToBottom() {
-    _scrollController.safeScrollTo(_sentenceList.length - 1);
-  }
-
-  Future<void> decSpeed() async {
-    final currSpeed = _videoData.speed;
-    final double nextSpeed = (currSpeed - _kStepPlaySpeed).clamp(
-      _kMinPlaySpeed,
-      _kMaxPlaySpeed,
-    );
-    state = AsyncData(
-      _data.copyWith(video: _videoData.copyWith(speed: nextSpeed)),
-    );
-    await _videoController.setPlaybackSpeed(nextSpeed);
-  }
-
-  Future<void> incSpeed() async {
-    final currSpeed = _videoData.speed;
-    final double nextSpeed = (currSpeed + _kStepPlaySpeed).clamp(
-      _kMinPlaySpeed,
-      _kMaxPlaySpeed,
-    );
-    state = AsyncData(
-      _data.copyWith(video: _videoData.copyWith(speed: nextSpeed)),
-    );
-    await _videoController.setPlaybackSpeed(nextSpeed);
-  }
-
-  Future<void> resetSpeed() async {
-    final nextSpeed = (1.0).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
-    state = AsyncData(
-      _data.copyWith(video: _videoData.copyWith(speed: nextSpeed)),
-    );
-    await _videoController.setPlaybackSpeed(nextSpeed);
-  }
-
-  Future<void> play() async {
-    state = AsyncData(
-      _data.copyWith(video: _videoData.copyWith(isPlaying: true)),
-    );
-    await _videoController.play();
-  }
-
-  Future<void> pause() async {
-    state = AsyncData(
-      _data.copyWith(video: _videoData.copyWith(isPlaying: false)),
-    );
-    await _videoController.pause();
-  }
-
-  void toggleLoop() {
-    if (_videoData.isLoop) {
-      //unloop
-      state = AsyncData(
-        _data.copyWith(video: _videoData.copyWith(loopIndex: () => null)),
-      );
-    } else {
-      //loop
-      final position = _videoData.positionMicro;
-      final playingSentenceIndex = _sentenceIndexByPosition(
-        Duration(microseconds: position),
-      );
-      state = AsyncData(
-        _data.copyWith(
-          video: _videoData.copyWith(loopIndex: () => playingSentenceIndex),
-        ),
-      );
-    }
-  }
 
   Future<void> videoPositionChanged(
     VideoPlayerController videoController,
@@ -202,30 +89,6 @@ class Player extends _$Player {
       }
     }
     _prevPlayingSentenceIndex = playingSentenceIndex;
-  }
-
-  void _markSentence(int index) {
-    debugPrint('mark: ${_sentenceList[index]}');
-    state = AsyncData(
-      _data.copyWith(
-        video: _videoData.copyWith(
-          playingSentenceId: () => _sentenceList[index].id,
-        ),
-      ),
-    );
-  }
-
-  int _sentenceIndexByPosition(Duration position) {
-    final duration = _videoData.videoController.value.duration;
-    for (int i = 0; i < _sentenceList.length; i++) {
-      EnSentence? prev = i == 0 ? null : _sentenceList[i - 1];
-      EnSentence? next = _sentenceList.elementAtOrNull(i + 1);
-      EnSentence sentence = _sentenceList[i];
-      if (sentence.isPlaying(prev, next, position, duration)) {
-        return i;
-      }
-    }
-    throw Exception('no sentence found');
   }
 
   Future<void> _syncVideoWithSlider(Duration position) async {
@@ -331,28 +194,6 @@ class Player extends _$Player {
     } catch (e) {
       debugPrint('Error adding subtitle: $e');
       return null;
-    }
-  }
-}
-
-const double _kMaxPlaySpeed = 3.0;
-const double _kMinPlaySpeed = 0.25;
-const double _kStepPlaySpeed = 0.25;
-
-extension on EnSentence {
-  bool isPlaying(
-    EnSentence? prev,
-    EnSentence? next,
-    Duration position,
-    Duration duration,
-  ) {
-    //刚开始的时候position=0,但是第一句话的start不一定是0
-    //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
-    final start = prev == null ? const Duration(microseconds: 0) : this.start;
-    if (next == null) {
-      return start <= position && position <= duration;
-    } else {
-      return start <= position && position < next.start;
     }
   }
 }
