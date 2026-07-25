@@ -29,13 +29,13 @@ class PlayerUI extends ConsumerWidget {
     final stateType = ref.watch(
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
+    showLoading(stateType == null);
     switch (stateType) {
       case PlayerMediaNull:
         return _empty(ctx);
       case PlayerMediaData:
         return _page(ctx);
       default:
-        debugPrint('playerui no such state $stateType');
         return Scaffold(appBar: _appBar());
     }
   }
@@ -78,7 +78,9 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerMediaProvider.notifier).videoSliderStartChanged(valMicro);
+    await ref
+        .read(playerMediaProvider.notifier)
+        .videoSliderStartChanged(valMicro);
   }
 
   void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
@@ -86,7 +88,9 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerMediaProvider.notifier).videoSliderEndChanged(valMicro);
+    await ref
+        .read(playerMediaProvider.notifier)
+        .videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
@@ -273,9 +277,7 @@ class PlayerUI extends ConsumerWidget {
         child: Consumer(
           builder: (ctx, ref, child) {
             final sentenceIdList = ref.watch(
-              playerSubtitleProvider.select(
-                (st) => st.sentenceIdList,
-              ),
+              playerSubtitleProvider.select((st) => st.sentenceIdList),
             );
             final scrollController = ref.watch(
               playerSubtitleProvider.select((st) => st.scrollController),
@@ -336,9 +338,7 @@ class PlayerUI extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         final sentenceIsEmpty = ref.watch(
-          playerSubtitleProvider.select(
-            (st) => st.sentenceIdList.isEmpty,
-          ),
+          playerSubtitleProvider.select((st) => st.sentenceIdList.isEmpty),
         );
         if (sentenceIsEmpty) {
           return const SizedBox.shrink();
@@ -427,9 +427,7 @@ class PlayerUI extends ConsumerWidget {
       icon: Consumer(
         builder: (context, ref, child) {
           final volume = ref.watch(
-            playerSettingProvider.select(
-              (st) => st.value?.volume ?? 1,
-            ),
+            playerSettingProvider.select((st) => st.value?.volume ?? 1),
           );
           final icon = volume == 0
               ? Icons.volume_off_rounded
@@ -462,9 +460,7 @@ class PlayerUI extends ConsumerWidget {
       child: Consumer(
         builder: (context, ref, child) {
           final volume = ref.watch(
-            playerSettingProvider.select(
-              (st) => st.value?.volume ?? 1,
-            ),
+            playerSettingProvider.select((st) => st.value?.volume ?? 1),
           );
           return Slider(
             value: volume,
@@ -495,8 +491,7 @@ class PlayerUI extends ConsumerWidget {
         builder: (context, ref, child) {
           final position = ref.watch(
             playerMediaProvider.select(
-              (st) =>
-                  (st.value as PlayerMediaData).positionMicro.toDouble(),
+              (st) => (st.value as PlayerMediaData).positionMicro.toDouble(),
             ),
           );
           final duration = videoController.value.duration.inMicroseconds
@@ -684,9 +679,7 @@ class PlayerUI extends ConsumerWidget {
       builder: (ctx, ref, child) {
         debugPrint('playerui loopbutton build');
         final sentenceIsEmpty = ref.watch(
-          playerSubtitleProvider.select(
-            (st) => st.sentenceIdList.isEmpty,
-          ),
+          playerSubtitleProvider.select((st) => st.sentenceIdList.isEmpty),
         );
         if (sentenceIsEmpty) return const SizedBox.shrink();
         final bool isLoop = ref.watch(
@@ -741,9 +734,7 @@ class PlayerUI extends ConsumerWidget {
         child: Consumer(
           builder: (ctx, ref, _) {
             final speed = ref.watch(
-              playerSettingProvider.select(
-                (st) => st.value?.speed ?? 1,
-              ),
+              playerSettingProvider.select((st) => st.value?.speed ?? 1),
             );
             return Text(
               '${speed}x',

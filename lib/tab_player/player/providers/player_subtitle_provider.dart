@@ -156,8 +156,6 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
 
 extension on EnSentence {
   bool isPlaying(EnSentence? prev, EnSentence? next, Duration position) {
-    //刚开始的时候position=0,但是第一句话的start不一定是0
-    //所以当position=0的时候，就不处于任何一句话的区间，这里直接做个判断就省了后面的几百句话的遍历
     final start = prev == null ? const Duration(microseconds: 0) : this.start;
     if (next == null) {
       return start <= position;
