@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_video_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_setting.dart';
 
 const double _kMaxPlaySpeed = 3.0;
@@ -34,7 +34,7 @@ class PlayerSettingNotifier extends AsyncNotifier<PlayerSetting> {
     );
     final newState = state.value?.copyWith(speed: nextSpeed);
     state = newState == null ? state : AsyncData(newState);
-    await ref.read(playerVideoProvider.notifier).setSpeed(nextSpeed);
+    await ref.read(playerMediaProvider.notifier).updateSpeed(nextSpeed);
   }
 
   Future<void> incSpeed() async {
@@ -46,16 +46,28 @@ class PlayerSettingNotifier extends AsyncNotifier<PlayerSetting> {
     );
     final newState = state.value?.copyWith(speed: nextSpeed);
     state = newState == null ? state : AsyncData(newState);
-    await ref.read(playerVideoProvider.notifier).setSpeed(nextSpeed);
+    await ref.read(playerMediaProvider.notifier).updateSpeed(nextSpeed);
   }
 
   Future<void> resetSpeed() async {
     final nextSpeed = (1.0).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
     final newData = state.value?.copyWith(speed: nextSpeed);
     state = newData == null ? state : AsyncData(newData);
-    await ref.read(playerVideoProvider.notifier).setSpeed(nextSpeed);
+    await ref.read(playerMediaProvider.notifier).updateSpeed(nextSpeed);
   }
 
+  Future<void> updateVolume(double newVolume) async {
+    final newData = state.value?.copyWith(volume: newVolume);
+    state = newData == null ? state : AsyncData(newData);
+    await ref.read(playerMediaProvider.notifier).updateVolume(newVolume);
+  }
+
+  void toggleVolume() {
+    final visible = state.value?.showVolumeSlider;
+    if (visible == null) return;
+    final newData = state.value?.copyWith(showVolumeSlider: !visible);
+    state = newData == null ? state : AsyncData(newData);
+  }
 
   void toggleLoop() {
     final isLoop = state.value?.isLoop;

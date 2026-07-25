@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
-import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_video_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
@@ -48,11 +48,11 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onPause(WidgetRef ref) async {
-    await ref.read(playerVideoProvider.notifier).pause();
+    await ref.read(playerMediaProvider.notifier).pause();
   }
 
   void _onPlay(WidgetRef ref) async {
-    await ref.read(playerVideoProvider.notifier).play();
+    await ref.read(playerMediaProvider.notifier).play();
   }
 
   void _onDecSpeed(WidgetRef ref) async {
@@ -72,20 +72,20 @@ class PlayerUI extends ConsumerWidget {
     VideoPlayerController videoController,
   ) async {
     await ref
-        .read(playerVideoProvider.notifier)
+        .read(playerMediaProvider.notifier)
         .videoPositionChanged(videoController);
   }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerVideoProvider.notifier).videoSliderStartChanged(valMicro);
+    await ref.read(playerMediaProvider.notifier).videoSliderStartChanged(valMicro);
   }
 
   void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
-    await ref.read(playerVideoProvider.notifier).videoSliderChanging(valMicro);
+    await ref.read(playerMediaProvider.notifier).videoSliderChanging(valMicro);
   }
 
   void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerVideoProvider.notifier).videoSliderEndChanged(valMicro);
+    await ref.read(playerMediaProvider.notifier).videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
@@ -101,11 +101,11 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onVolumeChanged(WidgetRef ref, double newVolume) async {
-    await ref.read(playerProvider.notifier).updateVolume(newVolume);
+    await ref.read(playerSettingProvider.notifier).updateVolume(newVolume);
   }
 
   void _onToggleVolume(WidgetRef ref) {
-    ref.read(playerProvider.notifier).toggleVolume();
+    ref.read(playerSettingProvider.notifier).toggleVolume();
   }
 
   void _onGoToAlbums(BuildContext ctx) {
@@ -130,7 +130,7 @@ class PlayerUI extends ConsumerWidget {
     return Consumer(
       builder: (ctx, ref, child) {
         final videoController = ref.watch(
-          playerVideoProvider.select(
+          playerMediaProvider.select(
             (st) => st.value?.videoController,
           ),
         );

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/sentence_card/sentence_card_provider.dart';
 
-import '../player_provider.dart';
+import '../player_name_provider.dart';
 
 class SentenceCardUI extends ConsumerWidget {
   final int? _id;

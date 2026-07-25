@@ -1,23 +1,29 @@
 
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-class PlayerVideo {
+sealed class PlayerMediaState {
+  const PlayerMediaState();
+}
+class PlayerMediaNull extends PlayerMediaState {
+  const PlayerMediaNull();
+}
+
+class PlayerMediaData extends PlayerMediaState {
   final VideoPlayerController videoController;
   final bool isPlaying;
   final int positionMicro;
 
-  const PlayerVideo({
+  const PlayerMediaData({
     required this.positionMicro,
     required this.isPlaying,
     required this.videoController,
   });
 
-  PlayerVideo copyWith({
+  PlayerMediaData copyWith({
     int? positionMicro,
     bool? isPlaying,
   }) {
-    return PlayerVideo(
+    return PlayerMediaData(
       positionMicro: positionMicro ?? this.positionMicro,
       videoController: videoController,
       isPlaying: isPlaying ?? this.isPlaying,

@@ -10,22 +10,22 @@ import 'package:mockingbird/tab_player/player/providers/player_video_controller_
 import 'package:mockingbird/tab_player/player/states/player_video.dart';
 import 'package:video_player/video_player.dart';
 
-final playerVideoProvider = AsyncNotifierProvider.autoDispose(
-  PlayerVideoNotifier.new,
+final playerMediaProvider = AsyncNotifierProvider.autoDispose(
+  PlayerMediaNotifier.new,
 );
 
-class PlayerVideoNotifier extends AsyncNotifier<PlayerVideo?> {
+class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
   bool _isDraggingVideoSlider = false;
 
   @override
-  Future<PlayerVideo?> build() async {
+  Future<PlayerMediaState> build() async {
     //because of this is read and have to await, this has to be a AsyncNotifier
     final VideoPlayerController? videoController = await ref.watch(
       playerVideoControllerProvider.future,
     );
-    if (videoController == null) return null;
+    if (videoController == null) return const PlayerMediaNull();
 
-    return PlayerVideo(
+    return PlayerMediaData(
       positionMicro: 0,
       videoController: videoController,
       isPlaying: true,
@@ -33,30 +33,54 @@ class PlayerVideoNotifier extends AsyncNotifier<PlayerVideo?> {
   }
 
   Future<void> play() async {
-    state = AsyncData(state.value?.copyWith(isPlaying: true));
-    await state.value?.videoController.play();
+    var data = state.value;
+    if (data is! PlayerMediaData) return;
+    data = data.copyWith(isPlaying: true);
+    state = AsyncData(data);
+    await data.videoController.play();
   }
+
   Future<void> pause() async {
-    state = AsyncData(state.value?.copyWith(isPlaying: false));
-    await state.value?.videoController.pause();
+    var data = state.value;
+    if (data is! PlayerMediaData) return;
+    data = data.copyWith(isPlaying: false);
+    state = AsyncData(data);
+    await data.videoController.pause();
   }
 
   Future<void> seekTo(Duration position) async {
-    await state.value?.videoController.seekTo(position);
+    var data = state.value;
+    if (data is! PlayerMediaData) return;
+    await data.videoController.seekTo(position);
   }
 
-  Future<void> setSpeed(double speed) async {
-    await state.value?.videoController.setPlaybackSpeed(speed);
+  Future<void> updateSpeed(double speed) async {
+    var data = state.value;
+    if (data is! PlayerMediaData) return;
+    await data.videoController.setPlaybackSpeed(speed);
   }
 
-  Duration? get duration => state.value?.videoController.value.duration;
+  Future<void> updateVolume(double volume) async {
+    var data = state.value;
+    if (data is! PlayerMediaData) return;
+    await data.videoController.setVolume(volume);
+  }
+
+  Duration? get duration {
+    var data = state.value;
+    if (data is! PlayerMediaData) return null;
+    return data.videoController.value.duration;
+  }
 
   Future<void> videoPositionChanged(
       VideoPlayerController videoController,
       ) async {
     final position = videoController.value.position;
     //for video slider moving along with playing
-    state = AsyncData(state.value?.copyWith(positionMicro: position.inMicroseconds));
+    var data = state.value;
+    if (data is! PlayerMediaData) return;
+    data = data.copyWith(positionMicro: position.inMicroseconds);
+    state = AsyncData(data);
 
     final duration = videoController.value.duration;
     if (position >= duration) {

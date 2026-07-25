@@ -2,8 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_video_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle.dart';
+import 'package:mockingbird/tab_player/player/states/player_video.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -20,7 +21,11 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
   @override
   PlayerSubtitle build() {
     final positionMicro = ref.watch(
-      playerVideoProvider.select((st) => st.value?.positionMicro),
+      playerMediaProvider.select((st) {
+        final data = st.value;
+        if (data is! PlayerMediaData) return null;
+        return data.positionMicro;
+      }),
     );
     if (positionMicro == null) return PlayerSubtitle.empty(_scrollController);
     final EnSubtitle? subtitle = ref.watch(
@@ -81,11 +86,11 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     );
     if (sentenceIndex == null) return;
     final sentence = _sentenceList[sentenceIndex];
-    await ref.read(playerVideoProvider.notifier).seekTo(sentence.start);
+    await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
     ref
         .read(playerSubtitleProvider.notifier)
         .scrollToPlayingSentence();
-    await ref.read(playerVideoProvider.notifier).play();
+    await ref.read(playerMediaProvider.notifier).play();
   }
 
   int? _sentenceIndexByPosition(
