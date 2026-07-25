@@ -20,7 +20,6 @@ class PlayerUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    debugPrint('playerui build');
     final stateType = ref.watch(
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
@@ -268,7 +267,6 @@ class PlayerUI extends ConsumerWidget {
             if (sentenceIdList.isEmpty) {
               return _noSubtitle(ctx, ref);
             }
-            debugPrint('subtitle sentence list build');
             return ScrollablePositionedList.builder(
               itemCount: sentenceIdList.length,
               itemScrollController: scrollController,
@@ -660,7 +658,6 @@ class PlayerUI extends ConsumerWidget {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
       builder: (ctx, ref, child) {
-        debugPrint('playerui loopbutton build');
         final sentenceIsEmpty = ref.watch(
           playerSubtitleProvider.select((st) => st.sentenceIdList.isEmpty),
         );

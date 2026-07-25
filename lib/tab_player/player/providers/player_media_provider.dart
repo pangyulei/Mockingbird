@@ -29,6 +29,9 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     final setting = await ref.read(playerSettingProvider.future);
     await videoController.setPlaybackSpeed(setting.speed);
     await videoController.setVolume(setting.volume);
+    //Fix playing media1, change to media2, it paused. because it didnt trigger listen,
+    //I dont know why but we need to force it play
+    await videoController.play();
     videoController.addListener(() => _videoPositionChanged(videoController));
     _listen();
     return PlayerMediaData(
@@ -39,6 +42,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
   }
 
   void _listen() {
+    debugPrint('listen added!');
     _listenToPlayOrPause();
     _listenToVolume();
     _listenToSpeed();
@@ -76,12 +80,15 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
         return data is PlayerMediaData ? data.isPlaying : null;
       }),
       (previous, isPlaying) async {
+        debugPrint('listen isplaying $isPlaying');
         if (isPlaying == null) return;
         final data = state.value;
         if (data is! PlayerMediaData) return;
         if (isPlaying) {
+          debugPrint('listen play');
           await data.videoController.play();
         } else {
+          debugPrint('listen pause');
           await data.videoController.pause();
         }
       },
@@ -116,9 +123,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     return data.videoController.value.duration;
   }
 
-  void _videoPositionChanged(
-    VideoPlayerController videoController,
-  ) async {
+  void _videoPositionChanged(VideoPlayerController videoController) async {
     final position = videoController.value.position;
     //for video slider moving along with playing
     var data = state.value;
