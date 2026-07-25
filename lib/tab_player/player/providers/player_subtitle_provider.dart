@@ -47,12 +47,7 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     final playingSentenceId = playingSentenceIndex == null
         ? null
         : subtitle.sentenceList[playingSentenceIndex].id;
-    final isLoop = ref.watch(
-      playerSettingProvider.select((st) => st.value?.isLoop),
-    );
-    if (isLoop == null) return PlayerSubtitle.empty(_scrollController);
     return PlayerSubtitle(
-      loopIndex: isLoop ? playingSentenceIndex : null,
       playingSentenceId: playingSentenceId,
       scrollController: _scrollController,
       sentenceIdList: subtitle.sentenceList.map((sen) => sen.id).toList(),
@@ -62,9 +57,13 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
   int? get playingSentenceIndex => _playingSentenceIndex;
 
   EnSentence? get loopSentence {
-    final loopIndex = state.loopIndex;
-    if (loopIndex == null) return null;
-    return _sentenceList[loopIndex];
+    final isLoop = ref.watch(
+      playerSettingProvider.select((st) => st.value?.isLoop),
+    );
+    if (isLoop == null) return null;
+    final playingSentenceIndex = _playingSentenceIndex;
+    if (playingSentenceIndex == null) return null;
+    return _sentenceList[playingSentenceIndex];
   }
 
   void scrollTo(int? index, {double alignment = 0}) {
