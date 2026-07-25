@@ -72,20 +72,20 @@ class PlayerUI extends ConsumerWidget {
     VideoPlayerController videoController,
   ) async {
     await ref
-        .read(playerProvider.notifier)
+        .read(playerVideoProvider.notifier)
         .videoPositionChanged(videoController);
   }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider.notifier).videoSliderStartChanged(valMicro);
+    await ref.read(playerVideoProvider.notifier).videoSliderStartChanged(valMicro);
   }
 
   void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider.notifier).videoSliderChanging(valMicro);
+    await ref.read(playerVideoProvider.notifier).videoSliderChanging(valMicro);
   }
 
   void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider.notifier).videoSliderEndChanged(valMicro);
+    await ref.read(playerVideoProvider.notifier).videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
@@ -130,10 +130,11 @@ class PlayerUI extends ConsumerWidget {
     return Consumer(
       builder: (ctx, ref, child) {
         final videoController = ref.watch(
-          playerProvider.select(
-            (st) => (st.value as PlayerData).video.videoController,
+          playerVideoProvider.select(
+            (st) => st.value?.videoController,
           ),
         );
+        if (videoController == null) return const SizedBox.shrink();
         videoController.addListener(
           () => _onVideoPositionChanged(ref, videoController),
         );
