@@ -23,6 +23,7 @@ class PlayerUI extends ConsumerWidget {
     final stateType = ref.watch(
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
+    debugPrint('player state type $stateType');
     showLoading(stateType == null);
     switch (stateType) {
       case PlayerMediaNull:
