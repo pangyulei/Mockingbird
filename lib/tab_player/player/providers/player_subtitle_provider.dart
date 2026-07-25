@@ -96,7 +96,7 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     final sentence = _sentenceList[sentenceIndex];
     await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
     ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
-    await ref.read(playerMediaProvider.notifier).play();
+    ref.read(playerMediaProvider.notifier).play();
   }
 
   Future<void> addSubtitle() async {

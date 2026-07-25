@@ -88,7 +88,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     );
   }
 
-  Future<void> play() async {
+  void play() {
     var data = state.value;
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: true);
@@ -96,7 +96,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     // await data.videoController.play();
   }
 
-  Future<void> pause() async {
+  void pause() {
     var data = state.value;
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: false);
@@ -147,7 +147,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     final duration = videoController.value.duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
-      await pause();
+      pause();
     }
     //prevent videoController.play() but _state not setuped fully.
     final isLoop = ref.read(
@@ -178,7 +178,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
   Future<void> videoSliderStartChanged(double valMicro) async {
     _isDraggingVideoSlider = true;
     debugPrint('slider: start');
-    await pause();
+    pause();
     final position = Duration(microseconds: valMicro.toInt());
     await seekTo(position);
   }
@@ -208,7 +208,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
         final duration = this.duration;
         if (duration != null && seekToPosition < duration) {
           debugPrint('slider: play');
-          await play();
+          play();
         }
       },
     );
