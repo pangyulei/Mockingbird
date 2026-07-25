@@ -29,10 +29,62 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     final setting = await ref.read(playerSettingProvider.future);
     await videoController.setPlaybackSpeed(setting.speed);
     await videoController.setVolume(setting.volume);
+    // await videoController.play();
+    _listen();
     return PlayerMediaData(
       positionMicro: 0,
       videoController: videoController,
       isPlaying: true,
+    );
+  }
+
+  void _listen() {
+    _listenToPlayOrPause();
+    _listenToVolume();
+    _listenToSpeed();
+  }
+
+  void _listenToSpeed() {
+    ref.listen(playerSettingProvider.select((st) => st.value?.speed), (
+      previous,
+      speed,
+    ) async {
+      if (speed == null) return;
+      final data = state.value;
+      if (data is! PlayerMediaData) return;
+      await data.videoController.setPlaybackSpeed(speed);
+    });
+  }
+
+  void _listenToVolume() {
+    ref.listen(playerSettingProvider.select((st) => st.value?.volume), (
+      previous,
+      volume,
+    ) async {
+      if (volume == null) return;
+      final data = state.value;
+      if (data is! PlayerMediaData) return;
+      await data.videoController.setVolume(volume);
+    });
+  }
+
+  void _listenToPlayOrPause() {
+    //play or pause
+    ref.listen(
+      playerMediaProvider.select((st) {
+        final data = st.value;
+        return data is PlayerMediaData ? data.isPlaying : null;
+      }),
+      (previous, isPlaying) async {
+        if (isPlaying == null) return;
+        final data = state.value;
+        if (data is! PlayerMediaData) return;
+        if (isPlaying) {
+          await data.videoController.play();
+        } else {
+          await data.videoController.pause();
+        }
+      },
     );
   }
 
@@ -41,7 +93,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: true);
     state = AsyncData(data);
-    await data.videoController.play();
+    // await data.videoController.play();
   }
 
   Future<void> pause() async {
@@ -49,7 +101,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: false);
     state = AsyncData(data);
-    await data.videoController.pause();
+    // await data.videoController.pause();
   }
 
   Future<void> seekTo(Duration position) async {
@@ -58,17 +110,17 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     await data.videoController.seekTo(position);
   }
 
-  Future<void> updateSpeed(double speed) async {
-    var data = state.value;
-    if (data is! PlayerMediaData) return;
-    await data.videoController.setPlaybackSpeed(speed);
-  }
+  // Future<void> updateSpeed(double speed) async {
+  //   var data = state.value;
+  //   if (data is! PlayerMediaData) return;
+  //   await data.videoController.setPlaybackSpeed(speed);
+  // }
 
-  Future<void> updateVolume(double volume) async {
-    var data = state.value;
-    if (data is! PlayerMediaData) return;
-    await data.videoController.setVolume(volume);
-  }
+  // Future<void> updateVolume(double volume) async {
+  //   var data = state.value;
+  //   if (data is! PlayerMediaData) return;
+  //   await data.videoController.setVolume(volume);
+  // }
 
   Duration? get duration {
     var data = state.value;
@@ -89,7 +141,8 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     final int? playingSentenceIndex = ref
         .read(playerSubtitleProvider.notifier)
         .playingSentenceIndex;
-    final bool isSentenceChanged = playingSentenceIndex != _prevPlayingSentenceIndex;
+    final bool isSentenceChanged =
+        playingSentenceIndex != _prevPlayingSentenceIndex;
 
     final duration = videoController.value.duration;
     if (position >= duration) {

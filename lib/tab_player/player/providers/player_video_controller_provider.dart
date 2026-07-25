@@ -23,7 +23,6 @@ class PlayerVideoControllerNotifier extends AsyncNotifier<VideoPlayerController?
     });
     //its neccessary to await initialize, otherwise aspectratio etc will wrong
     await videoController.initialize();
-    await videoController.play();
     return videoController;
   }
 }
