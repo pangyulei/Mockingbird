@@ -110,18 +110,6 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     await data.videoController.seekTo(position);
   }
 
-  // Future<void> updateSpeed(double speed) async {
-  //   var data = state.value;
-  //   if (data is! PlayerMediaData) return;
-  //   await data.videoController.setPlaybackSpeed(speed);
-  // }
-
-  // Future<void> updateVolume(double volume) async {
-  //   var data = state.value;
-  //   if (data is! PlayerMediaData) return;
-  //   await data.videoController.setVolume(volume);
-  // }
-
   Duration? get duration {
     var data = state.value;
     if (data is! PlayerMediaData) return null;

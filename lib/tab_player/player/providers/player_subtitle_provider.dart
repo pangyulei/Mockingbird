@@ -61,6 +61,7 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
       playerSettingProvider.select((st) => st.value?.isLoop),
     );
     if (isLoop == null) return null;
+    if (!isLoop) return null;
     final playingSentenceIndex = _playingSentenceIndex;
     if (playingSentenceIndex == null) return null;
     return _sentenceList[playingSentenceIndex];
