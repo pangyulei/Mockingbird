@@ -20,11 +20,6 @@ class PlayerUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    // showLoading(ref.read(playerProvider.select((st) => st.isLoading)));
-    // ref.listen(
-    //   playerProvider.select((st) => st.isLoading),
-    //   (previous, next) => showLoading(next),
-    // );
     debugPrint('playerui build');
     final stateType = ref.watch(
       playerMediaProvider.select((st) => st.value?.runtimeType),
@@ -67,15 +62,6 @@ class PlayerUI extends ConsumerWidget {
   void _onResetSpeed(WidgetRef ref) async {
     await ref.read(playerSettingProvider.notifier).resetSpeed();
   }
-
-  // void _onVideoPositionChanged(
-  //   WidgetRef ref,
-  //   VideoPlayerController videoController,
-  // ) async {
-  //   await ref
-  //       .read(playerMediaProvider.notifier)
-  //       ._videoPositionChanged(videoController);
-  // }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
     await ref
@@ -150,9 +136,6 @@ class PlayerUI extends ConsumerWidget {
               (st) => (st.value as PlayerMediaData).videoController,
             ),
           );
-          // videoController.addListener(
-          //   () => _onVideoPositionChanged(ref, videoController),
-          // );
           return Column(
             children: [
               _displayer(ctx, ref, videoController),
