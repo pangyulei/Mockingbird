@@ -32,6 +32,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     //Fix playing media1, change to media2, it paused. because it didnt trigger listen,
     //I dont know why but we need to force it play
     await videoController.play();
+    ref.read(playerSubtitleProvider.notifier).scrollToTop();
     videoController.addListener(() => _videoPositionChanged(videoController));
     _listen();
     return PlayerMediaData(

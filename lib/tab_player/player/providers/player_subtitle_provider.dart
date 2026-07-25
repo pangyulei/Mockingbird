@@ -67,10 +67,6 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     return _sentenceList[playingSentenceIndex];
   }
 
-  void scrollTo(int? index, {double alignment = 0}) {
-    _scrollController.safeScrollTo(index, alignment: alignment);
-  }
-
   void scrollToTop() {
     _scrollController.safeScrollTo(0);
   }
