@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_video.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
@@ -68,14 +68,14 @@ class PlayerUI extends ConsumerWidget {
     await ref.read(playerSettingProvider.notifier).resetSpeed();
   }
 
-  void _onVideoPositionChanged(
-    WidgetRef ref,
-    VideoPlayerController videoController,
-  ) async {
-    await ref
-        .read(playerMediaProvider.notifier)
-        .videoPositionChanged(videoController);
-  }
+  // void _onVideoPositionChanged(
+  //   WidgetRef ref,
+  //   VideoPlayerController videoController,
+  // ) async {
+  //   await ref
+  //       .read(playerMediaProvider.notifier)
+  //       ._videoPositionChanged(videoController);
+  // }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
     await ref
@@ -128,39 +128,39 @@ class PlayerUI extends ConsumerWidget {
   }
 
   Widget _body(BuildContext ctx) {
-    return Column(children: [_videoWidgets(), _sentenceList(ctx)]);
+    return Column(children: [_videoWidgets(ctx), _sentenceList(ctx)]);
   }
 
-  Widget _videoWidgets() {
-    return Consumer(
-      builder: (ctx, ref, child) {
-        final videoController = ref.watch(
-          playerMediaProvider.select(
-            (st) => (st.value as PlayerMediaData).videoController,
+  Widget _videoWidgets(BuildContext ctx) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
-        );
-        videoController.addListener(
-          () => _onVideoPositionChanged(ref, videoController),
-        );
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.black,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.5),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
+        ],
+      ),
+      child: Consumer(
+        builder: (context, ref, child) {
+          final videoController = ref.watch(
+            playerMediaProvider.select(
+              (st) => (st.value as PlayerMediaData).videoController,
+            ),
+          );
+          // videoController.addListener(
+          //   () => _onVideoPositionChanged(ref, videoController),
+          // );
+          return Column(
             children: [
               _displayer(ctx, ref, videoController),
               _controlBar(ctx, ref, videoController),
             ],
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -282,7 +282,7 @@ class PlayerUI extends ConsumerWidget {
             final scrollController = ref.watch(
               playerSubtitleProvider.select((st) => st.scrollController),
             );
-            if (sentenceIdList.isEmpty || scrollController == null) {
+            if (sentenceIdList.isEmpty) {
               return _noSubtitle(ctx, ref);
             }
             debugPrint('subtitle sentence list build');

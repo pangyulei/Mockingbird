@@ -29,7 +29,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     final setting = await ref.read(playerSettingProvider.future);
     await videoController.setPlaybackSpeed(setting.speed);
     await videoController.setVolume(setting.volume);
-    // await videoController.play();
+    videoController.addListener(() => _videoPositionChanged(videoController));
     _listen();
     return PlayerMediaData(
       positionMicro: 0,
@@ -116,7 +116,7 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     return data.videoController.value.duration;
   }
 
-  Future<void> videoPositionChanged(
+  void _videoPositionChanged(
     VideoPlayerController videoController,
   ) async {
     final position = videoController.value.position;
