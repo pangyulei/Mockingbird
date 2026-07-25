@@ -7,6 +7,8 @@ import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_video_provider.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -35,87 +37,49 @@ class PlayerNotifier extends AsyncNotifier<PlayerState> {
     return PlayerData(title: mediaName);
   }
 
-
-
   Future<void> videoPositionChanged(
     VideoPlayerController videoController,
   ) async {
     final position = videoController.value.position;
     //for video slider moving along with playing
-    state = AsyncData(
-      _data.copyWith(
-        video: _videoData.copyWith(positionMicro: position.inMicroseconds),
-      ),
-    );
+    ref.read(playerVideoProvider.notifier).updatePosition(position);
+
     final duration = videoController.value.duration;
-    if (position >= duration && _videoData.isPlaying) {
+    if (position >= duration) {
       //if video end of duration, play/pause button should update
-      state = AsyncData(
-        _data.copyWith(video: _videoData.copyWith(isPlaying: false)),
-      );
+      await ref.read(playerVideoProvider.notifier).pause();
     }
     //prevent videoController.play() but _state not setuped fully.
-    if (_sentenceList.isEmpty) return;
-
-    final playingSentenceIndex = _sentenceIndexByPosition(position);
-    final playingSentence = _sentenceList.elementAtOrNull(playingSentenceIndex);
-    final isSentenceChanged = playingSentenceIndex != _prevPlayingSentenceIndex;
-
-    //debug message
-    // final prev = _prevPlayingSentenceIndex == null
-    //     ? null
-    //     : sentenceList[_prevPlayingSentenceIndex!];
-    // final now = playingSentenceIndex == null ? null : sentenceList[playingSentenceIndex];
-    // debugPrint('$prev => $now');
-    if (isSentenceChanged) {
-      //handle mark
-      _markSentence(playingSentenceIndex);
-      //handle scroll
-      if (_isDraggingVideoSlider) {
-        _scrollController.safeJumpTo(playingSentenceIndex, alignment: 0.3);
-      } else if (!_videoData.isLoop) {
-        //playing auto scroll to next sentence, not for loop mode
-        _scrollController.safeScrollTo(playingSentenceIndex, alignment: 0.3);
-      }
+    final isLoop = ref.read(playerSettingProvider.select((st)=>st.value?.isLoop ?? false));
+    if (_isDraggingVideoSlider) {
+      ref.read(playerSubtitleProvider.notifier).jumpToPlayingSentence();
+    } else if (!isLoop) {
+      //playing auto scroll to next sentence, not for loop mode
+      ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
     }
     //handle loop seek to begin
-    if (!_isDraggingVideoSlider && _videoData.isLoop) {
+    final loopSentence = ref.read(playerSubtitleProvider.notifier).loopSentence;
+    if (!_isDraggingVideoSlider && loopSentence != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
-      final sentence = _sentenceList[_videoData.loopIndex!];
       // debugPrint('position changing loop $sentence');
-      if (position > sentence.end) {
+      if (position > loopSentence.end) {
         // debugPrint('positon changing loop seek to ${sentence.start}');
-        await videoController.seekTo(sentence.start);
+        await videoController.seekTo(loopSentence.start);
       }
-    }
-    _prevPlayingSentenceIndex = playingSentenceIndex;
-  }
-
-  Future<void> _syncVideoWithSlider(Duration position) async {
-    await _videoController.seekTo(position);
-
-    if (_videoData.isLoop) {
-      final playingSentenceIndex = _sentenceIndexByPosition(position);
-      state = AsyncData(
-        _data.copyWith(
-          video: _videoData.copyWith(loopIndex: () => playingSentenceIndex),
-        ),
-      );
     }
   }
 
   Future<void> videoSliderStartChanged(double valMicro) async {
     _isDraggingVideoSlider = true;
     debugPrint('slider: start');
-    state = AsyncData(
-      _data.copyWith(video: _videoData.copyWith(isPlaying: false)),
-    );
-    await _videoController.pause();
-    await _syncVideoWithSlider(Duration(microseconds: valMicro.toInt()));
+    await ref.read(playerVideoProvider.notifier).pause();
+    final position = Duration(microseconds: valMicro.toInt());
+    await ref.read(playerVideoProvider.notifier).seekTo(position);
   }
 
   Future<void> videoSliderChanging(double valMicro) async {
-    await _syncVideoWithSlider(Duration(microseconds: valMicro.toInt()));
+    final position = Duration(microseconds: valMicro.toInt());
+    await ref.read(playerVideoProvider.notifier).seekTo(position);
   }
 
   Future<void> videoSliderEndChanged(double valMicro) async {
@@ -125,25 +89,16 @@ class PlayerNotifier extends AsyncNotifier<PlayerState> {
         debugPrint('slider: end');
       },
       () async {
-        final duration = _videoController.value.duration;
         final position = Duration(microseconds: valMicro.toInt());
         //seek to sentence start
-        final Duration seekTo;
-        if (_videoData.isLoop) {
-          final playingSentenceIndex = _sentenceIndexByPosition(position);
-          final playingSentence = _sentenceList[playingSentenceIndex];
-          seekTo = playingSentence.start;
-        } else {
-          seekTo = position;
-        }
+        final loopSentence = ref.read(playerSubtitleProvider.notifier).loopSentence;
+        final Duration seekTo = loopSentence == null ? position : loopSentence.start;
+        await ref.read(playerVideoProvider.notifier).seekTo(seekTo);
 
-        await _syncVideoWithSlider(seekTo);
-        if (seekTo < duration) {
+        final duration = ref.read(playerVideoProvider.notifier).duration;
+        if (duration != null && seekTo < duration) {
           debugPrint('slider: play');
-          state = AsyncData(
-            _data.copyWith(video: _videoData.copyWith(isPlaying: true)),
-          );
-          await _videoController.play();
+          await ref.read(playerVideoProvider.notifier).play();
         }
       },
     );

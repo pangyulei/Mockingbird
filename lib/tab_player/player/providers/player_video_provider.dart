@@ -34,6 +34,10 @@ class PlayerVideoNotifier extends AsyncNotifier<PlayerVideo?> {
     state = AsyncData(state.value?.copyWith(isPlaying: false));
     await state.value?.videoController.pause();
   }
+  
+  void updatePosition(Duration position) {
+    state = AsyncData(state.value?.copyWith(positionMicro: position.inMicroseconds));
+  }
 
   Future<void> seekTo(Duration position) async {
     await state.value?.videoController.seekTo(position);
@@ -42,4 +46,6 @@ class PlayerVideoNotifier extends AsyncNotifier<PlayerVideo?> {
   Future<void> setSpeed(double speed) async {
     await state.value?.videoController.setPlaybackSpeed(speed);
   }
+
+  Duration? get duration => state.value?.videoController.value.duration;
 }

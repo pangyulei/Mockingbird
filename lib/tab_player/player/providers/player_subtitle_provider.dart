@@ -48,6 +48,12 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     );
   }
 
+  EnSentence? get loopSentence {
+    final loopIndex = state.loopIndex;
+    if (loopIndex == null) return null;
+    return _sentenceList[loopIndex];
+  }
+
   void scrollTo(int? index, {double alignment = 0}) {
     _scrollController.safeScrollTo(index, alignment: alignment);
   }
@@ -62,6 +68,10 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
 
   void scrollToPlayingSentence() {
     _scrollController.safeScrollTo(_playingSentenceIndex, alignment: 0.3);
+  }
+  
+  void jumpToPlayingSentence() {
+    _scrollController.safeJumpTo(_playingSentenceIndex, alignment: 0.3);
   }
 
   void tapSentence(int? id) async {
