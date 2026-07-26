@@ -1,16 +1,17 @@
+import 'package:collection/collection.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
+import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
 import '../../../db/entities/en_media.dart';
 import '../../../db/entities/en_subtitle.dart';
 import '../../../db/providers/db_album_list_provider.dart';
@@ -21,8 +22,11 @@ part 'player_subtitle_provider.g.dart';
 @riverpod
 class PlayerSubtitle extends _$PlayerSubtitle {
   final _scrollController = ItemScrollController();
-  int? _playingSentenceIndex;
-  List<EnSentence> _sentenceList = [];
+  List<EnSentence> get _sentenceList => ref.read(
+    dbPlayingMediaProvider.select(
+      (st) => st.value?.subtitleList.firstOrNull?.sentenceList ?? [],
+    ),
+  );
   @override
   PlayerSubtitleState build() {
     final positionMicro = ref.watch(
@@ -32,20 +36,21 @@ class PlayerSubtitle extends _$PlayerSubtitle {
         return data.positionMicro;
       }),
     );
-    if (positionMicro == null) return PlayerSubtitleState.empty(_scrollController);
+    if (positionMicro == null) {
+      return PlayerSubtitleState.empty(_scrollController);
+    }
     final EnSubtitle? subtitle = ref.watch(
       dbPlayingMediaProvider.select((st) => st.value?.subtitleList.firstOrNull),
     );
     if (subtitle == null) return PlayerSubtitleState.empty(_scrollController);
-    _sentenceList = subtitle.sentenceList;
     final playingSentenceIndex = _sentenceIndexByPosition(
       Duration(microseconds: positionMicro),
       subtitle.sentenceList,
     );
-    _playingSentenceIndex = playingSentenceIndex;
     final playingSentenceId = playingSentenceIndex == null
         ? null
         : subtitle.sentenceList[playingSentenceIndex].id;
+    _listen();
     return PlayerSubtitleState(
       playingSentenceId: playingSentenceId,
       scrollController: _scrollController,
@@ -53,7 +58,26 @@ class PlayerSubtitle extends _$PlayerSubtitle {
     );
   }
 
-  int? get playingSentenceIndex => _playingSentenceIndex;
+  void _listen() {
+    ref.listen(
+      playerMediaProvider.select((st) {
+        final data = st.value;
+        return data is PlayerMediaData ? data.videoController : null;
+      }),
+      (previous, next) {
+        //videoController changed
+        scrollToTop();
+      },
+    );
+  }
+
+  int? get playingSentenceIndex {
+    final playingSentenceId = state.playingSentenceId;
+    if (playingSentenceId == null) return null;
+    return _sentenceList.firstIndexWhereOrNull(
+      (sen) => sen.id == playingSentenceId,
+    );
+  }
 
   EnSentence? get loopSentence {
     final isLoop = ref.watch(
@@ -61,7 +85,7 @@ class PlayerSubtitle extends _$PlayerSubtitle {
     );
     if (isLoop == null) return null;
     if (!isLoop) return null;
-    final playingSentenceIndex = _playingSentenceIndex;
+    final playingSentenceIndex = this.playingSentenceIndex;
     if (playingSentenceIndex == null) return null;
     return _sentenceList[playingSentenceIndex];
   }
@@ -75,11 +99,11 @@ class PlayerSubtitle extends _$PlayerSubtitle {
   }
 
   void scrollToPlayingSentence() {
-    _scrollController.safeScrollTo(_playingSentenceIndex, alignment: 0.3);
+    _scrollController.safeScrollTo(playingSentenceIndex, alignment: 0.3);
   }
 
   void jumpToPlayingSentence() {
-    _scrollController.safeJumpTo(_playingSentenceIndex, alignment: 0.3);
+    _scrollController.safeJumpTo(playingSentenceIndex, alignment: 0.3);
   }
 
   void tapSentence(int? id) async {
@@ -91,7 +115,7 @@ class PlayerSubtitle extends _$PlayerSubtitle {
     final sentence = _sentenceList[sentenceIndex];
     await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
     ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
-    ref.read(playerMediaProvider.notifier).play();
+    await ref.read(playerMediaProvider.notifier).play();
   }
 
   Future<void> addSubtitle() async {

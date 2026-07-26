@@ -43,12 +43,12 @@ class PlayerUI extends ConsumerWidget {
     ref.read(playerSettingProvider.notifier).toggleLoop();
   }
 
-  void _onPause(WidgetRef ref) {
-    ref.read(playerMediaProvider.notifier).pause();
+  void _onPause(WidgetRef ref) async {
+    await ref.read(playerMediaProvider.notifier).pause();
   }
 
-  void _onPlay(WidgetRef ref) {
-    ref.read(playerMediaProvider.notifier).play();
+  void _onPlay(WidgetRef ref) async {
+    await ref.read(playerMediaProvider.notifier).play();
   }
 
   void _onDecSpeed(WidgetRef ref) async {

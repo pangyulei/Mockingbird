@@ -32,7 +32,7 @@ class PlayerMedia extends _$PlayerMedia {
     //Fix playing media1, change to media2, it paused. because it didnt trigger listen,
     //I dont know why but we need to force it play
     await videoController.play();
-    ref.read(playerSubtitleProvider.notifier).scrollToTop();
+    // ref.read(playerSubtitleProvider.notifier).scrollToTop();
     videoController.addListener(() => _videoPositionChanged(videoController));
     _listen();
     return PlayerMediaData(
@@ -44,7 +44,6 @@ class PlayerMedia extends _$PlayerMedia {
 
   void _listen() {
     debugPrint('listen added!');
-    _listenToPlayOrPause();
     _listenToVolume();
     _listenToSpeed();
   }
@@ -73,43 +72,20 @@ class PlayerMedia extends _$PlayerMedia {
     });
   }
 
-  void _listenToPlayOrPause() {
-    //play or pause
-    ref.listen(
-      playerMediaProvider.select((st) {
-        final data = st.value;
-        return data is PlayerMediaData ? data.isPlaying : null;
-      }),
-      (previous, isPlaying) async {
-        debugPrint('listen isplaying $isPlaying');
-        if (isPlaying == null) return;
-        final data = state.value;
-        if (data is! PlayerMediaData) return;
-        if (isPlaying) {
-          debugPrint('listen play');
-          await data.videoController.play();
-        } else {
-          debugPrint('listen pause');
-          await data.videoController.pause();
-        }
-      },
-    );
-  }
-
-  void play() {
+  Future<void> play() async {
     var data = state.value;
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: true);
     state = AsyncData(data);
-    // await data.videoController.play();
+    await data.videoController.play();
   }
 
-  void pause() {
+  Future<void> pause() async {
     var data = state.value;
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: false);
     state = AsyncData(data);
-    // await data.videoController.pause();
+    await data.videoController.pause();
   }
 
   Future<void> seekTo(Duration position) async {
@@ -141,7 +117,7 @@ class PlayerMedia extends _$PlayerMedia {
     final duration = videoController.value.duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
-      pause();
+      await pause();
     }
     //prevent videoController.play() but _state not setuped fully.
     final isLoop = ref.read(
@@ -172,7 +148,7 @@ class PlayerMedia extends _$PlayerMedia {
   Future<void> videoSliderStartChanged(double valMicro) async {
     _isDraggingVideoSlider = true;
     debugPrint('slider: start');
-    pause();
+    await pause();
     final position = Duration(microseconds: valMicro.toInt());
     await seekTo(position);
   }
@@ -202,7 +178,7 @@ class PlayerMedia extends _$PlayerMedia {
         final duration = this.duration;
         if (duration != null && seekToPosition < duration) {
           debugPrint('slider: play');
-          play();
+          await play();
         }
       },
     );
