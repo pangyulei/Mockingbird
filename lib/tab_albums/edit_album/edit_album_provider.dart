@@ -13,18 +13,14 @@ part 'edit_album_provider.g.dart';
 
 @riverpod
 class EditAlbum extends _$EditAlbum {
-  EnAlbum? get _album => ref.read(
-    dbAlbumListProvider
-        .select((st) => st.value ?? [])
-        .select((al) => {for (final a in al) a.id: a})
-        .select((am) => am[id]),
-  );
   EditAlbumData get _data => state.value as EditAlbumData;
 
   @override
   Future<EditAlbumState> build(int? id) async {
     final nameController = TextEditingController();
+      debugPrint('editalbum($id) create, namecontroller:${identityHashCode(nameController)}');
     ref.onDispose(() {
+      debugPrint('editalbum($id) dispose, namecontroller:${identityHashCode(nameController)}');
       nameController.dispose();
     });
     final EnAlbum? album = await ref.watch(dbAlbumProvider(id).future);
@@ -41,7 +37,7 @@ class EditAlbum extends _$EditAlbum {
   }
 
   Future<void> submit() async {
-    final album = _album;
+    final album = ref.read(dbAlbumProvider(id)).value;
     if (album == null) {
       //creating
       await ref
@@ -76,8 +72,9 @@ class EditAlbum extends _$EditAlbum {
 
   void _updateCover(File? newCover) {
     if (newCover?.path != _data.cover?.path) {
+      final album = ref.read(dbAlbumProvider(id)).value;
       final enableSubmit = _isSubmitEnable(
-        _album,
+        album,
         _data.nameController.text,
         newCover,
       );
@@ -88,7 +85,8 @@ class EditAlbum extends _$EditAlbum {
   }
 
   void updateName(String newName) {
-    final enableSubmit = _isSubmitEnable(_album, newName, _data.cover);
+    final album = ref.read(dbAlbumProvider(id)).value;
+    final enableSubmit = _isSubmitEnable(album, newName, _data.cover);
     state = AsyncData(_data.copyWith(enableSubmit: enableSubmit));
   }
 

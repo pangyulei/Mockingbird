@@ -46,6 +46,7 @@ class EditAlbumUI extends ConsumerWidget {
                   editAlbumProvider(_id).select((st) => (st.value as EditAlbumData).nameController),
                 );
                 //nameController.addListner
+                debugPrint('editalbum ui use nameController');
                 return TextField(
                   onChanged: (newName) => _onNameChanged(ref, newName),
                   controller: nameController,
@@ -176,6 +177,7 @@ class EditAlbumUI extends ConsumerWidget {
   }
 
   void _onNameChanged(WidgetRef ref, String newName) {
+    debugPrint('editalbum onNameChanged');
     ref.read(editAlbumProvider(_id).notifier).updateName(newName);
   }
 
