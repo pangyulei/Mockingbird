@@ -15,19 +15,17 @@ extension IterableExtension<E> on Iterable<E> {
   }
 }
 
-extension Loading on StatefulWidget {
+extension Loading on Object {
   void showLoading(bool show) {
     if (show && !EasyLoading.isShow) {
       debugPrint('easyloading: $runtimeType show');
       EasyLoading.show(maskType: .clear);
-
-    } else if (!show && EasyLoading.isShow){
+    } else if (!show && EasyLoading.isShow) {
       debugPrint('easyloading: $runtimeType dismiss');
       EasyLoading.dismiss();
     }
   }
 }
-
 
 extension SafeScroll on ItemScrollController {
   void safeJumpTo(int? index, {double alignment = 0}) {

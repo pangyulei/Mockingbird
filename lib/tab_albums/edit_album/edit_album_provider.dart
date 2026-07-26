@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
@@ -13,41 +11,34 @@ part 'edit_album_provider.g.dart';
 
 @riverpod
 class EditAlbum extends _$EditAlbum {
-  EditAlbumData get _data => state.value as EditAlbumData;
-
   @override
   Future<EditAlbumState> build(int? id) async {
-    final nameController = TextEditingController();
-      debugPrint('editalbum($id) create, namecontroller:${identityHashCode(nameController)}');
-    ref.onDispose(() {
-      debugPrint('editalbum($id) dispose, namecontroller:${identityHashCode(nameController)}');
-      nameController.dispose();
-    });
     final EnAlbum? album = await ref.watch(dbAlbumProvider(id).future);
     if (album == null) {
-      return EditAlbumData.add(nameController);
+      return const EditAlbumState.add();
     } else {
-      nameController.text = album.name;
-      final cover = album.cover;
-      return EditAlbumData.edit(
-        cover == null ? null : File(cover),
-        nameController,
-      );
+      final coverPath = album.cover;
+      final cover = coverPath == null || coverPath.isEmpty
+          ? null
+          : File(coverPath);
+      return EditAlbumState.edit(album.name, cover);
     }
   }
 
   Future<void> submit() async {
     final album = ref.read(dbAlbumProvider(id)).value;
+    final name = state.value?.name;
+    if (name == null) return;
     if (album == null) {
       //creating
       await ref
           .read(dbAlbumListProvider.notifier)
-          .addAlbum(_data.nameController.text, cover: _data.cover);
+          .addAlbum(name, cover: state.value?.cover);
     } else {
       //editing
       await ref
           .read(dbAlbumProvider(id).notifier)
-          .edit(name: _data.nameController.text, cover: () => _data.cover);
+          .edit(name: name, cover: () => state.value?.cover);
     }
   }
 
@@ -71,26 +62,26 @@ class EditAlbum extends _$EditAlbum {
   }
 
   void _updateCover(File? newCover) {
-    if (newCover?.path != _data.cover?.path) {
+    var data = state.value;
+    if (data == null) return;
+    if (newCover?.path != data.cover?.path) {
       final album = ref.read(dbAlbumProvider(id)).value;
-      final enableSubmit = _isSubmitEnable(
-        album,
-        _data.nameController.text,
-        newCover,
-      );
-      state = AsyncData(
-        _data.copyWith(cover: () => newCover, enableSubmit: enableSubmit),
-      );
+      final enableSubmit = _isSubmitEnable(album, data.name, newCover);
+      data = data.copyWith(cover: () => newCover, enableSubmit: enableSubmit);
+      state = AsyncData(data);
     }
   }
 
   void updateName(String newName) {
+    var data = state.value;
+    if (data == null) return;
     final album = ref.read(dbAlbumProvider(id)).value;
-    final enableSubmit = _isSubmitEnable(album, newName, _data.cover);
-    state = AsyncData(_data.copyWith(enableSubmit: enableSubmit));
+    final enableSubmit = _isSubmitEnable(album, newName, data.cover);
+    state = AsyncData(data.copyWith(name: newName, enableSubmit: enableSubmit));
   }
 
-  bool _isSubmitEnable(EnAlbum? album, String newName, File? newCover) {
+  bool _isSubmitEnable(EnAlbum? album, String? newName, File? newCover) {
+    if (newName == null) return false;
     final trimmedNewName = newName.trim();
     if (trimmedNewName.isEmpty) {
       return false;

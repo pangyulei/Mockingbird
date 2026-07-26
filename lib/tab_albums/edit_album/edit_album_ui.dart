@@ -2,21 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
 import 'package:mockingbird/tool/extensions.dart';
+
 import 'edit_album_state.dart';
 
-class EditAlbumUI extends ConsumerWidget {
+class EditAlbumUI extends ConsumerStatefulWidget {
   final int? _id;
 
   const EditAlbumUI(this._id, {super.key});
 
   @override
-  Widget build(BuildContext ctx, WidgetRef ref) {
-    showLoading(ref.read(editAlbumProvider(_id).select((st) => st.isLoading)));
-    ref.listen(editAlbumProvider(_id).select((st) => st.isLoading), (previous, next) =>
-        showLoading(next));
-    final stateType = ref.watch(editAlbumProvider(_id).select((st) => st.value?.runtimeType));
+  ConsumerState<ConsumerStatefulWidget> createState() => EditAlbumUIState();
+}
+
+class EditAlbumUIState extends ConsumerState<EditAlbumUI> {
+  int? get _id => widget._id;
+  final _nameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext ctx) {
+    final stateType = ref.watch(
+      editAlbumProvider(_id).select((st) => st.value?.runtimeType),
+    );
+    showLoading(stateType == null);
     switch (stateType) {
-      case EditAlbumData:
+      case EditAlbumState:
         return _dialog(ctx);
       default:
         return const SizedBox.shrink();
@@ -28,9 +43,15 @@ class EditAlbumUI extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Consumer(
         builder: (context, ref, child) {
-          final title = ref.watch(editAlbumProvider(_id).select((st) => (st.value as
-          EditAlbumData).title));
-          return Text(title, style: const TextStyle(fontWeight: FontWeight.bold));
+          final title = ref.watch(
+            editAlbumProvider(
+              _id,
+            ).select((st) => (st.value as EditAlbumState).title),
+          );
+          return Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          );
         },
       ),
       actionsAlignment: MainAxisAlignment.spaceBetween,
@@ -42,36 +63,39 @@ class EditAlbumUI extends ConsumerWidget {
             const SizedBox(height: 20),
             Consumer(
               builder: (context, ref, child) {
-                final nameController = ref.watch(
-                  editAlbumProvider(_id).select((st) => (st.value as EditAlbumData).nameController),
-                );
-                //nameController.addListner
-                debugPrint('editalbum ui use nameController');
+                _nameController.text =
+                    ref.read(editAlbumProvider(_id)).value?.name ?? '';
                 return TextField(
                   onChanged: (newName) => _onNameChanged(ref, newName),
-                  controller: nameController,
+                  controller: _nameController,
                   cursorColor: Theme.of(ctx).colorScheme.primary,
                   style: const TextStyle(fontSize: 16),
                   decoration: InputDecoration(
                     labelText: 'Album Name',
                     labelStyle: TextStyle(
-                      color: Theme.of(ctx).colorScheme.primary.withValues(alpha: 0.7),
+                      color: Theme.of(
+                        ctx,
+                      ).colorScheme.primary.withValues(alpha: 0.7),
                     ),
                     hintText: 'Enter Album name',
-                    hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.2)),
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.2),
+                    ),
                     prefixIcon: Icon(
                       Icons.edit_note_rounded,
                       color: Theme.of(ctx).colorScheme.primary,
                     ),
                     filled: true,
-                    fillColor: Theme.of(
-                      ctx,
-                    ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                    fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.3),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
                   ),
                   autofocus: true,
                 );
@@ -81,14 +105,22 @@ class EditAlbumUI extends ConsumerWidget {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => _onCancel(ctx), child: const Text('Cancel')),
+        TextButton(
+          onPressed: () => _onCancel(ctx),
+          child: const Text('Cancel'),
+        ),
         Consumer(
           builder: (ctx, ref, child) {
             final (enable, submitTitle) = ref.watch(
-              editAlbumProvider(_id).select((st) => st.value as EditAlbumData).select((st)=>(st.enableSubmit, st.submitTitle)),
+              editAlbumProvider(_id)
+                  .select((st) => st.value as EditAlbumState)
+                  .select((st) => (st.enableSubmit, st.submitTitle)),
             );
             if (enable) {
-              return FilledButton(onPressed: () => _onSubmit(ctx, ref), child: Text(submitTitle));
+              return FilledButton(
+                onPressed: () => _onSubmit(ctx, ref),
+                child: Text(submitTitle),
+              );
             } else {
               return FilledButton(onPressed: null, child: Text(submitTitle));
             }
@@ -101,7 +133,11 @@ class EditAlbumUI extends ConsumerWidget {
   Widget _cover(BuildContext ctx) {
     return Consumer(
       builder: (ctx, ref, child) {
-        final cover = ref.watch(editAlbumProvider(_id).select((st) => (st.value as EditAlbumData).cover));
+        final cover = ref.watch(
+          editAlbumProvider(
+            _id,
+          ).select((st) => (st.value as EditAlbumState).cover),
+        );
         return Stack(
           children: [
             GestureDetector(
@@ -111,17 +147,25 @@ class EditAlbumUI extends ConsumerWidget {
                 width: double.infinity,
                 height: 160,
                 decoration: BoxDecoration(
-                  color: Theme.of(ctx).colorScheme.primaryContainer.withValues(alpha: 0.1),
+                  color: Theme.of(
+                    ctx,
+                  ).colorScheme.primaryContainer.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    width: 1,
+                  ),
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: cover != null ? Image.file(cover, fit: BoxFit.cover) : _noImage(ctx),
+                  child: cover != null
+                      ? Image.file(cover, fit: BoxFit.cover)
+                      : _noImage(ctx),
                 ),
               ),
             ),
-            if (cover != null) Positioned(top: 8, right: 8, child: _removeCoverButton(ctx, ref)),
+            if (cover != null)
+              Positioned(top: 8, right: 8, child: _removeCoverButton(ctx, ref)),
           ],
         );
       },

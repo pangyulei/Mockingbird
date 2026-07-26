@@ -1,52 +1,45 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
-
-sealed class EditAlbumState {
-  const EditAlbumState();
-}
-
-class EditAlbumData extends EditAlbumState {
+class EditAlbumState {
   final String title;
   final String submitTitle;
-
-  final TextEditingController nameController;
   final File? cover;
   final bool enableSubmit;
+  final String name;
 
-  const EditAlbumData({
-    required this.nameController,
+  const EditAlbumState({
+    required this.name,
     required this.title,
     required this.submitTitle,
     required this.cover,
     required this.enableSubmit,
   });
 
-  const EditAlbumData.add(TextEditingController nameController)
+  const EditAlbumState.add()
     : this(
-        nameController: nameController,
         title: 'Create Album',
         submitTitle: 'Create',
         cover: null,
         enableSubmit: false,
+        name: '',
       );
 
-  const EditAlbumData.edit(File? cover, TextEditingController nameController)
+  const EditAlbumState.edit(String name, File? cover)
     : this(
-        nameController: nameController,
         title: 'Edit Album',
         submitTitle: 'Save',
         cover: cover,
         enableSubmit: false,
+        name: name,
       );
 
-  EditAlbumData copyWith({bool? enableSubmit, File? Function()? cover}) {
-    return EditAlbumData(
+  EditAlbumState copyWith({String? name,bool? enableSubmit, File? Function()? cover}) {
+    return EditAlbumState(
+      name: name ?? this.name,
       cover: cover == null ? this.cover : cover(),
       enableSubmit: enableSubmit ?? this.enableSubmit,
       title: title,
       submitTitle: submitTitle,
-      nameController: nameController,
     );
   }
 }
