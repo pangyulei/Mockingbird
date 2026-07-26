@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:mockingbird/tab_albums/edit_media/edit_media_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -20,13 +21,7 @@ class EditMedia extends _$EditMedia {
         enableSubmit: false,
       );
     }
-    final EnMedia? media = ref.watch(
-      dbAlbumListProvider
-          .select((st) => st.value ?? [])
-          .select((al) => al.map((a) => a.mediaList).flattened)
-          .select((ml) => {for (final m in ml) m.id: m})
-          .select((mm) => mm[id]),
-    );
+    final EnMedia? media = ref.watch(dbMediaProvider(id)).value;
     if (media == null) {
       return EditMediaState(
         nameController: nameController,
@@ -50,8 +45,8 @@ class EditMedia extends _$EditMedia {
     if (media == null) return;
 
     await ref
-        .read(dbAlbumListProvider.notifier)
-        .updateMedia(media, name: state.nameController.text);
+        .read(dbMediaProvider(id).notifier)
+        .edit(name: state.nameController.text);
   }
 
   void updateName(String newName) {

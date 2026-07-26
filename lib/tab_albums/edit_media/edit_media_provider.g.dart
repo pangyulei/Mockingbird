@@ -58,7 +58,7 @@ final class EditMediaProvider
   }
 }
 
-String _$editMediaHash() => r'28aef26f3e46d19555a7855bc09e70a2378023ae';
+String _$editMediaHash() => r'3b024b5b4244a5cd798ec5bed2e0fe01970c769f';
 
 final class EditMediaFamily extends $Family
     with

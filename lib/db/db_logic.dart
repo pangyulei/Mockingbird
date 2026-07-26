@@ -365,6 +365,10 @@ class DBLogic {
     }
   }
 
+  Future<List<int>> loadAlbumIdList() async {
+    return (await loadAlbums()).map((a) => a.id).toList();
+  }
+
   Future<List<EnAlbum>> loadAlbums() async {
     final query = _store
         .box<EnAlbum>()

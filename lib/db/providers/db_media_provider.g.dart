@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'edit_album_provider.dart';
+part of 'db_media_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,39 +9,38 @@ part of 'edit_album_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(EditAlbum)
-final editAlbumProvider = EditAlbumFamily._();
+@ProviderFor(DBMedia)
+final dbMediaProvider = DBMediaFamily._();
 
-final class EditAlbumProvider
-    extends $AsyncNotifierProvider<EditAlbum, EditAlbumState> {
-  EditAlbumProvider._({
-    required EditAlbumFamily super.from,
+final class DBMediaProvider extends $AsyncNotifierProvider<DBMedia, EnMedia?> {
+  DBMediaProvider._({
+    required DBMediaFamily super.from,
     required int? super.argument,
   }) : super(
          retry: null,
-         name: r'editAlbumProvider',
+         name: r'dbMediaProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$editAlbumHash();
+  String debugGetCreateSourceHash() => _$dBMediaHash();
 
   @override
   String toString() {
-    return r'editAlbumProvider'
+    return r'dbMediaProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  EditAlbum create() => EditAlbum();
+  DBMedia create() => DBMedia();
 
   @override
   bool operator ==(Object other) {
-    return other is EditAlbumProvider && other.argument == argument;
+    return other is DBMediaProvider && other.argument == argument;
   }
 
   @override
@@ -50,47 +49,46 @@ final class EditAlbumProvider
   }
 }
 
-String _$editAlbumHash() => r'5af79734217ed4e8012dfb1187f71eca934b861f';
+String _$dBMediaHash() => r'c25eb937d3dfd69e75711a48527effa17a036df9';
 
-final class EditAlbumFamily extends $Family
+final class DBMediaFamily extends $Family
     with
         $ClassFamilyOverride<
-          EditAlbum,
-          AsyncValue<EditAlbumState>,
-          EditAlbumState,
-          FutureOr<EditAlbumState>,
+          DBMedia,
+          AsyncValue<EnMedia?>,
+          EnMedia?,
+          FutureOr<EnMedia?>,
           int?
         > {
-  EditAlbumFamily._()
+  DBMediaFamily._()
     : super(
         retry: null,
-        name: r'editAlbumProvider',
+        name: r'dbMediaProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  EditAlbumProvider call(int? id) =>
-      EditAlbumProvider._(argument: id, from: this);
+  DBMediaProvider call(int? id) => DBMediaProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'editAlbumProvider';
+  String toString() => r'dbMediaProvider';
 }
 
-abstract class _$EditAlbum extends $AsyncNotifier<EditAlbumState> {
+abstract class _$DBMedia extends $AsyncNotifier<EnMedia?> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  FutureOr<EditAlbumState> build(int? id);
+  FutureOr<EnMedia?> build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EditAlbumState>, EditAlbumState>;
+    final ref = this.ref as $Ref<AsyncValue<EnMedia?>, EnMedia?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EditAlbumState>, EditAlbumState>,
-              AsyncValue<EditAlbumState>,
+              AnyNotifier<AsyncValue<EnMedia?>, EnMedia?>,
+              AsyncValue<EnMedia?>,
               Object?,
               Object?
             >;

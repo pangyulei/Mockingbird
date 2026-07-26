@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mockingbird/db/entities/en_album.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -12,8 +13,7 @@ part 'edit_album_provider.g.dart';
 
 @riverpod
 class EditAlbum extends _$EditAlbum {
-  EnAlbum? get _album =>
-      ref.read(
+  EnAlbum? get _album => ref.read(
     dbAlbumListProvider
         .select((st) => st.value ?? [])
         .select((al) => {for (final a in al) a.id: a})
@@ -27,11 +27,7 @@ class EditAlbum extends _$EditAlbum {
     ref.onDispose(() {
       nameController.dispose();
     });
-    if (id == null) return EditAlbumData.add(nameController);
-    final EnAlbum? album = await ref.watch(
-      dbAlbumListProvider
-          .selectAsync((al) => {for (final a in al) a.id: a}[id])
-    );
+    final EnAlbum? album = await ref.watch(dbAlbumProvider(id).future);
     if (album == null) {
       return EditAlbumData.add(nameController);
     } else {
@@ -54,12 +50,8 @@ class EditAlbum extends _$EditAlbum {
     } else {
       //editing
       await ref
-          .read(dbAlbumListProvider.notifier)
-          .updateAlbum(
-            album,
-            name: _data.nameController.text,
-            cover: () => _data.cover,
-          );
+          .read(dbAlbumProvider(id).notifier)
+          .edit(name: _data.nameController.text, cover: () => _data.cover);
     }
   }
 
@@ -89,7 +81,9 @@ class EditAlbum extends _$EditAlbum {
         _data.nameController.text,
         newCover,
       );
-      state = AsyncData(_data.copyWith(cover: () => newCover, enableSubmit: enableSubmit));
+      state = AsyncData(
+        _data.copyWith(cover: () => newCover, enableSubmit: enableSubmit),
+      );
     }
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
+import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
 
@@ -47,7 +48,7 @@ class AlbumCardUI extends ConsumerWidget {
   }
 
   Future<bool> confirmDelete(BuildContext ctx, WidgetRef ref) async {
-    final name = ref.read(albumCardProvider(_id).notifier).albumName;
+    final name = ref.read(dbAlbumProvider(_id)).value?.name;
     if (name == null) {
       return false;
     }

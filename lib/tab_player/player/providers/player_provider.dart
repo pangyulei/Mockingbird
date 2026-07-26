@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
-import 'package:mockingbird/db/providers/db_album_list_provider.dart';
+import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
@@ -164,15 +164,14 @@ class PlayerNotifier extends Notifier<ItemScrollController> {
 
   Future<void> addSubtitle() async {
     final media = ref.read(dbPlayingMediaProvider).value;
-    if (media == null) return;
     final subtitlePath = await _pickOneSubtitle();
     if (subtitlePath == null) return;
 
     final subtitle = await SubtitleParser.parsePath(subtitlePath);
     if (subtitle != null) {
       await ref
-          .read(dbAlbumListProvider.notifier)
-          .updateMedia(media, subtitle: () => subtitle);
+          .read(dbMediaProvider(media?.id).notifier)
+          .edit(subtitle: () => subtitle);
     }
   }
 

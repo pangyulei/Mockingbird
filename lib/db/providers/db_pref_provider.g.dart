@@ -32,7 +32,7 @@ final class DBPrefProvider extends $AsyncNotifierProvider<DBPref, EnPref> {
   DBPref create() => DBPref();
 }
 
-String _$dBPrefHash() => r'7a7bf73983996887e773a877191dbd1b77c735af';
+String _$dBPrefHash() => r'2693a7a91c02ff01faf588a86159b75d89a5acad';
 
 abstract class _$DBPref extends $AsyncNotifier<EnPref> {
   FutureOr<EnPref> build();
