@@ -5,27 +5,26 @@ import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_subtitle.dart';
-import 'package:mockingbird/tab_player/player/states/player_video.dart';
+import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:collection/collection.dart';
-
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../db/entities/en_media.dart';
 import '../../../db/entities/en_subtitle.dart';
 import '../../../db/providers/db_album_list_provider.dart';
 import '../../../tool/subtitle_parser.dart';
 
-final playerSubtitleProvider = NotifierProvider.autoDispose(
-  PlayerSubtitleNotifier.new,
-);
+part 'player_subtitle_provider.g.dart';
 
-class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
+@riverpod
+class PlayerSubtitle extends _$PlayerSubtitle {
   final _scrollController = ItemScrollController();
   int? _playingSentenceIndex;
   List<EnSentence> _sentenceList = [];
   @override
-  PlayerSubtitle build() {
+  PlayerSubtitleState build() {
     final positionMicro = ref.watch(
       playerMediaProvider.select((st) {
         final data = st.value;
@@ -33,11 +32,11 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
         return data.positionMicro;
       }),
     );
-    if (positionMicro == null) return PlayerSubtitle.empty(_scrollController);
+    if (positionMicro == null) return PlayerSubtitleState.empty(_scrollController);
     final EnSubtitle? subtitle = ref.watch(
       dbPlayingMediaProvider.select((st) => st.value?.subtitleList.firstOrNull),
     );
-    if (subtitle == null) return PlayerSubtitle.empty(_scrollController);
+    if (subtitle == null) return PlayerSubtitleState.empty(_scrollController);
     _sentenceList = subtitle.sentenceList;
     final playingSentenceIndex = _sentenceIndexByPosition(
       Duration(microseconds: positionMicro),
@@ -47,7 +46,7 @@ class PlayerSubtitleNotifier extends Notifier<PlayerSubtitle> {
     final playingSentenceId = playingSentenceIndex == null
         ? null
         : subtitle.sentenceList[playingSentenceIndex].id;
-    return PlayerSubtitle(
+    return PlayerSubtitleState(
       playingSentenceId: playingSentenceId,
       scrollController: _scrollController,
       sentenceIdList: subtitle.sentenceList.map((sen) => sen.id).toList(),

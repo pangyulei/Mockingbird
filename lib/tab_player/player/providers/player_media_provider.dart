@@ -8,14 +8,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_video_controller_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_video.dart';
+import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:video_player/video_player.dart';
 
-final playerMediaProvider = AsyncNotifierProvider.autoDispose(
-  PlayerMediaNotifier.new,
-);
+part 'player_media_provider.g.dart';
 
-class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
+@riverpod
+class PlayerMedia extends _$PlayerMedia {
   bool _isDraggingVideoSlider = false;
   int? _prevPlayingSentenceIndex;
 

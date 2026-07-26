@@ -58,7 +58,7 @@ final class SentenceCardProvider
   }
 }
 
-String _$sentenceCardHash() => r'f3ec41c486119ba8c65ab8149261036be8dda390';
+String _$sentenceCardHash() => r'7d63f5f1545dfbd2fd04e7bb04366fba22383385';
 
 final class SentenceCardFamily extends $Family
     with

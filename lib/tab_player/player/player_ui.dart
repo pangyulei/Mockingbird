@@ -7,7 +7,7 @@ import 'package:mockingbird/tab_player/player/providers/player_media_provider.da
 import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_video.dart';
+import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
@@ -571,7 +571,7 @@ class PlayerUI extends ConsumerWidget {
       height: 24,
       child: Consumer(
         builder: (ctx, ref, _) {
-          final title = ref.watch(playerNameProvider);
+          final title = ref.watch(playerTitleProvider);
           if (title.isEmpty) {
             return const Text('');
           } else {

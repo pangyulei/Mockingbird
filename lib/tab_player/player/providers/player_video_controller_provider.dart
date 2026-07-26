@@ -4,12 +4,10 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:video_player/video_player.dart';
-
-final playerVideoControllerProvider = AsyncNotifierProvider(
-  PlayerVideoControllerNotifier.new,
-);
-
-class PlayerVideoControllerNotifier extends AsyncNotifier<VideoPlayerController?> {
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+part 'player_video_controller_provider.g.dart';
+@riverpod
+class PlayerVideoController extends _$PlayerVideoController {
   @override
   Future<VideoPlayerController?> build() async {
     // final String? path = (await ref.watch(dbPlayingMediaProvider.future))?.path;

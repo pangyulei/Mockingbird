@@ -1,22 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_setting.dart';
-
+import 'package:mockingbird/tab_player/player/states/player_setting_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+part 'player_setting_provider.g.dart';
 const double _kMaxPlaySpeed = 3.0;
 const double _kMinPlaySpeed = 0.25;
 const double _kStepPlaySpeed = 0.25;
 
-final playerSettingProvider = AsyncNotifierProvider.autoDispose(
-  PlayerSettingNotifier.new,
-);
-
-class PlayerSettingNotifier extends AsyncNotifier<PlayerSetting> {
+@riverpod
+class PlayerSetting extends _$PlayerSetting {
   @override
-  Future<PlayerSetting> build() async {
+  Future<PlayerSettingState> build() async {
     final prefIsLoop = await ref.read(
       dbPrefProvider.selectAsync((st) => st.isLoop),
     );
-    return PlayerSetting(
+    return PlayerSettingState(
       showVolumeSlider: false,
       isLoop: prefIsLoop,
       speed: 1,

@@ -12,17 +12,11 @@ class AlbumListUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    final bool isLoading = ref.read(
-      albumListProvider.select((st) => st.isLoading),
-    );
-    showLoading(isLoading);
-    ref.listen(
-      albumListProvider.select((st) => st.isLoading),
-      (previous, next) => showLoading(next),
-    );
     final stateType = ref.watch(
       albumListProvider.select((st) => st.value?.runtimeType),
     );
+    debugPrint('albumlist stateType: $stateType');
+    showLoading(stateType == null);
     switch (stateType) {
       case AlbumListNull:
         //result is null
@@ -32,7 +26,6 @@ class AlbumListUI extends ConsumerWidget {
         return _page(ctx, ref);
       default:
         //Null/null, means its asyncloading without data, initial load situation
-        debugPrint('albumlist stateType: $stateType');
         return Scaffold(appBar: _appBar(ctx, ref),);
     }
   }

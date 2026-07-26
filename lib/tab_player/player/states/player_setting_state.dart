@@ -1,21 +1,21 @@
-class PlayerSetting {
+class PlayerSettingState {
   final bool showVolumeSlider;
   final bool isLoop;
   final double speed;
   final double volume;
-  const PlayerSetting({
+  const PlayerSettingState({
     required this.showVolumeSlider,
     required this.isLoop,
     required this.speed,
     required this.volume,
   });
-  PlayerSetting copyWith({
+  PlayerSettingState copyWith({
     bool? isLoop,
     double? speed,
     double? volume,
     bool? showVolumeSlider,
   }) {
-    return PlayerSetting(
+    return PlayerSettingState(
       isLoop: isLoop ?? this.isLoop,
       speed: speed ?? this.speed,
       volume: volume ?? this.volume,
