@@ -26,10 +26,9 @@ class AlbumListUI extends ConsumerWidget {
         return _page(ctx, ref);
       default:
         //Null/null, means its asyncloading without data, initial load situation
-        return Scaffold(appBar: _appBar(ctx, ref),);
+        return Scaffold(appBar: _appBar(ctx, ref));
     }
   }
-
 
   Widget _empty(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
@@ -139,8 +138,11 @@ class AlbumListUI extends ConsumerWidget {
       builder: (context, ref, child) {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
-        final albumIdList = ref.watch(
-          albumListProvider.select((st) => (st.value as AlbumListData).albumIdList),
+        final List<int> albumIdList = ref.watch(
+          albumListProvider.select((st) {
+            final data = st.value;
+            return data is AlbumListData ? data.albumIdList : [];
+          }),
         );
         return GridView.builder(
           padding: const EdgeInsets.all(12),
