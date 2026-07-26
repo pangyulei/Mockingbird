@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
@@ -24,7 +26,6 @@ class PlayerUI extends ConsumerWidget {
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
     debugPrint('player state type $stateType');
-    showLoading(stateType == null);
     switch (stateType) {
       case PlayerMediaNull:
         return _empty(ctx);
@@ -36,7 +37,7 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onAddSubtitle(WidgetRef ref) async {
-    await ref.read(playerSubtitleProvider.notifier).addSubtitle();
+    await ref.read(playerProvider.notifier).addSubtitle();
   }
 
   void _onToggleLoop(WidgetRef ref) {
@@ -64,31 +65,27 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
-    await ref
-        .read(playerMediaProvider.notifier)
-        .videoSliderStartChanged(valMicro);
+    await ref.read(playerProvider.notifier).videoSliderStartChanged(valMicro);
   }
 
   void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
-    await ref.read(playerMediaProvider.notifier).videoSliderChanging(valMicro);
+    await ref.read(playerProvider.notifier).videoSliderChanging(valMicro);
   }
 
   void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
-    await ref
-        .read(playerMediaProvider.notifier)
-        .videoSliderEndChanged(valMicro);
+    await ref.read(playerProvider.notifier).videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
-    ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
+    ref.read(playerProvider.notifier).scrollToPlayingSentence();
   }
 
   void _onScrollToTop(WidgetRef ref) {
-    ref.read(playerSubtitleProvider.notifier).scrollToTop();
+    ref.read(playerProvider.notifier).scrollToTop();
   }
 
   void _onScrollToBottom(WidgetRef ref) {
-    ref.read(playerSubtitleProvider.notifier).scrollToBottom();
+    ref.read(playerProvider.notifier).scrollToBottom();
   }
 
   void _onVolumeChanged(WidgetRef ref, double newVolume) async {
@@ -259,12 +256,16 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final sentenceIdList = ref.watch(
-              playerSubtitleProvider.select((st) => st.sentenceIdList),
-            );
-            final scrollController = ref.watch(
-              playerSubtitleProvider.select((st) => st.scrollController),
-            );
+            final sentenceIdList =
+                ref.watch(
+                  dbPlayingMediaProvider.select(
+                    (st) => st.value?.subtitleList.firstOrNull?.sentenceList
+                        .map((sen) => sen.id)
+                        .toList(),
+                  ),
+                ) ??
+                [];
+            final scrollController = ref.watch(playerProvider);
             if (sentenceIdList.isEmpty) {
               return _noSubtitle(ctx, ref);
             }
@@ -319,9 +320,14 @@ class PlayerUI extends ConsumerWidget {
   Widget? _floatingButtons() {
     return Consumer(
       builder: (context, ref, child) {
-        final sentenceIsEmpty = ref.watch(
-          playerSubtitleProvider.select((st) => st.sentenceIdList.isEmpty),
-        );
+        final sentenceIsEmpty =
+            ref.watch(
+              dbPlayingMediaProvider.select(
+                (st) =>
+                    st.value?.subtitleList.firstOrNull?.sentenceList.isEmpty,
+              ),
+            ) ??
+            true;
         if (sentenceIsEmpty) {
           return const SizedBox.shrink();
         } else {
@@ -659,9 +665,14 @@ class PlayerUI extends ConsumerWidget {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
       builder: (ctx, ref, child) {
-        final sentenceIsEmpty = ref.watch(
-          playerSubtitleProvider.select((st) => st.sentenceIdList.isEmpty),
-        );
+        final sentenceIsEmpty =
+            ref.watch(
+              dbPlayingMediaProvider.select(
+                (st) =>
+                    st.value?.subtitleList.firstOrNull?.sentenceList.isEmpty,
+              ),
+            ) ??
+            true;
         if (sentenceIsEmpty) return const SizedBox.shrink();
         final bool isLoop = ref.watch(
           playerSettingProvider.select((st) => st.value?.isLoop ?? false),

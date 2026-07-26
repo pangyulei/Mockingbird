@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_provider.dart';
 
 class SentenceCardUI extends ConsumerWidget {
@@ -9,7 +10,7 @@ class SentenceCardUI extends ConsumerWidget {
   const SentenceCardUI(this._id, {super.key});
 
   void _onTap(WidgetRef ref) {
-    ref.read(playerSubtitleProvider.notifier).tapSentence(_id);
+    ref.read(playerProvider.notifier).tapSentence(_id);
   }
 
   @override

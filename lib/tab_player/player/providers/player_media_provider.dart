@@ -1,12 +1,10 @@
 //seperate with videocontroller provider, so if you update media's name or its subtitle,
 //the videocontroller wont rebuild
 
-import 'package:defer/defer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_video_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -16,9 +14,6 @@ part 'player_media_provider.g.dart';
 
 @riverpod
 class PlayerMedia extends _$PlayerMedia {
-  bool _isDraggingVideoSlider = false;
-  int? _prevPlayingSentenceIndex;
-
   @override
   Future<PlayerMediaState> build() async {
     //because of this is read and have to await, this has to be a AsyncNotifier
@@ -40,6 +35,21 @@ class PlayerMedia extends _$PlayerMedia {
       videoController: videoController,
       isPlaying: true,
     );
+  }
+
+  void _videoPositionChanged(VideoPlayerController videoController) async {
+    final position = videoController.value.position;
+    //for video slider moving along with playing
+    var data = state.value;
+    if (data is! PlayerMediaData) return;
+    data = data.copyWith(positionMicro: position.inMicroseconds);
+    state = AsyncData(data);
+
+    final duration = videoController.value.duration;
+    if (position >= duration) {
+      //if video end of duration, play/pause button should update
+      await pause();
+    }
   }
 
   void _listen() {
@@ -94,93 +104,7 @@ class PlayerMedia extends _$PlayerMedia {
     await data.videoController.seekTo(position);
   }
 
-  Duration? get duration {
-    var data = state.value;
-    if (data is! PlayerMediaData) return null;
-    return data.videoController.value.duration;
-  }
-
-  void _videoPositionChanged(VideoPlayerController videoController) async {
-    final position = videoController.value.position;
-    //for video slider moving along with playing
-    var data = state.value;
-    if (data is! PlayerMediaData) return;
-    data = data.copyWith(positionMicro: position.inMicroseconds);
-    state = AsyncData(data);
-
-    final int? playingSentenceIndex = ref
-        .read(playerSubtitleProvider.notifier)
-        .playingSentenceIndex;
-    final bool isSentenceChanged =
-        playingSentenceIndex != _prevPlayingSentenceIndex;
-
-    final duration = videoController.value.duration;
-    if (position >= duration) {
-      //if video end of duration, play/pause button should update
-      await pause();
-    }
-    //prevent videoController.play() but _state not setuped fully.
-    final isLoop = ref.read(
-      playerSettingProvider.select((st) => st.value?.isLoop ?? false),
-    );
-    //handle scroll
-    if (isSentenceChanged) {
-      if (_isDraggingVideoSlider) {
-        ref.read(playerSubtitleProvider.notifier).jumpToPlayingSentence();
-      } else if (!isLoop) {
-        //playing auto scroll to next sentence, not for loop mode
-        ref.read(playerSubtitleProvider.notifier).scrollToPlayingSentence();
-      }
-    }
-    //handle loop seek to begin
-    final loopSentence = ref.read(playerSubtitleProvider.notifier).loopSentence;
-    if (!_isDraggingVideoSlider && loopSentence != null) {
-      //if repeat one is turn on, while sentence finished, seek to beginning
-      // debugPrint('position changing loop $sentence');
-      if (position > loopSentence.end) {
-        // debugPrint('positon changing loop seek to ${sentence.start}');
-        await videoController.seekTo(loopSentence.start);
-      }
-    }
-    _prevPlayingSentenceIndex = playingSentenceIndex;
-  }
-
-  Future<void> videoSliderStartChanged(double valMicro) async {
-    _isDraggingVideoSlider = true;
-    debugPrint('slider: start');
-    await pause();
-    final position = Duration(microseconds: valMicro.toInt());
-    await seekTo(position);
-  }
-
-  Future<void> videoSliderChanging(double valMicro) async {
-    final position = Duration(microseconds: valMicro.toInt());
-    await seekTo(position);
-  }
-
-  Future<void> videoSliderEndChanged(double valMicro) async {
-    await defer(
-      () async {
-        _isDraggingVideoSlider = false;
-        debugPrint('slider: end');
-      },
-      () async {
-        final position = Duration(microseconds: valMicro.toInt());
-        //seek to sentence start
-        final loopSentence = ref
-            .read(playerSubtitleProvider.notifier)
-            .loopSentence;
-        final Duration seekToPosition = loopSentence == null
-            ? position
-            : loopSentence.start;
-        await seekTo(seekToPosition);
-
-        final duration = this.duration;
-        if (duration != null && seekToPosition < duration) {
-          debugPrint('slider: play');
-          await play();
-        }
-      },
-    );
-  }
+  Duration? get duration => state.value is PlayerMediaData
+      ? (state.value as PlayerMediaData).videoController.value.duration
+      : null;
 }
