@@ -31,7 +31,7 @@ class SentenceCard extends _$SentenceCard {
     if (sentence == null) return const SentenceCardState.empty();
 
     final int? playingSentenceId = ref.watch(
-      playerSpotProvider.select((st) => st.playingSentence?.id),
+      playerSpotProvider.select((st) => st.value?.playingSentence?.id),
     );
 
     String formatDuration(Duration d) {

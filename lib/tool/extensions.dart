@@ -2,7 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-extension IterableExtension<E> on Iterable<E> {
+extension Simplify on Object {
+  T? as<T>() {
+    return (this is T) ? (this as T) : null;
+  }
+}
+
+extension Index<E> on Iterable<E> {
   int? firstIndexWhereOrNull(bool Function(E) test) {
     int i = 0;
     for (final element in this) {

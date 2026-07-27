@@ -3,9 +3,7 @@ import 'package:defer/defer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
-import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
@@ -13,9 +11,12 @@ import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dar
 import 'package:mockingbird/tab_player/player/providers/player_video_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
-import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
+
+import '../../../db/entities/en_media.dart';
+import '../../../db/providers/db_media_provider.dart';
+import '../../../tool/subtitle_parser.dart';
 
 final playerProvider = NotifierProvider(PlayerNotifier.new);
 
@@ -56,9 +57,9 @@ class PlayerNotifier extends Notifier<ItemScrollController> {
     VideoPlayerController videoController,
     Duration position,
   ) async {
-    final spot = ref.read(playerSpotProvider);
+    final spot = ref.read(playerSpotProvider).value;
     final bool isSentenceChanged =
-        spot.playingSentenceIndex != _prevPlayingSentenceIndex;
+        spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
     final isLoop = ref.read(
       playerSettingProvider.select((st) => st.value?.isLoop ?? false),
     );
@@ -81,7 +82,7 @@ class PlayerNotifier extends Notifier<ItemScrollController> {
         ref.read(playerMediaProvider.notifier).seekTo(loopSentence.start);
       }
     }
-    _prevPlayingSentenceIndex = spot.playingSentenceIndex;
+    _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
   }
 
   Future<void> videoSliderStartChanged(double valMicro) async {
@@ -138,14 +139,14 @@ class PlayerNotifier extends Notifier<ItemScrollController> {
 
   void scrollToPlayingSentence() {
     final index = ref.read(
-      playerSpotProvider.select((st) => st.playingSentenceIndex),
+      playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
     _scrollController.safeScrollTo(index, alignment: 0.3);
   }
 
   void jumpToPlayingSentence() {
     final index = ref.read(
-      playerSpotProvider.select((st) => st.playingSentenceIndex),
+      playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
     _scrollController.safeJumpTo(index, alignment: 0.3);
   }

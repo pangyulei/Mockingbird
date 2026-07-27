@@ -9,9 +9,6 @@ class PlayerSpotState {
     required this.playingSentence,
   });
 
-  const PlayerSpotState.empty()
-    : this(playingSentence: null, playingSentenceIndex: null);
-
   PlayerSpotState copyWith({
     EnSentence? Function()? playingSentence,
     int? Function()? playingSentenceIndex,

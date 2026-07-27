@@ -4,34 +4,36 @@ import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_spot_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final playerSpotProvider = NotifierProvider(
-  PlayerSpotNotifier.new,
-);
+import '../../../tool/extensions.dart';
+part 'player_spot_provider.g.dart';
 
-class PlayerSpotNotifier extends Notifier<PlayerSpotState> {
+@riverpod
+class PlayerSpot extends _$PlayerSpot {
  
   @override
-  PlayerSpotState build() {
-    final positionMicro = ref.watch(
-      playerMediaProvider.select((st) {
-        final data = st.value;
-        if (data is! PlayerMediaData) return null;
-        return data.positionMicro;
+  Future<PlayerSpotState?> build() async {
+    final int? positionMicro = await ref.watch(
+      playerMediaProvider.selectAsync((st) {
+        if (st is! PlayerMediaData) return null;
+        return st.positionMicro;
       }),
     );
     if (positionMicro == null) {
-      return const PlayerSpotState.empty();
+      return null;
     }
-    final List<EnSentence>? sentenceList = ref.watch(
-      dbPlayingMediaProvider.select(
-        (st) => st.value?.subtitleList.firstOrNull?.sentenceList,
+    final List<EnSentence>? sentenceList = await ref.watch(
+      playerSubtitleProvider.selectAsync(
+        (st) => st.as<PlayerSubtitleData>()?.sentenceList
       ),
     );
     if (sentenceList == null) {
-      return const PlayerSpotState.empty();
+      return null;
     }
     final position = Duration(microseconds: positionMicro);
     final playingSentenceIndex = _sentenceIndexByPosition(
@@ -52,7 +54,7 @@ class PlayerSpotNotifier extends Notifier<PlayerSpotState> {
       playerSettingProvider.select((st) => st.value?.isLoop),
     );
     if (isLoop == null || !isLoop) return null;
-    return state.playingSentence;
+    return state.value?.playingSentence;
   }
 
 

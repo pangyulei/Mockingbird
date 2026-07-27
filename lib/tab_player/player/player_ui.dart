@@ -9,7 +9,9 @@ import 'package:mockingbird/tab_player/player/providers/player_name_provider.dar
 import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
@@ -256,26 +258,25 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final sentenceIdList =
-                ref.watch(
-                  dbPlayingMediaProvider.select(
-                    (st) => st.value?.subtitleList.firstOrNull?.sentenceList
-                        .map((sen) => sen.id)
-                        .toList(),
-                  ),
-                ) ??
-                [];
-            final scrollController = ref.watch(playerProvider);
-            if (sentenceIdList.isEmpty) {
-              return _noSubtitle(ctx, ref);
+            final data = ref.watch(
+              playerSubtitleProvider,
+            ).value;
+            if (data == null) return const SizedBox.shrink();
+            switch (data) {
+              case PlayerSubtitleData:
+                final sentenceIdList = (data as PlayerSubtitleData).sentenceList.map((e) => e.id)
+                    .toList();
+                final scrollController = ref.watch(playerProvider);
+                return ScrollablePositionedList.builder(
+                  itemCount: sentenceIdList.length,
+                  itemScrollController: scrollController,
+                  itemBuilder: (context, i) {
+                    return SentenceCardUI(sentenceIdList[i]);
+                  },
+                );
+              default:
+                return _noSubtitle(ctx, ref);
             }
-            return ScrollablePositionedList.builder(
-              itemCount: sentenceIdList.length,
-              itemScrollController: scrollController,
-              itemBuilder: (context, i) {
-                return SentenceCardUI(sentenceIdList[i]);
-              },
-            );
           },
         ),
       ),
@@ -320,45 +321,37 @@ class PlayerUI extends ConsumerWidget {
   Widget? _floatingButtons() {
     return Consumer(
       builder: (context, ref, child) {
-        final sentenceIsEmpty =
+        final show =
             ref.watch(
-              dbPlayingMediaProvider.select(
-                (st) =>
-                    st.value?.subtitleList.firstOrNull?.sentenceList.isEmpty,
-              ),
-            ) ??
-            true;
-        if (sentenceIsEmpty) {
-          return const SizedBox.shrink();
-        } else {
-          final colorScheme = Theme.of(context).colorScheme;
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              FloatingActionButton.small(
-                heroTag: 'scroll_top',
-                onPressed: () => _onScrollToTop(ref),
-                backgroundColor: colorScheme.surfaceContainerHighest,
-                foregroundColor: colorScheme.primary,
-                child: const Icon(Icons.keyboard_arrow_up_rounded),
-              ),
-              const SizedBox(height: 8),
-              FloatingActionButton.small(
-                heroTag: 'scroll_focus',
-                onPressed: () => _onScrollToPlayingSentence(ref),
-                child: const Icon(Icons.center_focus_strong_rounded),
-              ),
-              const SizedBox(height: 8),
-              FloatingActionButton.small(
-                heroTag: 'scroll_bottom',
-                onPressed: () => _onScrollToBottom(ref),
-                backgroundColor: colorScheme.surfaceContainerHighest,
-                foregroundColor: colorScheme.primary,
-                child: const Icon(Icons.keyboard_arrow_down_rounded),
-              ),
-            ],
-          );
-        }
+              playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData));
+        if (!show) return const SizedBox.shrink();
+        final colorScheme = Theme.of(context).colorScheme;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            FloatingActionButton.small(
+              heroTag: 'scroll_top',
+              onPressed: () => _onScrollToTop(ref),
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              foregroundColor: colorScheme.primary,
+              child: const Icon(Icons.keyboard_arrow_up_rounded),
+            ),
+            const SizedBox(height: 8),
+            FloatingActionButton.small(
+              heroTag: 'scroll_focus',
+              onPressed: () => _onScrollToPlayingSentence(ref),
+              child: const Icon(Icons.center_focus_strong_rounded),
+            ),
+            const SizedBox(height: 8),
+            FloatingActionButton.small(
+              heroTag: 'scroll_bottom',
+              onPressed: () => _onScrollToBottom(ref),
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              foregroundColor: colorScheme.primary,
+              child: const Icon(Icons.keyboard_arrow_down_rounded),
+            ),
+          ],
+        );
       },
     );
   }
