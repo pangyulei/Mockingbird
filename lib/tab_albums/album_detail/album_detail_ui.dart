@@ -16,18 +16,10 @@ class AlbumDetailUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    // handle loading
-    showLoading(
-      ref.read(albumDetailProvider(_id).select((st) => st.isLoading)),
-    );
-    ref.listen(
-      albumDetailProvider(_id).select((st) => st.isLoading),
-      (previous, next) => showLoading(next),
-    );
-
     final stateType = ref.watch(
       albumDetailProvider(_id).select((st) => st.value?.runtimeType),
     );
+    showLoading(stateType==null);
     switch (stateType) {
       case AlbumDetailData:
         return _page(ctx, ref);

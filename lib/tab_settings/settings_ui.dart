@@ -16,7 +16,7 @@ class SettingsUI extends ConsumerWidget {
     final stateType = ref.watch(
       settingsProvider.select((st) => st.value?.runtimeType),
     );
-    showLoading(stateType != SettingsState);
+    showLoading(stateType==null);
     switch (stateType) {
       case SettingsState:
         return _page(ctx);

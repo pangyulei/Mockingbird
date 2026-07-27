@@ -232,9 +232,7 @@ class EditAlbumUIState extends ConsumerState<EditAlbumUI> {
 
   void _onSubmit(BuildContext ctx, WidgetRef ref) async {
     debugPrint('edit album submit');
-    showLoading(true);
     await ref.read(editAlbumProvider(_id).notifier).submit();
-    showLoading(false);
     if (ctx.mounted) {
       debugPrint('edit album poping');
       Navigator.of(ctx).pop();
