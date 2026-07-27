@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
 
 @Entity()

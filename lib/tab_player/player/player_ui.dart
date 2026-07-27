@@ -28,8 +28,12 @@ class PlayerUI extends ConsumerStatefulWidget {
 
 class PlayerUIState extends ConsumerState<PlayerUI> {
   final _scrollController = ItemScrollController();
+
   @override
   Widget build(BuildContext ctx) {
+    ref.listen(playerProvider(_scrollController), (previous, next) {
+      //keep playerProvider alive while page exist
+    });
     final stateType = ref.watch(
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
@@ -283,7 +287,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                 itemScrollController: _scrollController,
                 itemBuilder: (context, i) {
                   final sentenceId = sentenceIdList[i];
-                  return SentenceCardUI(sentenceId, (ref) {
+                  return SentenceCardUI(sentenceId, (ref, sentenceId) {
                     ref
                         .read(playerProvider(_scrollController).notifier)
                         .tapSentence(sentenceId);

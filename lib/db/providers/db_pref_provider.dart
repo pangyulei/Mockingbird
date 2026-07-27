@@ -1,7 +1,5 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_pref.dart';
-import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'db_pref_provider.g.dart';

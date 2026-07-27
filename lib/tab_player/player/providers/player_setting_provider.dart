@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_setting_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

@@ -1,9 +1,6 @@
-import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
-import 'package:mockingbird/db/entities/en_subtitle.dart';
-import 'package:mockingbird/db/providers/db_album_list_provider.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

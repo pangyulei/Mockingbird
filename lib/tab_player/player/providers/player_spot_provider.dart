@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
-import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';

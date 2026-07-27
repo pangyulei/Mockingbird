@@ -43,7 +43,7 @@ class Player extends _$Player {
           .select((data) => (data?.positionMicro, data?.videoController)),
     );
     if (positionMicro == null || videoController == null) {
-      return ;
+      return;
     }
     _videoPositionChanged(
       videoController,
@@ -141,6 +141,7 @@ class Player extends _$Player {
     final index = ref.read(
       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
+    debugPrint('will scroll to index($index)');
     scrollController.safeScrollTo(index, alignment: 0.3);
   }
 
@@ -158,6 +159,7 @@ class Player extends _$Player {
     );
     if (sentenceIndex == null) return;
     final sentence = _sentenceList[sentenceIndex];
+    debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
     await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
     scrollToPlayingSentence();
     await ref.read(playerMediaProvider.notifier).play();

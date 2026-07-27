@@ -1,7 +1,6 @@
 
 import 'dart:io';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
