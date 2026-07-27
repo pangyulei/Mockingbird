@@ -33,6 +33,8 @@ class EditAlbumUIState extends ConsumerState<EditAlbumUI> {
     showLoading(stateType == null);
     switch (stateType) {
       case EditAlbumState:
+        _nameController.text =
+            ref.read(editAlbumProvider(_id)).value?.name ?? '';
         return _dialog(ctx);
       default:
         return const NullUI();
@@ -62,45 +64,40 @@ class EditAlbumUIState extends ConsumerState<EditAlbumUI> {
           children: [
             _cover(ctx),
             const SizedBox(height: 20),
-            Consumer(
-              builder: (context, ref, child) {
-                _nameController.text =
-                    ref.read(editAlbumProvider(_id)).value?.name ?? '';
-                return TextField(
-                  onChanged: (newName) => _onNameChanged(ref, newName),
-                  controller: _nameController,
-                  cursorColor: Theme.of(ctx).colorScheme.primary,
-                  style: const TextStyle(fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: 'Album Name',
-                    labelStyle: TextStyle(
-                      color: Theme.of(
-                        ctx,
-                      ).colorScheme.primary.withValues(alpha: 0.7),
-                    ),
-                    hintText: 'Enter Album name',
-                    hintStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.2),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.edit_note_rounded,
-                      color: Theme.of(ctx).colorScheme.primary,
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(ctx).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.3),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 0,
-                    ),
-                  ),
-                  autofocus: true,
-                );
-              },
+            TextField(
+              onChanged: (newName) => _onNameChanged(ref, newName),
+              controller: _nameController,
+              cursorColor: Theme.of(ctx).colorScheme.primary,
+              style: const TextStyle(fontSize: 16),
+              decoration: InputDecoration(
+                labelText: 'Album Name',
+                labelStyle: TextStyle(
+                  color: Theme.of(
+                    ctx,
+                  ).colorScheme.primary.withValues(alpha: 0.7),
+                ),
+                hintText: 'Enter Album name',
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+                prefixIcon: Icon(
+                  Icons.edit_note_rounded,
+                  color: Theme.of(ctx).colorScheme.primary,
+                ),
+                filled: true,
+                fillColor: Theme.of(
+                  ctx,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 0,
+                ),
+              ),
+              autofocus: true,
             ),
           ],
         ),
