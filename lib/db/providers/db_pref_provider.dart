@@ -1,23 +1,23 @@
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_pref.dart';
-import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'db_pref_provider.g.dart';
 
-@Riverpod(keepAlive: true, name: 'dbPrefProvider')
+@Riverpod(name: 'dbPrefProvider')
 class DBPref extends _$DBPref {
   @override
   Future<EnPref> build() async {
-    final pref = await DBLogic().loadPref() ?? EnPref.empty();
-    if (pref.playingId != null) {
-      final playingMedia = await ref.watch(
-        dbMediaProvider(pref.playingId).future,
-      );
-      if (playingMedia == null) {
-        setPlayingId(null);
-      }
-    }
+    final pref = await DBLogic().loadPref();
+    if (pref == null) return EnPref.empty();
+    // if (pref.playingId != null) {
+    //   final playingMedia = await ref.watch(
+    //     dbMediaProvider(pref.playingId).future,
+    //   );
+    //   if (playingMedia == null) {
+    //     setPlayingId(null);
+    //   }
+    // }
     return pref;
   }
 

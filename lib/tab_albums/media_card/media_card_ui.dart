@@ -5,6 +5,7 @@ import 'package:marquee/marquee.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/tab_albums/edit_media/edit_media_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
+import 'package:mockingbird/tool/null_ui.dart';
 
 enum _MoreItem {
   rename('Rename'),
@@ -55,8 +56,9 @@ class MediaCardUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     final isPlaying = ref.watch(
-      mediaCardProvider(_id).select((s) => s.isPlaying),
+      mediaCardProvider(_id).select((s) => s.value?.isPlaying),
     );
+    if (isPlaying == null) return const NullUI();
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -116,8 +118,11 @@ class MediaCardUI extends ConsumerWidget {
         final theme = Theme.of(ctx);
         final colorScheme = theme.colorScheme;
         final (name, isPlaying) = ref.watch(
-          mediaCardProvider(_id).select((s) => (s.name.trim(), s.isPlaying)),
+          mediaCardProvider(_id)
+              .select((st) => st.value)
+              .select((data) => (data?.name.trim(), data?.isPlaying)),
         );
+        if (name == null || isPlaying == null) return const NullUI();
         if (isPlaying && name.isNotEmpty) {
           return SizedBox(
             height: 20,
@@ -157,10 +162,15 @@ class MediaCardUI extends ConsumerWidget {
           final theme = Theme.of(ctx);
           final colorScheme = theme.colorScheme;
           final (hasSubtitle, type, isPlaying) = ref.watch(
-            mediaCardProvider(
-              _id,
-            ).select((s) => (s.hasSubtitle, s.type, s.isPlaying)),
+            mediaCardProvider(_id)
+                .select((st) => st.value)
+                .select(
+                  (data) => (data?.hasSubtitle, data?.type, data?.isPlaying),
+                ),
           );
+          if (hasSubtitle == null || type == null || isPlaying == null) {
+            return const NullUI();
+          }
           return Row(
             children: [
               Icon(
@@ -194,8 +204,9 @@ class MediaCardUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     final isPlaying = ref.watch(
-      mediaCardProvider(_id).select((s) => s.isPlaying),
+      mediaCardProvider(_id).select((st) => st.value?.isPlaying),
     );
+    if (isPlaying == null) return const NullUI();
     return Container(
       width: 48,
       height: 48,
@@ -219,8 +230,9 @@ class MediaCardUI extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         final hasSubtitle = ref.watch(
-          mediaCardProvider(_id).select((s) => s.hasSubtitle),
+          mediaCardProvider(_id).select((st) => st.value?.hasSubtitle),
         );
+        if (hasSubtitle == null) return const NullUI();
         return PopupMenuButton<String>(
           icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
           onSelected: (value) {

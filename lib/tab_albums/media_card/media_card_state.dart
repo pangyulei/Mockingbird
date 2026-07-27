@@ -14,12 +14,6 @@ class MediaCardState {
     required this.hasSubtitle,
   });
 
-  const MediaCardState.empty():this(
-    isPlaying: false,
-    type: MediaType.video,
-    name: '',
-    hasSubtitle: false,
-  );
 
   MediaCardState copyWith({
     String? name,

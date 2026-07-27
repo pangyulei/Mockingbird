@@ -30,21 +30,21 @@ class DBAlbum extends _$DBAlbum {
   }
 
   Future<void> edit({String? name, File? Function()? cover}) async {
-    final album = state.value;
+    final album = await future;
     if (album == null) return;
     await DBLogic().updateAlbum(album, name: name, coverFunc: cover);
     ref.invalidateSelf();
   }
 
   Future<void> delete() async {
-    final album = state.value;
+    final album = await future;
     if (album == null) return;
     await DBLogic().deleteAlbum(album);
     ref.invalidateSelf();
   }
 
   Future<void> importResourcesIntoAlbum(List<File> files) async {
-    final album = state.value;
+    final album = await future;
     if (album == null) return;
     if (files.isEmpty) return;
     await DBLogic().importMediaAndSubtitles(album, files);
@@ -52,14 +52,14 @@ class DBAlbum extends _$DBAlbum {
   }
 
   Future<void> sortToFirst() async {
-    final album = state.value;
+    final album = await future;
     if (album == null) return;
     await DBLogic().sortAlbumToFirst(album);
     ref.invalidateSelf();
   }
 
   Future<void> sortToLast() async {
-    final album = state.value;
+    final album = await future;
     if (album == null) return;
     await DBLogic().sortAlbumToLast(album);
     ref.invalidateSelf();

@@ -181,7 +181,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(27, 7767215884357716294),
     name: 'EnPref',
-    lastPropertyId: const obx_int.IdUid(6, 8528645236344410990),
+    lastPropertyId: const obx_int.IdUid(8, 2959510078895679678),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -191,13 +191,13 @@ final _entities = <obx_int.ModelEntity>[
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 4275848776010639930),
+        id: const obx_int.IdUid(7, 9105974782467203318),
         name: 'playingId',
         type: 6,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(6, 8528645236344410990),
+        id: const obx_int.IdUid(8, 2959510078895679678),
         name: 'isLoop',
         type: 1,
         flags: 0,
@@ -376,6 +376,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
       967088597097392464,
       6827048680109433796,
       134427638610516138,
+      4275848776010639930,
+      8528645236344410990,
     ],
     retiredRelationUids: const [7929255877846348169],
     modelVersion: 5,
@@ -618,10 +620,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (EnPref object, fb.Builder fbb) {
-        fbb.startTable(7);
+        fbb.startTable(9);
         fbb.addInt64(0, object.id);
-        fbb.addInt64(1, object.playingId);
-        fbb.addBool(5, object.isLoop);
+        fbb.addInt64(6, object.playingId);
+        fbb.addBool(7, object.isLoop);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -637,12 +639,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final playingIdParam = const fb.Int64Reader().vTableGetNullable(
           buffer,
           rootOffset,
-          6,
+          16,
         );
         final isLoopParam = const fb.BoolReader().vTableGet(
           buffer,
           rootOffset,
-          14,
+          18,
           false,
         );
         final object = EnPref(

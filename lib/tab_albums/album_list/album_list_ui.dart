@@ -4,6 +4,7 @@ import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:mockingbird/tool/null_ui.dart';
 
 import '../../tool/extensions.dart';
 
@@ -105,10 +106,11 @@ class AlbumListUI extends ConsumerWidget {
           Consumer(
             builder: (context, ref, child) {
               final int? albumCount = ref.watch(
-                albumListProvider.select((st) =>st.value?.as<AlbumListData>()
-                        ?.albumIdList.length),
+                albumListProvider.select(
+                  (st) => st.value?.as<AlbumListData>()?.albumIdList.length,
+                ),
               );
-              if (albumCount == null) return const SizedBox.shrink();
+              if (albumCount == null) return const NullUI();
               return Text(
                 '$albumCount created albums',
                 style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
@@ -138,9 +140,11 @@ class AlbumListUI extends ConsumerWidget {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
         final List<int>? albumIdList = ref.watch(
-          albumListProvider.select((st) => st.value?.as<AlbumListData>()?.albumIdList),
+          albumListProvider.select(
+            (st) => st.value?.as<AlbumListData>()?.albumIdList,
+          ),
         );
-        if (albumIdList == null)return const SizedBox.shrink();
+        if (albumIdList == null) return const NullUI();
         return GridView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: albumIdList.length,

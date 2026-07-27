@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/tab_settings/settings_provider.dart';
 import 'package:mockingbird/tab_settings/settings_state.dart';
+import 'package:mockingbird/tool/null_ui.dart';
 
 import '../tool/extensions.dart';
 
@@ -20,7 +21,7 @@ class SettingsUI extends ConsumerWidget {
       case SettingsState:
         return _page(ctx);
       default:
-        return Scaffold(appBar: _appBar(),);
+        return Scaffold(appBar: _appBar());
     }
   }
 
@@ -37,11 +38,9 @@ class SettingsUI extends ConsumerWidget {
           Consumer(
             builder: (ctx, ref, child) {
               final bool? isLoop = ref.watch(
-                settingsProvider.select(
-                  (st) => st.value?.isLoop,
-                ),
+                settingsProvider.select((st) => st.value?.isLoop),
               );
-              if (isLoop == null)return const SizedBox.shrink();
+              if (isLoop == null) return const NullUI();
               return SwitchListTile(
                 title: const Text('Default Loop Mode'),
                 subtitle: const Text('Loop current sentence by default'),

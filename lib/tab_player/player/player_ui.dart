@@ -12,6 +12,7 @@ import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dar
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
+import 'package:mockingbird/tool/null_ui.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
@@ -258,13 +259,12 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final data = ref.watch(
-              playerSubtitleProvider,
-            ).value;
-            if (data == null) return const SizedBox.shrink();
+            final data = ref.watch(playerSubtitleProvider).value;
+            if (data == null) return const NullUI();
             switch (data) {
               case PlayerSubtitleData:
-                final sentenceIdList = (data as PlayerSubtitleData).sentenceList.map((e) => e.id)
+                final sentenceIdList = (data as PlayerSubtitleData).sentenceList
+                    .map((e) => e.id)
                     .toList();
                 final scrollController = ref.watch(playerProvider);
                 return ScrollablePositionedList.builder(
@@ -321,10 +321,10 @@ class PlayerUI extends ConsumerWidget {
   Widget? _floatingButtons() {
     return Consumer(
       builder: (context, ref, child) {
-        final show =
-            ref.watch(
-              playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData));
-        if (!show) return const SizedBox.shrink();
+        final show = ref.watch(
+          playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData),
+        );
+        if (!show) return const NullUI();
         final colorScheme = Theme.of(context).colorScheme;
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -370,7 +370,7 @@ class PlayerUI extends ConsumerWidget {
             if (showVolumeSlider) {
               return Expanded(child: _verticalVolumeSlider(ctx));
             } else {
-              return const SizedBox.shrink();
+              return const NullUI();
             }
           },
         ),
@@ -394,7 +394,7 @@ class PlayerUI extends ConsumerWidget {
             if (showVolumeSlider) {
               return Expanded(child: _horizontalVolumeSlider(ctx));
             } else {
-              return const SizedBox.shrink();
+              return const NullUI();
             }
           },
         ),
@@ -666,7 +666,7 @@ class PlayerUI extends ConsumerWidget {
               ),
             ) ??
             true;
-        if (sentenceIsEmpty) return const SizedBox.shrink();
+        if (sentenceIsEmpty) return const NullUI();
         final bool isLoop = ref.watch(
           playerSettingProvider.select((st) => st.value?.isLoop ?? false),
         );

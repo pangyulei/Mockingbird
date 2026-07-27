@@ -9,15 +9,14 @@ part 'album_card_provider.g.dart';
 @riverpod
 class AlbumCard extends _$AlbumCard {
   @override
-  AlbumCardState build(int? id) {
-    if (id == null) return const AlbumCardState.empty();
+  Future<AlbumCardState?> build(int? id) async {
     final album = ref.watch(dbAlbumProvider(id)).value;
-    if (album == null) return const AlbumCardState.empty();
+    if (album == null) return null;
     final albumCount = ref.watch(
       dbAlbumListProvider.select((st) => st.value?.length ?? 0),
     );
     return AlbumCardState(
-      mediasCount: album.mediaList.length,
+      mediaCount: album.mediaList.length,
       name: album.name,
       cover: album.cover,
       canSort: albumCount >= 2,
@@ -35,5 +34,4 @@ class AlbumCard extends _$AlbumCard {
   Future<void> delete() async {
     await ref.read(dbAlbumProvider(id).notifier).delete();
   }
-
 }

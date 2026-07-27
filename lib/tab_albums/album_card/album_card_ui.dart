@@ -7,6 +7,7 @@ import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/providers/db_album_provider.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_provider.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:mockingbird/tool/null_ui.dart';
 
 enum _MoreItem {
   edit('Edit'),
@@ -56,12 +57,19 @@ class AlbumCardUI extends ConsumerWidget {
       context: ctx,
       builder: (context) => AlertDialog(
         title: const Text('Delete Album'),
-        content: Text('Are you sure you want to delete "$name"? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete "$name"? This action cannot be undone.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -110,7 +118,10 @@ class AlbumCardUI extends ConsumerWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [Colors.transparent, Colors.black.withValues(alpha: 0.3)],
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.3),
+                            ],
                           ),
                         ),
                       ),
@@ -129,7 +140,10 @@ class AlbumCardUI extends ConsumerWidget {
               children: [
                 Consumer(
                   builder: (context, ref, child) {
-                    final name = ref.watch(albumCardProvider(_id).select((s) => s.name));
+                    final name = ref.watch(
+                      albumCardProvider(_id).select((st) => st.value?.name),
+                    );
+                    if (name == null) return const NullUI();
                     return Text(
                       name,
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -144,11 +158,14 @@ class AlbumCardUI extends ConsumerWidget {
                 const SizedBox(height: 2),
                 Consumer(
                   builder: (context, ref, child) {
-                    final mediasCount = ref.watch(
-                      albumCardProvider(_id).select((s) => s.mediasCount),
+                    final mediaCount = ref.watch(
+                      albumCardProvider(
+                        _id,
+                      ).select((st) => st.value?.mediaCount),
                     );
+                    if (mediaCount == null) return const NullUI();
                     return Text(
-                      '$mediasCount Medias',
+                      '$mediaCount Medias',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.outline,
                         fontWeight: FontWeight.w500,
@@ -166,78 +183,89 @@ class AlbumCardUI extends ConsumerWidget {
 
   Widget _menu(BuildContext ctx, WidgetRef ref) {
     final colorScheme = Theme.of(ctx).colorScheme;
-    return Consumer(builder: (context, ref, child) {
-      final bool canSort = ref.watch(albumCardProvider(_id).select((st) => st.canSort));
-      return PopupMenuButton<String>(
-        icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
-        onSelected: (value) {
-          if (value == _MoreItem.edit.raw) {
-            _onEdit(ctx);
-          } else if (value == _MoreItem.delete.raw) {
-            _onDelete(ctx, ref);
-          } else if (value == _MoreItem.first.raw) {
-            _onSortToFirst(ref);
-          } else if (value == _MoreItem.last.raw) {
-            _onSortToLast(ref);
-          }
-        },
-        itemBuilder: (context) => [
-          PopupMenuItem(
-            value: _MoreItem.edit.raw,
-            child: Row(
-              children: [
-                const Icon(Icons.edit_outlined, size: 18),
-                const SizedBox(width: 12),
-                Text(_MoreItem.edit.raw),
-              ],
-            ),
-          ),
-          if (canSort) ...[
+    return Consumer(
+      builder: (context, ref, child) {
+        final bool? canSort = ref.watch(
+          albumCardProvider(_id).select((st) => st.value?.canSort),
+        );
+        if (canSort == null) return const NullUI();
+        return PopupMenuButton<String>(
+          icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
+          onSelected: (value) {
+            if (value == _MoreItem.edit.raw) {
+              _onEdit(ctx);
+            } else if (value == _MoreItem.delete.raw) {
+              _onDelete(ctx, ref);
+            } else if (value == _MoreItem.first.raw) {
+              _onSortToFirst(ref);
+            } else if (value == _MoreItem.last.raw) {
+              _onSortToLast(ref);
+            }
+          },
+          itemBuilder: (context) => [
             PopupMenuItem(
-              value: _MoreItem.first.raw,
+              value: _MoreItem.edit.raw,
               child: Row(
                 children: [
-                  const Icon(Icons.vertical_align_top_outlined, size: 18),
+                  const Icon(Icons.edit_outlined, size: 18),
                   const SizedBox(width: 12),
-                  Text(_MoreItem.first.raw),
+                  Text(_MoreItem.edit.raw),
                 ],
               ),
             ),
+            if (canSort) ...[
+              PopupMenuItem(
+                value: _MoreItem.first.raw,
+                child: Row(
+                  children: [
+                    const Icon(Icons.vertical_align_top_outlined, size: 18),
+                    const SizedBox(width: 12),
+                    Text(_MoreItem.first.raw),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: _MoreItem.last.raw,
+                child: Row(
+                  children: [
+                    const Icon(Icons.vertical_align_bottom_outlined, size: 18),
+                    const SizedBox(width: 12),
+                    Text(_MoreItem.last.raw),
+                  ],
+                ),
+              ),
+            ],
             PopupMenuItem(
-              value: _MoreItem.last.raw,
+              value: _MoreItem.delete.raw,
               child: Row(
                 children: [
-                  const Icon(Icons.vertical_align_bottom_outlined, size: 18),
+                  Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: colorScheme.error,
+                  ),
                   const SizedBox(width: 12),
-                  Text(_MoreItem.last.raw),
+                  Text(
+                    _MoreItem.delete.raw,
+                    style: TextStyle(color: colorScheme.error),
+                  ),
                 ],
               ),
             ),
           ],
-          PopupMenuItem(
-            value: _MoreItem.delete.raw,
-            child: Row(
-              children: [
-                Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
-                const SizedBox(width: 12),
-                Text(_MoreItem.delete.raw, style: TextStyle(color: colorScheme.error)),
-              ],
-            ),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.black.withValues(alpha: 0.3),
+            minimumSize: const Size(32, 32),
+            padding: EdgeInsets.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-        ],
-        style: IconButton.styleFrom(
-          backgroundColor: Colors.black.withValues(alpha: 0.3),
-          minimumSize: const Size(32, 32),
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-      );
-    },);
-
+        );
+      },
+    );
   }
 
   Widget _cover(BuildContext ctx, WidgetRef ref) {
-    final cover = ref.watch(albumCardProvider(_id).select((s) => s.cover));
+    final String? cover = ref.watch(albumCardProvider(_id).select((st) => st.value?.cover));
     final colorScheme = Theme.of(ctx).colorScheme;
     if (cover != null) {
       return Image.file(File(cover), fit: BoxFit.cover);

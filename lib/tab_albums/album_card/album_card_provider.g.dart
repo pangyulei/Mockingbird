@@ -13,7 +13,7 @@ part of 'album_card_provider.dart';
 final albumCardProvider = AlbumCardFamily._();
 
 final class AlbumCardProvider
-    extends $NotifierProvider<AlbumCard, AlbumCardState> {
+    extends $AsyncNotifierProvider<AlbumCard, AlbumCardState?> {
   AlbumCardProvider._({
     required AlbumCardFamily super.from,
     required int? super.argument,
@@ -39,14 +39,6 @@ final class AlbumCardProvider
   @override
   AlbumCard create() => AlbumCard();
 
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AlbumCardState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<AlbumCardState>(value),
-    );
-  }
-
   @override
   bool operator ==(Object other) {
     return other is AlbumCardProvider && other.argument == argument;
@@ -58,15 +50,15 @@ final class AlbumCardProvider
   }
 }
 
-String _$albumCardHash() => r'9addc4ced0a1811cd351c2f9ad87e73226e26acd';
+String _$albumCardHash() => r'd7aa47434c12c4fcbdc8764b41392ad669e48a63';
 
 final class AlbumCardFamily extends $Family
     with
         $ClassFamilyOverride<
           AlbumCard,
-          AlbumCardState,
-          AlbumCardState,
-          AlbumCardState,
+          AsyncValue<AlbumCardState?>,
+          AlbumCardState?,
+          FutureOr<AlbumCardState?>,
           int?
         > {
   AlbumCardFamily._()
@@ -85,20 +77,20 @@ final class AlbumCardFamily extends $Family
   String toString() => r'albumCardProvider';
 }
 
-abstract class _$AlbumCard extends $Notifier<AlbumCardState> {
+abstract class _$AlbumCard extends $AsyncNotifier<AlbumCardState?> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  AlbumCardState build(int? id);
+  FutureOr<AlbumCardState?> build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AlbumCardState, AlbumCardState>;
+    final ref = this.ref as $Ref<AsyncValue<AlbumCardState?>, AlbumCardState?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AlbumCardState, AlbumCardState>,
-              AlbumCardState,
+              AnyNotifier<AsyncValue<AlbumCardState?>, AlbumCardState?>,
+              AsyncValue<AlbumCardState?>,
               Object?,
               Object?
             >;

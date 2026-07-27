@@ -7,7 +7,11 @@ class EnPref {
   final int? playingId;
   final bool isLoop;
 
-  EnPref({required this.id, required this.playingId, required this.isLoop});
+  EnPref({
+    required this.id,
+    required this.playingId,
+    required this.isLoop,
+  });
 
   EnPref.empty() : this(id: 0, playingId: null, isLoop: false);
 

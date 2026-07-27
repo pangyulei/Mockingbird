@@ -23,16 +23,22 @@ class DBMedia extends _$DBMedia {
   }
 
   Future<void> edit({String? name, EnSubtitle? Function()? subtitle}) async {
-    final media = state.value;
+    final media = await future;
     if (media == null) return;
     await DBLogic().updateMedia(media, name: name, subtitle: subtitle);
     ref.invalidateSelf();
   }
 
   Future<void> delete() async {
-    final media = state.value;
+    final media = await future;
     if (media == null) return;
     await DBLogic().deleteMedia(media);
     ref.invalidateSelf();
+    final playingId = await ref.read(
+      dbPrefProvider.selectAsync((st) => st.playingId),
+    );
+    if (playingId == media.id) {
+      await ref.read(dbPrefProvider.notifier).setPlayingId(null);
+    }
   }
 }
