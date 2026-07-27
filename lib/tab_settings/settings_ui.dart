@@ -12,18 +12,12 @@ class SettingsUI extends ConsumerWidget {
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
-    showLoading(ref.read(
-      settingsProvider.select((st) => st.isLoading),
-    ));
-    ref.listen(
-      settingsProvider.select((st) => st.isLoading),
-      (previous, next) => showLoading(next),
-    );
     final stateType = ref.watch(
       settingsProvider.select((st) => st.value?.runtimeType),
     );
+    showLoading(stateType != SettingsState);
     switch (stateType) {
-      case SettingsData:
+      case SettingsState:
         return _page(ctx);
       default:
         return Scaffold(appBar: _appBar(),);
@@ -42,11 +36,12 @@ class SettingsUI extends ConsumerWidget {
           _sectionHeader(ctx, 'Playback'),
           Consumer(
             builder: (ctx, ref, child) {
-              final bool isLoop = ref.watch(
+              final bool? isLoop = ref.watch(
                 settingsProvider.select(
-                  (st) => (st.value as SettingsData).isLoop,
+                  (st) => st.value?.isLoop,
                 ),
               );
+              if (isLoop == null)return const SizedBox.shrink();
               return SwitchListTile(
                 title: const Text('Default Loop Mode'),
                 subtitle: const Text('Loop current sentence by default'),

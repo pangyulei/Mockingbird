@@ -1,13 +1,9 @@
 
-sealed class SettingsState {
-  const SettingsState();
-}
-
-class SettingsData extends SettingsState {
+class SettingsState {
   final bool isLoop;
-  const SettingsData({required this.isLoop});
+  const SettingsState({required this.isLoop});
 
-  SettingsData copyWith({bool? isLoop}) {
-    return SettingsData(isLoop: isLoop ?? this.isLoop);
+  SettingsState copyWith({bool? isLoop}) {
+    return SettingsState(isLoop: isLoop ?? this.isLoop);
   }
 }

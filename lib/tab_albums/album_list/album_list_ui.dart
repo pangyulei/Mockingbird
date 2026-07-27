@@ -104,12 +104,11 @@ class AlbumListUI extends ConsumerWidget {
           const Text('Albums'),
           Consumer(
             builder: (context, ref, child) {
-              final albumCount = ref.watch(
-                albumListProvider.select((st) {
-                  final data = st.value;
-                  return data is AlbumListData ? data.albumIdList.length : 0;
-                }),
+              final int? albumCount = ref.watch(
+                albumListProvider.select((st) =>st.value?.as<AlbumListData>()
+                        ?.albumIdList.length),
               );
+              if (albumCount == null) return const SizedBox.shrink();
               return Text(
                 '$albumCount created albums',
                 style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
@@ -138,12 +137,10 @@ class AlbumListUI extends ConsumerWidget {
       builder: (context, ref, child) {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
-        final List<int> albumIdList = ref.watch(
-          albumListProvider.select((st) {
-            final data = st.value;
-            return data is AlbumListData ? data.albumIdList : [];
-          }),
+        final List<int>? albumIdList = ref.watch(
+          albumListProvider.select((st) => st.value?.as<AlbumListData>()?.albumIdList),
         );
+        if (albumIdList == null)return const SizedBox.shrink();
         return GridView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: albumIdList.length,

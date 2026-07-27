@@ -10,6 +10,8 @@ import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../tool/extensions.dart';
+
 part 'player_media_provider.g.dart';
 
 @riverpod
@@ -64,9 +66,8 @@ class PlayerMedia extends _$PlayerMedia {
       speed,
     ) async {
       if (speed == null) return;
-      final data = state.value;
-      if (data is! PlayerMediaData) return;
-      await data.videoController.setPlaybackSpeed(speed);
+      await state.value?.as<PlayerMediaData>()?.videoController.setPlaybackSpeed
+        (speed);
     });
   }
 
@@ -76,9 +77,7 @@ class PlayerMedia extends _$PlayerMedia {
       volume,
     ) async {
       if (volume == null) return;
-      final data = state.value;
-      if (data is! PlayerMediaData) return;
-      await data.videoController.setVolume(volume);
+      await state.value?.as<PlayerMediaData>()?.videoController.setVolume(volume);
     });
   }
 
@@ -99,9 +98,7 @@ class PlayerMedia extends _$PlayerMedia {
   }
 
   Future<void> seekTo(Duration position) async {
-    var data = state.value;
-    if (data is! PlayerMediaData) return;
-    await data.videoController.seekTo(position);
+    await state.value?.as<PlayerMediaData>()?.videoController.seekTo(position);
   }
 
   Duration? get duration => state.value is PlayerMediaData
