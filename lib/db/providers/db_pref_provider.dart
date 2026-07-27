@@ -22,6 +22,14 @@ class DBPref extends _$DBPref {
     }
   }
 
+  Future<void> updateByMediaDeleted(List<int> mediaIdList) async {
+    //update pref playing media id if need
+    final playingId = (await future).playingId;
+    if (playingId != null && mediaIdList.contains(playingId)) {
+      await setPlayingId(null);
+    }
+  }
+
   Future<void> edit(EnPref Function(EnPref pref) getter) async {
     final pref = await future;
     final updatedPref = getter(pref);

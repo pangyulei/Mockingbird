@@ -49,7 +49,7 @@ final class DBAlbumProvider extends $AsyncNotifierProvider<DBAlbum, EnAlbum?> {
   }
 }
 
-String _$dBAlbumHash() => r'c4e1eb8c451b46f55471b6c9f8cf4b0f2c76535b';
+String _$dBAlbumHash() => r'd1519814ccce2e4df5c4d5298be645198c9ebd97';
 
 final class DBAlbumFamily extends $Family
     with
