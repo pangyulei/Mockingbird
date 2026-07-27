@@ -34,6 +34,7 @@ class DBMedia extends _$DBMedia {
     if (media == null) return;
     await DBLogic().deleteMedia(media);
     ref.invalidateSelf();
+    //update pref playing media id if need
     final playingId = await ref.read(
       dbPrefProvider.selectAsync((st) => st.playingId),
     );

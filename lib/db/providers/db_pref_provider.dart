@@ -6,22 +6,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'db_pref_provider.g.dart';
 
-@Riverpod(keepAlive: true, name: 'dbPrefProvider')
+@Riverpod(name: 'dbPrefProvider')
 class DBPref extends _$DBPref {
   @override
   Future<EnPref> build() async {
     final pref = await DBLogic().loadPref();
     if (pref == null) return EnPref.empty();
-    if (pref.playingId != null) {
-      ref.listen(dbMediaProvider(pref.playingId).select((st) => st.value), (
-        _,
-        playingMedia,
-      ) {
-        if (playingMedia == null) {
-          setPlayingId(null);
-        }
-      });
-    }
     return pref;
   }
 
