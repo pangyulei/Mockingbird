@@ -6,10 +6,11 @@ import 'package:mockingbird/tool/null_ui.dart';
 
 class SentenceCardUI extends ConsumerWidget {
   final int? _id;
-  const SentenceCardUI(this._id, {super.key});
+  final void Function(WidgetRef ref) _onTapCallback;
+  const SentenceCardUI(this._id, this._onTapCallback, {super.key});
 
   void _onTap(WidgetRef ref) {
-    ref.read(playerProvider.notifier).tapSentence(_id);
+    _onTapCallback(ref);
   }
 
   @override

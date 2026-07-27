@@ -23,7 +23,6 @@ part 'player_provider.g.dart';
 @riverpod
 class Player extends _$Player {
   bool _isDraggingVideoSlider = false;
-  final _scrollController = ItemScrollController();
 
   int? _prevPlayingSentenceIndex;
   List<EnSentence> get _sentenceList => ref.read(
@@ -33,7 +32,7 @@ class Player extends _$Player {
   );
 
   @override
-  ItemScrollController build() {
+  void build(ItemScrollController scrollController) {
     final (positionMicro, videoController) = ref.watch(
       playerMediaProvider
           .select(
@@ -44,14 +43,13 @@ class Player extends _$Player {
           .select((data) => (data?.positionMicro, data?.videoController)),
     );
     if (positionMicro == null || videoController == null) {
-      return _scrollController;
+      return ;
     }
     _videoPositionChanged(
       videoController,
       Duration(microseconds: positionMicro),
     );
     _listen();
-    return _scrollController;
   }
 
   void _videoPositionChanged(
@@ -132,25 +130,25 @@ class Player extends _$Player {
   }
 
   void scrollToTop() {
-    _scrollController.safeScrollTo(0);
+    scrollController.safeScrollTo(0);
   }
 
   void scrollToBottom() {
-    _scrollController.safeScrollTo(_sentenceList.length - 1);
+    scrollController.safeScrollTo(_sentenceList.length - 1);
   }
 
   void scrollToPlayingSentence() {
     final index = ref.read(
       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
-    _scrollController.safeScrollTo(index, alignment: 0.3);
+    scrollController.safeScrollTo(index, alignment: 0.3);
   }
 
   void jumpToPlayingSentence() {
     final index = ref.read(
       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
-    _scrollController.safeJumpTo(index, alignment: 0.3);
+    scrollController.safeJumpTo(index, alignment: 0.3);
   }
 
   void tapSentence(int? id) async {
