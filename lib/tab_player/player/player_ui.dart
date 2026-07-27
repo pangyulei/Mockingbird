@@ -16,6 +16,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../app/app_route.dart';
+import '../../tool/extensions.dart';
 import '../sentence_card/sentence_card_ui.dart';
 
 class PlayerUI extends ConsumerWidget {
@@ -28,6 +29,7 @@ class PlayerUI extends ConsumerWidget {
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
     debugPrint('player state type $stateType');
+    showLoading(stateType==null);
     switch (stateType) {
       case PlayerMediaNull:
         return _empty(ctx);
