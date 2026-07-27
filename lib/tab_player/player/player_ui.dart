@@ -20,8 +20,7 @@ import '../../tool/extensions.dart';
 import '../sentence_card/sentence_card_ui.dart';
 
 class PlayerUI extends ConsumerWidget {
-  final _scrollController = ItemScrollController();
-  PlayerUI({super.key});
+  const PlayerUI({super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
@@ -29,7 +28,7 @@ class PlayerUI extends ConsumerWidget {
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
     debugPrint('player state type $stateType');
-    showLoading(stateType==null);
+    showLoading(stateType == null);
     switch (stateType) {
       case PlayerMediaNull:
         return _empty(ctx);
@@ -41,7 +40,7 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onAddSubtitle(WidgetRef ref) async {
-    await ref.read(playerProvider(_scrollController).notifier).addSubtitle();
+    await ref.read(playerProvider.notifier).addSubtitle();
   }
 
   void _onToggleLoop(WidgetRef ref) {
@@ -69,27 +68,27 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider(_scrollController).notifier).videoSliderStartChanged(valMicro);
+    await ref.read(playerProvider.notifier).videoSliderStartChanged(valMicro);
   }
 
   void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider(_scrollController).notifier).videoSliderChanging(valMicro);
+    await ref.read(playerProvider.notifier).videoSliderChanging(valMicro);
   }
 
   void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider(_scrollController).notifier).videoSliderEndChanged(valMicro);
+    await ref.read(playerProvider.notifier).videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
-    ref.read(playerProvider(_scrollController).notifier).scrollToPlayingSentence();
+    ref.read(playerProvider.notifier).scrollToPlayingSentence();
   }
 
   void _onScrollToTop(WidgetRef ref) {
-    ref.read(playerProvider(_scrollController).notifier).scrollToTop();
+    ref.read(playerProvider.notifier).scrollToTop();
   }
 
   void _onScrollToBottom(WidgetRef ref) {
-    ref.read(playerProvider(_scrollController).notifier).scrollToBottom();
+    ref.read(playerProvider.notifier).scrollToBottom();
   }
 
   void _onVolumeChanged(WidgetRef ref, double newVolume) async {
@@ -262,21 +261,19 @@ class PlayerUI extends ConsumerWidget {
           builder: (ctx, ref, child) {
             final data = ref.watch(playerSubtitleProvider).value;
             if (data is PlayerSubtitleData) {
-                final sentenceIdList = (data as PlayerSubtitleData).sentenceList
-                    .map((sen) => sen.id)
-                    .toList();
-                return ScrollablePositionedList.builder(
-                  itemCount: sentenceIdList.length,
-                  itemScrollController: _scrollController,
-                  itemBuilder: (context, i) {
-                    final sentenceId = sentenceIdList[i];
-                    return SentenceCardUI(sentenceId, (ref) {
-                      ref.read(playerProvider(_scrollController).notifier).tapSentence(sentenceId);
-                    });
-                  },
-                );
+              final sentenceIdList = (data).sentenceList
+                  .map((sen) => sen.id)
+                  .toList();
+              return ScrollablePositionedList.builder(
+                itemCount: sentenceIdList.length,
+                itemScrollController: ref.watch(playerProvider),
+                itemBuilder: (context, i) {
+                  final sentenceId = sentenceIdList[i];
+                  return SentenceCardUI(sentenceId);
+                },
+              );
             } else if (data is PlayerSubtitleNull) {
-                return _noSubtitle(ctx, ref);
+              return _noSubtitle(ctx, ref);
             } else {
               assert(data == null);
               return const NullUI();

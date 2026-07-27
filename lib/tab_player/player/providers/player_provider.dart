@@ -19,9 +19,11 @@ import '../../../db/providers/db_media_provider.dart';
 import '../../../tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'player_provider.g.dart';
+
 @riverpod
 class Player extends _$Player {
   bool _isDraggingVideoSlider = false;
+  final _scrollController = ItemScrollController();
 
   int? _prevPlayingSentenceIndex;
   List<EnSentence> get _sentenceList => ref.read(
@@ -31,7 +33,7 @@ class Player extends _$Player {
   );
 
   @override
-  void build(ItemScrollController scrollController) {
+  ItemScrollController build() {
     final (positionMicro, videoController) = ref.watch(
       playerMediaProvider
           .select(
@@ -42,13 +44,14 @@ class Player extends _$Player {
           .select((data) => (data?.positionMicro, data?.videoController)),
     );
     if (positionMicro == null || videoController == null) {
-      return;
+      return _scrollController;
     }
     _videoPositionChanged(
       videoController,
       Duration(microseconds: positionMicro),
     );
     _listen();
+    return _scrollController;
   }
 
   void _videoPositionChanged(
@@ -112,6 +115,7 @@ class Player extends _$Player {
         await ref.read(playerMediaProvider.notifier).seekTo(seekToPosition);
 
         final duration = ref.read(playerMediaProvider.notifier).duration;
+        debugPrint('duration $duration seekto $seekToPosition');
         if (duration != null && seekToPosition < duration) {
           debugPrint('slider: play');
           await ref.read(playerMediaProvider.notifier).play();
@@ -128,25 +132,25 @@ class Player extends _$Player {
   }
 
   void scrollToTop() {
-    scrollController.safeScrollTo(0);
+    _scrollController.safeScrollTo(0);
   }
 
   void scrollToBottom() {
-    scrollController.safeScrollTo(_sentenceList.length - 1);
+    _scrollController.safeScrollTo(_sentenceList.length - 1);
   }
 
   void scrollToPlayingSentence() {
     final index = ref.read(
       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
-    scrollController.safeScrollTo(index, alignment: 0.3);
+    _scrollController.safeScrollTo(index, alignment: 0.3);
   }
 
   void jumpToPlayingSentence() {
     final index = ref.read(
       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
-    scrollController.safeJumpTo(index, alignment: 0.3);
+    _scrollController.safeJumpTo(index, alignment: 0.3);
   }
 
   void tapSentence(int? id) async {

@@ -85,7 +85,7 @@ class AppRoute {
   static GoRoute _playerRoute() => GoRoute(
     path: AppRoute.player,
     builder: (BuildContext context, GoRouterState state) {
-      return PlayerUI();
+      return const PlayerUI();
     },
   );
 
