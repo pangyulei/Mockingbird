@@ -258,9 +258,8 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final data = ref.watch(playerSubtitleProvider).value?.runtimeType;
-            switch (data) {
-              case PlayerSubtitleData:
+            final data = ref.watch(playerSubtitleProvider).value;
+            if (data is PlayerSubtitleData) {
                 final sentenceIdList = (data as PlayerSubtitleData).sentenceList
                     .map((sen) => sen.id)
                     .toList();
@@ -274,10 +273,11 @@ class PlayerUI extends ConsumerWidget {
                     });
                   },
                 );
-              case PlayerSubtitleNull:
+            } else if (data is PlayerSubtitleNull) {
                 return _noSubtitle(ctx, ref);
-              default:
-                return const NullUI();
+            } else {
+              assert(data == null);
+              return const NullUI();
             }
           },
         ),

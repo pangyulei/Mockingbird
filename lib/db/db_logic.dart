@@ -256,6 +256,11 @@ class DBLogic {
     return p.join(coversDir.path, fileName);
   }
 
+  Future<EnSentence?> loadSentence(int? id) async {
+    if (id == null) return null;
+    return await _store.box<EnSentence>().getAsync(id);
+  }
+
   Future<EnAlbum?> createAlbum(String name, {File? cover}) async {
     //校验 name
     final trimmedName = name.trim();

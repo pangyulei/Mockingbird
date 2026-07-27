@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_provider.dart';
+import 'package:mockingbird/tool/null_ui.dart';
 
 class SentenceCardUI extends ConsumerWidget {
   final int? _id;
   final void Function(WidgetRef ref) _onTapCallback;
-  const SentenceCardUI(this._id, this._onTapCallback,{super.key});
+  const SentenceCardUI(this._id, this._onTapCallback, {super.key});
 
   void _onTap(WidgetRef ref) {
     _onTapCallback.call(ref);
@@ -25,8 +26,9 @@ class SentenceCardUI extends ConsumerWidget {
         child: Consumer(
           builder: (ctx, ref, _) {
             final isPlaying = ref.watch(
-              sentenceCardProvider(_id).select((st) => st.isPlaying),
+              sentenceCardProvider(_id).select((st) => st.value?.isPlaying),
             );
+            if (isPlaying == null) return const NullUI();
             return AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
@@ -64,8 +66,11 @@ class SentenceCardUI extends ConsumerWidget {
                     Consumer(
                       builder: (context, ref, child) {
                         final text = ref.watch(
-                          sentenceCardProvider(_id).select((st) => st.text),
+                          sentenceCardProvider(
+                            _id,
+                          ).select((st) => st.value?.text),
                         );
+                        if (text == null) return const NullUI();
                         return Text(
                           text,
                           style: theme.textTheme.bodyLarge?.copyWith(
@@ -90,8 +95,9 @@ class SentenceCardUI extends ConsumerWidget {
                             final period = ref.watch(
                               sentenceCardProvider(
                                 _id,
-                              ).select((st) => st.period),
+                              ).select((st) => st.value?.period),
                             );
+                            if (period == null) return const NullUI();
                             return Text(
                               period,
                               style: theme.textTheme.labelSmall?.copyWith(

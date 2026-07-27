@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
@@ -13,27 +14,12 @@ part 'sentence_card_provider.g.dart';
 @riverpod
 class SentenceCard extends _$SentenceCard {
   @override
-  SentenceCardState build(int? id) {
-    if (id == null) return const SentenceCardState.empty();
-    final EnSentence? sentence = ref.watch(
-      dbAlbumListProvider
-          .select((st) => st.value ?? [])
-          .select((al) => al.map((a) => a.mediaList).flattened)
-          .select(
-            (ml) => ml
-                .map((m) => m.subtitleList.firstOrNull)
-                .whereType<EnSubtitle>(),
-          )
-          .select((subl) => subl.map((sub) => sub.sentenceList).flattened)
-          .select((senl) => {for (final sen in senl) sen.id: sen})
-          .select((senm) => senm[id]),
-    );
-    if (sentence == null) return const SentenceCardState.empty();
-
+  Future<SentenceCardState?> build(int? id) async {
+    final EnSentence? sentence = await DBLogic().loadSentence(id);
+    if (sentence == null) return null;
     final int? playingSentenceId = ref.watch(
       playerSpotProvider.select((st) => st.value?.playingSentence?.id),
     );
-
     String formatDuration(Duration d) {
       final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
       final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
