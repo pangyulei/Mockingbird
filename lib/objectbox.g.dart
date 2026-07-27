@@ -179,25 +179,25 @@ final _entities = <obx_int.ModelEntity>[
     ],
   ),
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(27, 7767215884357716294),
+    id: const obx_int.IdUid(28, 4543186723602534671),
     name: 'EnPref',
-    lastPropertyId: const obx_int.IdUid(8, 2959510078895679678),
+    lastPropertyId: const obx_int.IdUid(3, 5791816013703277626),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 4336757419314789380),
+        id: const obx_int.IdUid(1, 2791383646261405228),
         name: 'id',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(7, 9105974782467203318),
+        id: const obx_int.IdUid(2, 6788086632897213023),
         name: 'playingId',
         type: 6,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(8, 2959510078895679678),
+        id: const obx_int.IdUid(3, 5791816013703277626),
         name: 'isLoop',
         type: 1,
         flags: 0,
@@ -251,7 +251,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(27, 7767215884357716294),
+    lastEntityId: const obx_int.IdUid(28, 4543186723602534671),
     lastIndexId: const obx_int.IdUid(20, 1321291549367293302),
     lastRelationId: const obx_int.IdUid(6, 7178921268169891247),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -278,6 +278,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
       7260526553019707370,
       8594489510359452364,
       1340594227652822739,
+      7767215884357716294,
     ],
     retiredIndexUids: const [
       6937227900520055071,
@@ -378,6 +379,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
       134427638610516138,
       4275848776010639930,
       8528645236344410990,
+      4336757419314789380,
+      9105974782467203318,
+      2959510078895679678,
     ],
     retiredRelationUids: const [7929255877846348169],
     modelVersion: 5,
@@ -620,10 +624,10 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (EnPref object, fb.Builder fbb) {
-        fbb.startTable(9);
+        fbb.startTable(4);
         fbb.addInt64(0, object.id);
-        fbb.addInt64(6, object.playingId);
-        fbb.addBool(7, object.isLoop);
+        fbb.addInt64(1, object.playingId);
+        fbb.addBool(2, object.isLoop);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -639,12 +643,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final playingIdParam = const fb.Int64Reader().vTableGetNullable(
           buffer,
           rootOffset,
-          16,
+          6,
         );
         final isLoopParam = const fb.BoolReader().vTableGet(
           buffer,
           rootOffset,
-          18,
+          8,
           false,
         );
         final object = EnPref(

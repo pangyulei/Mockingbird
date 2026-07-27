@@ -1,7 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
-class EnPref {
+class EnPref extends Equatable {
   @Id()
   int id;
   final int? playingId;
@@ -22,4 +23,7 @@ class EnPref {
       isLoop: isLoop ?? this.isLoop,
     );
   }
+  
+  @override
+  List<Object?> get props => [id, isLoop, playingId];
 }

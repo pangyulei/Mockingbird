@@ -19,7 +19,7 @@ final class DBPrefProvider extends $AsyncNotifierProvider<DBPref, EnPref> {
         argument: null,
         retry: null,
         name: r'dbPrefProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -32,7 +32,7 @@ final class DBPrefProvider extends $AsyncNotifierProvider<DBPref, EnPref> {
   DBPref create() => DBPref();
 }
 
-String _$dBPrefHash() => r'151dacb9e40cf77be78d4eddf6c179526b6802be';
+String _$dBPrefHash() => r'f6998470bbcc7968ea5ff89ab7c09dc800438247';
 
 abstract class _$DBPref extends $AsyncNotifier<EnPref> {
   FutureOr<EnPref> build();

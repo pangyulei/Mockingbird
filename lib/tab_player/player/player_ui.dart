@@ -8,7 +8,6 @@ import 'package:mockingbird/tab_player/player/providers/player_media_provider.da
 import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
@@ -17,11 +16,11 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../app/app_route.dart';
-import '../../tool/extensions.dart';
 import '../sentence_card/sentence_card_ui.dart';
 
 class PlayerUI extends ConsumerWidget {
-  const PlayerUI({super.key});
+  final _scrollController = ItemScrollController();
+  PlayerUI({super.key});
 
   @override
   Widget build(BuildContext ctx, WidgetRef ref) {
@@ -40,7 +39,7 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onAddSubtitle(WidgetRef ref) async {
-    await ref.read(playerProvider.notifier).addSubtitle();
+    await ref.read(playerProvider(_scrollController).notifier).addSubtitle();
   }
 
   void _onToggleLoop(WidgetRef ref) {
@@ -68,27 +67,27 @@ class PlayerUI extends ConsumerWidget {
   }
 
   void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider.notifier).videoSliderStartChanged(valMicro);
+    await ref.read(playerProvider(_scrollController).notifier).videoSliderStartChanged(valMicro);
   }
 
   void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider.notifier).videoSliderChanging(valMicro);
+    await ref.read(playerProvider(_scrollController).notifier).videoSliderChanging(valMicro);
   }
 
   void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
-    await ref.read(playerProvider.notifier).videoSliderEndChanged(valMicro);
+    await ref.read(playerProvider(_scrollController).notifier).videoSliderEndChanged(valMicro);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
-    ref.read(playerProvider.notifier).scrollToPlayingSentence();
+    ref.read(playerProvider(_scrollController).notifier).scrollToPlayingSentence();
   }
 
   void _onScrollToTop(WidgetRef ref) {
-    ref.read(playerProvider.notifier).scrollToTop();
+    ref.read(playerProvider(_scrollController).notifier).scrollToTop();
   }
 
   void _onScrollToBottom(WidgetRef ref) {
-    ref.read(playerProvider.notifier).scrollToBottom();
+    ref.read(playerProvider(_scrollController).notifier).scrollToBottom();
   }
 
   void _onVolumeChanged(WidgetRef ref, double newVolume) async {
@@ -259,23 +258,26 @@ class PlayerUI extends ConsumerWidget {
         color: Theme.of(ctx).scaffoldBackgroundColor,
         child: Consumer(
           builder: (ctx, ref, child) {
-            final data = ref.watch(playerSubtitleProvider).value;
-            if (data == null) return const NullUI();
+            final data = ref.watch(playerSubtitleProvider).value?.runtimeType;
             switch (data) {
               case PlayerSubtitleData:
                 final sentenceIdList = (data as PlayerSubtitleData).sentenceList
-                    .map((e) => e.id)
+                    .map((sen) => sen.id)
                     .toList();
-                final scrollController = ref.watch(playerProvider);
                 return ScrollablePositionedList.builder(
                   itemCount: sentenceIdList.length,
-                  itemScrollController: scrollController,
+                  itemScrollController: _scrollController,
                   itemBuilder: (context, i) {
-                    return SentenceCardUI(sentenceIdList[i]);
+                    final sentenceId = sentenceIdList[i];
+                    return SentenceCardUI(sentenceId, (ref) {
+                      ref.read(playerProvider(_scrollController).notifier).tapSentence(sentenceId);
+                    });
                   },
                 );
-              default:
+              case PlayerSubtitleNull:
                 return _noSubtitle(ctx, ref);
+              default:
+                return const NullUI();
             }
           },
         ),

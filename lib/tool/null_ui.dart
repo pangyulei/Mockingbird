@@ -5,6 +5,6 @@ class NullUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const NullUI();
+    return const SizedBox.shrink();
   }
 }

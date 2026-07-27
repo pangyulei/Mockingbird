@@ -77,7 +77,7 @@ class MediaCardUI extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         child: Stack(
           children: [
-            InkWell(
+            GestureDetector(
               onTap: () => _onPlay(ctx, ref),
               child: Padding(
                 padding: const EdgeInsets.only(
