@@ -52,6 +52,12 @@ class Player extends _$Player {
       final isSubtitleChanged = _prevSubtitle != _subtitle;
       if (isSubtitleChanged) {
         scrollController.safeJumpTo(spot?.playingSentenceIndex, alignment: 0.3);
+        ref
+            .read(playerLoopProvider.notifier)
+            .updateIndexAndSentenceIfLoop(
+              spot?.playingSentenceIndex,
+              spot?.playingSentence,
+            );
       }
       //handle scroll
       if (isSentenceChanged) {

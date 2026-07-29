@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_loop_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
