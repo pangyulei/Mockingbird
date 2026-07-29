@@ -52,7 +52,8 @@ class PlayerMedia extends _$PlayerMedia {
     final duration = videoController.value.duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
-      await pause();
+      //feature: replay if auto play to end
+      await play();
     }
   }
 
