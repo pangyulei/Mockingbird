@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
+import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
@@ -24,11 +25,11 @@ part 'player_provider.g.dart';
 class Player extends _$Player {
   bool _isDraggingVideoSlider = false;
   int? _prevPlayingSentenceIndex;
-  List<EnSentence> get _sentenceList => ref.read(
-    dbPlayingMediaProvider.select(
-      (st) => st.value?.subtitleList.firstOrNull?.sentenceList ?? [],
-    ),
+  EnSubtitle? _prevSubtitle;
+  EnSubtitle? get _subtitle => ref.read(
+    dbPlayingMediaProvider.select((st) => st.value?.subtitleList.firstOrNull),
   );
+  List<EnSentence> get _sentenceList => _subtitle?.sentenceList ?? [];
   bool get _isLoop =>
       ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) == true;
   @override
@@ -48,6 +49,10 @@ class Player extends _$Player {
       final isLoop = await ref.read(
         playerLoopProvider.selectAsync((st) => st.isLoop),
       );
+      final isSubtitleChanged = _prevSubtitle != _subtitle;
+      if (isSubtitleChanged) {
+        scrollController.safeJumpTo(spot?.playingSentenceIndex, alignment: 0.3);
+      }
       //handle scroll
       if (isSentenceChanged) {
         if (_isDraggingVideoSlider) {
@@ -64,6 +69,7 @@ class Player extends _$Player {
         }
       }
       _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
+      _prevSubtitle = _subtitle;
     });
   }
 
