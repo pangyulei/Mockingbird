@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
@@ -14,7 +15,6 @@ part 'player_spot_provider.g.dart';
 
 @riverpod
 class PlayerSpot extends _$PlayerSpot {
- 
   @override
   Future<PlayerSpotState?> build() async {
     final int? positionMicro = await ref.watch(
@@ -28,7 +28,7 @@ class PlayerSpot extends _$PlayerSpot {
     }
     final List<EnSentence>? sentenceList = await ref.watch(
       playerSubtitleProvider.selectAsync(
-        (st) => st.as<PlayerSubtitleData>()?.sentenceList
+        (st) => st.as<PlayerSubtitleData>()?.sentenceList,
       ),
     );
     if (sentenceList == null) {
@@ -42,20 +42,12 @@ class PlayerSpot extends _$PlayerSpot {
     final playingSentence = playingSentenceIndex == null
         ? null
         : sentenceList[playingSentenceIndex];
+    debugPrint('spot: ($playingSentenceIndex) $playingSentence');
     return PlayerSpotState(
       playingSentenceIndex: playingSentenceIndex,
       playingSentence: playingSentence,
     );
   }
-
-  EnSentence? get loopSentence {
-    final isLoop = ref.read(
-      playerSettingProvider.select((st) => st.value?.isLoop),
-    );
-    if (isLoop == null || !isLoop) return null;
-    return state.value?.playingSentence;
-  }
-
 
   int? _sentenceIndexByPosition(
     Duration position,

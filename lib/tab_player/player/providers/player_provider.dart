@@ -5,8 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_video_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
@@ -32,28 +32,20 @@ class Player extends _$Player {
 
   @override
   void build(ItemScrollController scrollController) {
-    _listen();
+    _listenToLoopSentenceEnd();
+    _listenToMediaChanged();
+    _listenToPlayingSentenceChanged();
   }
 
-  void _videoPositionChanged(Duration position) async {
-    //handle loop seek to begin
-    final loopSentence = ref.read(playerSpotProvider.notifier).loopSentence;
-    if (!_isDraggingVideoSlider && loopSentence != null) {
-      //if repeat one is turn on, while sentence finished, seek to beginning
-      // debugPrint('position changing loop $sentence');
-      if (position > loopSentence.end) {
-        // debugPrint('positon changing loop seek to ${sentence.start}');
-        ref.read(playerMediaProvider.notifier).seekTo(loopSentence.start);
-      }
-    }
-  }
-
-  void _listen() {
-    ref.listen(playerSpotProvider.select((st) => st.value), (previous, spot) {
+  void _listenToPlayingSentenceChanged() {
+    ref.listen(playerSpotProvider.select((st) => st.value), (
+      previous,
+      spot,
+    ) async {
       final bool isSentenceChanged =
           spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
-      final isLoop = ref.read(
-        playerSettingProvider.select((st) => st.value?.isLoop ?? false),
+      final isLoop = await ref.read(
+        playerLoopProvider.selectAsync((st) => st.isLoop),
       );
       //handle scroll
       if (isSentenceChanged) {
@@ -72,6 +64,9 @@ class Player extends _$Player {
       }
       _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
     });
+  }
+
+  void _listenToLoopSentenceEnd() {
     ref.listen(
       playerMediaProvider
           .select(
@@ -85,10 +80,29 @@ class Player extends _$Player {
         _videoPositionChanged(Duration(microseconds: positionMicro));
       },
     );
+  }
+
+  void _listenToMediaChanged() {
     ref.listen(playerVideoControllerProvider, (previous, next) {
       //video changed
       scrollToTop();
     });
+  }
+
+  void _videoPositionChanged(Duration position) async {
+    //handle loop seek to begin
+    final loopSentence = await ref.read(
+      playerLoopProvider.selectAsync((st) => st.loopSentence),
+    );
+    debugPrint('positon changing loop $loopSentence');
+    if (!_isDraggingVideoSlider && loopSentence != null) {
+      //if repeat one is turn on, while sentence finished, seek to beginning
+      // debugPrint('position changing loop $sentence');
+      if (position > loopSentence.end) {
+        debugPrint('positon changing loop seek to ${loopSentence.start}');
+        await ref.read(playerMediaProvider.notifier).seekTo(loopSentence.start);
+      }
+    }
   }
 
   Future<void> videoSliderStartChanged(double valMicro) async {
@@ -113,10 +127,19 @@ class Player extends _$Player {
       () async {
         final position = Duration(microseconds: valMicro.toInt());
         // seek to sentence start
-        final loopSentence = ref.read(playerSpotProvider.notifier).loopSentence;
-        final Duration seekToPosition = loopSentence == null
-            ? position
-            : loopSentence.start;
+        final isLoop =
+            ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) ==
+            true;
+        final spot = ref.read(playerSpotProvider.select((st) => st.value));
+        ref
+            .read(playerLoopProvider.notifier)
+            .updateIndexAndSentenceIfLoop(
+              spot?.playingSentenceIndex,
+              spot?.playingSentence,
+            );
+        final Duration seekToPosition = isLoop
+            ? (spot?.playingSentence?.start ?? position)
+            : position;
         await ref.read(playerMediaProvider.notifier).seekTo(seekToPosition);
 
         final duration = ref.read(playerMediaProvider.notifier).duration;
@@ -150,9 +173,21 @@ class Player extends _$Player {
       (sen) => sen.id == id,
     );
     if (sentenceIndex == null) return;
+    /*Fix loop mode, tap sentence bug
+    in loop mode, you seek from s(n)->s(n+1), 
+    because it beyond s(n) end, so it trigger reseek to start
+    same reason you seek from s(n)->s(n-1) will works perfectly,
+    so in loop mode, which sentence is loop wee need to manually maintain,
+    can't rely on position listening 
+     */
     final sentence = _sentenceList[sentenceIndex];
     debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
-    scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
+    if (ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) == true) {
+      scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
+      ref
+          .read(playerLoopProvider.notifier)
+          .updateIndexAndSentenceIfLoop(sentenceIndex, sentence);
+    }
     await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
     await ref.read(playerMediaProvider.notifier).play();
   }

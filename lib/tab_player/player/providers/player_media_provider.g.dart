@@ -33,7 +33,7 @@ final class PlayerMediaProvider
   PlayerMedia create() => PlayerMedia();
 }
 
-String _$playerMediaHash() => r'04946fa2c48e28302fd7a5095c113f513a28ba6f';
+String _$playerMediaHash() => r'b9e60baabdaa2dbfaadf6d602c3ad8664755e2ae';
 
 abstract class _$PlayerMedia extends $AsyncNotifier<PlayerMediaState> {
   FutureOr<PlayerMediaState> build();

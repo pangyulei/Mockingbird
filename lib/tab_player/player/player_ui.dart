@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
@@ -54,7 +55,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   void _onToggleLoop(WidgetRef ref) {
-    ref.read(playerSettingProvider.notifier).toggleLoop();
+    ref.read(playerLoopProvider.notifier).toggleLoop();
   }
 
   void _onPause(WidgetRef ref) async {
@@ -385,9 +386,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         Consumer(
           builder: (ctx, ref, child) {
             final bool showVolumeSlider = ref.watch(
-              playerSettingProvider.select(
-                (st) => st.value?.showVolumeSlider ?? false,
-              ),
+              playerSettingProvider.select((st) => st.showVolumeSlider),
             );
             if (showVolumeSlider) {
               return Expanded(child: _verticalVolumeSlider(ctx));
@@ -409,9 +408,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         Consumer(
           builder: (ctx, ref, child) {
             final showVolumeSlider = ref.watch(
-              playerSettingProvider.select(
-                (st) => st.value?.showVolumeSlider ?? false,
-              ),
+              playerSettingProvider.select((st) => st.showVolumeSlider),
             );
             if (showVolumeSlider) {
               return Expanded(child: _horizontalVolumeSlider(ctx));
@@ -430,7 +427,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       icon: Consumer(
         builder: (context, ref, child) {
           final volume = ref.watch(
-            playerSettingProvider.select((st) => st.value?.volume ?? 1),
+            playerSettingProvider.select((st) => st.volume),
           );
           final icon = volume == 0
               ? Icons.volume_off_rounded
@@ -463,7 +460,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       child: Consumer(
         builder: (context, ref, child) {
           final volume = ref.watch(
-            playerSettingProvider.select((st) => st.value?.volume ?? 1),
+            playerSettingProvider.select((st) => st.volume),
           );
           return Slider(
             value: volume,
@@ -689,9 +686,10 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             ) ??
             true;
         if (sentenceIsEmpty) return const NullUI();
-        final bool isLoop = ref.watch(
-          playerSettingProvider.select((st) => st.value?.isLoop ?? false),
+        final isLoop = ref.watch(
+          playerLoopProvider.select((st) => st.value?.isLoop),
         );
+        if (isLoop == null) return const NullUI();
         return IconButton(
           onPressed: () => _onToggleLoop(ref),
           icon: Icon(
@@ -741,7 +739,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         child: Consumer(
           builder: (ctx, ref, _) {
             final speed = ref.watch(
-              playerSettingProvider.select((st) => st.value?.speed ?? 1),
+              playerSettingProvider.select((st) => st.speed),
             );
             return Text(
               '${speed}x',

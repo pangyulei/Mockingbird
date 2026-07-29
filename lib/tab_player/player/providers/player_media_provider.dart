@@ -23,9 +23,11 @@ class PlayerMedia extends _$PlayerMedia {
       playerVideoControllerProvider.future,
     );
     if (videoController == null) return const PlayerMediaNull();
-    final setting = await ref.read(playerSettingProvider.future);
-    await videoController.setPlaybackSpeed(setting.speed);
-    await videoController.setVolume(setting.volume);
+    final (speed, volume) = ref.read(
+      playerSettingProvider.select((st) => (st.speed, st.volume)),
+    );
+    await videoController.setPlaybackSpeed(speed);
+    await videoController.setVolume(volume);
     //Fix playing media1, change to media2, it paused. because it didnt trigger listen,
     //I dont know why but we need to force it play
     await videoController.play();
@@ -61,23 +63,25 @@ class PlayerMedia extends _$PlayerMedia {
   }
 
   void _listenToSpeed() {
-    ref.listen(playerSettingProvider.select((st) => st.value?.speed), (
+    ref.listen(playerSettingProvider.select((st) => st.speed), (
       previous,
       speed,
     ) async {
-      if (speed == null) return;
-      await state.value?.as<PlayerMediaData>()?.videoController.setPlaybackSpeed
-        (speed);
+      await state.value
+          ?.as<PlayerMediaData>()
+          ?.videoController
+          .setPlaybackSpeed(speed);
     });
   }
 
   void _listenToVolume() {
-    ref.listen(playerSettingProvider.select((st) => st.value?.volume), (
+    ref.listen(playerSettingProvider.select((st) => st.volume), (
       previous,
       volume,
     ) async {
-      if (volume == null) return;
-      await state.value?.as<PlayerMediaData>()?.videoController.setVolume(volume);
+      await state.value?.as<PlayerMediaData>()?.videoController.setVolume(
+        volume,
+      );
     });
   }
 

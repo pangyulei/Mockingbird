@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'player_spot_provider.dart';
+part of 'player_loop_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,44 +9,43 @@ part of 'player_spot_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(PlayerSpot)
-final playerSpotProvider = PlayerSpotProvider._();
+@ProviderFor(PlayerLoop)
+final playerLoopProvider = PlayerLoopProvider._();
 
-final class PlayerSpotProvider
-    extends $AsyncNotifierProvider<PlayerSpot, PlayerSpotState?> {
-  PlayerSpotProvider._()
+final class PlayerLoopProvider
+    extends $AsyncNotifierProvider<PlayerLoop, PlayerLoopState> {
+  PlayerLoopProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'playerSpotProvider',
+        name: r'playerLoopProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$playerSpotHash();
+  String debugGetCreateSourceHash() => _$playerLoopHash();
 
   @$internal
   @override
-  PlayerSpot create() => PlayerSpot();
+  PlayerLoop create() => PlayerLoop();
 }
 
-String _$playerSpotHash() => r'a44078e3d5c5c3b6ccc05963717ed4c02fa6ccdf';
+String _$playerLoopHash() => r'0d4a7b281f4fc5d70ea06c777b06a37d8ad391e6';
 
-abstract class _$PlayerSpot extends $AsyncNotifier<PlayerSpotState?> {
-  FutureOr<PlayerSpotState?> build();
+abstract class _$PlayerLoop extends $AsyncNotifier<PlayerLoopState> {
+  FutureOr<PlayerLoopState> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<PlayerSpotState?>, PlayerSpotState?>;
+    final ref = this.ref as $Ref<AsyncValue<PlayerLoopState>, PlayerLoopState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<PlayerSpotState?>, PlayerSpotState?>,
-              AsyncValue<PlayerSpotState?>,
+              AnyNotifier<AsyncValue<PlayerLoopState>, PlayerLoopState>,
+              AsyncValue<PlayerLoopState>,
               Object?,
               Object?
             >;

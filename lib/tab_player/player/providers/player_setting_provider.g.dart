@@ -13,7 +13,7 @@ part of 'player_setting_provider.dart';
 final playerSettingProvider = PlayerSettingProvider._();
 
 final class PlayerSettingProvider
-    extends $AsyncNotifierProvider<PlayerSetting, PlayerSettingState> {
+    extends $NotifierProvider<PlayerSetting, PlayerSettingState> {
   PlayerSettingProvider._()
     : super(
         from: null,
@@ -31,22 +31,29 @@ final class PlayerSettingProvider
   @$internal
   @override
   PlayerSetting create() => PlayerSetting();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PlayerSettingState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PlayerSettingState>(value),
+    );
+  }
 }
 
-String _$playerSettingHash() => r'93b9f3d6e0602c782ee8b47611e55b51fc2526c1';
+String _$playerSettingHash() => r'3a364a2e2a4a986e5f9eebaadb054155efe0b69f';
 
-abstract class _$PlayerSetting extends $AsyncNotifier<PlayerSettingState> {
-  FutureOr<PlayerSettingState> build();
+abstract class _$PlayerSetting extends $Notifier<PlayerSettingState> {
+  PlayerSettingState build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<PlayerSettingState>, PlayerSettingState>;
+    final ref = this.ref as $Ref<PlayerSettingState, PlayerSettingState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<PlayerSettingState>, PlayerSettingState>,
-              AsyncValue<PlayerSettingState>,
+              AnyNotifier<PlayerSettingState, PlayerSettingState>,
+              PlayerSettingState,
               Object?,
               Object?
             >;
