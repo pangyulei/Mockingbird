@@ -10,6 +10,8 @@ class AlbumCardState {
     required this.name,
     required this.cover,
   });
+  const AlbumCardState.empty()
+    : this(canSort: false, cover: null, mediaCount: 0, name: '');
 
   AlbumCardState copyWith({
     int? mediaCount,

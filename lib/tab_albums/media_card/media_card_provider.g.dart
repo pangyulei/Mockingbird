@@ -13,7 +13,7 @@ part of 'media_card_provider.dart';
 final mediaCardProvider = MediaCardFamily._();
 
 final class MediaCardProvider
-    extends $AsyncNotifierProvider<MediaCard, MediaCardState?> {
+    extends $NotifierProvider<MediaCard, MediaCardState> {
   MediaCardProvider._({
     required MediaCardFamily super.from,
     required int? super.argument,
@@ -39,6 +39,14 @@ final class MediaCardProvider
   @override
   MediaCard create() => MediaCard();
 
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MediaCardState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MediaCardState>(value),
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     return other is MediaCardProvider && other.argument == argument;
@@ -50,15 +58,15 @@ final class MediaCardProvider
   }
 }
 
-String _$mediaCardHash() => r'a169cc0a9f232e12222431c591909875161f4016';
+String _$mediaCardHash() => r'f512e81d4b489e99a001e4e9ad7d6a25c0a571e4';
 
 final class MediaCardFamily extends $Family
     with
         $ClassFamilyOverride<
           MediaCard,
-          AsyncValue<MediaCardState?>,
-          MediaCardState?,
-          FutureOr<MediaCardState?>,
+          MediaCardState,
+          MediaCardState,
+          MediaCardState,
           int?
         > {
   MediaCardFamily._()
@@ -77,20 +85,20 @@ final class MediaCardFamily extends $Family
   String toString() => r'mediaCardProvider';
 }
 
-abstract class _$MediaCard extends $AsyncNotifier<MediaCardState?> {
+abstract class _$MediaCard extends $Notifier<MediaCardState> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  FutureOr<MediaCardState?> build(int? id);
+  MediaCardState build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<MediaCardState?>, MediaCardState?>;
+    final ref = this.ref as $Ref<MediaCardState, MediaCardState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<MediaCardState?>, MediaCardState?>,
-              AsyncValue<MediaCardState?>,
+              AnyNotifier<MediaCardState, MediaCardState>,
+              MediaCardState,
               Object?,
               Object?
             >;

@@ -36,9 +36,12 @@ extension Loading on Object {
 extension SafeScroll on ItemScrollController {
   void safeJumpTo(int? index, {double alignment = 0}) {
     if (isAttached && index != null) {
+      debugPrint('${identityHashCode(this)} will jump to index $index');
       jumpTo(index: index, alignment: alignment);
     } else {
-      debugPrint('${identityHashCode(this)} jump fail, scroll is not attached');
+      debugPrint(
+        '${identityHashCode(this)} jump fail, attached $isAttached, index $index',
+      );
     }
   }
 
@@ -48,10 +51,11 @@ extension SafeScroll on ItemScrollController {
     Duration duration = const Duration(milliseconds: 250),
   }) {
     if (isAttached && index != null) {
+      debugPrint('${identityHashCode(this)} will scroll to index $index align $alignment');
       scrollTo(index: index, duration: duration, alignment: alignment);
     } else {
       debugPrint(
-        '${identityHashCode(this)} scroll fail, scroll is not attached',
+        '${identityHashCode(this)} scroll fail, attached $isAttached, index $index',
       );
     }
   }

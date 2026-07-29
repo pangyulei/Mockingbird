@@ -56,9 +56,8 @@ class MediaCardUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     final isPlaying = ref.watch(
-      mediaCardProvider(_id).select((s) => s.value?.isPlaying),
+      mediaCardProvider(_id).select((st) => st.isPlaying),
     );
-    if (isPlaying == null) return const NullUI();
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -119,10 +118,8 @@ class MediaCardUI extends ConsumerWidget {
         final colorScheme = theme.colorScheme;
         final (name, isPlaying) = ref.watch(
           mediaCardProvider(_id)
-              .select((st) => st.value)
-              .select((data) => (data?.name.trim(), data?.isPlaying)),
+              .select((st) => (st.name.trim(), st.isPlaying)),
         );
-        if (name == null || isPlaying == null) return const NullUI();
         if (isPlaying && name.isNotEmpty) {
           return SizedBox(
             height: 20,
@@ -162,15 +159,10 @@ class MediaCardUI extends ConsumerWidget {
           final theme = Theme.of(ctx);
           final colorScheme = theme.colorScheme;
           final (hasSubtitle, type, isPlaying) = ref.watch(
-            mediaCardProvider(_id)
-                .select((st) => st.value)
-                .select(
-                  (data) => (data?.hasSubtitle, data?.type, data?.isPlaying),
-                ),
+            mediaCardProvider(
+              _id,
+            ).select((st) => (st.hasSubtitle, st.type, st.isPlaying)),
           );
-          if (hasSubtitle == null || type == null || isPlaying == null) {
-            return const NullUI();
-          }
           return Row(
             children: [
               Icon(
@@ -204,9 +196,8 @@ class MediaCardUI extends ConsumerWidget {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
     final isPlaying = ref.watch(
-      mediaCardProvider(_id).select((st) => st.value?.isPlaying),
+      mediaCardProvider(_id).select((st) => st.isPlaying),
     );
-    if (isPlaying == null) return const NullUI();
     return Container(
       width: 48,
       height: 48,
@@ -230,9 +221,8 @@ class MediaCardUI extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         final hasSubtitle = ref.watch(
-          mediaCardProvider(_id).select((st) => st.value?.hasSubtitle),
+          mediaCardProvider(_id).select((st) => st.hasSubtitle),
         );
-        if (hasSubtitle == null) return const NullUI();
         return PopupMenuButton<String>(
           icon: Icon(Icons.more_horiz, size: 20, color: colorScheme.outline),
           onSelected: (value) {

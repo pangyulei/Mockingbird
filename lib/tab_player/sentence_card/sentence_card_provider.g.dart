@@ -13,7 +13,7 @@ part of 'sentence_card_provider.dart';
 final sentenceCardProvider = SentenceCardFamily._();
 
 final class SentenceCardProvider
-    extends $AsyncNotifierProvider<SentenceCard, SentenceCardState?> {
+    extends $NotifierProvider<SentenceCard, SentenceCardState> {
   SentenceCardProvider._({
     required SentenceCardFamily super.from,
     required int? super.argument,
@@ -39,6 +39,14 @@ final class SentenceCardProvider
   @override
   SentenceCard create() => SentenceCard();
 
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(SentenceCardState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<SentenceCardState>(value),
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     return other is SentenceCardProvider && other.argument == argument;
@@ -50,15 +58,15 @@ final class SentenceCardProvider
   }
 }
 
-String _$sentenceCardHash() => r'516b95366a1335cd63833ac4a9fda29415f05835';
+String _$sentenceCardHash() => r'064e0eb35aaa48f33c2e218f86f2d74ba6171e42';
 
 final class SentenceCardFamily extends $Family
     with
         $ClassFamilyOverride<
           SentenceCard,
-          AsyncValue<SentenceCardState?>,
-          SentenceCardState?,
-          FutureOr<SentenceCardState?>,
+          SentenceCardState,
+          SentenceCardState,
+          SentenceCardState,
           int?
         > {
   SentenceCardFamily._()
@@ -77,21 +85,20 @@ final class SentenceCardFamily extends $Family
   String toString() => r'sentenceCardProvider';
 }
 
-abstract class _$SentenceCard extends $AsyncNotifier<SentenceCardState?> {
+abstract class _$SentenceCard extends $Notifier<SentenceCardState> {
   late final _$args = ref.$arg as int?;
   int? get id => _$args;
 
-  FutureOr<SentenceCardState?> build(int? id);
+  SentenceCardState build(int? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref =
-        this.ref as $Ref<AsyncValue<SentenceCardState?>, SentenceCardState?>;
+    final ref = this.ref as $Ref<SentenceCardState, SentenceCardState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<SentenceCardState?>, SentenceCardState?>,
-              AsyncValue<SentenceCardState?>,
+              AnyNotifier<SentenceCardState, SentenceCardState>,
+              SentenceCardState,
               Object?,
               Object?
             >;

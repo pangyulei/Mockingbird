@@ -57,7 +57,7 @@ final class PlayerProvider extends $NotifierProvider<Player, void> {
   }
 }
 
-String _$playerHash() => r'5b297835f2717b3ac1038faac60d3ac86345c9de';
+String _$playerHash() => r'80f4da44dd15940faac9191c5c1edbef5aee7809';
 
 final class PlayerFamily extends $Family
     with $ClassFamilyOverride<Player, void, void, void, ItemScrollController> {

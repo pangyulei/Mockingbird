@@ -1,4 +1,3 @@
-
 import 'package:mockingbird/db/entities/en_media.dart';
 
 class MediaCardState {
@@ -13,7 +12,8 @@ class MediaCardState {
     required this.name,
     required this.hasSubtitle,
   });
-
+  const MediaCardState.empty()
+    : this(hasSubtitle: false, isPlaying: false, name: '', type: .video);
 
   MediaCardState copyWith({
     String? name,

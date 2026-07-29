@@ -10,20 +10,19 @@ import 'package:mockingbird/tab_player/player/providers/player_setting_provider.
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_video_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
-import 'package:mockingbird/tool/extensions.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../../db/entities/en_media.dart';
 import '../../../db/providers/db_media_provider.dart';
+import '../../../tool/extensions.dart';
 import '../../../tool/subtitle_parser.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 part 'player_provider.g.dart';
 
 @riverpod
 class Player extends _$Player {
   bool _isDraggingVideoSlider = false;
-
   int? _prevPlayingSentenceIndex;
   List<EnSentence> get _sentenceList => ref.read(
     dbPlayingMediaProvider.select(
@@ -33,44 +32,10 @@ class Player extends _$Player {
 
   @override
   void build(ItemScrollController scrollController) {
-    final (positionMicro, videoController) = ref.watch(
-      playerMediaProvider
-          .select(
-            (st) => st.value is PlayerMediaData
-                ? (st.value as PlayerMediaData)
-                : null,
-          )
-          .select((data) => (data?.positionMicro, data?.videoController)),
-    );
-    if (positionMicro == null || videoController == null) {
-      return;
-    }
-    _videoPositionChanged(
-      videoController,
-      Duration(microseconds: positionMicro),
-    );
     _listen();
   }
 
-  void _videoPositionChanged(
-    VideoPlayerController videoController,
-    Duration position,
-  ) async {
-    final spot = ref.read(playerSpotProvider).value;
-    final bool isSentenceChanged =
-        spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
-    final isLoop = ref.read(
-      playerSettingProvider.select((st) => st.value?.isLoop ?? false),
-    );
-    //handle scroll
-    if (isSentenceChanged) {
-      if (_isDraggingVideoSlider) {
-        jumpToPlayingSentence();
-      } else if (!isLoop) {
-        //playing auto scroll to next sentence, not for loop mode
-        scrollToPlayingSentence();
-      }
-    }
+  void _videoPositionChanged(Duration position) async {
     //handle loop seek to begin
     final loopSentence = ref.read(playerSpotProvider.notifier).loopSentence;
     if (!_isDraggingVideoSlider && loopSentence != null) {
@@ -81,7 +46,49 @@ class Player extends _$Player {
         ref.read(playerMediaProvider.notifier).seekTo(loopSentence.start);
       }
     }
-    _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
+  }
+
+  void _listen() {
+    ref.listen(playerSpotProvider.select((st) => st.value), (previous, spot) {
+      final bool isSentenceChanged =
+          spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
+      final isLoop = ref.read(
+        playerSettingProvider.select((st) => st.value?.isLoop ?? false),
+      );
+      //handle scroll
+      if (isSentenceChanged) {
+        if (_isDraggingVideoSlider) {
+          scrollController.safeJumpTo(
+            spot?.playingSentenceIndex,
+            alignment: 0.3,
+          );
+        } else if (!isLoop) {
+          //playing auto scroll to next sentence, not for loop mode
+          scrollController.safeScrollTo(
+            spot?.playingSentenceIndex,
+            alignment: 0.3,
+          );
+        }
+      }
+      _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
+    });
+    ref.listen(
+      playerMediaProvider
+          .select(
+            (st) => st.value is PlayerMediaData
+                ? (st.value as PlayerMediaData)
+                : null,
+          )
+          .select((data) => data?.positionMicro),
+      (previous, positionMicro) {
+        if (positionMicro == null) return;
+        _videoPositionChanged(Duration(microseconds: positionMicro));
+      },
+    );
+    ref.listen(playerVideoControllerProvider, (previous, next) {
+      //video changed
+      scrollToTop();
+    });
   }
 
   Future<void> videoSliderStartChanged(double valMicro) async {
@@ -122,13 +129,6 @@ class Player extends _$Player {
     );
   }
 
-  void _listen() {
-    ref.listen(playerVideoControllerProvider, (previous, next) {
-      //video changed
-      scrollToTop();
-    });
-  }
-
   void scrollToTop() {
     scrollController.safeScrollTo(0);
   }
@@ -141,15 +141,7 @@ class Player extends _$Player {
     final index = ref.read(
       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
-    debugPrint('will scroll to index($index)');
     scrollController.safeScrollTo(index, alignment: 0.3);
-  }
-
-  void jumpToPlayingSentence() {
-    final index = ref.read(
-      playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
-    );
-    scrollController.safeJumpTo(index, alignment: 0.3);
   }
 
   void tapSentence(int? id) async {
@@ -160,8 +152,8 @@ class Player extends _$Player {
     if (sentenceIndex == null) return;
     final sentence = _sentenceList[sentenceIndex];
     debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
+    scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
     await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
-    scrollToPlayingSentence();
     await ref.read(playerMediaProvider.notifier).play();
   }
 
@@ -195,6 +187,17 @@ class Player extends _$Player {
     } catch (e) {
       debugPrint('Error adding subtitle: $e');
       return null;
+    }
+  }
+}
+
+extension on EnSentence {
+  bool isPlaying(EnSentence? prev, EnSentence? next, Duration position) {
+    final start = prev == null ? const Duration(microseconds: 0) : this.start;
+    if (next == null) {
+      return start <= position;
+    } else {
+      return start <= position && position < next.start;
     }
   }
 }

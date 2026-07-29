@@ -141,9 +141,8 @@ class AlbumCardUI extends ConsumerWidget {
                 Consumer(
                   builder: (context, ref, child) {
                     final name = ref.watch(
-                      albumCardProvider(_id).select((st) => st.value?.name),
+                      albumCardProvider(_id).select((st) => st.name),
                     );
-                    if (name == null) return const NullUI();
                     return Text(
                       name,
                       style: theme.textTheme.titleSmall?.copyWith(
@@ -161,9 +160,8 @@ class AlbumCardUI extends ConsumerWidget {
                     final mediaCount = ref.watch(
                       albumCardProvider(
                         _id,
-                      ).select((st) => st.value?.mediaCount),
+                      ).select((st) => st.mediaCount),
                     );
-                    if (mediaCount == null) return const NullUI();
                     return Text(
                       '$mediaCount Medias',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -185,10 +183,9 @@ class AlbumCardUI extends ConsumerWidget {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
       builder: (context, ref, child) {
-        final bool? canSort = ref.watch(
-          albumCardProvider(_id).select((st) => st.value?.canSort),
+        final canSort = ref.watch(
+          albumCardProvider(_id).select((st) => st.canSort),
         );
-        if (canSort == null) return const NullUI();
         return PopupMenuButton<String>(
           icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
           onSelected: (value) {
@@ -265,7 +262,7 @@ class AlbumCardUI extends ConsumerWidget {
   }
 
   Widget _cover(BuildContext ctx, WidgetRef ref) {
-    final String? cover = ref.watch(albumCardProvider(_id).select((st) => st.value?.cover));
+    final String? cover = ref.watch(albumCardProvider(_id).select((st) => st.cover));
     final colorScheme = Theme.of(ctx).colorScheme;
     if (cover != null) {
       return Image.file(File(cover), fit: BoxFit.cover);

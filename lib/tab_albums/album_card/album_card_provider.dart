@@ -9,9 +9,9 @@ part 'album_card_provider.g.dart';
 @riverpod
 class AlbumCard extends _$AlbumCard {
   @override
-  Future<AlbumCardState?> build(int? id) async {
-    final album = ref.watch(dbAlbumProvider(id)).value;
-    if (album == null) return null;
+  AlbumCardState build(int? id) {
+    final album = ref.watch(dbAlbumProvider(id).select((st)=>st.value));
+    if (album == null) return const AlbumCardState.empty();
     final albumCount = ref.watch(
       dbAlbumListProvider.select((st) => st.value?.length ?? 0),
     );

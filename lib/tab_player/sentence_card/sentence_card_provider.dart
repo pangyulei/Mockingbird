@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
+import 'package:mockingbird/db/providers/db_sentence_provider.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -10,10 +11,12 @@ part 'sentence_card_provider.g.dart';
 
 @riverpod
 class SentenceCard extends _$SentenceCard {
+  
+  //not return Future<T>, fix playerui sentencelist can't scroll bug
   @override
-  Future<SentenceCardState?> build(int? id) async {
-    final EnSentence? sentence = await DBLogic().loadSentence(id);
-    if (sentence == null) return null;
+  SentenceCardState build(int? id) {
+    final EnSentence? sentence = ref.watch(dbSentenceProvider(id).select((st)=>st.value));
+    if (sentence == null) return const SentenceCardState.empty();
     final int? playingSentenceId = ref.watch(
       playerSpotProvider.select((st) => st.value?.playingSentence?.id),
     );

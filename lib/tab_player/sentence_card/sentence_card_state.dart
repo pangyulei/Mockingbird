@@ -8,6 +8,8 @@ class SentenceCardState {
     required this.period,
     required this.isPlaying,
   });
+  const SentenceCardState.empty()
+    : this(isPlaying: false, period: '', text: '');
 
   SentenceCardState copyWith({bool? isPlaying, String? text, String? period}) {
     return SentenceCardState(

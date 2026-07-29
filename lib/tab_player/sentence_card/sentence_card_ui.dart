@@ -25,9 +25,8 @@ class SentenceCardUI extends ConsumerWidget {
         child: Consumer(
           builder: (ctx, ref, _) {
             final isPlaying = ref.watch(
-              sentenceCardProvider(_id).select((st) => st.value?.isPlaying),
+              sentenceCardProvider(_id).select((st) => st.isPlaying),
             );
-            if (isPlaying == null) return const NullUI();
             return AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
@@ -67,9 +66,8 @@ class SentenceCardUI extends ConsumerWidget {
                         final text = ref.watch(
                           sentenceCardProvider(
                             _id,
-                          ).select((st) => st.value?.text),
+                          ).select((st) => st.text),
                         );
-                        if (text == null) return const NullUI();
                         return Text(
                           text,
                           style: theme.textTheme.bodyLarge?.copyWith(
@@ -94,9 +92,8 @@ class SentenceCardUI extends ConsumerWidget {
                             final period = ref.watch(
                               sentenceCardProvider(
                                 _id,
-                              ).select((st) => st.value?.period),
+                              ).select((st) => st.period),
                             );
-                            if (period == null) return const NullUI();
                             return Text(
                               period,
                               style: theme.textTheme.labelSmall?.copyWith(

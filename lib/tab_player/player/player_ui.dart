@@ -279,7 +279,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
           builder: (ctx, ref, child) {
             final data = ref.watch(playerSubtitleProvider).value;
             if (data is PlayerSubtitleData) {
-              final sentenceIdList = (data).sentenceList
+              final sentenceIdList = data.sentenceList
                   .map((sen) => sen.id)
                   .toList();
               return ScrollablePositionedList.builder(
@@ -297,7 +297,6 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             } else if (data is PlayerSubtitleNull) {
               return _noSubtitle(ctx, ref);
             } else {
-              assert(data == null);
               return const NullUI();
             }
           },

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_albums/edit_album/edit_album_provider.dart';
-import 'package:mockingbird/tool/extensions.dart';
 import 'package:mockingbird/tool/null_ui.dart';
 
 import 'edit_album_state.dart';
+import '../../tool/extensions.dart';
 
 class EditAlbumUI extends ConsumerStatefulWidget {
   final int? _id;

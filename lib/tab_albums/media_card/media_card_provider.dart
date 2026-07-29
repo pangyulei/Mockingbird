@@ -14,10 +14,10 @@ part 'media_card_provider.g.dart';
 @riverpod
 class MediaCard extends _$MediaCard {
   @override
-  Future<MediaCardState?> build(int? id) async {
-    final EnMedia? media = await ref.watch(dbMediaProvider(id).future);
+  MediaCardState build(int? id) {
+    final EnMedia? media = ref.watch(dbMediaProvider(id).select((st)=>st.value));
     debugPrint('${identityHashCode(media)} $media');
-    if (media == null) return null;
+    if (media == null) return const MediaCardState.empty();
     final playingId = ref.watch(
       dbPrefProvider.select((st) => st.value?.playingId),
     );
