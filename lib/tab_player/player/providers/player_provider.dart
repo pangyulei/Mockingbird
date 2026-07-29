@@ -29,7 +29,8 @@ class Player extends _$Player {
       (st) => st.value?.subtitleList.firstOrNull?.sentenceList ?? [],
     ),
   );
-
+  bool get _isLoop =>
+      ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) == true;
   @override
   void build(ItemScrollController scrollController) {
     _listenToLoopSentenceEnd();
@@ -127,9 +128,7 @@ class Player extends _$Player {
       () async {
         final position = Duration(microseconds: valMicro.toInt());
         // seek to sentence start
-        final isLoop =
-            ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) ==
-            true;
+
         final spot = ref.read(playerSpotProvider.select((st) => st.value));
         ref
             .read(playerLoopProvider.notifier)
@@ -137,7 +136,7 @@ class Player extends _$Player {
               spot?.playingSentenceIndex,
               spot?.playingSentence,
             );
-        final Duration seekToPosition = isLoop
+        final Duration seekToPosition = _isLoop
             ? (spot?.playingSentence?.start ?? position)
             : position;
         await ref.read(playerMediaProvider.notifier).seekTo(seekToPosition);
@@ -182,7 +181,7 @@ class Player extends _$Player {
      */
     final sentence = _sentenceList[sentenceIndex];
     debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
-    if (ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) == true) {
+    if (_isLoop) {
       scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
       ref
           .read(playerLoopProvider.notifier)
