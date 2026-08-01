@@ -51,7 +51,8 @@ class PlayerMediaController implements PlayerMediaControllerITF {
 
   @override
   FutureOr<void> mb_setVolume(double volume) async {
-    await _player.setVolume(volume);
+    //outside is 0-1, but Player's volume is 0-100
+    await _player.setVolume(volume*100);
   }
 
   @override
