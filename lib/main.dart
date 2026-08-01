@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,12 +9,15 @@ import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/tab_player/player/background_audio_handler.dart';
 import 'package:mockingbird/tab_player/player/providers/background_audio_handler_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); //objectbox official code
   MediaKit.ensureInitialized();
   final providerContainer = ProviderContainer();
-  final backgroundAudioHandler = providerContainer.read(backgroundAudioHandlerProvider);
+  final backgroundAudioHandler = providerContainer.read(
+    backgroundAudioHandlerProvider,
+  );
   await AudioService.init(
     builder: () => backgroundAudioHandler,
     config: const AudioServiceConfig(
