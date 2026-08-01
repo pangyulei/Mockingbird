@@ -10,7 +10,6 @@ import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dar
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../../db/entities/en_media.dart';
@@ -18,10 +17,10 @@ import '../../../db/providers/db_media_provider.dart';
 import '../../../tool/extensions.dart';
 import '../../../tool/subtitle_parser.dart';
 
-part 'player_provider.g.dart';
+final playerProvider = NotifierProvider.autoDispose
+    .family<PlayerNotifier, void, ItemScrollController>(PlayerNotifier.new);
 
-@riverpod
-class Player extends _$Player {
+class PlayerNotifier extends Notifier<void> {
   bool _isDraggingVideoSlider = false;
   int? _prevPlayingSentenceIndex;
   EnSubtitle? _prevSubtitle;
@@ -31,8 +30,11 @@ class Player extends _$Player {
   List<EnSentence> get _sentenceList => _subtitle?.sentenceList ?? [];
   bool get _isLoop =>
       ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) == true;
+  final ItemScrollController _scrollController;
+  PlayerNotifier(this._scrollController);
+
   @override
-  void build(ItemScrollController scrollController) {
+  void build() {
     _listenToLoopSentenceEnd();
     _listenToPlayingSentenceChanged();
   }
@@ -51,7 +53,7 @@ class Player extends _$Player {
         () async {
           final isSubtitleChanged = _prevSubtitle != _subtitle;
           if (isSubtitleChanged) {
-            scrollController.safeJumpTo(
+            _scrollController.safeJumpTo(
               spot?.playingSentenceIndex,
               alignment: 0.3,
             );
@@ -70,13 +72,13 @@ class Player extends _$Player {
           );
           if (isSentenceChanged) {
             if (_isDraggingVideoSlider) {
-              scrollController.safeJumpTo(
+              _scrollController.safeJumpTo(
                 spot?.playingSentenceIndex,
                 alignment: 0.3,
               );
             } else if (!isLoop) {
               //playing auto scroll to next sentence, not for loop mode
-              scrollController.safeScrollTo(
+              _scrollController.safeScrollTo(
                 spot?.playingSentenceIndex,
                 alignment: 0.3,
               );
@@ -165,18 +167,18 @@ class Player extends _$Player {
   }
 
   void scrollToTop() {
-    scrollController.safeScrollTo(0);
+    _scrollController.safeScrollTo(0);
   }
 
   void scrollToBottom() {
-    scrollController.safeScrollTo(_sentenceList.length - 1);
+    _scrollController.safeScrollTo(_sentenceList.length - 1);
   }
 
   void scrollToPlayingSentence() {
     final index = ref.read(
       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
     );
-    scrollController.safeScrollTo(index, alignment: 0.3);
+    _scrollController.safeScrollTo(index, alignment: 0.3);
   }
 
   void tapSentence(int? id) async {
@@ -195,7 +197,7 @@ class Player extends _$Player {
     final sentence = _sentenceList[sentenceIndex];
     debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
     if (_isLoop) {
-      scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
+      _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
       ref
           .read(playerLoopProvider.notifier)
           .updateIndexAndSentenceIfLoop(sentenceIndex, sentence);

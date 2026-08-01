@@ -4,11 +4,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_video_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../../tool/extensions.dart';
 
@@ -19,37 +19,42 @@ class PlayerMedia extends _$PlayerMedia {
   @override
   Future<PlayerMediaState> build() async {
     //because of this is read and have to await, this has to be a AsyncNotifier
-    final VideoPlayerController? videoController = await ref.watch(
+    final mediaController = await ref.watch(
       playerVideoControllerProvider.future,
     );
-    if (videoController == null) return const PlayerMediaNull();
+    if (mediaController == null) return const PlayerMediaNull();
     final (speed, volume) = ref.read(
       playerSettingProvider.select((st) => (st.speed, st.volume)),
     );
-    await videoController.setPlaybackSpeed(speed);
-    await videoController.setVolume(volume);
+    await mediaController.mb_setSpeed(speed);
+    await mediaController.mb_setVolume(volume);
     //Fix playing media1, change to media2, it paused. because it didnt trigger listen,
     //I dont know why but we need to force it play
-    await videoController.play();
+    await mediaController.mb_play();
     // ref.read(playerSubtitleProvider.notifier).scrollToTop();
-    videoController.addListener(() => _videoPositionChanged(videoController));
+    final sub = mediaController.mb_addListener(_mediaPositionChanged);
     _listen();
+    ref.onDispose(() {
+      sub.cancel();
+    });
     return PlayerMediaData(
       positionMicro: 0,
-      videoController: videoController,
+      mediaController: mediaController,
       isPlaying: true,
     );
   }
 
-  void _videoPositionChanged(VideoPlayerController videoController) async {
-    final position = videoController.value.position;
+  void _mediaPositionChanged(
+    PlayerMediaControllerITF mediaController,
+    Duration position,
+  ) async {
     //for video slider moving along with playing
     var data = state.value;
     if (data is! PlayerMediaData) return;
     data = data.copyWith(positionMicro: position.inMicroseconds);
     state = AsyncData(data);
 
-    final duration = videoController.value.duration;
+    final duration = mediaController.mb_duration;
     if (position >= duration) {
       //if video end of duration, play/pause button should update
       //feature: replay if auto play to end
@@ -68,10 +73,9 @@ class PlayerMedia extends _$PlayerMedia {
       previous,
       speed,
     ) async {
-      await state.value
-          ?.as<PlayerMediaData>()
-          ?.videoController
-          .setPlaybackSpeed(speed);
+      await state.value?.as<PlayerMediaData>()?.mediaController.mb_setSpeed(
+        speed,
+      );
     });
   }
 
@@ -80,7 +84,7 @@ class PlayerMedia extends _$PlayerMedia {
       previous,
       volume,
     ) async {
-      await state.value?.as<PlayerMediaData>()?.videoController.setVolume(
+      await state.value?.as<PlayerMediaData>()?.mediaController.mb_setVolume(
         volume,
       );
     });
@@ -91,7 +95,7 @@ class PlayerMedia extends _$PlayerMedia {
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: true);
     state = AsyncData(data);
-    await data.videoController.play();
+    await data.mediaController.mb_play();
   }
 
   Future<void> pause() async {
@@ -99,14 +103,14 @@ class PlayerMedia extends _$PlayerMedia {
     if (data is! PlayerMediaData) return;
     data = data.copyWith(isPlaying: false);
     state = AsyncData(data);
-    await data.videoController.pause();
+    await data.mediaController.mb_pause();
   }
 
   Future<void> seekTo(Duration position) async {
-    await state.value?.as<PlayerMediaData>()?.videoController.seekTo(position);
+    await state.value?.as<PlayerMediaData>()?.mediaController.mb_seek(position);
   }
 
   Duration? get duration => state.value is PlayerMediaData
-      ? (state.value as PlayerMediaData).videoController.value.duration
+      ? (state.value as PlayerMediaData).mediaController.mb_duration
       : null;
 }

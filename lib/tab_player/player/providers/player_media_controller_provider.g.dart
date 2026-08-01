@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'player_video_controller_provider.dart';
+part of 'player_media_controller_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -14,7 +14,10 @@ final playerVideoControllerProvider = PlayerVideoControllerProvider._();
 
 final class PlayerVideoControllerProvider
     extends
-        $AsyncNotifierProvider<PlayerVideoController, VideoPlayerController?> {
+        $AsyncNotifierProvider<
+          PlayerVideoController,
+          PlayerMediaControllerITF?
+        > {
   PlayerVideoControllerProvider._()
     : super(
         from: null,
@@ -35,25 +38,28 @@ final class PlayerVideoControllerProvider
 }
 
 String _$playerVideoControllerHash() =>
-    r'efb81fb4d89cc82cbfb6e08ace3d544bd1cc33f3';
+    r'96f684242224a80c098fd0c94f0ee30f4f274718';
 
 abstract class _$PlayerVideoController
-    extends $AsyncNotifier<VideoPlayerController?> {
-  FutureOr<VideoPlayerController?> build();
+    extends $AsyncNotifier<PlayerMediaControllerITF?> {
+  FutureOr<PlayerMediaControllerITF?> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final ref =
         this.ref
-            as $Ref<AsyncValue<VideoPlayerController?>, VideoPlayerController?>;
+            as $Ref<
+              AsyncValue<PlayerMediaControllerITF?>,
+              PlayerMediaControllerITF?
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
               AnyNotifier<
-                AsyncValue<VideoPlayerController?>,
-                VideoPlayerController?
+                AsyncValue<PlayerMediaControllerITF?>,
+                PlayerMediaControllerITF?
               >,
-              AsyncValue<VideoPlayerController?>,
+              AsyncValue<PlayerMediaControllerITF?>,
               Object?,
               Object?
             >;

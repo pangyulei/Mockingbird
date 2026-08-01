@@ -41,7 +41,7 @@ final class PlayerSettingProvider
   }
 }
 
-String _$playerSettingHash() => r'3a364a2e2a4a986e5f9eebaadb054155efe0b69f';
+String _$playerSettingHash() => r'a7a5f4e69e4e6e2a14f39f6319fbf71068bc1ce9';
 
 abstract class _$PlayerSetting extends $Notifier<PlayerSettingState> {
   PlayerSettingState build();

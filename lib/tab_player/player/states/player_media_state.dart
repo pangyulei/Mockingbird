@@ -1,31 +1,28 @@
-
-import 'package:video_player/video_player.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
 
 sealed class PlayerMediaState {
   const PlayerMediaState();
 }
+
 class PlayerMediaNull extends PlayerMediaState {
   const PlayerMediaNull();
 }
 
 class PlayerMediaData extends PlayerMediaState {
-  final VideoPlayerController videoController;
+  final PlayerMediaControllerITF mediaController;
   final bool isPlaying;
   final int positionMicro;
 
   const PlayerMediaData({
     required this.positionMicro,
     required this.isPlaying,
-    required this.videoController,
+    required this.mediaController,
   });
 
-  PlayerMediaData copyWith({
-    int? positionMicro,
-    bool? isPlaying,
-  }) {
+  PlayerMediaData copyWith({int? positionMicro, bool? isPlaying}) {
     return PlayerMediaData(
       positionMicro: positionMicro ?? this.positionMicro,
-      videoController: videoController,
+      mediaController: mediaController,
       isPlaying: isPlaying ?? this.isPlaying,
     );
   }

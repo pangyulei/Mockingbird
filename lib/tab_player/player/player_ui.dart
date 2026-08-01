@@ -5,6 +5,7 @@ import 'package:marquee/marquee.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
@@ -14,7 +15,6 @@ import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
 import 'package:mockingbird/tool/null_ui.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../app/app_route.dart';
 import '../../tool/extensions.dart';
@@ -152,13 +152,13 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         builder: (context, ref, child) {
           final videoController = ref.watch(
             playerMediaProvider.select(
-              (st) => (st.value as PlayerMediaData).videoController,
+              (st) => (st.value as PlayerMediaData).mediaController,
             ),
           );
           return Column(
             children: [
               _displayer(ctx, ref, videoController),
-              _controlBar(ctx, ref, videoController),
+              _controlBar(ctx, ref),
             ],
           );
         },
@@ -169,30 +169,32 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   Widget _displayer(
     BuildContext ctx,
     WidgetRef ref,
-    VideoPlayerController videoController,
+    PlayerMediaControllerITF mediaController,
   ) {
-    final String mediaPath = videoController.dataSource;
+    final mediaPath = mediaController.mb_path;
+    if (mediaPath == null || mediaPath.isEmpty) return const NullUI();
     final mediaType = MediaType.fromPath(mediaPath);
     if (mediaType == .video) {
-      return _videoDisplayer(ctx, ref, videoController);
+      return _videoDisplayer(ctx, ref, mediaController);
     } else {
-      return _audioDisplayer(ctx, ref, videoController);
+      return _audioDisplayer(ctx, ref, mediaController);
     }
   }
 
   Widget _videoDisplayer(
     BuildContext ctx,
     WidgetRef ref,
-    VideoPlayerController videoController,
+    PlayerMediaControllerITF mediaController,
   ) {
+    const ratio = 16 / 9.0;
     return AspectRatio(
-      aspectRatio: 16 / 9.0,
+      aspectRatio: ratio,
       child: Stack(
         alignment: .center,
         children: [
           AspectRatio(
-            aspectRatio: videoController.value.aspectRatio,
-            child: VideoPlayer(videoController),
+            aspectRatio: mediaController.mb_ratio ?? ratio,
+            child: mediaController.mb_mediaPlayer,
           ),
           _gradientDisplayerOverlay(),
           Row(
@@ -205,7 +207,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 8),
-                      child: _progressSlider(ctx, videoController),
+                      child: _progressSlider(ctx, mediaController),
                     ),
                   ],
                 ),
@@ -224,13 +226,13 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   Widget _audioDisplayer(
     BuildContext ctx,
     WidgetRef ref,
-    VideoPlayerController videoController,
+    PlayerMediaControllerITF mediaController,
   ) {
     return SizedBox(
       height: 150,
       child: Stack(
         children: [
-          VideoPlayer(videoController),
+          mediaController.mb_mediaPlayer,
           _gradientDisplayerOverlay(),
           Column(
             mainAxisSize: .max,
@@ -243,7 +245,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: _progressSlider(ctx, videoController),
+                child: _progressSlider(ctx, mediaController),
               ),
             ],
           ),
@@ -473,7 +475,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
 
   Widget _progressSlider(
     BuildContext ctx,
-    VideoPlayerController videoController,
+    PlayerMediaControllerITF mediaController,
   ) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return SliderTheme(
@@ -494,7 +496,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               (st) => (st.value as PlayerMediaData).positionMicro.toDouble(),
             ),
           );
-          final duration = videoController.value.duration.inMicroseconds
+          final duration = mediaController.mb_duration.inMicroseconds
               .toDouble();
           return Slider(
             value: position.clamp(0, duration),
@@ -610,11 +612,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _controlBar(
-    BuildContext ctx,
-    WidgetRef ref,
-    VideoPlayerController videoController,
-  ) {
+  Widget _controlBar(BuildContext ctx, WidgetRef ref) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Container(
       decoration: BoxDecoration(
