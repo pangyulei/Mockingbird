@@ -32,11 +32,8 @@ class PlayerMedia extends _$PlayerMedia {
     //I dont know why but we need to force it play
     await mediaController.mb_play();
     // ref.read(playerSubtitleProvider.notifier).scrollToTop();
-    final sub = mediaController.mb_addListener(_mediaPositionChanged);
+    mediaController.mb_addListener(_mediaPositionChanged);
     _listen();
-    ref.onDispose(() {
-      sub.cancel();
-    });
     return PlayerMediaData(
       positionMicro: 0,
       mediaController: mediaController,

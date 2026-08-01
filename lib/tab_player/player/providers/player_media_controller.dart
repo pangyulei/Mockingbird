@@ -16,7 +16,7 @@ abstract interface class PlayerMediaControllerITF {
   double? get mb_ratio;
   String? get mb_path;
   FutureOr<void> mb_dispose();
-  StreamSubscription mb_addListener(
+  void mb_addListener(
     void Function(PlayerMediaControllerITF mediaController, Duration position)
     listener,
   );
@@ -26,6 +26,7 @@ abstract interface class PlayerMediaControllerITF {
 class PlayerMediaController implements PlayerMediaControllerITF {
   final _player = Player();
   String? _path;
+  final _subs = <StreamSubscription>[];
   PlayerMediaController();
 
   @override
@@ -54,13 +55,14 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   }
 
   @override
-  StreamSubscription mb_addListener(
+  void mb_addListener(
     void Function(PlayerMediaControllerITF mediaController, Duration position)
     listener,
   ) {
-    return _player.stream.position.listen((position) {
+    final sub = _player.stream.position.listen((position) {
       listener(this, position);
     });
+    _subs.add(sub);
   }
 
   @override
@@ -70,8 +72,7 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   Duration get mb_position => _player.state.position;
 
   @override
-  Widget get mb_mediaPlayer =>
-      Video(controller: VideoController(_player), fit: BoxFit.fitHeight);
+  Widget get mb_mediaPlayer => Video(controller: VideoController(_player));
 
   @override
   double? get mb_ratio {
@@ -95,6 +96,9 @@ class PlayerMediaController implements PlayerMediaControllerITF {
 
   @override
   FutureOr<void> mb_dispose() async {
+    for (final sub in _subs) {
+      sub.cancel();
+    }
     await _player.dispose();
   }
 }
