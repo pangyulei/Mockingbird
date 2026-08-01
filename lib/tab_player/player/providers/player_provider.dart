@@ -35,7 +35,6 @@ class Player extends _$Player {
   @override
   void build(ItemScrollController scrollController) {
     _listenToLoopSentenceEnd();
-    _listenToMediaChanged();
     _listenToPlayingSentenceChanged();
   }
 
@@ -93,13 +92,6 @@ class Player extends _$Player {
         _videoPositionChanged(Duration(microseconds: positionMicro));
       },
     );
-  }
-
-  void _listenToMediaChanged() {
-    ref.listen(playerVideoControllerProvider, (previous, next) {
-      //video changed
-      scrollToTop();
-    });
   }
 
   void _videoPositionChanged(Duration position) async {
