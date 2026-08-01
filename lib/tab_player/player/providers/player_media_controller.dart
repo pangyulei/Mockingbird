@@ -16,8 +16,12 @@ abstract interface class PlayerMediaControllerITF {
   double? get mb_ratio;
   String? get mb_path;
   FutureOr<void> mb_dispose();
-  void mb_addListener(
+  void mb_listenPosition(
     void Function(PlayerMediaControllerITF mediaController, Duration position)
+    listener,
+  );
+  void mb_listenPlaying(
+    void Function(PlayerMediaControllerITF mediaController, bool isPlaying)
     listener,
   );
   Widget get mb_mediaPlayer;
@@ -52,18 +56,7 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   @override
   FutureOr<void> mb_setVolume(double volume) async {
     //outside is 0-1, but Player's volume is 0-100
-    await _player.setVolume(volume*100);
-  }
-
-  @override
-  void mb_addListener(
-    void Function(PlayerMediaControllerITF mediaController, Duration position)
-    listener,
-  ) {
-    final sub = _player.stream.position.listen((position) {
-      listener(this, position);
-    });
-    _subs.add(sub);
+    await _player.setVolume(volume * 100);
   }
 
   @override
@@ -73,7 +66,11 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   Duration get mb_position => _player.state.position;
 
   @override
-  Widget get mb_mediaPlayer => Video(controller: VideoController(_player));
+  Widget get mb_mediaPlayer => Video(
+    controller: VideoController(_player),
+    pauseUponEnteringBackgroundMode: false,
+    resumeUponEnteringForegroundMode: true,
+  );
 
   @override
   double? get mb_ratio {
@@ -101,5 +98,27 @@ class PlayerMediaController implements PlayerMediaControllerITF {
       sub.cancel();
     }
     await _player.dispose();
+  }
+
+  @override
+  void mb_listenPosition(
+    void Function(PlayerMediaControllerITF mediaController, Duration position)
+    listener,
+  ) {
+    final sub = _player.stream.position.listen((position) {
+      listener(this, position);
+    });
+    _subs.add(sub);
+  }
+
+  @override
+  void mb_listenPlaying(
+    void Function(PlayerMediaControllerITF mediaController, bool isPlaying)
+    listener,
+  ) {
+    final sub = _player.stream.playing.listen((isPlaying) {
+      listener(this, isPlaying);
+    });
+    _subs.add(sub);
   }
 }

@@ -4,6 +4,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/background_audio_handler_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
@@ -18,11 +20,16 @@ part 'player_media_provider.g.dart';
 class PlayerMedia extends _$PlayerMedia {
   @override
   Future<PlayerMediaState> build() async {
-    //because of this is read and have to await, this has to be a AsyncNotifier
-    final mediaController = await ref.watch(
-      playerVideoControllerProvider.future,
+    final (path, id, name) = await ref.watch(
+      dbPlayingMediaProvider.selectAsync((st) => (st?.path, st?.id, st?.name)),
     );
-    if (mediaController == null) return const PlayerMediaNull();
+    if (path == null || path.isEmpty) return const PlayerMediaNull();
+    //because of this is read and have to await, this has to be a AsyncNotifier
+    final mediaController = ref.watch(playerMediaControllerProvider);
+    ref
+        .read(backgroundAudioHandlerProvider.notifier)
+        .updateMedia(id?.toString(), name);
+    await mediaController.mb_open(path);
     final (speed, volume) = ref.read(
       playerSettingProvider.select((st) => (st.speed, st.volume)),
     );
@@ -32,7 +39,7 @@ class PlayerMedia extends _$PlayerMedia {
     //I dont know why but we need to force it play
     await mediaController.mb_play();
     // ref.read(playerSubtitleProvider.notifier).scrollToTop();
-    mediaController.mb_addListener(_mediaPositionChanged);
+    mediaController.mb_listenPosition(_mediaPositionChanged);
     _listen();
     return PlayerMediaData(
       positionMicro: 0,
