@@ -9,7 +9,6 @@ import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_video_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -38,43 +37,53 @@ class Player extends _$Player {
     _listenToPlayingSentenceChanged();
   }
 
-  void _listenToPlayingSentenceChanged() {
+  void _listenToPlayingSentenceChanged() async {
     ref.listen(playerSpotProvider.select((st) => st.value), (
       previous,
       spot,
     ) async {
-      final bool isSentenceChanged =
-          spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
-      final isLoop = await ref.read(
-        playerLoopProvider.selectAsync((st) => st.isLoop),
-      );
-      final isSubtitleChanged = _prevSubtitle != _subtitle;
-      if (isSubtitleChanged) {
-        scrollController.safeJumpTo(spot?.playingSentenceIndex, alignment: 0.3);
-        ref
-            .read(playerLoopProvider.notifier)
-            .updateIndexAndSentenceIfLoop(
-              spot?.playingSentenceIndex,
-              spot?.playingSentence,
-            );
-      }
       //handle scroll
-      if (isSentenceChanged) {
-        if (_isDraggingVideoSlider) {
-          scrollController.safeJumpTo(
-            spot?.playingSentenceIndex,
-            alignment: 0.3,
+      await defer(
+        () async {
+          _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
+          _prevSubtitle = _subtitle;
+        },
+        () async {
+          final isSubtitleChanged = _prevSubtitle != _subtitle;
+          if (isSubtitleChanged) {
+            scrollController.safeJumpTo(
+              spot?.playingSentenceIndex,
+              alignment: 0.3,
+            );
+            ref
+                .read(playerLoopProvider.notifier)
+                .updateIndexAndSentenceIfLoop(
+                  spot?.playingSentenceIndex,
+                  spot?.playingSentence,
+                );
+            return;
+          }
+          final bool isSentenceChanged =
+              spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
+          final isLoop = await ref.read(
+            playerLoopProvider.selectAsync((st) => st.isLoop),
           );
-        } else if (!isLoop) {
-          //playing auto scroll to next sentence, not for loop mode
-          scrollController.safeScrollTo(
-            spot?.playingSentenceIndex,
-            alignment: 0.3,
-          );
-        }
-      }
-      _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
-      _prevSubtitle = _subtitle;
+          if (isSentenceChanged) {
+            if (_isDraggingVideoSlider) {
+              scrollController.safeJumpTo(
+                spot?.playingSentenceIndex,
+                alignment: 0.3,
+              );
+            } else if (!isLoop) {
+              //playing auto scroll to next sentence, not for loop mode
+              scrollController.safeScrollTo(
+                spot?.playingSentenceIndex,
+                alignment: 0.3,
+              );
+            }
+          }
+        },
+      );
     });
   }
 
