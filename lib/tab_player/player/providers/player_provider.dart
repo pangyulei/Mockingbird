@@ -99,12 +99,12 @@ class Player extends _$Player {
     final loopSentence = await ref.read(
       playerLoopProvider.selectAsync((st) => st.loopSentence),
     );
-    debugPrint('positon changing loop $loopSentence');
+    debugPrint('position changing loop $loopSentence');
     if (!_isDraggingVideoSlider && loopSentence != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       // debugPrint('position changing loop $sentence');
       if (position > loopSentence.end) {
-        debugPrint('positon changing loop seek to ${loopSentence.start}');
+        debugPrint('position changing loop seek to ${loopSentence.start}');
         await ref.read(playerMediaProvider.notifier).seekTo(loopSentence.start);
       }
     }
