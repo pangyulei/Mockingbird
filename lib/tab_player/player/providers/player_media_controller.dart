@@ -11,8 +11,10 @@ abstract interface class PlayerMediaControllerITF {
   FutureOr<void> mb_setVolume(double volume);
   FutureOr<void> mb_seek(Duration position);
   FutureOr<void> mb_open(String path);
+  bool get mb_isPlaying;
   Duration get mb_position;
   Duration get mb_duration;
+  double get mb_speed;
   double? get mb_ratio;
   String? get mb_path;
   FutureOr<void> mb_dispose();
@@ -22,6 +24,14 @@ abstract interface class PlayerMediaControllerITF {
   );
   void mb_listenPlaying(
     void Function(PlayerMediaControllerITF mediaController, bool isPlaying)
+    listener,
+  );
+  void mb_listenDuration(
+    void Function(PlayerMediaControllerITF mediaController, Duration duration)
+    listener,
+  );
+  void mb_listenBuffering(
+    void Function(PlayerMediaControllerITF mediaController, bool isBuffering)
     listener,
   );
   Widget get mb_mediaPlayer;
@@ -60,7 +70,13 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   }
 
   @override
+  bool get mb_isPlaying => _player.state.playing;
+
+  @override
   Duration get mb_duration => _player.state.duration;
+
+  @override
+  double get mb_speed => _player.state.rate;
 
   @override
   Duration get mb_position => _player.state.position;
@@ -118,6 +134,28 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   ) {
     final sub = _player.stream.playing.listen((isPlaying) {
       listener(this, isPlaying);
+    });
+    _subs.add(sub);
+  }
+
+  @override
+  void mb_listenDuration(
+    void Function(PlayerMediaControllerITF mediaController, Duration duration)
+    listener,
+  ) {
+    final sub = _player.stream.duration.listen((duration) {
+      listener(this, duration);
+    });
+    _subs.add(sub);
+  }
+
+  @override
+  void mb_listenBuffering(
+    void Function(PlayerMediaControllerITF mediaController, bool isBuffering)
+    listener,
+  ) {
+    final sub = _player.stream.buffering.listen((isBuffering) {
+      listener(this, isBuffering);
     });
     _subs.add(sub);
   }
