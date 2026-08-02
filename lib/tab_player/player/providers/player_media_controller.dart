@@ -12,6 +12,7 @@ abstract interface class PlayerMediaControllerITF {
   FutureOr<void> mb_seek(Duration position);
   FutureOr<void> mb_open(String path);
   bool get mb_isPlaying;
+  bool get mb_isBuffering;
   Duration get mb_position;
   Duration get mb_duration;
   double get mb_speed;
@@ -71,6 +72,9 @@ class PlayerMediaController implements PlayerMediaControllerITF {
 
   @override
   bool get mb_isPlaying => _player.state.playing;
+
+  @override
+  bool get mb_isBuffering => _player.state.buffering;
 
   @override
   Duration get mb_duration => _player.state.duration;
