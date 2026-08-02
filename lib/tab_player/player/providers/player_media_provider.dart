@@ -20,15 +20,12 @@ part 'player_media_provider.g.dart';
 class PlayerMedia extends _$PlayerMedia {
   @override
   Future<PlayerMediaState> build() async {
-    final (path, id, name) = await ref.watch(
-      dbPlayingMediaProvider.selectAsync((st) => (st?.path, st?.id, st?.name)),
+    final path = await ref.watch(
+      dbPlayingMediaProvider.selectAsync((st) => st?.path),
     );
     if (path == null || path.isEmpty) return const PlayerMediaNull();
     //because of this is read and have to await, this has to be a AsyncNotifier
     final mediaController = ref.watch(playerMediaControllerProvider);
-    ref
-        .read(backgroundAudioHandlerProvider.notifier)
-        .updateMedia(id?.toString(), name);
     await mediaController.mb_open(path);
     final (speed, volume) = ref.read(
       playerSettingProvider.select((st) => (st.speed, st.volume)),

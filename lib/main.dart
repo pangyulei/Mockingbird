@@ -6,13 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:mockingbird/app/app_ui.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/tab_player/player/background_audio_handler.dart';
 import 'package:mockingbird/tab_player/player/providers/background_audio_handler_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); //objectbox official code
+  await DBObjectBox.init();
   MediaKit.ensureInitialized();
   final providerContainer = ProviderContainer();
   final backgroundAudioHandler = providerContainer.read(
@@ -23,9 +21,11 @@ void main() async {
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.raypang.mockingbird.background_audio',
       androidNotificationChannelName: 'Mockingbird',
+      androidStopForegroundOnPause: false,
+      androidNotificationIcon: 'mipmap/ic_launcher',
+      androidShowNotificationBadge: true,
     ),
   );
-  await DBObjectBox.init();
   runApp(
     UncontrolledProviderScope(
       container: providerContainer,
