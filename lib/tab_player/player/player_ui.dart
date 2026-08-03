@@ -78,22 +78,34 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     await ref.read(playerSettingProvider.notifier).resetSpeed();
   }
 
-  void _onVideoSliderStartChanged(WidgetRef ref, double valMicro) async {
+  void _onVideoSliderStartChanged(
+    WidgetRef ref,
+    double position_ms,
+    double duration_ms,
+  ) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
-        .videoSliderStartChanged(valMicro);
+        .videoSliderStartChanged(position_ms, duration_ms);
   }
 
-  void _onVideoSliderChanging(WidgetRef ref, double valMicro) async {
+  void _onVideoSliderChanging(
+    WidgetRef ref,
+    double position_ms,
+    double duration_ms,
+  ) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
-        .videoSliderChanging(valMicro);
+        .videoSliderChanging(position_ms, duration_ms);
   }
 
-  void _onVideoSliderEndChanged(WidgetRef ref, double valMicro) async {
+  void _onVideoSliderEndChanged(
+    WidgetRef ref,
+    double position_ms,
+    double duration_ms,
+  ) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
-        .videoSliderEndChanged(valMicro);
+        .videoSliderEndChanged(position_ms, duration_ms);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
@@ -171,7 +183,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     WidgetRef ref,
     PlayerMediaControllerITF mediaController,
   ) {
-    final mediaPath = mediaController.mb_path;
+    final mediaPath = mediaController.path;
     if (mediaPath == null || mediaPath.isEmpty) return const NullUI();
     final mediaType = MediaType.fromPath(mediaPath);
     if (mediaType == .video) {
@@ -193,8 +205,8 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         alignment: .center,
         children: [
           AspectRatio(
-            aspectRatio: mediaController.mb_ratio ?? ratio,
-            child: mediaController.mb_mediaPlayer,
+            aspectRatio: mediaController.ratio ?? ratio,
+            child: mediaController.video,
           ),
           _gradientDisplayerOverlay(),
           Row(
@@ -232,7 +244,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       height: 150,
       child: Stack(
         children: [
-          mediaController.mb_mediaPlayer,
+          mediaController.video,
           _gradientDisplayerOverlay(),
           Column(
             mainAxisSize: .max,
@@ -493,17 +505,23 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         builder: (context, ref, child) {
           final position = ref.watch(
             playerMediaProvider.select(
-              (st) => (st.value as PlayerMediaData).positionMicro.toDouble(),
+              (st) => (st.value as PlayerMediaData).position_ms.toDouble(),
             ),
           );
-          final duration = mediaController.mb_duration.inMicroseconds
+          final duration_ms = mediaController.duration.inMilliseconds
               .toDouble();
+          // final val = position.clamp(0, duration_ms).toDouble();
+          debugPrint(
+            'slider ui pos $position ${mediaController.position} max $duration_ms',
+          );
           return Slider(
-            value: position.clamp(0, duration),
-            max: duration,
-            onChangeStart: (val) => _onVideoSliderStartChanged(ref, val),
-            onChanged: (val) => _onVideoSliderChanging(ref, val),
-            onChangeEnd: (val) => _onVideoSliderEndChanged(ref, val),
+            value: position,
+            max: duration_ms,
+            onChangeStart: (val) =>
+                _onVideoSliderStartChanged(ref, val, duration_ms),
+            onChanged: (val) => _onVideoSliderChanging(ref, val, duration_ms),
+            onChangeEnd: (val) =>
+                _onVideoSliderEndChanged(ref, val, duration_ms),
           );
         },
       ),
@@ -644,7 +662,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
           playerMediaProvider.select(
-            (st) => (st.value as PlayerMediaData).isPlaying,
+            (st) => (st.value as PlayerMediaData).playing,
           ),
         );
         return IconButton.filled(

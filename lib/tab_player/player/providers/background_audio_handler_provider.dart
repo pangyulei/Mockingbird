@@ -42,25 +42,19 @@ class BackgroundAudioHandlerNotifier extends Notifier<BackgroundAudioHandler> {
   void updateMediaItem() {
     final media = ref.read(dbPlayingMediaProvider.select((st) => st.value));
     if (media == null) {
-      state.mb_update(
+      state.setup(
         item: null,
-        isPlaying: false,
-        isBuffering: false,
+        playing: false,
         position: const Duration(seconds: 0),
       );
     } else {
       final album = media.albumList.first;
-      final (isPlaying, isBuffering, position, duration) = ref.read(
+      final (playing, position, duration) = ref.read(
         playerMediaControllerProvider.select(
-          (st) => (
-            st.mb_isPlaying,
-            st.mb_isBuffering,
-            st.mb_position,
-            st.mb_duration,
-          ),
+          (st) => (st.playing, st.position, st.duration),
         ),
       );
-      state.mb_update(
+      state.setup(
         item: MediaItem(
           id: media.id.toString(),
           title: media.name,
@@ -68,9 +62,8 @@ class BackgroundAudioHandlerNotifier extends Notifier<BackgroundAudioHandler> {
           duration: duration,
           artUri: album.cover?.toUri(),
         ),
-        isPlaying: isPlaying,
-        isBuffering: isBuffering,
-        position: duration,
+        playing: playing,
+        position: position,
       );
     }
   }

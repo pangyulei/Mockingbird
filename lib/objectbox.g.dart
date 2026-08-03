@@ -107,7 +107,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(21, 4834345700059933177),
     name: 'EnSentence',
-    lastPropertyId: const obx_int.IdUid(5, 5630568508985330360),
+    lastPropertyId: const obx_int.IdUid(7, 4094893884861382306),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -115,18 +115,6 @@ final _entities = <obx_int.ModelEntity>[
         name: 'id',
         type: 6,
         flags: 1,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 6148293603079221769),
-        name: 'startMicroseconds',
-        type: 6,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 1876219628304349137),
-        name: 'endMicroseconds',
-        type: 6,
-        flags: 0,
       ),
       obx_int.ModelProperty(
         id: const obx_int.IdUid(4, 4728835043439870140),
@@ -142,6 +130,18 @@ final _entities = <obx_int.ModelEntity>[
         indexId: const obx_int.IdUid(19, 3232281446144178994),
         relationField: 'subtitle',
         relationTarget: 'EnSubtitle',
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 538041016475486516),
+        name: 'start_ms',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 4094893884861382306),
+        name: 'end_ms',
+        type: 6,
+        flags: 0,
       ),
     ],
     relations: <obx_int.ModelRelation>[],
@@ -181,7 +181,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(28, 4543186723602534671),
     name: 'EnPref',
-    lastPropertyId: const obx_int.IdUid(3, 5791816013703277626),
+    lastPropertyId: const obx_int.IdUid(5, 2852642956597437594),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -197,9 +197,15 @@ final _entities = <obx_int.ModelEntity>[
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(3, 5791816013703277626),
-        name: 'isLoop',
+        id: const obx_int.IdUid(4, 6441328657385422088),
+        name: 'loop',
         type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 2852642956597437594),
+        name: 'dbVersion',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -382,6 +388,9 @@ obx_int.ModelDefinition getObjectBoxModel() {
       4336757419314789380,
       9105974782467203318,
       2959510078895679678,
+      5791816013703277626,
+      6148293603079221769,
+      1876219628304349137,
     ],
     retiredRelationUids: const [7929255877846348169],
     modelVersion: 5,
@@ -516,28 +525,28 @@ obx_int.ModelDefinition getObjectBoxModel() {
       },
       objectToFB: (EnSentence object, fb.Builder fbb) {
         final textOffset = fbb.writeString(object.text);
-        fbb.startTable(6);
+        fbb.startTable(8);
         fbb.addInt64(0, object.id);
-        fbb.addInt64(1, object.startMicroseconds);
-        fbb.addInt64(2, object.endMicroseconds);
         fbb.addOffset(3, textOffset);
         fbb.addInt64(4, object.subtitle.targetId);
+        fbb.addInt64(5, object.start_ms);
+        fbb.addInt64(6, object.end_ms);
         fbb.finish(fbb.endTable());
         return object.id;
       },
       objectFromFB: (obx.Store store, ByteData fbData) {
         final buffer = fb.BufferContext(fbData);
         final rootOffset = buffer.derefObject(0);
-        final startMicrosecondsParam = const fb.Int64Reader().vTableGet(
+        final start_msParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
-          6,
+          14,
           0,
         );
-        final endMicrosecondsParam = const fb.Int64Reader().vTableGet(
+        final end_msParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
-          8,
+          16,
           0,
         );
         final textParam = const fb.StringReader(
@@ -550,8 +559,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           0,
         );
         final object = EnSentence(
-          startMicroseconds: startMicrosecondsParam,
-          endMicroseconds: endMicrosecondsParam,
+          start_ms: start_msParam,
+          end_ms: end_msParam,
           text: textParam,
           id: idParam,
         );
@@ -624,10 +633,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (EnPref object, fb.Builder fbb) {
-        fbb.startTable(4);
+        fbb.startTable(6);
         fbb.addInt64(0, object.id);
         fbb.addInt64(1, object.playingId);
-        fbb.addBool(2, object.isLoop);
+        fbb.addBool(3, object.loop);
+        fbb.addInt64(4, object.dbVersion);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -645,16 +655,23 @@ obx_int.ModelDefinition getObjectBoxModel() {
           rootOffset,
           6,
         );
-        final isLoopParam = const fb.BoolReader().vTableGet(
+        final loopParam = const fb.BoolReader().vTableGet(
           buffer,
           rootOffset,
-          8,
+          10,
           false,
+        );
+        final dbVersionParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
         );
         final object = EnPref(
           id: idParam,
           playingId: playingIdParam,
-          isLoop: isLoopParam,
+          loop: loopParam,
+          dbVersion: dbVersionParam,
         );
 
         return object;
@@ -723,23 +740,23 @@ class EnSentence_ {
     _entities[2].properties[0],
   );
 
-  /// See [EnSentence.startMicroseconds].
-  static final startMicroseconds = obx.QueryIntegerProperty<EnSentence>(
-    _entities[2].properties[1],
-  );
-
-  /// See [EnSentence.endMicroseconds].
-  static final endMicroseconds = obx.QueryIntegerProperty<EnSentence>(
-    _entities[2].properties[2],
-  );
-
   /// See [EnSentence.text].
   static final text = obx.QueryStringProperty<EnSentence>(
-    _entities[2].properties[3],
+    _entities[2].properties[1],
   );
 
   /// See [EnSentence.subtitle].
   static final subtitle = obx.QueryRelationToOne<EnSentence, EnSubtitle>(
+    _entities[2].properties[2],
+  );
+
+  /// See [EnSentence.start_ms].
+  static final start_ms = obx.QueryIntegerProperty<EnSentence>(
+    _entities[2].properties[3],
+  );
+
+  /// See [EnSentence.end_ms].
+  static final end_ms = obx.QueryIntegerProperty<EnSentence>(
     _entities[2].properties[4],
   );
 }
@@ -774,8 +791,13 @@ class EnPref_ {
     _entities[4].properties[1],
   );
 
-  /// See [EnPref.isLoop].
-  static final isLoop = obx.QueryBooleanProperty<EnPref>(
+  /// See [EnPref.loop].
+  static final loop = obx.QueryBooleanProperty<EnPref>(
     _entities[4].properties[2],
+  );
+
+  /// See [EnPref.dbVersion].
+  static final dbVersion = obx.QueryIntegerProperty<EnPref>(
+    _entities[4].properties[3],
   );
 }

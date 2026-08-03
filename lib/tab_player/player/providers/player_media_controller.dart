@@ -5,37 +5,33 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 abstract interface class PlayerMediaControllerITF {
-  FutureOr<void> mb_pause();
-  FutureOr<void> mb_play();
-  FutureOr<void> mb_setSpeed(double speed);
-  FutureOr<void> mb_setVolume(double volume);
-  FutureOr<void> mb_seek(Duration position);
-  FutureOr<void> mb_open(String path);
-  bool get mb_isPlaying;
-  bool get mb_isBuffering;
-  Duration get mb_position;
-  Duration get mb_duration;
-  double get mb_speed;
-  double? get mb_ratio;
-  String? get mb_path;
-  FutureOr<void> mb_dispose();
-  void mb_listenPosition(
+  FutureOr<void> pause();
+  FutureOr<void> play();
+  FutureOr<void> setSpeed(double speed);
+  FutureOr<void> setVolume(double volume);
+  FutureOr<void> seek(Duration position);
+  FutureOr<void> open(String path);
+  bool get playing;
+  Duration get position;
+  bool get completed;
+  Duration get duration;
+  double get speed;
+  double? get ratio;
+  String? get path;
+  Widget get video;
+  FutureOr<void> dispose();
+  void listenPosition(
     void Function(PlayerMediaControllerITF mediaController, Duration position)
     listener,
   );
-  void mb_listenPlaying(
-    void Function(PlayerMediaControllerITF mediaController, bool isPlaying)
+  void listenPlaying(
+    void Function(PlayerMediaControllerITF mediaController, bool playing)
     listener,
   );
-  void mb_listenDuration(
-    void Function(PlayerMediaControllerITF mediaController, Duration duration)
+  void listenCompleted(
+    void Function(PlayerMediaControllerITF mediaController, bool completed)
     listener,
   );
-  void mb_listenBuffering(
-    void Function(PlayerMediaControllerITF mediaController, bool isBuffering)
-    listener,
-  );
-  Widget get mb_mediaPlayer;
 }
 
 class PlayerMediaController implements PlayerMediaControllerITF {
@@ -45,55 +41,54 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   PlayerMediaController();
 
   @override
-  FutureOr<void> mb_pause() async {
+  FutureOr<void> pause() async {
     await _player.pause();
   }
 
   @override
-  FutureOr<void> mb_play() async {
+  FutureOr<void> play() async {
     await _player.play();
   }
 
   @override
-  FutureOr<void> mb_seek(Duration position) async {
+  FutureOr<void> seek(Duration position) async {
+    debugPrint('root seek $position');
     await _player.seek(position);
+    debugPrint('completed $completed');
   }
 
   @override
-  FutureOr<void> mb_setSpeed(double speed) async {
+  FutureOr<void> setSpeed(double speed) async {
     await _player.setRate(speed);
   }
 
   @override
-  FutureOr<void> mb_setVolume(double volume) async {
+  FutureOr<void> setVolume(double volume) async {
     //outside is 0-1, but Player's volume is 0-100
     await _player.setVolume(volume * 100);
   }
 
   @override
-  bool get mb_isPlaying => _player.state.playing;
+  bool get playing => _player.state.playing;
 
   @override
-  bool get mb_isBuffering => _player.state.buffering;
+  Duration get duration => _player.state.duration;
 
   @override
-  Duration get mb_duration => _player.state.duration;
+  double get speed => _player.state.rate;
 
   @override
-  double get mb_speed => _player.state.rate;
+  Duration get position => _player.state.position;
 
   @override
-  Duration get mb_position => _player.state.position;
-
-  @override
-  Widget get mb_mediaPlayer => Video(
+  Widget get video => Video(
     controller: VideoController(_player),
     pauseUponEnteringBackgroundMode: false,
     resumeUponEnteringForegroundMode: true,
   );
 
   @override
-  double? get mb_ratio {
+  double? get ratio {
     final width = _player.state.width?.toDouble();
     final height = _player.state.height?.toDouble();
     if (width != null && height != null && height != 0) {
@@ -104,16 +99,16 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   }
 
   @override
-  String? get mb_path => _path;
+  String? get path => _path;
 
   @override
-  FutureOr<void> mb_open(String path) async {
+  FutureOr<void> open(String path) async {
     _path = path;
     await _player.open(Media(path));
   }
 
   @override
-  FutureOr<void> mb_dispose() async {
+  FutureOr<void> dispose() async {
     for (final sub in _subs) {
       sub.cancel();
     }
@@ -121,7 +116,10 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   }
 
   @override
-  void mb_listenPosition(
+  bool get completed => _player.state.completed;
+
+  @override
+  void listenPosition(
     void Function(PlayerMediaControllerITF mediaController, Duration position)
     listener,
   ) {
@@ -132,34 +130,22 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   }
 
   @override
-  void mb_listenPlaying(
-    void Function(PlayerMediaControllerITF mediaController, bool isPlaying)
+  void listenPlaying(
+    void Function(PlayerMediaControllerITF mediaController, bool playing)
     listener,
   ) {
-    final sub = _player.stream.playing.listen((isPlaying) {
-      listener(this, isPlaying);
+    final sub = _player.stream.playing.listen((playing) {
+      listener(this, playing);
     });
     _subs.add(sub);
   }
-
   @override
-  void mb_listenDuration(
-    void Function(PlayerMediaControllerITF mediaController, Duration duration)
+  void listenCompleted(
+    void Function(PlayerMediaControllerITF mediaController, bool completed)
     listener,
   ) {
-    final sub = _player.stream.duration.listen((duration) {
-      listener(this, duration);
-    });
-    _subs.add(sub);
-  }
-
-  @override
-  void mb_listenBuffering(
-    void Function(PlayerMediaControllerITF mediaController, bool isBuffering)
-    listener,
-  ) {
-    final sub = _player.stream.buffering.listen((isBuffering) {
-      listener(this, isBuffering);
+    final sub = _player.stream.completed.listen((completed) {
+      listener(this, completed);
     });
     _subs.add(sub);
   }

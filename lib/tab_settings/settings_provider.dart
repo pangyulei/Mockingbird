@@ -9,13 +9,13 @@ class Settings extends _$Settings {
   @override
   Future<SettingsState> build() async {
     final pref = await ref.watch(dbPrefProvider.future);
-    return SettingsState(isLoop: pref.isLoop);
+    return SettingsState(isLoop: pref.loop);
   }
 
   Future<void> toggleLoop() async {
     final data = await future;
     await ref
         .read(dbPrefProvider.notifier)
-        .edit((pref) => pref.copyWith(isLoop: !data.isLoop));
+        .edit((pref) => pref.copyWith(loop: !data.isLoop));
   }
 }

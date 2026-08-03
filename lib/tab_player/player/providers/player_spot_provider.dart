@@ -1,9 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_spot_state.dart';
@@ -11,19 +9,20 @@ import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart'
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../tool/extensions.dart';
+
 part 'player_spot_provider.g.dart';
 
 @riverpod
 class PlayerSpot extends _$PlayerSpot {
   @override
   Future<PlayerSpotState?> build() async {
-    final int? positionMicro = await ref.watch(
+    final int? position_ms = await ref.watch(
       playerMediaProvider.selectAsync((st) {
         if (st is! PlayerMediaData) return null;
-        return st.positionMicro;
+        return st.position_ms;
       }),
     );
-    if (positionMicro == null) {
+    if (position_ms == null) {
       return null;
     }
     final List<EnSentence>? sentenceList = await ref.watch(
@@ -34,7 +33,7 @@ class PlayerSpot extends _$PlayerSpot {
     if (sentenceList == null) {
       return null;
     }
-    final position = Duration(microseconds: positionMicro);
+    final position = Duration(milliseconds: position_ms);
     final playingSentenceIndex = _sentenceIndexByPosition(
       position,
       sentenceList,
@@ -57,7 +56,7 @@ class PlayerSpot extends _$PlayerSpot {
       EnSentence? prev = i == 0 ? null : sentenceList[i - 1];
       EnSentence? next = sentenceList.elementAtOrNull(i + 1);
       EnSentence sentence = sentenceList[i];
-      if (sentence.isPlaying(prev, next, position)) {
+      if (sentence.playing(prev, next, position)) {
         return i;
       }
     }
@@ -66,8 +65,8 @@ class PlayerSpot extends _$PlayerSpot {
 }
 
 extension on EnSentence {
-  bool isPlaying(EnSentence? prev, EnSentence? next, Duration position) {
-    final start = prev == null ? const Duration(microseconds: 0) : this.start;
+  bool playing(EnSentence? prev, EnSentence? next, Duration position) {
+    final start = prev == null ? const Duration(seconds: 0) : this.start;
     if (next == null) {
       return start <= position;
     } else {

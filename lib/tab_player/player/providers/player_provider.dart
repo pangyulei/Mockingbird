@@ -7,6 +7,7 @@ import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
+import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
@@ -22,6 +23,7 @@ final playerProvider = NotifierProvider.autoDispose
 
 class PlayerNotifier extends Notifier<void> {
   bool _isDraggingVideoSlider = false;
+  bool _isPlayingBeforeDraged = false;
   int? _prevPlayingSentenceIndex;
   EnSubtitle? _prevSubtitle;
   EnSubtitle? get _subtitle => ref.read(
@@ -97,10 +99,10 @@ class PlayerNotifier extends Notifier<void> {
                 ? (st.value as PlayerMediaData)
                 : null,
           )
-          .select((data) => data?.positionMicro),
-      (previous, positionMicro) {
-        if (positionMicro == null) return;
-        _videoPositionChanged(Duration(microseconds: positionMicro));
+          .select((data) => data?.position_ms),
+      (previous, position_ms) {
+        if (position_ms == null) return;
+        _videoPositionChanged(Duration(milliseconds: position_ms));
       },
     );
   }
@@ -116,32 +118,44 @@ class PlayerNotifier extends Notifier<void> {
       // debugPrint('position changing loop $sentence');
       if (position > loopSentence.end) {
         debugPrint('position changing loop seek to ${loopSentence.start}');
-        await ref.read(playerMediaProvider.notifier).seekTo(loopSentence.start);
+        await ref.read(playerMediaProvider.notifier).seek(loopSentence.start);
       }
     }
   }
 
-  Future<void> videoSliderStartChanged(double valMicro) async {
+  Future<void> videoSliderStartChanged(
+    double position_ms,
+    double duration_ms,
+  ) async {
     _isDraggingVideoSlider = true;
+    _isPlayingBeforeDraged = ref.read(
+      playerMediaControllerProvider.select((st) => st.playing),
+    );
     debugPrint('slider: start');
     await ref.read(playerMediaProvider.notifier).pause();
-    final position = Duration(microseconds: valMicro.toInt());
-    await ref.read(playerMediaProvider.notifier).seekTo(position);
+    final position = Duration(milliseconds: position_ms.toInt());
+    await ref.read(playerMediaProvider.notifier).seek(position);
   }
 
-  Future<void> videoSliderChanging(double valMicro) async {
-    final position = Duration(microseconds: valMicro.toInt());
-    await ref.read(playerMediaProvider.notifier).seekTo(position);
+  Future<void> videoSliderChanging(
+    double position_ms,
+    double duration_ms,
+  ) async {
+    final position = Duration(milliseconds: position_ms.toInt());
+    await ref.read(playerMediaProvider.notifier).seek(position);
   }
 
-  Future<void> videoSliderEndChanged(double valMicro) async {
+  Future<void> videoSliderEndChanged(
+    double position_ms,
+    double duration_ms,
+  ) async {
     await defer(
       () async {
         _isDraggingVideoSlider = false;
         debugPrint('slider: end');
       },
       () async {
-        final position = Duration(microseconds: valMicro.toInt());
+        final position = Duration(milliseconds: position_ms.toInt());
         // seek to sentence start
 
         final spot = ref.read(playerSpotProvider.select((st) => st.value));
@@ -151,15 +165,18 @@ class PlayerNotifier extends Notifier<void> {
               spot?.playingSentenceIndex,
               spot?.playingSentence,
             );
-        final Duration seekToPosition = _isLoop
-            ? (spot?.playingSentence?.start ?? position)
-            : position;
-        await ref.read(playerMediaProvider.notifier).seekTo(seekToPosition);
-
-        final duration = ref.read(playerMediaProvider.notifier).duration;
-        debugPrint('duration $duration seekto $seekToPosition');
-        if (duration != null && seekToPosition < duration) {
-          debugPrint('slider: play');
+        final Duration seekToPosition;
+        final playingSentenceStart = spot?.playingSentence?.start;
+        if (_isLoop && playingSentenceStart != null) {
+          debugPrint('slider end seek to sentence start $playingSentenceStart');
+          seekToPosition = playingSentenceStart;
+        } else {
+          debugPrint('slider end seek to pos $position');
+          seekToPosition = position;
+        }
+        await ref.read(playerMediaProvider.notifier).seek(seekToPosition);
+        final duration = Duration(milliseconds: duration_ms.toInt());
+        if (_isPlayingBeforeDraged && position < duration) {
           await ref.read(playerMediaProvider.notifier).play();
         }
       },
@@ -202,7 +219,7 @@ class PlayerNotifier extends Notifier<void> {
           .read(playerLoopProvider.notifier)
           .updateIndexAndSentenceIfLoop(sentenceIndex, sentence);
     }
-    await ref.read(playerMediaProvider.notifier).seekTo(sentence.start);
+    await ref.read(playerMediaProvider.notifier).seek(sentence.start);
     await ref.read(playerMediaProvider.notifier).play();
   }
 
@@ -236,17 +253,6 @@ class PlayerNotifier extends Notifier<void> {
     } catch (e) {
       debugPrint('Error adding subtitle: $e');
       return null;
-    }
-  }
-}
-
-extension on EnSentence {
-  bool isPlaying(EnSentence? prev, EnSentence? next, Duration position) {
-    final start = prev == null ? const Duration(microseconds: 0) : this.start;
-    if (next == null) {
-      return start <= position;
-    } else {
-      return start <= position && position < next.start;
     }
   }
 }

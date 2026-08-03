@@ -5,84 +5,30 @@ class BackgroundAudioHandler extends BaseAudioHandler {
   final PlayerMediaControllerITF _mediaController;
 
   BackgroundAudioHandler(this._mediaController);
-  // BackgroundAudioHandler(this._mediaController) {
-  // Initial State
-  // mediaItem.add(
-  //   const MediaItem(
-  //     id: 'mockingbird_loading',
-  //     title: 'Mockingbird',
-  //     album: 'Mockingbird',
-
-  //   ),
-  // );
-
-  // playbackState.add(
-  //   PlaybackState(
-  //     controls: [MediaControl.play],
-  //     androidCompactActionIndices: const [0],
-  //     processingState: AudioProcessingState.ready,
-  //     playing: _mediaController.mb_isPlaying,
-  //     updatePosition: _mediaController.mb_position,
-  //   ),
-  // );
-
-  // Listeners
-  // _mediaController.mb_listenPlaying((mediaController, isPlaying) {
-  //   debugPrint('BackgroundAudioHandler: isPlaying changed to $isPlaying');
-  //   playbackState.add(
-  //     playbackState.value.copyWith(
-  //       playing: isPlaying,
-  //       controls: [isPlaying ? MediaControl.pause : MediaControl.play],
-  //     ),
-  //   );
-  // });
-
-  // _mediaController.mb_listenPosition((mediaController, position) {
-  //   playbackState.add(playbackState.value.copyWith(updatePosition: position));
-  // });
-
-  // _mediaController.mb_listenDuration((mediaController, duration) {
-  //   mediaItem.add(mediaItem.value?.copyWith(duration: duration));
-  // });
-
-  // _mediaController.mb_listenBuffering((mediaController, isBuffering) {
-  //   playbackState.add(
-  //     playbackState.value.copyWith(
-  //       processingState: isBuffering
-  //           ? AudioProcessingState.buffering
-  //           : AudioProcessingState.ready,
-  //     ),
-  //   );
-  // });
-  // }
-
-  void mb_update({
+  void setup({
     required MediaItem? item,
-    required bool isPlaying,
-    required bool isBuffering,
+    required bool playing,
     required Duration position,
   }) {
     mediaItem.add(item);
     playbackState.add(
       playbackState.value.copyWith(
-        playing: isPlaying,
-        controls: [isPlaying ? MediaControl.pause : MediaControl.play],
+        playing: playing,
+        controls: [playing ? MediaControl.pause : MediaControl.play],
         updatePosition: position,
-        processingState: isBuffering
-            ? AudioProcessingState.buffering
-            : AudioProcessingState.ready,
+        processingState: AudioProcessingState.ready,
       ),
     );
   }
 
   @override
   Future<void> play() async {
-    await _mediaController.mb_play();
+    await _mediaController.play();
   }
 
   @override
   Future<void> pause() async {
-    await _mediaController.mb_pause();
+    await _mediaController.pause();
   }
 
   // @override
@@ -99,6 +45,6 @@ class BackgroundAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> seek(Duration position) async {
-    await _mediaController.mb_seek(position);
+    await _mediaController.seek(position);
   }
 }

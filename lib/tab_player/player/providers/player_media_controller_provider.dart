@@ -7,18 +7,18 @@ final playerMediaControllerProvider = NotifierProvider(
   PlayerMediaControllerNotifier.new,
 );
 
-class PlayerMediaControllerNotifier
-    extends Notifier<PlayerMediaControllerITF> {
+class PlayerMediaControllerNotifier extends Notifier<PlayerMediaControllerITF> {
   @override
   PlayerMediaControllerITF build() {
     // final videoController = VideoPlayerController.file(File(path));
     final mediaController = PlayerMediaController();
     ref.onDispose(() {
       assert(false, 'PlayerMediaControllerNotifier should never dispose');
-      mediaController.mb_dispose();
+      mediaController.dispose();
     });
     //its neccessary to await initialize, otherwise aspectratio etc will wrong
     // await videoController.initialize();
+    //TODO deleted media pause
     return mediaController;
   }
 }

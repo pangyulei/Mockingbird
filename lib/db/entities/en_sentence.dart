@@ -6,21 +6,21 @@ class EnSentence {
   @Id()
   int id;
 
-  final int startMicroseconds;
-  final int endMicroseconds;
+  final int start_ms;
+  final int end_ms;
   final String text;
   final subtitle = ToOne<EnSubtitle>();
 
   EnSentence({
-    required this.startMicroseconds,
-    required this.endMicroseconds,
+    required this.start_ms, //TODO upgrade to start_ms in milliseconds
+    required this.end_ms,
     required this.text,
     required this.id,
   });
 
-  Duration get start => Duration(microseconds: startMicroseconds);
+  Duration get start => Duration(milliseconds: start_ms);
 
-  Duration get end => Duration(microseconds: endMicroseconds);
+  Duration get end => Duration(milliseconds: end_ms);
 
   @override
   String toString() {
