@@ -66,8 +66,7 @@ class AppRoute {
       GoRoute(
         path: ':id',
         builder: (BuildContext context, GoRouterState state) {
-          final albumIdStr = state.pathParameters['id'];
-          final albumId = albumIdStr == null ? null : int.tryParse(albumIdStr);
+          final albumId = state.pathParameters['id'];
           return AlbumDetailUI(albumId);
         },
       ),

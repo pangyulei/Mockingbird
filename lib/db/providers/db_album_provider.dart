@@ -7,7 +7,8 @@ part 'db_album_provider.g.dart';
 @Riverpod(name: 'dbAlbumProvider')
 class DBFolder extends _$DBFolder {
   @override
-  Future<AssetPathEntity?> build(String id) async {
+  Future<AssetPathEntity?> build(String? id) async {
+    if (id == null) return null;
     return await ref.watch(
       dbAlbumListProvider.selectAsync(
         (fl) => {for (final f in fl) f.id: f}[id],

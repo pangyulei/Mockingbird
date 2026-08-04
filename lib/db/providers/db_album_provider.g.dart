@@ -16,7 +16,7 @@ final class DBFolderProvider
     extends $AsyncNotifierProvider<DBFolder, AssetPathEntity?> {
   DBFolderProvider._({
     required DBFolderFamily super.from,
-    required String super.argument,
+    required String? super.argument,
   }) : super(
          retry: null,
          name: r'dbAlbumProvider',
@@ -50,7 +50,7 @@ final class DBFolderProvider
   }
 }
 
-String _$dBFolderHash() => r'704a2c4ab8ff7f1f38f1dfce3be6c5fd6b7a0451';
+String _$dBFolderHash() => r'6d80287e9afa5b1a0ac8ea2eafe1fb51b2b76ba2';
 
 final class DBFolderFamily extends $Family
     with
@@ -59,7 +59,7 @@ final class DBFolderFamily extends $Family
           AsyncValue<AssetPathEntity?>,
           AssetPathEntity?,
           FutureOr<AssetPathEntity?>,
-          String
+          String?
         > {
   DBFolderFamily._()
     : super(
@@ -70,7 +70,7 @@ final class DBFolderFamily extends $Family
         isAutoDispose: true,
       );
 
-  DBFolderProvider call(String id) =>
+  DBFolderProvider call(String? id) =>
       DBFolderProvider._(argument: id, from: this);
 
   @override
@@ -78,10 +78,10 @@ final class DBFolderFamily extends $Family
 }
 
 abstract class _$DBFolder extends $AsyncNotifier<AssetPathEntity?> {
-  late final _$args = ref.$arg as String;
-  String get id => _$args;
+  late final _$args = ref.$arg as String?;
+  String? get id => _$args;
 
-  FutureOr<AssetPathEntity?> build(String id);
+  FutureOr<AssetPathEntity?> build(String? id);
   @$mustCallSuper
   @override
   void runBuild() {

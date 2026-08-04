@@ -13,10 +13,10 @@ part of 'album_detail_provider.dart';
 final albumDetailProvider = AlbumDetailFamily._();
 
 final class AlbumDetailProvider
-    extends $AsyncNotifierProvider<AlbumDetail, AlbumDetailState> {
+    extends $AsyncNotifierProvider<AlbumDetail, AlbumDetailState?> {
   AlbumDetailProvider._({
     required AlbumDetailFamily super.from,
-    required int? super.argument,
+    required String? super.argument,
   }) : super(
          retry: null,
          name: r'albumDetailProvider',
@@ -50,16 +50,16 @@ final class AlbumDetailProvider
   }
 }
 
-String _$albumDetailHash() => r'b19aaa15e24def79316001b5119c189fbd54f0d3';
+String _$albumDetailHash() => r'8e7f148adaa8470ef99c8ab98b4e4165d0d8209d';
 
 final class AlbumDetailFamily extends $Family
     with
         $ClassFamilyOverride<
           AlbumDetail,
-          AsyncValue<AlbumDetailState>,
-          AlbumDetailState,
-          FutureOr<AlbumDetailState>,
-          int?
+          AsyncValue<AlbumDetailState?>,
+          AlbumDetailState?,
+          FutureOr<AlbumDetailState?>,
+          String?
         > {
   AlbumDetailFamily._()
     : super(
@@ -70,28 +70,28 @@ final class AlbumDetailFamily extends $Family
         isAutoDispose: true,
       );
 
-  AlbumDetailProvider call(int? id) =>
+  AlbumDetailProvider call(String? id) =>
       AlbumDetailProvider._(argument: id, from: this);
 
   @override
   String toString() => r'albumDetailProvider';
 }
 
-abstract class _$AlbumDetail extends $AsyncNotifier<AlbumDetailState> {
-  late final _$args = ref.$arg as int?;
-  int? get id => _$args;
+abstract class _$AlbumDetail extends $AsyncNotifier<AlbumDetailState?> {
+  late final _$args = ref.$arg as String?;
+  String? get id => _$args;
 
-  FutureOr<AlbumDetailState> build(int? id);
+  FutureOr<AlbumDetailState?> build(String? id);
   @$mustCallSuper
   @override
   void runBuild() {
     final ref =
-        this.ref as $Ref<AsyncValue<AlbumDetailState>, AlbumDetailState>;
+        this.ref as $Ref<AsyncValue<AlbumDetailState?>, AlbumDetailState?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<AlbumDetailState>, AlbumDetailState>,
-              AsyncValue<AlbumDetailState>,
+              AnyNotifier<AsyncValue<AlbumDetailState?>, AlbumDetailState?>,
+              AsyncValue<AlbumDetailState?>,
               Object?,
               Object?
             >;
