@@ -114,7 +114,7 @@ class AlbumCardUI extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Consumer(
                   builder: (context, ref, child) {
@@ -123,6 +123,7 @@ class AlbumCardUI extends ConsumerWidget {
                     );
                     return Text(
                       name,
+                      textAlign: TextAlign.center,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                         letterSpacing: -0.2,
@@ -140,6 +141,7 @@ class AlbumCardUI extends ConsumerWidget {
                     );
                     return Text(
                       '$mediaCount Medias',
+                      textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.outline,
                         fontWeight: FontWeight.w500,
