@@ -129,18 +129,18 @@ class AppRoute {
           type: BottomNavigationBarType.fixed,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.album_outlined),
-              activeIcon: Icon(Icons.album),
+              icon: Icon(Icons.folder_rounded),
+              activeIcon: Icon(Icons.folder_rounded),
               label: 'Albums',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.play_circle_outline),
-              activeIcon: Icon(Icons.play_circle),
+              icon: Icon(Icons.play_circle_rounded),
+              activeIcon: Icon(Icons.play_circle_rounded),
               label: 'Player',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
+              icon: Icon(Icons.settings_rounded),
+              activeIcon: Icon(Icons.settings_rounded),
               label: 'Settings',
             ),
           ],

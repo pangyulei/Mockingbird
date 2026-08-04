@@ -127,10 +127,9 @@ class AlbumListUI extends ConsumerWidget {
           padding: const EdgeInsets.all(12),
           itemCount: albumIdList.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
+            crossAxisCount: 3,
             mainAxisSpacing: 4,
             crossAxisSpacing: 4,
-            childAspectRatio: 1,
           ),
           itemBuilder: (ctx, i) {
             return AlbumCardUI(albumIdList[i]);
