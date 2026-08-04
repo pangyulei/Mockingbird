@@ -35,9 +35,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     ref.listen(playerProvider(_scrollController), (previous, next) {
       //keep playerProvider alive while page exist
     });
-    final stateType = ref.watch(
-      playerMediaProvider.select((st) => st.value?.runtimeType),
-    );
+    final stateType = ref.watch(playerMediaProvider.select((st) => st.value?.runtimeType));
     debugPrint('player state type $stateType');
     showLoading(stateType == null);
     switch (stateType) {
@@ -78,40 +76,26 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     await ref.read(playerSettingProvider.notifier).resetSpeed();
   }
 
-  void _onVideoSliderStartChanged(
-    WidgetRef ref,
-    double position_ms,
-    double duration_ms,
-  ) async {
+  void _onVideoSliderStartChanged(WidgetRef ref, double position_ms, double duration_ms) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
         .videoSliderStartChanged(position_ms, duration_ms);
   }
 
-  void _onVideoSliderChanging(
-    WidgetRef ref,
-    double position_ms,
-    double duration_ms,
-  ) async {
+  void _onVideoSliderChanging(WidgetRef ref, double position_ms, double duration_ms) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
         .videoSliderChanging(position_ms, duration_ms);
   }
 
-  void _onVideoSliderEndChanged(
-    WidgetRef ref,
-    double position_ms,
-    double duration_ms,
-  ) async {
+  void _onVideoSliderEndChanged(WidgetRef ref, double position_ms, double duration_ms) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
         .videoSliderEndChanged(position_ms, duration_ms);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
-    ref
-        .read(playerProvider(_scrollController).notifier)
-        .scrollToPlayingSentence();
+    ref.read(playerProvider(_scrollController).notifier).scrollToPlayingSentence();
   }
 
   void _onScrollToTop(WidgetRef ref) {
@@ -131,7 +115,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   void _onGoToAlbums(BuildContext ctx) {
-    ctx.go(AppRoute.albums);
+    ctx.go(AppRoute.albumList);
   }
 
   Widget _page(BuildContext ctx) {
@@ -163,26 +147,15 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       child: Consumer(
         builder: (context, ref, child) {
           final videoController = ref.watch(
-            playerMediaProvider.select(
-              (st) => (st.value as PlayerMediaData).mediaController,
-            ),
+            playerMediaProvider.select((st) => (st.value as PlayerMediaData).mediaController),
           );
-          return Column(
-            children: [
-              _displayer(ctx, ref, videoController),
-              _controlBar(ctx, ref),
-            ],
-          );
+          return Column(children: [_displayer(ctx, ref, videoController), _controlBar(ctx, ref)]);
         },
       ),
     );
   }
 
-  Widget _displayer(
-    BuildContext ctx,
-    WidgetRef ref,
-    PlayerMediaControllerITF mediaController,
-  ) {
+  Widget _displayer(BuildContext ctx, WidgetRef ref, PlayerMediaControllerITF mediaController) {
     final mediaPath = mediaController.path;
     if (mediaPath == null || mediaPath.isEmpty) return const NullUI();
     final mediaType = MediaType.fromPath(mediaPath);
@@ -204,10 +177,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       child: Stack(
         alignment: .center,
         children: [
-          AspectRatio(
-            aspectRatio: mediaController.ratio ?? ratio,
-            child: mediaController.video,
-          ),
+          AspectRatio(aspectRatio: mediaController.ratio ?? ratio, child: mediaController.video),
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,
@@ -294,18 +264,14 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
           builder: (ctx, ref, child) {
             final data = ref.watch(playerSubtitleProvider).value;
             if (data is PlayerSubtitleData) {
-              final sentenceIdList = data.sentenceList
-                  .map((sen) => sen.id)
-                  .toList();
+              final sentenceIdList = data.sentenceList.map((sen) => sen.id).toList();
               return ScrollablePositionedList.builder(
                 itemCount: sentenceIdList.length,
                 itemScrollController: _scrollController,
                 itemBuilder: (context, i) {
                   final sentenceId = sentenceIdList[i];
                   return SentenceCardUI(sentenceId, (ref, sentenceId) {
-                    ref
-                        .read(playerProvider(_scrollController).notifier)
-                        .tapSentence(sentenceId);
+                    ref.read(playerProvider(_scrollController).notifier).tapSentence(sentenceId);
                   });
                 },
               );
@@ -440,12 +406,8 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       onPressed: () => _onToggleVolume(ref),
       icon: Consumer(
         builder: (context, ref, child) {
-          final volume = ref.watch(
-            playerSettingProvider.select((st) => st.volume),
-          );
-          final icon = volume == 0
-              ? Icons.volume_off_rounded
-              : Icons.volume_up_rounded;
+          final volume = ref.watch(playerSettingProvider.select((st) => st.volume));
+          final icon = volume == 0 ? Icons.volume_off_rounded : Icons.volume_up_rounded;
           return Icon(icon);
         },
       ),
@@ -473,22 +435,14 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       ),
       child: Consumer(
         builder: (context, ref, child) {
-          final volume = ref.watch(
-            playerSettingProvider.select((st) => st.volume),
-          );
-          return Slider(
-            value: volume,
-            onChanged: (newVolume) => _onVolumeChanged(ref, newVolume),
-          );
+          final volume = ref.watch(playerSettingProvider.select((st) => st.volume));
+          return Slider(value: volume, onChanged: (newVolume) => _onVolumeChanged(ref, newVolume));
         },
       ),
     );
   }
 
-  Widget _progressSlider(
-    BuildContext ctx,
-    PlayerMediaControllerITF mediaController,
-  ) {
+  Widget _progressSlider(BuildContext ctx, PlayerMediaControllerITF mediaController) {
     final colorScheme = Theme.of(ctx).colorScheme;
     return SliderTheme(
       data: SliderTheme.of(ctx).copyWith(
@@ -508,20 +462,15 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               (st) => (st.value as PlayerMediaData).position_ms.toDouble(),
             ),
           );
-          final duration_ms = mediaController.duration.inMilliseconds
-              .toDouble();
+          final duration_ms = mediaController.duration.inMilliseconds.toDouble();
           // final val = position.clamp(0, duration_ms).toDouble();
-          debugPrint(
-            'slider ui pos $position ${mediaController.position} max $duration_ms',
-          );
+          debugPrint('slider ui pos $position ${mediaController.position} max $duration_ms');
           return Slider(
             value: position,
             max: duration_ms,
-            onChangeStart: (val) =>
-                _onVideoSliderStartChanged(ref, val, duration_ms),
+            onChangeStart: (val) => _onVideoSliderStartChanged(ref, val, duration_ms),
             onChanged: (val) => _onVideoSliderChanging(ref, val, duration_ms),
-            onChangeEnd: (val) =>
-                _onVideoSliderEndChanged(ref, val, duration_ms),
+            onChangeEnd: (val) => _onVideoSliderEndChanged(ref, val, duration_ms),
           );
         },
       ),
@@ -550,11 +499,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                   color: colorScheme.primaryContainer.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.auto_stories_rounded,
-                  size: 80,
-                  color: colorScheme.primary,
-                ),
+                child: Icon(Icons.auto_stories_rounded, size: 80, color: colorScheme.primary),
               ),
               const SizedBox(height: 40),
               Text(
@@ -635,9 +580,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(color: colorScheme.primary.withValues(alpha: 0.3)),
-        ),
+        border: Border(bottom: BorderSide(color: colorScheme.primary.withValues(alpha: 0.3))),
       ),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
@@ -661,9 +604,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     return Consumer(
       builder: (ctx, ref, child) {
         final isPlaying = ref.watch(
-          playerMediaProvider.select(
-            (st) => (st.value as PlayerMediaData).playing,
-          ),
+          playerMediaProvider.select((st) => (st.value as PlayerMediaData).playing),
         );
         return IconButton.filled(
           onPressed: () {
@@ -673,10 +614,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               _onPlay(ref);
             }
           },
-          icon: Icon(
-            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-            size: 24,
-          ),
+          icon: Icon(isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 24),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.primary,
             foregroundColor: Colors.white,
@@ -696,15 +634,12 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         final sentenceIsEmpty =
             ref.watch(
               dbPlayingMediaProvider.select(
-                (st) =>
-                    st.value?.subtitleList.firstOrNull?.sentenceList.isEmpty,
+                (st) => st.value?.subtitleList.firstOrNull?.sentenceList.isEmpty,
               ),
             ) ??
             true;
         if (sentenceIsEmpty) return const NullUI();
-        final isLoop = ref.watch(
-          playerLoopProvider.select((st) => st.value?.isLoop),
-        );
+        final isLoop = ref.watch(playerLoopProvider.select((st) => st.value?.isLoop));
         if (isLoop == null) return const NullUI();
         return IconButton(
           onPressed: () => _onToggleLoop(ref),
@@ -754,9 +689,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         ),
         child: Consumer(
           builder: (ctx, ref, _) {
-            final speed = ref.watch(
-              playerSettingProvider.select((st) => st.speed),
-            );
+            final speed = ref.watch(playerSettingProvider.select((st) => st.speed));
             return Text(
               '${speed}x',
               style: TextStyle(

@@ -2,10 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_provider.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
-import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
+import 'package:mockingbird/tab_assets/album_detail/album_detail_provider.dart';
+import 'package:mockingbird/tab_assets/album_detail/album_detail_state.dart';
+import 'package:mockingbird/tab_assets/media_card/media_card_ui.dart';
 
 import '../../tool/extensions.dart';
 
@@ -268,6 +267,5 @@ class AlbumDetailUI extends ConsumerWidget {
   }
 
   void _onEditAlbum(BuildContext ctx) async {
-    await showDialog(context: ctx, builder: (context) => EditAlbumUI(_id));
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
+import 'package:mockingbird/tab_assets/album_detail/album_detail_ui.dart';
+import 'package:mockingbird/tab_assets/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_settings/about/about_ui.dart';
 
@@ -26,10 +26,10 @@ class AppRoute {
     }
   }
 
-  static String get albums => '/albums';
+  static String get albumList => '/albums';
 
   // static String get addAlbum => '$albums/new';
-  static String albumDetail(int id) => '$albums/$id';
+  static String albumDetail(String id) => '$albumList/$id';
 
   // static String editAlbum(int id) => '$albums/$id/edit';
 
@@ -42,7 +42,7 @@ class AppRoute {
   static String get about => '$settings/about';
 
   static GoRouter _router(OnAppTab onAppTab) => GoRouter(
-    initialLocation: AppRoute.albums,
+    initialLocation: AppRoute.albumList,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
         builder: (ctx, state, shell) => _indexesStackScaffold(ctx, shell, onAppTab),
@@ -56,7 +56,7 @@ class AppRoute {
   );
 
   static GoRoute _albumsRoute() => GoRoute(
-    path: albums,
+    path: albumList,
     builder: (context, state) => const AlbumListUI(),
     routes: <RouteBase>[
       // GoRoute(

@@ -1,30 +1,28 @@
-import 'dart:io';
-
-import 'package:collection/collection.dart';
-import 'package:mockingbird/db/db_logic.dart';
-import 'package:mockingbird/db/providers/db_album_provider.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../entities/en_album.dart';
 
 part 'db_album_list_provider.g.dart';
 
 @Riverpod(name: 'dbAlbumListProvider')
 class DBAlbumList extends _$DBAlbumList {
   @override
-  Future<List<EnAlbum>> build() async {
-    final albumIdList = await DBLogic().loadAlbumIdList();
-    final tasks = albumIdList
-        .map((aid) => ref.watch(dbAlbumProvider(aid).future))
-        .toList();
-    final List<EnAlbum> albumList = (await Future.wait(
-      tasks,
-    )).whereType<EnAlbum>().toList();
-    return albumList.sorted((a, b) => b.sortOrder.compareTo(a.sortOrder));
-  }
+  Future<List<AssetPathEntity>> build() async {
+    PermissionState permissions = await PhotoManager.requestPermissionExtend();
+    debugPrint('PhotoManager permission state: $permissions');
 
-  Future<void> addAlbum(String name, {File? cover}) async {
-    await DBLogic().createAlbum(name, cover: cover);
-    ref.invalidateSelf();
+    if (!permissions.isAuth) {
+      // For Android 13+, permissions.isAuth will be false if the user
+      // hasn't granted READ_MEDIA_VIDEO/AUDIO.
+      // requestPermissionExtend() handles the dialog, but if it's still false,
+      // we might need to guide the user.
+      debugPrint('Permission not authorized, state: $permissions');
+    }
+
+    final albumList = await PhotoManager.getAssetPathList(
+      type: RequestType.audio | RequestType.video,
+    );
+    debugPrint('albumList: $albumList');
+    return albumList;
   }
 }

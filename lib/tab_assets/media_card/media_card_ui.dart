@@ -3,12 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/tab_albums/edit_media/edit_media_ui.dart';
-import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
-import 'package:mockingbird/tool/null_ui.dart';
-
+import 'package:mockingbird/tab_assets/media_card/media_card_provider.dart';
 enum _MoreItem {
-  rename('Rename'),
   addSubtitle('Add Subtitle'),
   updateSubtitle('Update Subtitle'),
   deleteSubtitle('Delete Subtitle'),
@@ -45,10 +41,6 @@ class MediaCardUI extends ConsumerWidget {
 
   void _onDeleteMedia(WidgetRef ref) async {
     await ref.read(mediaCardProvider(_id).notifier).deleteMedia();
-  }
-
-  void _onRenameMedia(BuildContext ctx) async {
-    await showDialog(context: ctx, builder: (context) => EditMediaUI(_id));
   }
 
   @override
@@ -234,21 +226,9 @@ class MediaCardUI extends ConsumerWidget {
               _onDeleteSubtitle(ref);
             } else if (value == _MoreItem.deleteMedia.raw) {
               _onDeleteMedia(ref);
-            } else if (value == _MoreItem.rename.raw) {
-              _onRenameMedia(ctx);
-            }
+            } 
           },
           itemBuilder: (context) => [
-            PopupMenuItem(
-              value: _MoreItem.rename.raw,
-              child: Row(
-                children: [
-                  const Icon(Icons.edit_rounded, size: 18),
-                  const SizedBox(width: 12),
-                  Text(_MoreItem.rename.raw),
-                ],
-              ),
-            ),
             if (hasSubtitle) ...[
               PopupMenuItem(
                 value: _MoreItem.updateSubtitle.raw,

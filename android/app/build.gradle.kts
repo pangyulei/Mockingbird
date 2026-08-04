@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.raypang.mockingbird"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

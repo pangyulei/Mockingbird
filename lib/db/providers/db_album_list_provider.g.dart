@@ -13,7 +13,7 @@ part of 'db_album_list_provider.dart';
 final dbAlbumListProvider = DBAlbumListProvider._();
 
 final class DBAlbumListProvider
-    extends $AsyncNotifierProvider<DBAlbumList, List<EnAlbum>> {
+    extends $AsyncNotifierProvider<DBAlbumList, List<AssetPathEntity>> {
   DBAlbumListProvider._()
     : super(
         from: null,
@@ -33,19 +33,24 @@ final class DBAlbumListProvider
   DBAlbumList create() => DBAlbumList();
 }
 
-String _$dBAlbumListHash() => r'9fa1606395c942f30a51afce4785817f62b9f04c';
+String _$dBAlbumListHash() => r'dbba8b1e374c19f28fdf7a67e32c2c8c300479a7';
 
-abstract class _$DBAlbumList extends $AsyncNotifier<List<EnAlbum>> {
-  FutureOr<List<EnAlbum>> build();
+abstract class _$DBAlbumList extends $AsyncNotifier<List<AssetPathEntity>> {
+  FutureOr<List<AssetPathEntity>> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<List<EnAlbum>>, List<EnAlbum>>;
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<List<AssetPathEntity>>, List<AssetPathEntity>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<List<EnAlbum>>, List<EnAlbum>>,
-              AsyncValue<List<EnAlbum>>,
+              AnyNotifier<
+                AsyncValue<List<AssetPathEntity>>,
+                List<AssetPathEntity>
+              >,
+              AsyncValue<List<AssetPathEntity>>,
               Object?,
               Object?
             >;

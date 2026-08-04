@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
-import 'package:mockingbird/tab_albums/edit_album/edit_album_ui.dart';
+import 'package:mockingbird/tab_assets/album_card/album_card_ui.dart';
+import 'package:mockingbird/tab_assets/album_list/album_list_provider.dart';
+import 'package:mockingbird/tab_assets/album_list/album_list_state.dart';
 import 'package:mockingbird/tool/null_ui.dart';
 
 import '../../tool/extensions.dart';
@@ -71,21 +70,6 @@ class AlbumListUI extends ConsumerWidget {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 48),
-              FilledButton.icon(
-                onPressed: () => _onAddAlbum(ctx),
-                icon: const Icon(Icons.add),
-                label: const Text('Create Your First Album'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -107,12 +91,12 @@ class AlbumListUI extends ConsumerWidget {
             builder: (context, ref, child) {
               final int? albumCount = ref.watch(
                 albumListProvider.select(
-                  (st) => st.value?.as<AlbumListData>()?.albumIdList.length,
+                  (st) => st.value?.as<AlbumListData>()?.AlbumIdList.length,
                 ),
               );
               if (albumCount == null) return const NullUI();
               return Text(
-                '$albumCount created albums',
+                '$albumCount albums',
                 style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
                   color: Theme.of(ctx).colorScheme.outline,
                 ),
@@ -122,13 +106,7 @@ class AlbumListUI extends ConsumerWidget {
         ],
       ),
       centerTitle: false,
-      actions: [
-        IconButton(
-          onPressed: () => _onAddAlbum(ctx),
-          iconSize: 34,
-          icon: const Icon(Icons.add),
-        ),
-      ],
+      actions: const [],
     );
   }
 
@@ -139,9 +117,9 @@ class AlbumListUI extends ConsumerWidget {
       builder: (context, ref, child) {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
-        final List<int>? albumIdList = ref.watch(
+        final albumIdList = ref.watch(
           albumListProvider.select(
-            (st) => st.value?.as<AlbumListData>()?.albumIdList,
+            (st) => st.value?.as<AlbumListData>()?.AlbumIdList,
           ),
         );
         if (albumIdList == null) return const NullUI();
@@ -159,13 +137,6 @@ class AlbumListUI extends ConsumerWidget {
           },
         );
       },
-    );
-  }
-
-  void _onAddAlbum(BuildContext ctx) async {
-    await showDialog(
-      context: ctx,
-      builder: (context) => const EditAlbumUI(null),
     );
   }
 }

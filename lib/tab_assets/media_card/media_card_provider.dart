@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/en_media.dart';
 import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
-import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
+import 'package:mockingbird/tab_assets/media_card/media_card_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
