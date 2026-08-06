@@ -50,7 +50,7 @@ final class DBFolderProvider
   }
 }
 
-String _$dBFolderHash() => r'6d80287e9afa5b1a0ac8ea2eafe1fb51b2b76ba2';
+String _$dBFolderHash() => r'f6a3190a6de95d227044678e332d9d35cf1463ab';
 
 final class DBFolderFamily extends $Family
     with

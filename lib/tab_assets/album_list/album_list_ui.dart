@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_assets/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_assets/album_list/album_list_provider.dart';
 import 'package:mockingbird/tab_assets/album_list/album_list_state.dart';
-import 'package:mockingbird/tool/null_ui.dart';
+import 'package:mockingbird/tool/shrink_ui.dart';
 
 import '../../tool/extensions.dart';
 
@@ -16,7 +16,7 @@ class AlbumListUI extends ConsumerWidget {
       albumListProvider.select((st) => st.value?.runtimeType),
     );
     debugPrint('albumlist stateType: $stateType');
-    showLoading(stateType == null);
+    // showLoading(stateType == null);
     switch (stateType) {
       case AlbumListNull:
         //result is null
@@ -94,7 +94,7 @@ class AlbumListUI extends ConsumerWidget {
                   (st) => st.value?.as<AlbumListData>()?.AlbumIdList.length,
                 ),
               );
-              if (albumCount == null) return const NullUI();
+              if (albumCount == null) return const ShrinkUI();
               return Text(
                 '$albumCount albums',
                 style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
@@ -122,7 +122,7 @@ class AlbumListUI extends ConsumerWidget {
             (st) => st.value?.as<AlbumListData>()?.AlbumIdList,
           ),
         );
-        if (albumIdList == null) return const NullUI();
+        if (albumIdList == null) return const ShrinkUI();
         return GridView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: albumIdList.length,

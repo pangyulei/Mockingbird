@@ -1,9 +1,10 @@
-import '../../../db/entities/en_sentence.dart';
+import 'package:mockingbird/tool/subtitle_parser.dart';
+
 
 class PlayerLoopState {
   final bool isLoop;
   final int? loopIndex;
-  final EnSentence? loopSentence;
+  final SentenceEntity? loopSentence;
   const PlayerLoopState({
     required this.loopIndex,
     required this.loopSentence,
@@ -12,7 +13,7 @@ class PlayerLoopState {
   PlayerLoopState copyWith({
     bool? isLoop,
     int? Function()? loopIndex,
-    EnSentence? Function()? loopSentence,
+    SentenceEntity? Function()? loopSentence,
   }) {
     return PlayerLoopState(
       loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),

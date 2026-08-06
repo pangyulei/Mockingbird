@@ -12,10 +12,11 @@ part of 'db_media_provider.dart';
 @ProviderFor(DBMedia)
 final dbMediaProvider = DBMediaFamily._();
 
-final class DBMediaProvider extends $AsyncNotifierProvider<DBMedia, EnMedia?> {
+final class DBMediaProvider
+    extends $AsyncNotifierProvider<DBMedia, AssetEntity?> {
   DBMediaProvider._({
     required DBMediaFamily super.from,
-    required int? super.argument,
+    required String? super.argument,
   }) : super(
          retry: null,
          name: r'dbMediaProvider',
@@ -49,16 +50,16 @@ final class DBMediaProvider extends $AsyncNotifierProvider<DBMedia, EnMedia?> {
   }
 }
 
-String _$dBMediaHash() => r'ff9f27880ee747bc397037a72e55f68bbdfb2906';
+String _$dBMediaHash() => r'bebddb79a975dc23c0dd0cba1c6000f70464db9f';
 
 final class DBMediaFamily extends $Family
     with
         $ClassFamilyOverride<
           DBMedia,
-          AsyncValue<EnMedia?>,
-          EnMedia?,
-          FutureOr<EnMedia?>,
-          int?
+          AsyncValue<AssetEntity?>,
+          AssetEntity?,
+          FutureOr<AssetEntity?>,
+          String?
         > {
   DBMediaFamily._()
     : super(
@@ -69,26 +70,27 @@ final class DBMediaFamily extends $Family
         isAutoDispose: true,
       );
 
-  DBMediaProvider call(int? id) => DBMediaProvider._(argument: id, from: this);
+  DBMediaProvider call(String? id) =>
+      DBMediaProvider._(argument: id, from: this);
 
   @override
   String toString() => r'dbMediaProvider';
 }
 
-abstract class _$DBMedia extends $AsyncNotifier<EnMedia?> {
-  late final _$args = ref.$arg as int?;
-  int? get id => _$args;
+abstract class _$DBMedia extends $AsyncNotifier<AssetEntity?> {
+  late final _$args = ref.$arg as String?;
+  String? get id => _$args;
 
-  FutureOr<EnMedia?> build(int? id);
+  FutureOr<AssetEntity?> build(String? id);
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EnMedia?>, EnMedia?>;
+    final ref = this.ref as $Ref<AsyncValue<AssetEntity?>, AssetEntity?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EnMedia?>, EnMedia?>,
-              AsyncValue<EnMedia?>,
+              AnyNotifier<AsyncValue<AssetEntity?>, AssetEntity?>,
+              AsyncValue<AssetEntity?>,
               Object?,
               Object?
             >;

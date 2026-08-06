@@ -5,11 +5,8 @@ class BackgroundAudioHandler extends BaseAudioHandler {
   final PlayerMediaControllerITF _mediaController;
 
   BackgroundAudioHandler(this._mediaController);
-  void setup({
-    required MediaItem? item,
-    required bool playing,
-    required Duration position,
-  }) {
+
+  void setup({required MediaItem? item, required bool playing, required Duration position}) {
     mediaItem.add(item);
     playbackState.add(
       playbackState.value.copyWith(

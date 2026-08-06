@@ -2,18 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/db/entities/en_media.dart';
-import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_name_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
+import 'package:mockingbird/tab_player/player/providers/player_title_provider.dart';
+import 'package:mockingbird/tab_player/player/states/player_asset_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
-import 'package:mockingbird/tool/null_ui.dart';
+import 'package:mockingbird/tool/shrink_ui.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../app/app_route.dart';
@@ -37,7 +35,6 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     });
     final stateType = ref.watch(playerMediaProvider.select((st) => st.value?.runtimeType));
     debugPrint('player state type $stateType');
-    showLoading(stateType == null);
     switch (stateType) {
       case PlayerMediaNull:
         return _empty(ctx);
@@ -49,7 +46,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   void _onAddSubtitle(WidgetRef ref) async {
-    await ref.read(playerProvider(_scrollController).notifier).addSubtitle();
+    // await ref.read(playerProvider(_scrollController).notifier).addSubtitle();
   }
 
   void _onToggleLoop(WidgetRef ref) {
@@ -156,10 +153,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget _displayer(BuildContext ctx, WidgetRef ref, PlayerMediaControllerITF mediaController) {
-    final mediaPath = mediaController.path;
-    if (mediaPath == null || mediaPath.isEmpty) return const NullUI();
-    final mediaType = MediaType.fromPath(mediaPath);
-    if (mediaType == .video) {
+    if (mediaController.type == .video) {
       return _videoDisplayer(ctx, ref, mediaController);
     } else {
       return _audioDisplayer(ctx, ref, mediaController);
@@ -177,7 +171,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       child: Stack(
         alignment: .center,
         children: [
-          AspectRatio(aspectRatio: mediaController.ratio ?? ratio, child: mediaController.video),
+          AspectRatio(aspectRatio: mediaController.ratio, child: mediaController.video),
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,
@@ -264,13 +258,11 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
           builder: (ctx, ref, child) {
             final data = ref.watch(playerSubtitleProvider).value;
             if (data is PlayerSubtitleData) {
-              final sentenceIdList = data.sentenceList.map((sen) => sen.id).toList();
               return ScrollablePositionedList.builder(
-                itemCount: sentenceIdList.length,
+                itemCount: data.sentenceStateList.length,
                 itemScrollController: _scrollController,
                 itemBuilder: (context, i) {
-                  final sentenceId = sentenceIdList[i];
-                  return SentenceCardUI(sentenceId, (ref, sentenceId) {
+                  return SentenceCardUI(i, data.sentenceStateList[i], (ref, sentenceId) {
                     ref.read(playerProvider(_scrollController).notifier).tapSentence(sentenceId);
                   });
                 },
@@ -278,7 +270,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             } else if (data is PlayerSubtitleNull) {
               return _noSubtitle(ctx, ref);
             } else {
-              return const NullUI();
+              return const ShrinkUI();
             }
           },
         ),
@@ -327,7 +319,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         final show = ref.watch(
           playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData),
         );
-        if (!show) return const NullUI();
+        if (!show) return const ShrinkUI();
         final colorScheme = Theme.of(context).colorScheme;
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -371,7 +363,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             if (showVolumeSlider) {
               return Expanded(child: _verticalVolumeSlider(ctx));
             } else {
-              return const NullUI();
+              return const ShrinkUI();
             }
           },
         ),
@@ -393,7 +385,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             if (showVolumeSlider) {
               return Expanded(child: _horizontalVolumeSlider(ctx));
             } else {
-              return const NullUI();
+              return const ShrinkUI();
             }
           },
         ),
@@ -554,7 +546,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       height: 24,
       child: Consumer(
         builder: (ctx, ref, _) {
-          final title = ref.watch(playerTitleProvider);
+          final title = ref.watch(playerTitleProvider.select((st) => st.value ?? ''));
           if (title.isEmpty) {
             return const Text('');
           } else {
@@ -631,16 +623,16 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     final colorScheme = Theme.of(ctx).colorScheme;
     return Consumer(
       builder: (ctx, ref, child) {
-        final sentenceIsEmpty =
-            ref.watch(
-              dbPlayingMediaProvider.select(
-                (st) => st.value?.subtitleList.firstOrNull?.sentenceList.isEmpty,
+        final hasSubtitle = ref.watch(
+          playerSubtitleProvider
+              .select((st) => st.value)
+              .select(
+                (data) => data?.as<PlayerSubtitleData>()?.sentenceStateList.isNotEmpty ?? false,
               ),
-            ) ??
-            true;
-        if (sentenceIsEmpty) return const NullUI();
+        );
+        if (!hasSubtitle) return const ShrinkUI();
         final isLoop = ref.watch(playerLoopProvider.select((st) => st.value?.isLoop));
-        if (isLoop == null) return const NullUI();
+        if (isLoop == null) return const ShrinkUI();
         return IconButton(
           onPressed: () => _onToggleLoop(ref),
           icon: Icon(

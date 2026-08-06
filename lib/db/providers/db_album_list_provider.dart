@@ -22,7 +22,6 @@ class DBAlbumList extends _$DBAlbumList {
     final albumList = await PhotoManager.getAssetPathList(
       type: RequestType.audio | RequestType.video,
     );
-    debugPrint('albumList: $albumList');
     return albumList;
   }
 }

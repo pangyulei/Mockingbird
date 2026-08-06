@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/entities/en_sentence.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_loop_state.dart';
+import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'player_loop_provider.g.dart';
@@ -38,7 +38,7 @@ class PlayerLoop extends _$PlayerLoop {
     );
   }
 
-  void updateIndexAndSentenceIfLoop(int? index, EnSentence? sentence) {
+  void updateIndexAndSentenceIfLoop(int? index, SentenceEntity? sentence) {
     final data = state.value;
     if (data == null) return;
     if (!data.isLoop) return;

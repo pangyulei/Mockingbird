@@ -11,7 +11,7 @@ class DBFolder extends _$DBFolder {
     if (id == null) return null;
     return await ref.watch(
       dbAlbumListProvider.selectAsync(
-        (fl) => {for (final f in fl) f.id: f}[id],
+        (al) => {for (final a in al) a.id: a}[id],
       ),
     );
   }

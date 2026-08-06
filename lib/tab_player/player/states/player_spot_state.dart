@@ -1,8 +1,8 @@
-import 'package:mockingbird/db/entities/en_sentence.dart';
+import 'package:mockingbird/tool/subtitle_parser.dart';
 
 class PlayerSpotState {
   final int? playingSentenceIndex;
-  final EnSentence? playingSentence;
+  final SentenceEntity? playingSentence;
 
   const PlayerSpotState({
     required this.playingSentenceIndex,
@@ -10,7 +10,7 @@ class PlayerSpotState {
   });
 
   PlayerSpotState copyWith({
-    EnSentence? Function()? playingSentence,
+    SentenceEntity? Function()? playingSentence,
     int? Function()? playingSentenceIndex,
   }) {
     return PlayerSpotState(

@@ -1,4 +1,4 @@
-import 'package:mockingbird/db/entities/en_sentence.dart';
+import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 
 sealed class PlayerSubtitleState {
   const PlayerSubtitleState();
@@ -9,17 +9,8 @@ class PlayerSubtitleNull extends PlayerSubtitleState {
 }
 
 class PlayerSubtitleData extends PlayerSubtitleState {
-  final List<EnSentence> sentenceList;
+  final List<SentenceCardState> sentenceStateList;
 
-  const PlayerSubtitleData({
-    required this.sentenceList,
-  });
+  const PlayerSubtitleData({required this.sentenceStateList});
 
-  PlayerSubtitleData copyWith({
-    List<EnSentence>? sentenceList,
-  }) {
-    return PlayerSubtitleData(
-      sentenceList: sentenceList ?? this.sentenceList,
-    );
-  }
 }

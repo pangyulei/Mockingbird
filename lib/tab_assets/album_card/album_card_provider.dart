@@ -15,7 +15,4 @@ class AlbumCard extends _$AlbumCard {
     return AlbumCardState(mediaCount: count, name: album.name);
   }
 
-  Future<void> delete() async {
-    // await ref.read(dbAlbumProvider(id).notifier).delete();
-  }
 }

@@ -1,18 +1,15 @@
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
-import 'package:mockingbird/db/entities/en_subtitle.dart';
 import 'package:path/path.dart' as p;
 
-import '../db/entities/en_sentence.dart';
-
 class SubtitleParser {
-  static Future<EnSubtitle?> parsePath(String pathStr) async {
+  static Future<SubtitleEntity?> parsePath(String pathStr) async {
     final file = File(pathStr);
     return await parseFile(file);
   }
 
-  static Future<EnSubtitle?> parseFile(File file) async {
+  static Future<SubtitleEntity?> parseFile(File file) async {
     final content = await file.readAsString();
     if (file.path.endsWith('.srt')) {
       return _parseSrt(content);
@@ -25,8 +22,8 @@ class SubtitleParser {
     return null;
   }
 
-  static EnSubtitle? _parseSrt(String content) {
-    final sentences = <EnSentence>[];
+  static SubtitleEntity? _parseSrt(String content) {
+    final sentenceList = <SentenceEntity>[];
     // Split by double newline (supporting both \n and \r\n)
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
@@ -58,12 +55,11 @@ class SubtitleParser {
         final text = lines.sublist(textStartIndex).join('\n').trim();
 
         if (text.isNotEmpty) {
-          sentences.add(
-            EnSentence(
+          sentenceList.add(
+            SentenceEntity(
               text: text,
-              start_ms: start.inMilliseconds,
-              end_ms: end.inMilliseconds,
-              id: 0,
+              start: start,
+              end: end,
             ),
           );
         }
@@ -72,10 +68,8 @@ class SubtitleParser {
         debugPrint('Error parsing SRT block: $e');
       }
     }
-    if (sentences.isNotEmpty) {
-      final subtitle = EnSubtitle(id: 0);
-      subtitle.sentenceList.addAll(sentences);
-      return subtitle;
+    if (sentenceList.isNotEmpty) {
+      return SubtitleEntity(sentenceList: sentenceList);
     } else {
       return null;
     }
@@ -100,8 +94,8 @@ class SubtitleParser {
     );
   }
 
-  static EnSubtitle? _parseVtt(String content) {
-    final sentences = <EnSentence>[];
+  static SubtitleEntity? _parseVtt(String content) {
+    final sentenceList = <SentenceEntity>[];
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
     for (var block in blocks) {
@@ -132,12 +126,11 @@ class SubtitleParser {
         final text = lines.sublist(textStartLine).join('\n').trim();
 
         if (text.isNotEmpty) {
-          sentences.add(
-            EnSentence(
-              start_ms: start.inMilliseconds,
-              end_ms: end.inMilliseconds,
+          sentenceList.add(
+            SentenceEntity(
+              start: start,
+              end: end,
               text: text,
-              id: 0,
             ),
           );
         }
@@ -145,10 +138,8 @@ class SubtitleParser {
         debugPrint('Error parsing VTT block: $e');
       }
     }
-    if (sentences.isNotEmpty) {
-      final subtitle = EnSubtitle(id: 0);
-      subtitle.sentenceList.addAll(sentences);
-      return subtitle;
+    if (sentenceList.isNotEmpty) {
+      return SubtitleEntity(sentenceList: sentenceList);
     } else {
       return null;
     }
@@ -186,5 +177,27 @@ class SubtitleParser {
       seconds: seconds,
       milliseconds: milliseconds,
     );
+  }
+}
+
+class SubtitleEntity {
+  final List<SentenceEntity> sentenceList;
+  SubtitleEntity({required this.sentenceList});
+}
+
+class SentenceEntity {
+  final Duration start;
+  final Duration end;
+  final String text;
+
+  SentenceEntity({
+    required this.start,
+    required this.end,
+    required this.text,
+  });
+
+  @override
+  String toString() {
+    return text;
   }
 }

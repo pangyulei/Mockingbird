@@ -8,27 +8,21 @@ import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:mockingbird/tab_player/player/states/player_asset_state.dart';
 
 import '../../../tool/extensions.dart';
 
-part 'player_media_provider.g.dart';
+final playerMediaProvider = AsyncNotifierProvider.autoDispose(PlayerMediaNotifier.new);
 
-@riverpod
-class PlayerMedia extends _$PlayerMedia {
+class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
   @override
   Future<PlayerMediaState> build() async {
-    final path = await ref.watch(
-      dbPlayingMediaProvider.selectAsync((st) => st?.path),
-    );
-    if (path == null || path.isEmpty) return const PlayerMediaNull();
+    final asset = (await ref.watch(dbPlayingMediaProvider.future));
+    if (asset == null) return const PlayerMediaNull();
     //because of this is read and have to await, this has to be a AsyncNotifier
     final mediaController = ref.watch(playerMediaControllerProvider);
-    await mediaController.open(path);
-    final (speed, volume) = ref.read(
-      playerSettingProvider.select((st) => (st.speed, st.volume)),
-    );
+    await mediaController.open(asset);
+    final (speed, volume) = ref.read(playerSettingProvider.select((st) => (st.speed, st.volume)));
     await mediaController.setSpeed(speed);
     await mediaController.setVolume(volume);
     //Fix playing media1, change to media2, it paused. because it didnt trigger listen,
@@ -37,18 +31,10 @@ class PlayerMedia extends _$PlayerMedia {
     // ref.read(playerSubtitleProvider.notifier).scrollToTop();
     mediaController.listenPosition(_mediaPositionChanged);
     _listen();
-    //TODO seems this provider is not neccessary
-    return PlayerMediaData(
-      position_ms: 0,
-      mediaController: mediaController,
-      playing: true,
-    );
+    return PlayerMediaData(position_ms: 0, mediaController: mediaController, playing: true);
   }
 
-  void _mediaPositionChanged(
-    PlayerMediaControllerITF mediaController,
-    Duration position,
-  ) async {
+  void _mediaPositionChanged(PlayerMediaControllerITF mediaController, Duration position) async {
     //for video slider moving along with playing
     var data = state.value;
     if (data is! PlayerMediaData) return;
@@ -71,22 +57,14 @@ class PlayerMedia extends _$PlayerMedia {
   }
 
   void _listenToSpeed() {
-    ref.listen(playerSettingProvider.select((st) => st.speed), (
-      previous,
-      speed,
-    ) async {
+    ref.listen(playerSettingProvider.select((st) => st.speed), (previous, speed) async {
       await state.value?.as<PlayerMediaData>()?.mediaController.setSpeed(speed);
     });
   }
 
   void _listenToVolume() {
-    ref.listen(playerSettingProvider.select((st) => st.volume), (
-      previous,
-      volume,
-    ) async {
-      await state.value?.as<PlayerMediaData>()?.mediaController.setVolume(
-        volume,
-      );
+    ref.listen(playerSettingProvider.select((st) => st.volume), (previous, volume) async {
+      await state.value?.as<PlayerMediaData>()?.mediaController.setVolume(volume);
     });
   }
 
@@ -95,9 +73,7 @@ class PlayerMedia extends _$PlayerMedia {
     if (data is! PlayerMediaData) return;
     data = data.copyWith(playing: true);
     state = AsyncData(data);
-    debugPrint(
-      'play ${data.mediaController.position} ${data.mediaController.duration}',
-    );
+    debugPrint('play ${data.mediaController.position} ${data.mediaController.duration}');
     if (data.mediaController.position >= data.mediaController.duration) {
       await data.mediaController.seek(const Duration(seconds: 0));
     }

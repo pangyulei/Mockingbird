@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 abstract interface class PlayerMediaControllerITF {
   FutureOr<void> pause();
@@ -10,33 +11,33 @@ abstract interface class PlayerMediaControllerITF {
   FutureOr<void> setSpeed(double speed);
   FutureOr<void> setVolume(double volume);
   FutureOr<void> seek(Duration position);
-  FutureOr<void> open(String path);
+  FutureOr<void> open(AssetEntity asset);
   bool get playing;
   Duration get position;
   bool get completed;
   Duration get duration;
   double get speed;
-  double? get ratio;
-  String? get path;
+  double get ratio;
+  AssetType get type;
   Widget get video;
   FutureOr<void> dispose();
   void listenPosition(
-    void Function(PlayerMediaControllerITF mediaController, Duration position)
+    void Function(PlayerMediaControllerITF assetController, Duration position)
     listener,
   );
   void listenPlaying(
-    void Function(PlayerMediaControllerITF mediaController, bool playing)
+    void Function(PlayerMediaControllerITF assetController, bool playing)
     listener,
   );
   void listenCompleted(
-    void Function(PlayerMediaControllerITF mediaController, bool completed)
+    void Function(PlayerMediaControllerITF assetController, bool completed)
     listener,
   );
 }
 
 class PlayerMediaController implements PlayerMediaControllerITF {
+  AssetEntity? _asset;
   final _player = Player();
-  String? _path;
   final _subs = <StreamSubscription>[];
   PlayerMediaController();
 
@@ -88,23 +89,26 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   );
 
   @override
-  double? get ratio {
+  double get ratio {
     final width = _player.state.width?.toDouble();
     final height = _player.state.height?.toDouble();
     if (width != null && height != null && height != 0) {
       return width / height;
     } else {
-      return null;
+      return 1;
     }
   }
 
   @override
-  String? get path => _path;
+  AssetType get type => _asset?.type ?? AssetType.video;
 
   @override
-  FutureOr<void> open(String path) async {
-    _path = path;
-    await _player.open(Media(path));
+  FutureOr<void> open(AssetEntity asset) async {
+    _asset = asset;
+    final path = (await asset.file)?.path;
+    if (path != null) {
+      await _player.open(Media(path));
+    }
   }
 
   @override
@@ -120,7 +124,7 @@ class PlayerMediaController implements PlayerMediaControllerITF {
 
   @override
   void listenPosition(
-    void Function(PlayerMediaControllerITF mediaController, Duration position)
+    void Function(PlayerMediaControllerITF assetController, Duration position)
     listener,
   ) {
     final sub = _player.stream.position.listen((position) {
@@ -131,7 +135,7 @@ class PlayerMediaController implements PlayerMediaControllerITF {
 
   @override
   void listenPlaying(
-    void Function(PlayerMediaControllerITF mediaController, bool playing)
+    void Function(PlayerMediaControllerITF assetController, bool playing)
     listener,
   ) {
     final sub = _player.stream.playing.listen((playing) {
@@ -139,9 +143,10 @@ class PlayerMediaController implements PlayerMediaControllerITF {
     });
     _subs.add(sub);
   }
+
   @override
   void listenCompleted(
-    void Function(PlayerMediaControllerITF mediaController, bool completed)
+    void Function(PlayerMediaControllerITF assetController, bool completed)
     listener,
   ) {
     final sub = _player.stream.completed.listen((completed) {

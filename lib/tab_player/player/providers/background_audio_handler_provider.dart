@@ -3,11 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
 import 'package:mockingbird/tab_player/player/background_audio_handler.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
+import 'package:path/path.dart' as p;
 
 //keepalive, never dispose
-final backgroundAudioHandlerProvider = NotifierProvider(
-  BackgroundAudioHandlerNotifier.new,
-);
+final backgroundAudioHandlerProvider = NotifierProvider(BackgroundAudioHandlerNotifier.new);
 
 class BackgroundAudioHandlerNotifier extends Notifier<BackgroundAudioHandler> {
   @override
@@ -39,28 +38,23 @@ class BackgroundAudioHandlerNotifier extends Notifier<BackgroundAudioHandler> {
     return handler;
   }
 
-  void updateMediaItem() {
-    final media = ref.read(dbPlayingMediaProvider.select((st) => st.value));
-    if (media == null) {
-      state.setup(
-        item: null,
-        playing: false,
-        position: const Duration(seconds: 0),
-      );
+  Future<void> updateMediaItem() async {
+    final asset = ref.read(dbPlayingMediaProvider.select((st) => st.value));
+    if (asset == null) {
+      state.setup(item: null, playing: false, position: const Duration(seconds: 0));
     } else {
-      final album = media.albumList.first;
-      final (playing, position, duration) = ref.read(
-        playerMediaControllerProvider.select(
-          (st) => (st.playing, st.position, st.duration),
-        ),
+      final path = (await asset.file)?.path ?? '';
+      final album = p.basename(p.dirname(path));
+      final (playing, position) = ref.read(
+        playerMediaControllerProvider.select((st) => (st.playing, st.position)),
       );
       state.setup(
         item: MediaItem(
-          id: media.id.toString(),
-          title: media.name,
-          album: album.name,
-          duration: duration,
-          artUri: album.cover?.toUri(),
+          id: asset.id,
+          title: await asset.titleAsync,
+          album: album,
+          duration: asset.videoDuration,
+          artUri: null, //TODO fix artUri
         ),
         playing: playing,
         position: position,
@@ -69,8 +63,3 @@ class BackgroundAudioHandlerNotifier extends Notifier<BackgroundAudioHandler> {
   }
 }
 
-extension on String {
-  Uri toUri() {
-    return Uri.file(this);
-  }
-}

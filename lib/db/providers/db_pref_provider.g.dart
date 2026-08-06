@@ -12,7 +12,8 @@ part of 'db_pref_provider.dart';
 @ProviderFor(DBPref)
 final dbPrefProvider = DBPrefProvider._();
 
-final class DBPrefProvider extends $AsyncNotifierProvider<DBPref, EnPref> {
+final class DBPrefProvider
+    extends $AsyncNotifierProvider<DBPref, PreferenceEntity> {
   DBPrefProvider._()
     : super(
         from: null,
@@ -32,19 +33,20 @@ final class DBPrefProvider extends $AsyncNotifierProvider<DBPref, EnPref> {
   DBPref create() => DBPref();
 }
 
-String _$dBPrefHash() => r'19d0e7900466f1c39589d5dcef4b8a61dc06d75b';
+String _$dBPrefHash() => r'938ff1902b59470a46afe93fdb38befd636e9588';
 
-abstract class _$DBPref extends $AsyncNotifier<EnPref> {
-  FutureOr<EnPref> build();
+abstract class _$DBPref extends $AsyncNotifier<PreferenceEntity> {
+  FutureOr<PreferenceEntity> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EnPref>, EnPref>;
+    final ref =
+        this.ref as $Ref<AsyncValue<PreferenceEntity>, PreferenceEntity>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EnPref>, EnPref>,
-              AsyncValue<EnPref>,
+              AnyNotifier<AsyncValue<PreferenceEntity>, PreferenceEntity>,
+              AsyncValue<PreferenceEntity>,
               Object?,
               Object?
             >;

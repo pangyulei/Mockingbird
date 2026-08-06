@@ -5,14 +5,6 @@ import 'package:mockingbird/app/app_route.dart';
 
 import 'album_card_provider.dart';
 
-enum _MoreItem {
-  delete('Delete');
-
-  final String raw;
-
-  const _MoreItem(this.raw);
-}
-
 class AlbumCardUI extends ConsumerWidget {
   final String _id;
 
@@ -20,12 +12,6 @@ class AlbumCardUI extends ConsumerWidget {
 
   void _onTap(BuildContext ctx, WidgetRef ref) {
     ctx.go(AppRoute.albumDetail(_id));
-  }
-
-  void _onDelete(BuildContext ctx, WidgetRef ref) async {
-    // if (await confirmDelete(ctx, ref)) {
-    //   await ref.read(albumCardProvider(_id).notifier).delete();
-    // }
   }
 
   @override
@@ -90,35 +76,5 @@ class AlbumCardUI extends ConsumerWidget {
       ),
     );
   }
-
-  // Widget _menu(BuildContext ctx, WidgetRef ref) {
-  //   final colorScheme = Theme.of(ctx).colorScheme;
-  //   return PopupMenuButton<String>(
-  //     icon: const Icon(Icons.more_horiz, size: 20, color: Colors.white),
-  //     onSelected: (value) {
-  //       if (value == _MoreItem.delete.raw) {
-  //         _onDelete(ctx, ref);
-  //       }
-  //     },
-  //     itemBuilder: (context) => [
-  //       PopupMenuItem(
-  //         value: _MoreItem.delete.raw,
-  //         child: Row(
-  //           children: [
-  //             Icon(Icons.delete_outline, size: 18, color: colorScheme.error),
-  //             const SizedBox(width: 12),
-  //             Text(_MoreItem.delete.raw, style: TextStyle(color: colorScheme.error)),
-  //           ],
-  //         ),
-  //       ),
-  //     ],
-  //     style: IconButton.styleFrom(
-  //       backgroundColor: Colors.black.withValues(alpha: 0.3),
-  //       minimumSize: const Size(32, 32),
-  //       padding: EdgeInsets.zero,
-  //       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-  //     ),
-  //   );
-  // }
 
 }

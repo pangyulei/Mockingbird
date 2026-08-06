@@ -13,7 +13,7 @@ part of 'db_playing_media_provider.dart';
 final dbPlayingMediaProvider = DBPlayingMediaProvider._();
 
 final class DBPlayingMediaProvider
-    extends $AsyncNotifierProvider<DBPlayingMedia, EnMedia?> {
+    extends $AsyncNotifierProvider<DBPlayingMedia, AssetEntity?> {
   DBPlayingMediaProvider._()
     : super(
         from: null,
@@ -33,19 +33,19 @@ final class DBPlayingMediaProvider
   DBPlayingMedia create() => DBPlayingMedia();
 }
 
-String _$dBPlayingMediaHash() => r'd6c7d11a811400be5b1f2ec28cb3dbaab76d89ae';
+String _$dBPlayingMediaHash() => r'ab755fe6875ade61860fb06c7c7ff2a1e0f92750';
 
-abstract class _$DBPlayingMedia extends $AsyncNotifier<EnMedia?> {
-  FutureOr<EnMedia?> build();
+abstract class _$DBPlayingMedia extends $AsyncNotifier<AssetEntity?> {
+  FutureOr<AssetEntity?> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<EnMedia?>, EnMedia?>;
+    final ref = this.ref as $Ref<AsyncValue<AssetEntity?>, AssetEntity?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<EnMedia?>, EnMedia?>,
-              AsyncValue<EnMedia?>,
+              AnyNotifier<AsyncValue<AssetEntity?>, AssetEntity?>,
+              AsyncValue<AssetEntity?>,
               Object?,
               Object?
             >;

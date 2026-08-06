@@ -1,4 +1,3 @@
-import 'package:mockingbird/db/entities/en_sentence.dart';
 
 class PlayerSettingState {
   final bool showVolumeSlider;

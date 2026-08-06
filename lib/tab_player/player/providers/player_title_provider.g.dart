@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'player_name_provider.dart';
+part of 'player_title_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -12,7 +12,8 @@ part of 'player_name_provider.dart';
 @ProviderFor(PlayerTitle)
 final playerTitleProvider = PlayerTitleProvider._();
 
-final class PlayerTitleProvider extends $NotifierProvider<PlayerTitle, String> {
+final class PlayerTitleProvider
+    extends $AsyncNotifierProvider<PlayerTitle, String?> {
   PlayerTitleProvider._()
     : super(
         from: null,
@@ -30,29 +31,21 @@ final class PlayerTitleProvider extends $NotifierProvider<PlayerTitle, String> {
   @$internal
   @override
   PlayerTitle create() => PlayerTitle();
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(String value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<String>(value),
-    );
-  }
 }
 
-String _$playerTitleHash() => r'd665b31856c1afd173e9f20e99bf7836928896f8';
+String _$playerTitleHash() => r'43aca5dcd18d57953f8aeef80ef148e302e63cd2';
 
-abstract class _$PlayerTitle extends $Notifier<String> {
-  String build();
+abstract class _$PlayerTitle extends $AsyncNotifier<String?> {
+  FutureOr<String?> build();
   @$mustCallSuper
   @override
   void runBuild() {
-    final ref = this.ref as $Ref<String, String>;
+    final ref = this.ref as $Ref<AsyncValue<String?>, String?>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<String, String>,
-              String,
+              AnyNotifier<AsyncValue<String?>, String?>,
+              AsyncValue<String?>,
               Object?,
               Object?
             >;

@@ -50,7 +50,7 @@ final class AlbumCardProvider
   }
 }
 
-String _$albumCardHash() => r'25ef1b384f04720eb0f06c3ae4d2c4e2a28884d0';
+String _$albumCardHash() => r'2fb375945bae61e87bfcbbd5d8535f85ffcff7cc';
 
 final class AlbumCardFamily extends $Family
     with

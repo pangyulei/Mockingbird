@@ -1,24 +1,29 @@
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
-class EnPref {
+class PreferenceEntity {
   @Id()
   int id;
-  final int? playingId;
+  final String? playingId;
   final bool loop;
   final int dbVersion;
 
-  EnPref({
+  PreferenceEntity({
     required this.id,
     required this.playingId,
     required this.loop,
     required this.dbVersion,
   });
 
-  EnPref.empty() : this(id: 0, playingId: null, loop: false, dbVersion: 0);
+  PreferenceEntity.empty()
+    : this(id: 0, playingId: null, loop: false, dbVersion: 0);
 
-  EnPref copyWith({int? Function()? playingId, bool? loop, int? dbVersion}) {
-    return EnPref(
+  PreferenceEntity copyWith({
+    String? Function()? playingId,
+    bool? loop,
+    int? dbVersion,
+  }) {
+    return PreferenceEntity(
       id: id,
       playingId: playingId == null ? this.playingId : playingId(),
       loop: loop ?? this.loop,
@@ -26,7 +31,7 @@ class EnPref {
     );
   }
 
-  EnPref incDBVersion() {
+  PreferenceEntity incDBVersion() {
     return copyWith(dbVersion: dbVersion + 1);
   }
 }

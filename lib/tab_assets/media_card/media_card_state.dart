@@ -1,24 +1,24 @@
-import 'package:mockingbird/db/entities/en_media.dart';
+import 'package:photo_manager/photo_manager.dart';
 
-class AssetCardState {
+class MediaCardState {
   final String name;
-  final MediaType type;
+  final AssetType type;
   final bool playing;
 
-  const AssetCardState({
+  const MediaCardState({
     required this.playing,
     required this.type,
     required this.name,
   });
-  const AssetCardState.empty()
+  const MediaCardState.empty()
     : this(playing: false, name: '', type: .video);
 
-  AssetCardState copyWith({
+  MediaCardState copyWith({
     String? name,
-    MediaType? type,
+    AssetType? type,
     bool? playing,
   }) {
-    return AssetCardState(
+    return MediaCardState(
       name: name ?? this.name,
       type: type ?? this.type,
       playing: playing ?? this.playing,

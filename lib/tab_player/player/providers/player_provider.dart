@@ -3,20 +3,17 @@ import 'package:defer/defer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/entities/en_sentence.dart';
-import 'package:mockingbird/db/entities/en_subtitle.dart';
-import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
+import 'package:mockingbird/db/providers/db_playing_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_asset_state.dart';
+import 'package:mockingbird/tool/subtitle_parser.dart';
+import 'package:path/path.dart' as p;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../../../db/entities/en_media.dart';
-import '../../../db/providers/db_media_provider.dart';
 import '../../../tool/extensions.dart';
-import '../../../tool/subtitle_parser.dart';
 
 final playerProvider = NotifierProvider.autoDispose
     .family<PlayerNotifier, void, ItemScrollController>(PlayerNotifier.new);
@@ -25,11 +22,10 @@ class PlayerNotifier extends Notifier<void> {
   bool _isDraggingVideoSlider = false;
   bool _isPlayingBeforeDraged = false;
   int? _prevPlayingSentenceIndex;
-  EnSubtitle? _prevSubtitle;
-  EnSubtitle? get _subtitle => ref.read(
-    dbPlayingMediaProvider.select((st) => st.value?.subtitleList.firstOrNull),
-  );
-  List<EnSentence> get _sentenceList => _subtitle?.sentenceList ?? [];
+  SubtitleEntity? _prevSubtitle;
+  SubtitleEntity? get _subtitle => ref.read(dbSubtitleProvider).value;
+
+  List<SentenceEntity> get _sentenceList => _subtitle?.sentenceList ?? [];
   bool get _isLoop =>
       ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) == true;
   final ItemScrollController _scrollController;
@@ -157,13 +153,12 @@ class PlayerNotifier extends Notifier<void> {
       () async {
         final position = Duration(milliseconds: position_ms.toInt());
         // seek to sentence start
-
         final spot = ref.read(playerSpotProvider.select((st) => st.value));
         ref
             .read(playerLoopProvider.notifier)
             .updateIndexAndSentenceIfLoop(
-              spot?.playingSentenceIndex,
-              spot?.playingSentence,
+              spot?.playingSentenceIndex!,
+              spot?.playingSentence!,
             );
         final Duration seekToPosition;
         final playingSentenceStart = spot?.playingSentence?.start;
@@ -199,54 +194,43 @@ class PlayerNotifier extends Notifier<void> {
   }
 
   void tapSentence(int? id) async {
-    if (id == null) return;
-    final sentenceIndex = _sentenceList.firstIndexWhereOrNull(
-      (sen) => sen.id == id,
-    );
-    if (sentenceIndex == null) return;
-    /*Fix loop mode, tap sentence bug
-    in loop mode, you seek from s(n)->s(n+1), 
-    because it beyond s(n) end, so it trigger reseek to start
-    same reason you seek from s(n)->s(n-1) will works perfectly,
-    so in loop mode, which sentence is loop wee need to manually maintain,
-    can't rely on position listening 
-     */
-    final sentence = _sentenceList[sentenceIndex];
-    debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
-    if (_isLoop) {
-      _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
-      ref
-          .read(playerLoopProvider.notifier)
-          .updateIndexAndSentenceIfLoop(sentenceIndex, sentence);
-    }
-    await ref.read(playerMediaProvider.notifier).seek(sentence.start);
-    await ref.read(playerMediaProvider.notifier).play();
-  }
-
-  Future<void> addSubtitle() async {
-    final media = ref.read(dbPlayingMediaProvider).value;
-    final subtitlePath = await _pickOneSubtitle();
-    if (subtitlePath == null) return;
-
-    final subtitle = await SubtitleParser.parsePath(subtitlePath);
-    if (subtitle != null) {
-      await ref
-          .read(dbMediaProvider(media?.id).notifier)
-          .edit(subtitle: () => subtitle);
-    }
+    // if (id == null) return;
+    // final sentenceIndex = _sentenceList.firstIndexWhereOrNull(
+    //   (sen) => sen.id == id,
+    // );
+    // if (sentenceIndex == null) return;
+    // /*Fix loop mode, tap sentence bug
+    // in loop mode, you seek from s(n)->s(n+1),
+    // because it beyond s(n) end, so it trigger reseek to start
+    // same reason you seek from s(n)->s(n-1) will works perfectly,
+    // so in loop mode, which sentence is loop wee need to manually maintain,
+    // can't rely on position listening
+    //  */
+    // final sentence = _sentenceList[sentenceIndex];
+    // debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
+    // if (_isLoop) {
+    //   _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
+    //   ref
+    //       .read(playerLoopProvider.notifier)
+    //       .updateIndexAndSentenceIfLoop(sentenceIndex, sentence);
+    // }
+    // await ref.read(playerMediaProvider.notifier).seek(sentence.start);
+    // await ref.read(playerMediaProvider.notifier).play();
   }
 
   Future<String?> _pickOneSubtitle() async {
     try {
+      final subtitleExtensions = {'.srt', '.vtt'};
       final pickedFiles = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: [...kSubtitleExtensions],
+        allowedExtensions: [...subtitleExtensions],
         allowMultiple: false,
       );
       final subtitlePath = pickedFiles?.files
           .firstWhereOrNull(
-            (f) =>
-                kSubtitleExtensions.contains(f.extension?.toLowerCase() ?? ''),
+            (f) => f.path == null
+                ? false
+                : subtitleExtensions.contains(p.extension(f.path!)),
           )
           ?.path;
       return subtitlePath;
