@@ -9,8 +9,7 @@ class DBPref extends _$DBPref {
   @override
   Future<PreferenceEntity> build() async {
     final pref = await DBLogic().loadPref();
-    if (pref == null) return PreferenceEntity.empty();
-    return pref;
+    return pref ?? PreferenceEntity.empty();
   }
 
   Future<void> setPlayingId(String id) async {
