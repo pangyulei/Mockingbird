@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/providers/db_album_list_provider.dart';
-import 'package:mockingbird/db/providers/db_pref_provider.dart';
+import 'package:mockingbird/db/providers/db_metadata_provider.dart';
+import 'package:mockingbird/db/providers/db_preference_provider.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,7 +14,7 @@ class AlbumList extends _$AlbumList {
   @override
   Future<AlbumListState> build() async {
     final permissionRequested = await ref.watch(
-      dbPrefProvider.selectAsync((st) => st.permissionRequested),
+      dbMetadataProvider.selectAsync((st) => st.permissionRequested),
     );
     if (!permissionRequested) {
       return const AlbumListNotYetRequested();
@@ -41,9 +43,7 @@ class AlbumList extends _$AlbumList {
 
   Future<void> requestPermission() async {
     await PhotoManager.requestPermissionExtend();
-    await ref
-        .read(dbPrefProvider.notifier)
-        .updatePref((pref) => pref.copyWith(permissionRequested: true));
+    await ref.read(dbMetadataProvider.notifier).setPermissionRequested();
   }
 }
 

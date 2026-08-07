@@ -27,7 +27,7 @@ class PlayerNotifier extends Notifier<void> {
 
   List<SentenceEntity> get _sentenceList => _subtitle?.sentenceList ?? [];
   bool get _isLoop =>
-      ref.read(playerLoopProvider.select((st) => st.value?.isLoop)) == true;
+      ref.read(playerLoopProvider.select((st) => st.value?.loop)) == true;
   final ItemScrollController _scrollController;
   PlayerNotifier(this._scrollController);
 
@@ -66,7 +66,7 @@ class PlayerNotifier extends Notifier<void> {
           final bool isSentenceChanged =
               spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
           final isLoop = await ref.read(
-            playerLoopProvider.selectAsync((st) => st.isLoop),
+            playerLoopProvider.selectAsync((st) => st.loop),
           );
           if (isSentenceChanged) {
             if (_isDraggingVideoSlider) {

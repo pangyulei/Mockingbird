@@ -1,9 +1,8 @@
-
 import 'package:collection/collection.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
+import 'package:mockingbird/db/entities/metadata_entity.dart';
 import 'package:mockingbird/db/entities/preference_entity.dart';
 import 'package:objectbox/objectbox.dart';
-
 
 // typedef MF_SF = ({File mediaFile, File? subtitleFile});
 // typedef M_SF = ({EnMedia media, File subtitleFile});
@@ -14,13 +13,20 @@ class DBLogic {
   DBLogic.store(this._store); //for unit test
   DBLogic() : this.store(DBObjectBox().store);
 
-  Future<PreferenceEntity?> loadPref() async {
-    final prefs = await _store.box<PreferenceEntity>().getAllAsync();
-    return prefs.firstOrNull;
+  Future<MetadataEntity?> loadMetadata() async {
+    return (await _store.box<MetadataEntity>().getAllAsync()).firstOrNull;
   }
 
-  Future<PreferenceEntity> updatePref(PreferenceEntity pref) async {
-    return await _store.box<PreferenceEntity>().putAndGetAsync(pref);
+  Future<MetadataEntity> updateMetadata(MetadataEntity metadata) async {
+    return await _store.box<MetadataEntity>().putAndGetAsync(metadata);
+  }
+
+  Future<PreferenceEntity?> loadPreference() async {
+    return (await _store.box<PreferenceEntity>().getAllAsync()).firstOrNull;
+  }
+
+  Future<PreferenceEntity> updatePreference(PreferenceEntity preference) async {
+    return await _store.box<PreferenceEntity>().putAndGetAsync(preference);
   }
 
   // ({List<MF_SF> mfsfList, List<M_SF> msfList}) _processMediaSubtitleFiles(

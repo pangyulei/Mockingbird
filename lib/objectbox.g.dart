@@ -14,6 +14,7 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'db/entities/metadata_entity.dart';
 import 'db/entities/preference_entity.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
@@ -32,27 +33,43 @@ final _entities = <obx_int.ModelEntity>[
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 3497499546518911977),
-        name: 'playingId',
-        type: 9,
-        flags: 0,
-      ),
-      obx_int.ModelProperty(
         id: const obx_int.IdUid(3, 4461715936515113546),
         name: 'loop',
         type: 1,
         flags: 0,
       ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(2, 2126596270909047534),
+    name: 'MetadataEntity',
+    lastPropertyId: const obx_int.IdUid(5, 1836310590922492628),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 4876908164482564772),
-        name: 'dbVersion',
+        id: const obx_int.IdUid(1, 2105834102041112161),
+        name: 'id',
         type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 7300803784323589485),
+        name: 'playingId',
+        type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 1294798852857759556),
+        id: const obx_int.IdUid(4, 3289810162652428670),
         name: 'permissionRequested',
         type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 1836310590922492628),
+        name: 'databaseVersion',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -104,13 +121,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(1, 729033443109422583),
+    lastEntityId: const obx_int.IdUid(2, 2126596270909047534),
     lastIndexId: const obx_int.IdUid(0, 0),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [],
     retiredIndexUids: const [],
-    retiredPropertyUids: const [],
+    retiredPropertyUids: const [
+      2883212314392902367,
+      3497499546518911977,
+      4876908164482564772,
+      1294798852857759556,
+    ],
     retiredRelationUids: const [],
     modelVersion: 5,
     modelVersionParserMinimum: 5,
@@ -127,15 +149,49 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (PreferenceEntity object, fb.Builder fbb) {
+        fbb.startTable(6);
+        fbb.addInt64(0, object.id);
+        fbb.addBool(2, object.loop);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final loopParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          false,
+        );
+        final object = PreferenceEntity(id: idParam, loop: loopParam);
+
+        return object;
+      },
+    ),
+    MetadataEntity: obx_int.EntityDefinition<MetadataEntity>(
+      model: _entities[1],
+      toOneRelations: (MetadataEntity object) => [],
+      toManyRelations: (MetadataEntity object) => {},
+      getId: (MetadataEntity object) => object.id,
+      setId: (MetadataEntity object, int id) {
+        object.id = id;
+      },
+      objectToFB: (MetadataEntity object, fb.Builder fbb) {
         final playingIdOffset = object.playingId == null
             ? null
             : fbb.writeString(object.playingId!);
         fbb.startTable(6);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, playingIdOffset);
-        fbb.addBool(2, object.loop);
-        fbb.addInt64(3, object.dbVersion);
-        fbb.addBool(4, object.permissionRequested);
+        fbb.addBool(3, object.permissionRequested);
+        fbb.addInt64(4, object.databaseVersion);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -151,29 +207,22 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final playingIdParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 6);
-        final loopParam = const fb.BoolReader().vTableGet(
+        final databaseVersionParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
-          8,
-          false,
-        );
-        final dbVersionParam = const fb.Int64Reader().vTableGet(
-          buffer,
-          rootOffset,
-          10,
+          12,
           0,
         );
         final permissionRequestedParam = const fb.BoolReader().vTableGet(
           buffer,
           rootOffset,
-          12,
+          10,
           false,
         );
-        final object = PreferenceEntity(
+        final object = MetadataEntity(
           id: idParam,
           playingId: playingIdParam,
-          loop: loopParam,
-          dbVersion: dbVersionParam,
+          databaseVersion: databaseVersionParam,
           permissionRequested: permissionRequestedParam,
         );
 
@@ -192,23 +241,31 @@ class PreferenceEntity_ {
     _entities[0].properties[0],
   );
 
-  /// See [PreferenceEntity.playingId].
-  static final playingId = obx.QueryStringProperty<PreferenceEntity>(
-    _entities[0].properties[1],
-  );
-
   /// See [PreferenceEntity.loop].
   static final loop = obx.QueryBooleanProperty<PreferenceEntity>(
-    _entities[0].properties[2],
+    _entities[0].properties[1],
+  );
+}
+
+/// [MetadataEntity] entity fields to define ObjectBox queries.
+class MetadataEntity_ {
+  /// See [MetadataEntity.id].
+  static final id = obx.QueryIntegerProperty<MetadataEntity>(
+    _entities[1].properties[0],
   );
 
-  /// See [PreferenceEntity.dbVersion].
-  static final dbVersion = obx.QueryIntegerProperty<PreferenceEntity>(
-    _entities[0].properties[3],
+  /// See [MetadataEntity.playingId].
+  static final playingId = obx.QueryStringProperty<MetadataEntity>(
+    _entities[1].properties[1],
   );
 
-  /// See [PreferenceEntity.permissionRequested].
-  static final permissionRequested = obx.QueryBooleanProperty<PreferenceEntity>(
-    _entities[0].properties[4],
+  /// See [MetadataEntity.permissionRequested].
+  static final permissionRequested = obx.QueryBooleanProperty<MetadataEntity>(
+    _entities[1].properties[2],
+  );
+
+  /// See [MetadataEntity.databaseVersion].
+  static final databaseVersion = obx.QueryIntegerProperty<MetadataEntity>(
+    _entities[1].properties[3],
   );
 }

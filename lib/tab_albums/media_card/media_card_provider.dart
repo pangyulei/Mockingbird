@@ -1,5 +1,6 @@
 import 'package:mockingbird/db/providers/db_media_provider.dart';
-import 'package:mockingbird/db/providers/db_pref_provider.dart';
+import 'package:mockingbird/db/providers/db_metadata_provider.dart';
+import 'package:mockingbird/db/providers/db_preference_provider.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -17,6 +18,6 @@ class MediaCard extends _$MediaCard {
   }
 
   Future<void> play() async {
-    await ref.read(dbPrefProvider.notifier).setPlayingId(id);
+    await ref.read(dbMetadataProvider.notifier).setPlayingId(id);
   }
 }

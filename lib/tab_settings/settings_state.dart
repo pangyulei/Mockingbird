@@ -1,9 +1,8 @@
-
 class SettingsState {
-  final bool isLoop;
-  const SettingsState({required this.isLoop});
+  final bool loop;
+  const SettingsState({required this.loop});
 
-  SettingsState copyWith({bool? isLoop}) {
-    return SettingsState(isLoop: isLoop ?? this.isLoop);
+  SettingsState copyWith({bool? loop}) {
+    return SettingsState(loop: loop ?? this.loop);
   }
 }

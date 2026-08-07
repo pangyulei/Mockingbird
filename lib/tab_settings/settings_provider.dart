@@ -1,4 +1,4 @@
-import 'package:mockingbird/db/providers/db_pref_provider.dart';
+import 'package:mockingbird/db/providers/db_preference_provider.dart';
 import 'package:mockingbird/tab_settings/settings_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -8,14 +8,11 @@ part 'settings_provider.g.dart';
 class Settings extends _$Settings {
   @override
   Future<SettingsState> build() async {
-    final pref = await ref.watch(dbPrefProvider.future);
-    return SettingsState(isLoop: pref.loop);
+    final preference = await ref.watch(dbPreferenceProvider.future);
+    return SettingsState(loop: preference.loop);
   }
 
   Future<void> toggleLoop() async {
-    final data = await future;
-    await ref
-        .read(dbPrefProvider.notifier)
-        .updatePref((pref) => pref.copyWith(loop: !data.isLoop));
+    await ref.read(dbPreferenceProvider.notifier).toggleLoop();
   }
 }

@@ -6,7 +6,6 @@ import 'package:mockingbird/tab_settings/settings_provider.dart';
 import 'package:mockingbird/tab_settings/settings_state.dart';
 import 'package:mockingbird/tool/shrink_ui.dart';
 
-
 class SettingsUI extends ConsumerWidget {
   const SettingsUI({super.key});
 
@@ -36,7 +35,7 @@ class SettingsUI extends ConsumerWidget {
           Consumer(
             builder: (ctx, ref, child) {
               final bool? isLoop = ref.watch(
-                settingsProvider.select((st) => st.value?.isLoop),
+                settingsProvider.select((st) => st.value?.loop),
               );
               if (isLoop == null) return const ShrinkUI();
               return SwitchListTile(

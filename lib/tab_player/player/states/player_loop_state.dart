@@ -1,24 +1,23 @@
 import 'package:mockingbird/tool/subtitle_parser.dart';
 
-
 class PlayerLoopState {
-  final bool isLoop;
+  final bool loop;
   final int? loopIndex;
   final SentenceEntity? loopSentence;
   const PlayerLoopState({
     required this.loopIndex,
     required this.loopSentence,
-    required this.isLoop,
+    required this.loop,
   });
   PlayerLoopState copyWith({
-    bool? isLoop,
+    bool? loop,
     int? Function()? loopIndex,
     SentenceEntity? Function()? loopSentence,
   }) {
     return PlayerLoopState(
       loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       loopSentence: loopSentence == null ? this.loopSentence : loopSentence(),
-      isLoop: isLoop ?? this.isLoop,
+      loop: loop ?? this.loop,
     );
   }
 }

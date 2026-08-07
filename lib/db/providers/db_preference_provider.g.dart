@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'db_pref_provider.dart';
+part of 'db_preference_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,33 +9,33 @@ part of 'db_pref_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBPref)
-final dbPrefProvider = DBPrefProvider._();
+@ProviderFor(DBPreference)
+final dbPreferenceProvider = DBPreferenceProvider._();
 
-final class DBPrefProvider
-    extends $AsyncNotifierProvider<DBPref, PreferenceEntity> {
-  DBPrefProvider._()
+final class DBPreferenceProvider
+    extends $AsyncNotifierProvider<DBPreference, PreferenceEntity> {
+  DBPreferenceProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'dbPrefProvider',
+        name: r'dbPreferenceProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$dBPrefHash();
+  String debugGetCreateSourceHash() => _$dBPreferenceHash();
 
   @$internal
   @override
-  DBPref create() => DBPref();
+  DBPreference create() => DBPreference();
 }
 
-String _$dBPrefHash() => r'938ff1902b59470a46afe93fdb38befd636e9588';
+String _$dBPreferenceHash() => r'32518820f8f0de6629acdb4379a56ac02aaaea92';
 
-abstract class _$DBPref extends $AsyncNotifier<PreferenceEntity> {
+abstract class _$DBPreference extends $AsyncNotifier<PreferenceEntity> {
   FutureOr<PreferenceEntity> build();
   @$mustCallSuper
   @override

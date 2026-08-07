@@ -15,30 +15,44 @@
           "flags": 1
         },
         {
-          "id": "2:3497499546518911977",
+          "id": "3:4461715936515113546",
+          "name": "loop",
+          "type": 1
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "2:2126596270909047534",
+      "lastPropertyId": "5:1836310590922492628",
+      "name": "MetadataEntity",
+      "properties": [
+        {
+          "id": "1:2105834102041112161",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7300803784323589485",
           "name": "playingId",
           "type": 9
         },
         {
-          "id": "3:4461715936515113546",
-          "name": "loop",
-          "type": 1
-        },
-        {
-          "id": "4:4876908164482564772",
-          "name": "dbVersion",
-          "type": 6
-        },
-        {
-          "id": "5:1294798852857759556",
+          "id": "4:3289810162652428670",
           "name": "permissionRequested",
           "type": 1
+        },
+        {
+          "id": "5:1836310590922492628",
+          "name": "databaseVersion",
+          "type": 6
         }
       ],
       "relations": []
     }
   ],
-  "lastEntityId": "1:729033443109422583",
+  "lastEntityId": "2:2126596270909047534",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
@@ -46,7 +60,12 @@
   "modelVersionParserMinimum": 5,
   "retiredEntityUids": [],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    2883212314392902367,
+    3497499546518911977,
+    4876908164482564772,
+    1294798852857759556
+  ],
   "retiredRelationUids": [],
   "version": 1
 }
