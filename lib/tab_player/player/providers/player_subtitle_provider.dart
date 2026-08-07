@@ -10,7 +10,7 @@ class PlayerSubtitle extends _$PlayerSubtitle {
   @override
   Future<PlayerSubtitleState> build() async {
     //找到同目录下的名称对应上的srt或vtt字幕文件
-    final subtitleEntity = await ref.watch(dbSubtitleProvider.future);
+    final subtitleEntity = await ref.watch(dbPlayingSubtitleProvider.future);
     if (subtitleEntity == null) return const PlayerSubtitleNull();
     return PlayerSubtitleData(
       sentenceStateList: subtitleEntity.sentenceList

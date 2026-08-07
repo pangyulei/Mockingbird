@@ -34,14 +34,14 @@ class SettingsUI extends ConsumerWidget {
           _sectionHeader(ctx, 'Playback'),
           Consumer(
             builder: (ctx, ref, child) {
-              final bool? isLoop = ref.watch(
+              final bool? loop = ref.watch(
                 settingsProvider.select((st) => st.value?.loop),
               );
-              if (isLoop == null) return const ShrinkUI();
+              if (loop == null) return const ShrinkUI();
               return SwitchListTile(
                 title: const Text('Default Loop Mode'),
                 subtitle: const Text('Loop current sentence by default'),
-                value: isLoop,
+                value: loop,
                 onChanged: (_) => _onToggleLoop(ref),
                 activeThumbColor: Theme.of(ctx).colorScheme.primary,
               );

@@ -701,15 +701,15 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               ),
         );
         if (!hasSubtitle) return const ShrinkUI();
-        final isLoop = ref.watch(
+        final loop = ref.watch(
           playerLoopProvider.select((st) => st.value?.loop),
         );
-        if (isLoop == null) return const ShrinkUI();
+        if (loop == null) return const ShrinkUI();
         return IconButton(
           onPressed: () => _onToggleLoop(ref),
           icon: Icon(
-            isLoop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-            color: isLoop ? colorScheme.primary : colorScheme.outline,
+            loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+            color: loop ? colorScheme.primary : colorScheme.outline,
           ),
           style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
           constraints: const BoxConstraints(minWidth: 30, minHeight: 30),

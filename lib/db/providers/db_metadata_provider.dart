@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/db_logic.dart';
 import 'package:mockingbird/db/entities/metadata_entity.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final dbMetadataProvider = AsyncNotifierProvider(DBMetadataNotifier.new);
+part 'db_metadata_provider.g.dart';
 
-class DBMetadataNotifier extends AsyncNotifier<MetadataEntity> {
+@Riverpod(name:'dbMetadataProvider', keepAlive: true)
+class DBMetadata extends _$DBMetadata {
   @override
   Future<MetadataEntity> build() async {
     return (await DBLogic().loadMetadata()) ?? MetadataEntity.empty();

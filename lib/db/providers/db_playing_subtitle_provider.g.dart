@@ -10,7 +10,7 @@ part of 'db_playing_subtitle_provider.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(DBPlayingSubtitle)
-final dbSubtitleProvider = DBPlayingSubtitleProvider._();
+final dbPlayingSubtitleProvider = DBPlayingSubtitleProvider._();
 
 final class DBPlayingSubtitleProvider
     extends $AsyncNotifierProvider<DBPlayingSubtitle, SubtitleEntity?> {
@@ -19,7 +19,7 @@ final class DBPlayingSubtitleProvider
         from: null,
         argument: null,
         retry: null,
-        name: r'dbSubtitleProvider',
+        name: r'dbPlayingSubtitleProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
@@ -33,7 +33,7 @@ final class DBPlayingSubtitleProvider
   DBPlayingSubtitle create() => DBPlayingSubtitle();
 }
 
-String _$dBPlayingSubtitleHash() => r'3896ade4c5036af047631864f1e1394bc89f8cfe';
+String _$dBPlayingSubtitleHash() => r'41bc6843ddd47f09067f4f5046302e2a97a76709';
 
 abstract class _$DBPlayingSubtitle extends $AsyncNotifier<SubtitleEntity?> {
   FutureOr<SubtitleEntity?> build();

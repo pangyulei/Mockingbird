@@ -33,7 +33,7 @@ final class PlayerSpotProvider
   PlayerSpot create() => PlayerSpot();
 }
 
-String _$playerSpotHash() => r'311f6353c1c4110ce0e6a33ce3bdd039814dc971';
+String _$playerSpotHash() => r'3644c2a7f3b470d9a3cc1f766b7aae701b9df031';
 
 abstract class _$PlayerSpot extends $AsyncNotifier<PlayerSpotState?> {
   FutureOr<PlayerSpotState?> build();

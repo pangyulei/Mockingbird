@@ -23,16 +23,13 @@ class PlayerSpot extends _$PlayerSpot {
       return null;
     }
     final List<SentenceEntity>? sentenceList = await ref.watch(
-      dbSubtitleProvider.selectAsync((st) => st?.sentenceList),
+      dbPlayingSubtitleProvider.selectAsync((st) => st?.sentenceList),
     );
     if (sentenceList == null) {
       return null;
     }
     final position = Duration(milliseconds: position_ms);
-    final playingSentenceIndex = _sentenceIndexByPosition(
-      position,
-      sentenceList,
-    );
+    final playingSentenceIndex = _sentenceIndexByPosition(position, sentenceList);
     final playingSentence = playingSentenceIndex == null
         ? null
         : sentenceList[playingSentenceIndex];
@@ -43,10 +40,7 @@ class PlayerSpot extends _$PlayerSpot {
     );
   }
 
-  int? _sentenceIndexByPosition(
-    Duration position,
-    List<SentenceEntity> sentenceList,
-  ) {
+  int? _sentenceIndexByPosition(Duration position, List<SentenceEntity> sentenceList) {
     for (int i = 0; i < sentenceList.length; i++) {
       SentenceEntity? prev = i == 0 ? null : sentenceList[i - 1];
       SentenceEntity? next = sentenceList.elementAtOrNull(i + 1);

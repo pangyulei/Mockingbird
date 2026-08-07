@@ -23,17 +23,17 @@ class PlayerLoop extends _$PlayerLoop {
   }
 
   void toggleLoop() {
-    final isLoop = state.value?.loop;
-    if (isLoop == null) return;
+    final loop = state.value?.loop;
+    if (loop == null) return;
     final data = state.value;
     if (data == null) return;
-    final newIsLoop = !isLoop;
+    final newLoop = !loop;
     final spot = ref.read(playerSpotProvider.select((st) => st.value));
     state = AsyncData(
       data.copyWith(
-        loop: newIsLoop,
-        loopIndex: () => newIsLoop ? spot?.playingSentenceIndex : null,
-        loopSentence: () => newIsLoop ? spot?.playingSentence : null,
+        loop: newLoop,
+        loopIndex: () => newLoop ? spot?.playingSentenceIndex : null,
+        loopSentence: () => newLoop ? spot?.playingSentence : null,
       ),
     );
   }
