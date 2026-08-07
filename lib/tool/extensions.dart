@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 extension Simplify on Object {

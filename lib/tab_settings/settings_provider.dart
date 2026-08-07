@@ -16,6 +16,6 @@ class Settings extends _$Settings {
     final data = await future;
     await ref
         .read(dbPrefProvider.notifier)
-        .edit((pref) => pref.copyWith(loop: !data.isLoop));
+        .updatePref((pref) => pref.copyWith(loop: !data.isLoop));
   }
 }

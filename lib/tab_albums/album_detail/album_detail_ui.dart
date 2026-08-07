@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_assets/album_detail/album_detail_provider.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_provider.dart';
 
 import '../media_card/media_card_ui.dart';
 
@@ -25,12 +25,7 @@ class AlbumDetailUI extends ConsumerWidget {
             final (name, count) = ref.watch(
               albumDetailProvider(_id)
                   .select((st) => st.value)
-                  .select(
-                    (st) => (
-                      st?.name ?? 'Album not found',
-                      st?.assetIdList.length ?? '0',
-                    ),
-                  ),
+                  .select((st) => (st?.name ?? 'Album not found', st?.assetIdList.length ?? '0')),
             );
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,9 +33,7 @@ class AlbumDetailUI extends ConsumerWidget {
                 Text(name),
                 Text(
                   '$count assets',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.outline,
-                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.outline),
                 ),
               ],
             );
@@ -51,9 +44,7 @@ class AlbumDetailUI extends ConsumerWidget {
       body: Consumer(
         builder: (context, ref, child) {
           final assetIdList = ref.watch(
-            albumDetailProvider(
-              _id,
-            ).select((st) => st.value?.assetIdList ?? []),
+            albumDetailProvider(_id).select((st) => st.value?.assetIdList ?? []),
           );
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),

@@ -6,7 +6,6 @@ import 'package:mockingbird/tab_settings/settings_provider.dart';
 import 'package:mockingbird/tab_settings/settings_state.dart';
 import 'package:mockingbird/tool/shrink_ui.dart';
 
-import '../tool/extensions.dart';
 
 class SettingsUI extends ConsumerWidget {
   const SettingsUI({super.key});

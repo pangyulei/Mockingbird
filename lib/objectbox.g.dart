@@ -22,7 +22,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(1, 729033443109422583),
     name: 'PreferenceEntity',
-    lastPropertyId: const obx_int.IdUid(4, 4876908164482564772),
+    lastPropertyId: const obx_int.IdUid(5, 1294798852857759556),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -47,6 +47,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(4, 4876908164482564772),
         name: 'dbVersion',
         type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 1294798852857759556),
+        name: 'permissionRequested',
+        type: 1,
         flags: 0,
       ),
     ],
@@ -124,11 +130,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final playingIdOffset = object.playingId == null
             ? null
             : fbb.writeString(object.playingId!);
-        fbb.startTable(5);
+        fbb.startTable(6);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, playingIdOffset);
         fbb.addBool(2, object.loop);
         fbb.addInt64(3, object.dbVersion);
+        fbb.addBool(4, object.permissionRequested);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -156,11 +163,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
           10,
           0,
         );
+        final permissionRequestedParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          false,
+        );
         final object = PreferenceEntity(
           id: idParam,
           playingId: playingIdParam,
           loop: loopParam,
           dbVersion: dbVersionParam,
+          permissionRequested: permissionRequestedParam,
         );
 
         return object;
@@ -191,5 +205,10 @@ class PreferenceEntity_ {
   /// See [PreferenceEntity.dbVersion].
   static final dbVersion = obx.QueryIntegerProperty<PreferenceEntity>(
     _entities[0].properties[3],
+  );
+
+  /// See [PreferenceEntity.permissionRequested].
+  static final permissionRequested = obx.QueryBooleanProperty<PreferenceEntity>(
+    _entities[0].properties[4],
   );
 }

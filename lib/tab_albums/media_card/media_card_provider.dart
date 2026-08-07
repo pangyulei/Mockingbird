@@ -1,6 +1,6 @@
 import 'package:mockingbird/db/providers/db_media_provider.dart';
 import 'package:mockingbird/db/providers/db_pref_provider.dart';
-import 'package:mockingbird/tab_assets/media_card/media_card_state.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'media_card_provider.g.dart';
@@ -13,11 +13,7 @@ class MediaCard extends _$MediaCard {
     final asset = await ref.watch(dbMediaProvider(id).future);
     if (asset == null) return null;
 
-    return MediaCardState(
-      name: asset.title ?? '',
-      type: asset.type,
-      playing: false,
-    );
+    return MediaCardState(name: asset.title ?? '', type: asset.type, playing: false);
   }
 
   Future<void> play() async {

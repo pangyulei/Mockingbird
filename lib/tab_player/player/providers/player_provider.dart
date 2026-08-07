@@ -224,7 +224,6 @@ class PlayerNotifier extends Notifier<void> {
       final pickedFiles = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: [...subtitleExtensions],
-        allowMultiple: false,
       );
       final subtitlePath = pickedFiles?.files
           .firstWhereOrNull(

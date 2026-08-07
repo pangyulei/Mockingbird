@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/tab_assets/media_card/media_card_provider.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_provider.dart';
 import 'package:mockingbird/tool/shrink_ui.dart';
 
 class MediaCardUI extends ConsumerWidget {
@@ -15,16 +15,12 @@ class MediaCardUI extends ConsumerWidget {
   Widget build(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final playing = ref.watch(
-      mediaCardProvider(_id).select((st) => st.value?.playing ?? false),
-    );
+    final playing = ref.watch(mediaCardProvider(_id).select((st) => st.value?.playing ?? false));
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: playing
-            ? colorScheme.primaryContainer.withValues(alpha: 0.15)
-            : colorScheme.surface,
+        color: playing ? colorScheme.primaryContainer.withValues(alpha: 0.15) : colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: playing
@@ -68,9 +64,9 @@ class MediaCardUI extends ConsumerWidget {
         final theme = Theme.of(ctx);
         final colorScheme = theme.colorScheme;
         final (name, playing) = ref.watch(
-          mediaCardProvider(_id)
-              .select((st) => st.value)
-              .select((st) => (st?.name ?? '', st?.playing ?? false)),
+          mediaCardProvider(
+            _id,
+          ).select((st) => st.value).select((st) => (st?.name ?? '', st?.playing ?? false)),
         );
         return (playing && name.isNotEmpty)
             ? SizedBox(
@@ -110,11 +106,7 @@ class MediaCardUI extends ConsumerWidget {
 
         return const Padding(
           padding: EdgeInsets.only(top: 4),
-          child: Row(
-            children: [
-              Icon(Icons.subtitles_rounded, size: 16, color: Colors.blue),
-            ],
-          ),
+          child: Row(children: [Icon(Icons.subtitles_rounded, size: 16, color: Colors.blue)]),
         );
       },
     );
@@ -132,9 +124,7 @@ class MediaCardUI extends ConsumerWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: playing
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest,
+            color: playing ? colorScheme.primary : colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(

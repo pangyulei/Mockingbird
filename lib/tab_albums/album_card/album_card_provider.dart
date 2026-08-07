@@ -1,5 +1,5 @@
 import 'package:mockingbird/db/providers/db_album_provider.dart';
-import 'package:mockingbird/tab_assets/album_card/album_card_state.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'album_card_provider.g.dart';
@@ -14,5 +14,4 @@ class AlbumCard extends _$AlbumCard {
     final count = await album.assetCountAsync;
     return AlbumCardState(mediaCount: count, name: album.name);
   }
-
 }

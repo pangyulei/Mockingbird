@@ -3,7 +3,6 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class AppUI extends ConsumerStatefulWidget {
   const AppUI({super.key});
@@ -13,11 +12,11 @@ class AppUI extends ConsumerStatefulWidget {
 }
 
 class AppUIState extends ConsumerState<AppUI> {
-  @override
-  void initState() {
-    super.initState();
-    Permission.notification.request();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   Permission.notification.request();
+  // }
 
   @override
   Widget build(BuildContext context) {

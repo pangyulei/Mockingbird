@@ -16,18 +16,18 @@ class DBPref extends _$DBPref {
   Future<void> setPlayingId(String id) async {
     final pref = await future;
     if (pref.playingId != id) {
-      await edit((pref) => pref.copyWith(playingId: () => id));
+      await updatePref((pref) => pref.copyWith(playingId: () => id));
     }
   }
 
-  Future<void> edit(
+  Future<void> updatePref(
     PreferenceEntity Function(PreferenceEntity pref) getter,
   ) async {
     final pref = await future;
     final updatedPref = getter(pref);
     if (updatedPref != pref) {
       await DBLogic().updatePref(updatedPref);
-      ref.invalidateSelf();
+      state = AsyncData(updatedPref);
     }
   }
 }
