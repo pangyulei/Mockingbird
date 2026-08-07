@@ -15,7 +15,7 @@ class SubtitleParser {
   static Future<SubtitleEntity?> parseFile(File file) async {
     final content = await file.readAsString();
     final extension = p.extension(file.path);
-    final name = p.basenameWithoutExtension(file.path);
+    final name = p.basename(file.path);
     if (extension.toLowerCase() == '.srt') {
       return _parseSrt(name, content);
     } else if (extension.toLowerCase() == '.vtt') {

@@ -4,7 +4,7 @@ class SentenceEntity {
   final Duration end;
   final String text;
 
-  SentenceEntity({
+  const SentenceEntity({
     required this.start,
     required this.end,
     required this.text,
