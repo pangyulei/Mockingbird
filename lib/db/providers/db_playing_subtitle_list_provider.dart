@@ -21,18 +21,16 @@ class DBPlayingSubtitleList extends _$DBPlayingSubtitleList {
       }),
     ));
     if (mediaInfo == null) return subtitleList;
-    final (assetPath, parentDir) = mediaInfo;
+    final (mediaPath, parentDir) = mediaInfo;
     await for (final subFile in parentDir.list()) {
       if (subFile is! File) continue;
       final ext = p.extension(subFile.path); //带.
       if (!{'.srt', '.vtt'}.contains(ext)) continue;
       final subtitleName = p.basenameWithoutExtension(subFile.path);
-      final assetName = p.basenameWithoutExtension(assetPath);
-      if (subtitleName.contains(assetName)) {
-        //matched
-        SubtitleEntity? subtitleEntity = await SubtitleParser.parseFile(
-          subFile,
-        );
+      final mediaName = p.basenameWithoutExtension(mediaPath);
+      final matched = subtitleName.toLowerCase().contains(mediaName.toLowerCase());
+      if (matched) {
+        final subtitleEntity = await SubtitleParser.parseFile(subFile);
         if (subtitleEntity != null) {
           subtitleList.add(subtitleEntity);
         }

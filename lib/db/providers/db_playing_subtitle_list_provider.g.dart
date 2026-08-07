@@ -35,7 +35,7 @@ final class DBPlayingSubtitleListProvider
 }
 
 String _$dBPlayingSubtitleListHash() =>
-    r'4206945cac96e7670d9e18df806c96bd246545b9';
+    r'bb7dafae882cdfcbb9e2dbc4b3d520477581b304';
 
 abstract class _$DBPlayingSubtitleList
     extends $AsyncNotifier<List<SubtitleEntity>> {
