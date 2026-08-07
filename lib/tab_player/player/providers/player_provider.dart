@@ -13,6 +13,8 @@ import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+import '../../../db/entities/sentence_entity.dart';
+import '../../../db/entities/subtitle_entity.dart';
 import '../../../tool/extensions.dart';
 
 final playerProvider = NotifierProvider.autoDispose

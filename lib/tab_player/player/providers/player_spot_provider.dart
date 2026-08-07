@@ -7,6 +7,8 @@ import 'package:mockingbird/tab_player/player/states/player_spot_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../db/entities/sentence_entity.dart';
+
 part 'player_spot_provider.g.dart';
 
 @riverpod

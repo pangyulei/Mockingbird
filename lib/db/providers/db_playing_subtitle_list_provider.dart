@@ -5,6 +5,8 @@ import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../entities/subtitle_entity.dart';
+
 part 'db_playing_subtitle_list_provider.g.dart';
 
 @Riverpod(name: 'dbPlayingSubtitleListProvider')
@@ -24,8 +26,8 @@ class DBPlayingSubtitleList extends _$DBPlayingSubtitleList {
     final (mediaPath, parentDir) = mediaInfo;
     await for (final subFile in parentDir.list()) {
       if (subFile is! File) continue;
-      final ext = p.extension(subFile.path); //带.
-      if (!{'.srt', '.vtt'}.contains(ext)) continue;
+      final extension = p.extension(subFile.path); //带.
+      if (!{'.srt', '.vtt'}.contains(extension)) continue;
       final subtitleName = p.basenameWithoutExtension(subFile.path);
       final mediaName = p.basenameWithoutExtension(mediaPath);
       final matched = subtitleName.toLowerCase().contains(mediaName.toLowerCase());

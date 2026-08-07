@@ -5,6 +5,8 @@ import 'package:mockingbird/db/providers/db_playing_subtitle_list_provider.dart'
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../entities/subtitle_entity.dart';
+
 part 'db_playing_subtitle_provider.g.dart';
 
 @Riverpod(name: 'dbPlayingSubtitleProvider')

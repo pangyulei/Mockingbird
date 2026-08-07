@@ -1,5 +1,7 @@
 import 'package:mockingbird/tool/subtitle_parser.dart';
 
+import '../../../db/entities/sentence_entity.dart';
+
 class PlayerSpotState {
   final int? playingSentenceIndex;
   final SentenceEntity? playingSentence;

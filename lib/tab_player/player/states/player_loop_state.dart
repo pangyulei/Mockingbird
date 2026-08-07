@@ -1,5 +1,7 @@
 import 'package:mockingbird/tool/subtitle_parser.dart';
 
+import '../../../db/entities/sentence_entity.dart';
+
 class PlayerLoopState {
   final bool loop;
   final int? loopIndex;

@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 
+import '../db/entities/sentence_entity.dart';
+import '../db/entities/subtitle_entity.dart';
+
 class SubtitleParser {
   static Future<SubtitleEntity?> parsePath(String pathStr) async {
     final file = File(pathStr);
@@ -11,10 +14,12 @@ class SubtitleParser {
 
   static Future<SubtitleEntity?> parseFile(File file) async {
     final content = await file.readAsString();
-    if (file.path.endsWith('.srt')) {
-      return _parseSrt(content);
-    } else if (file.path.endsWith('.vtt')) {
-      return _parseVtt(content);
+    final extension = p.extension(file.path);
+    final name = p.basenameWithoutExtension(file.path);
+    if (extension.toLowerCase() == '.srt') {
+      return _parseSrt(name, content);
+    } else if (extension.toLowerCase() == '.vtt') {
+      return _parseVtt(name, content);
     }
     debugPrint(
       'We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}',
@@ -22,7 +27,7 @@ class SubtitleParser {
     return null;
   }
 
-  static SubtitleEntity? _parseSrt(String content) {
+  static SubtitleEntity? _parseSrt(String name, String content) {
     final sentenceList = <SentenceEntity>[];
     // Split by double newline (supporting both \n and \r\n)
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
@@ -69,7 +74,7 @@ class SubtitleParser {
       }
     }
     if (sentenceList.isNotEmpty) {
-      return SubtitleEntity(sentenceList: sentenceList);
+      return SubtitleEntity(name: name, sentenceList: sentenceList);
     } else {
       return null;
     }
@@ -94,7 +99,7 @@ class SubtitleParser {
     );
   }
 
-  static SubtitleEntity? _parseVtt(String content) {
+  static SubtitleEntity? _parseVtt(String name, String content) {
     final sentenceList = <SentenceEntity>[];
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
@@ -139,7 +144,7 @@ class SubtitleParser {
       }
     }
     if (sentenceList.isNotEmpty) {
-      return SubtitleEntity(sentenceList: sentenceList);
+      return SubtitleEntity(name: name, sentenceList: sentenceList);
     } else {
       return null;
     }
@@ -180,24 +185,4 @@ class SubtitleParser {
   }
 }
 
-class SubtitleEntity {
-  final List<SentenceEntity> sentenceList;
-  SubtitleEntity({required this.sentenceList});
-}
 
-class SentenceEntity {
-  final Duration start;
-  final Duration end;
-  final String text;
-
-  SentenceEntity({
-    required this.start,
-    required this.end,
-    required this.text,
-  });
-
-  @override
-  String toString() {
-    return text;
-  }
-}
