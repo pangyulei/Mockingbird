@@ -9,8 +9,8 @@ class PlayerSubtitleNull extends PlayerSubtitleState {
 }
 
 class PlayerSubtitleData extends PlayerSubtitleState {
-  final List<SentenceCardState> sentenceStateList;
+  final List<String> sentenceIdList;
 
-  const PlayerSubtitleData({required this.sentenceStateList});
+  const PlayerSubtitleData({required this.sentenceIdList});
 
 }

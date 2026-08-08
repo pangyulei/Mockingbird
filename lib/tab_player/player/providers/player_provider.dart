@@ -3,7 +3,6 @@ import 'package:defer/defer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/providers/db_playing_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';

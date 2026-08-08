@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
+import 'package:uuid/uuid.dart';
 
 import '../db/entities/sentence_entity.dart';
 import '../db/entities/subtitle_entity.dart';
@@ -62,6 +63,7 @@ class SubtitleParser {
         if (text.isNotEmpty) {
           sentenceList.add(
             SentenceEntity(
+              id: const Uuid().v4(),
               text: text,
               start: start,
               end: end,
@@ -74,7 +76,11 @@ class SubtitleParser {
       }
     }
     if (sentenceList.isNotEmpty) {
-      return SubtitleEntity(name: name, sentenceList: sentenceList);
+      return SubtitleEntity(
+        id: const Uuid().v4(),
+        name: name,
+        sentenceList: sentenceList,
+      );
     } else {
       return null;
     }
@@ -133,6 +139,7 @@ class SubtitleParser {
         if (text.isNotEmpty) {
           sentenceList.add(
             SentenceEntity(
+              id: const Uuid().v4(),
               start: start,
               end: end,
               text: text,
@@ -144,7 +151,11 @@ class SubtitleParser {
       }
     }
     if (sentenceList.isNotEmpty) {
-      return SubtitleEntity(name: name, sentenceList: sentenceList);
+      return SubtitleEntity(
+        id: const Uuid().v4(),
+        name: name,
+        sentenceList: sentenceList,
+      );
     } else {
       return null;
     }
@@ -184,5 +195,3 @@ class SubtitleParser {
     );
   }
 }
-
-
