@@ -12,10 +12,17 @@ class DBMetadata extends _$DBMetadata {
     return (await DBLogic().loadMetadata()) ?? MetadataEntity.empty();
   }
 
-  Future<void> setPlayingId(String id) async {
+  Future<void> setPlayingMediaId(String id) async {
     final pref = await future;
     if (pref.playingMediaId != id) {
       await _updateMetadata((pref) => pref.copyWith(playingMediaId: () => id));
+    }
+  }
+
+  Future<void> setPlayingSubtitleName(String name) async {
+    final pref = await future;
+    if (pref.playingSubtitleName != name) {
+      await _updateMetadata((pref) => pref.copyWith(playingSubtitleName: () => name,));
     }
   }
 
