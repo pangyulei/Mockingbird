@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:marquee/marquee.dart';
+import 'package:mockingbird/tab_player/player/player_media_controller.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
@@ -292,7 +292,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                 itemCount: data.sentenceIdList.length,
                 itemScrollController: _scrollController,
                 itemBuilder: (context, i) {
-                  return SentenceCardUI(i, data.sentenceIdList[i], (
+                  return SentenceCardUI(data.sentenceIdList[i], (
                     ref,
                     sentenceId,
                   ) {
@@ -693,10 +693,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               .select((st) => st.value)
               .select(
                 (data) =>
-                    data
-                        ?.as<PlayerSubtitleData>()
-                        ?.sentenceIdList
-                        .isNotEmpty ??
+                    data?.as<PlayerSubtitleData>()?.sentenceIdList.isNotEmpty ??
                     false,
               ),
         );

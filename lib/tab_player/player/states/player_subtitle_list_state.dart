@@ -1,4 +1,4 @@
 class PlayerSubtitleListState {
-  final List<String> subtitleIdList;
-  const PlayerSubtitleListState({required this.subtitleIdList});
+  final List<String> subtitleNameList;
+  const PlayerSubtitleListState({required this.subtitleNameList});
 }

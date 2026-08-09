@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/entities/sentence_entity.dart';
-import 'package:mockingbird/db/providers/db_playing_sentence_provider.dart';
-import 'package:mockingbird/db/providers/db_playing_subtitle_list_provider.dart';
+import 'package:mockingbird/db/providers/db_sentence_provider.dart';
+import 'package:mockingbird/db/providers/db_subtitle_list_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,7 +12,7 @@ part 'sentence_card_provider.g.dart';
 class SentenceCard extends _$SentenceCard {
   @override
   SentenceCardState build(String id) {
-    final sentence = ref.watch(dBPlayingSentenceProvider(id)).value;
+    final sentence = ref.watch(dbSentenceProvider(id)).value;
     if (sentence == null) return const SentenceCardState.empty();
     final playingSentenceId = ref.watch(
       playerSpotProvider.select((st) => st.value?.playingSentence?.id),

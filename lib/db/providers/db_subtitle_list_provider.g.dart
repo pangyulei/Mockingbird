@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'db_playing_subtitle_list_provider.dart';
+part of 'db_subtitle_list_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,36 +9,33 @@ part of 'db_playing_subtitle_list_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBPlayingSubtitleList)
-final dbPlayingSubtitleListProvider = DBPlayingSubtitleListProvider._();
+@ProviderFor(DBSubtitleList)
+final dbSubtitleListProvider = DBSubtitleListProvider._();
 
-final class DBPlayingSubtitleListProvider
-    extends
-        $AsyncNotifierProvider<DBPlayingSubtitleList, List<SubtitleEntity>> {
-  DBPlayingSubtitleListProvider._()
+final class DBSubtitleListProvider
+    extends $AsyncNotifierProvider<DBSubtitleList, List<SubtitleEntity>> {
+  DBSubtitleListProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'dbPlayingSubtitleListProvider',
+        name: r'dbSubtitleListProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$dBPlayingSubtitleListHash();
+  String debugGetCreateSourceHash() => _$dBSubtitleListHash();
 
   @$internal
   @override
-  DBPlayingSubtitleList create() => DBPlayingSubtitleList();
+  DBSubtitleList create() => DBSubtitleList();
 }
 
-String _$dBPlayingSubtitleListHash() =>
-    r'8e60a6aeb52129b616c168e9f206e896d182ac58';
+String _$dBSubtitleListHash() => r'0a29add1e6077d1cb35d1e116696ba8432da9a06';
 
-abstract class _$DBPlayingSubtitleList
-    extends $AsyncNotifier<List<SubtitleEntity>> {
+abstract class _$DBSubtitleList extends $AsyncNotifier<List<SubtitleEntity>> {
   FutureOr<List<SubtitleEntity>> build();
   @$mustCallSuper
   @override

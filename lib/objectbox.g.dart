@@ -43,33 +43,39 @@ final _entities = <obx_int.ModelEntity>[
     backlinks: <obx_int.ModelBacklink>[],
   ),
   obx_int.ModelEntity(
-    id: const obx_int.IdUid(2, 2126596270909047534),
+    id: const obx_int.IdUid(5, 1008498112060179752),
     name: 'MetadataEntity',
-    lastPropertyId: const obx_int.IdUid(5, 1836310590922492628),
+    lastPropertyId: const obx_int.IdUid(5, 1244199216946912259),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(1, 2105834102041112161),
+        id: const obx_int.IdUid(1, 3475073127183216905),
         name: 'id',
         type: 6,
         flags: 1,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(2, 7300803784323589485),
-        name: 'playingId',
+        id: const obx_int.IdUid(2, 1543421011781232460),
+        name: 'playingMediaId',
         type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(4, 3289810162652428670),
-        name: 'permissionRequested',
-        type: 1,
+        id: const obx_int.IdUid(3, 1315020076868800968),
+        name: 'playingSubtitleName',
+        type: 9,
         flags: 0,
       ),
       obx_int.ModelProperty(
-        id: const obx_int.IdUid(5, 1836310590922492628),
+        id: const obx_int.IdUid(4, 400750834343719344),
         name: 'databaseVersion',
         type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 1244199216946912259),
+        name: 'permissionRequested',
+        type: 1,
         flags: 0,
       ),
     ],
@@ -121,17 +127,36 @@ obx_int.ModelDefinition getObjectBoxModel() {
     // Typically, this is done with `dart run build_runner build`.
     generatorVersion: obx_int.GeneratorVersion.v2025_12_16,
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(2, 2126596270909047534),
+    lastEntityId: const obx_int.IdUid(5, 1008498112060179752),
     lastIndexId: const obx_int.IdUid(0, 0),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
-    retiredEntityUids: const [],
+    retiredEntityUids: const [
+      2126596270909047534,
+      8902126513492675573,
+      3499439688354918970,
+    ],
     retiredIndexUids: const [],
     retiredPropertyUids: const [
       2883212314392902367,
       3497499546518911977,
       4876908164482564772,
       1294798852857759556,
+      7300803784323589485,
+      2105834102041112161,
+      3289810162652428670,
+      1836310590922492628,
+      7945704224739291284,
+      7659414703713460585,
+      5705690012012046614,
+      904786334668511033,
+      5152823660570640365,
+      4107800010952606988,
+      1437285181690893501,
+      128390169501596559,
+      307908795296079429,
+      5806132384591857012,
+      4271992074009824622,
     ],
     retiredRelationUids: const [],
     modelVersion: 5,
@@ -184,14 +209,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
         object.id = id;
       },
       objectToFB: (MetadataEntity object, fb.Builder fbb) {
-        final playingIdOffset = object.playingId == null
+        final playingMediaIdOffset = object.playingMediaId == null
             ? null
-            : fbb.writeString(object.playingId!);
+            : fbb.writeString(object.playingMediaId!);
+        final playingSubtitleNameOffset = object.playingSubtitleName == null
+            ? null
+            : fbb.writeString(object.playingSubtitleName!);
         fbb.startTable(6);
         fbb.addInt64(0, object.id);
-        fbb.addOffset(1, playingIdOffset);
-        fbb.addBool(3, object.permissionRequested);
-        fbb.addInt64(4, object.databaseVersion);
+        fbb.addOffset(1, playingMediaIdOffset);
+        fbb.addOffset(2, playingSubtitleNameOffset);
+        fbb.addInt64(3, object.databaseVersion);
+        fbb.addBool(4, object.permissionRequested);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -204,24 +233,28 @@ obx_int.ModelDefinition getObjectBoxModel() {
           4,
           0,
         );
-        final playingIdParam = const fb.StringReader(
+        final playingMediaIdParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 6);
+        final playingSubtitleNameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 8);
         final databaseVersionParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
-          12,
+          10,
           0,
         );
         final permissionRequestedParam = const fb.BoolReader().vTableGet(
           buffer,
           rootOffset,
-          10,
+          12,
           false,
         );
         final object = MetadataEntity(
           id: idParam,
-          playingId: playingIdParam,
+          playingMediaId: playingMediaIdParam,
+          playingSubtitleName: playingSubtitleNameParam,
           databaseVersion: databaseVersionParam,
           permissionRequested: permissionRequestedParam,
         );
@@ -254,18 +287,23 @@ class MetadataEntity_ {
     _entities[1].properties[0],
   );
 
-  /// See [MetadataEntity.playingId].
-  static final playingId = obx.QueryStringProperty<MetadataEntity>(
+  /// See [MetadataEntity.playingMediaId].
+  static final playingMediaId = obx.QueryStringProperty<MetadataEntity>(
     _entities[1].properties[1],
   );
 
-  /// See [MetadataEntity.permissionRequested].
-  static final permissionRequested = obx.QueryBooleanProperty<MetadataEntity>(
+  /// See [MetadataEntity.playingSubtitleName].
+  static final playingSubtitleName = obx.QueryStringProperty<MetadataEntity>(
     _entities[1].properties[2],
   );
 
   /// See [MetadataEntity.databaseVersion].
   static final databaseVersion = obx.QueryIntegerProperty<MetadataEntity>(
     _entities[1].properties[3],
+  );
+
+  /// See [MetadataEntity.permissionRequested].
+  static final permissionRequested = obx.QueryBooleanProperty<MetadataEntity>(
+    _entities[1].properties[4],
   );
 }

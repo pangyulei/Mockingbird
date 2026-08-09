@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'db_playing_sentence_provider.dart';
+part of 'db_sentence_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,39 +9,39 @@ part of 'db_playing_sentence_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBPlayingSentence)
-final dBPlayingSentenceProvider = DBPlayingSentenceFamily._();
+@ProviderFor(DBSentence)
+final dbSentenceProvider = DBSentenceFamily._();
 
-final class DBPlayingSentenceProvider
-    extends $AsyncNotifierProvider<DBPlayingSentence, SentenceEntity?> {
-  DBPlayingSentenceProvider._({
-    required DBPlayingSentenceFamily super.from,
+final class DBSentenceProvider
+    extends $AsyncNotifierProvider<DBSentence, SentenceEntity?> {
+  DBSentenceProvider._({
+    required DBSentenceFamily super.from,
     required String super.argument,
   }) : super(
          retry: null,
-         name: r'dBPlayingSentenceProvider',
+         name: r'dbSentenceProvider',
          isAutoDispose: true,
          dependencies: null,
          $allTransitiveDependencies: null,
        );
 
   @override
-  String debugGetCreateSourceHash() => _$dBPlayingSentenceHash();
+  String debugGetCreateSourceHash() => _$dBSentenceHash();
 
   @override
   String toString() {
-    return r'dBPlayingSentenceProvider'
+    return r'dbSentenceProvider'
         ''
         '($argument)';
   }
 
   @$internal
   @override
-  DBPlayingSentence create() => DBPlayingSentence();
+  DBSentence create() => DBSentence();
 
   @override
   bool operator ==(Object other) {
-    return other is DBPlayingSentenceProvider && other.argument == argument;
+    return other is DBSentenceProvider && other.argument == argument;
   }
 
   @override
@@ -50,34 +50,34 @@ final class DBPlayingSentenceProvider
   }
 }
 
-String _$dBPlayingSentenceHash() => r'eb88b1ebd00041861f08c0036890b5847c9cc927';
+String _$dBSentenceHash() => r'b6ef049e2b5c2a1029867ade5eb6534e75541404';
 
-final class DBPlayingSentenceFamily extends $Family
+final class DBSentenceFamily extends $Family
     with
         $ClassFamilyOverride<
-          DBPlayingSentence,
+          DBSentence,
           AsyncValue<SentenceEntity?>,
           SentenceEntity?,
           FutureOr<SentenceEntity?>,
           String
         > {
-  DBPlayingSentenceFamily._()
+  DBSentenceFamily._()
     : super(
         retry: null,
-        name: r'dBPlayingSentenceProvider',
+        name: r'dbSentenceProvider',
         dependencies: null,
         $allTransitiveDependencies: null,
         isAutoDispose: true,
       );
 
-  DBPlayingSentenceProvider call(String id) =>
-      DBPlayingSentenceProvider._(argument: id, from: this);
+  DBSentenceProvider call(String id) =>
+      DBSentenceProvider._(argument: id, from: this);
 
   @override
-  String toString() => r'dBPlayingSentenceProvider';
+  String toString() => r'dbSentenceProvider';
 }
 
-abstract class _$DBPlayingSentence extends $AsyncNotifier<SentenceEntity?> {
+abstract class _$DBSentence extends $AsyncNotifier<SentenceEntity?> {
   late final _$args = ref.$arg as String;
   String get id => _$args;
 

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
+import 'package:mockingbird/tab_player/player/player_media_controller.dart';
 
 //here must not use autoDispose, player is keepalive,
 //because background audio service need to access it

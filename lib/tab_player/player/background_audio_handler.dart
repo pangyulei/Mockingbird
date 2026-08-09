@@ -1,5 +1,5 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
+import 'package:mockingbird/tab_player/player/player_media_controller.dart';
 
 class BackgroundAudioHandler extends BaseAudioHandler {
   final PlayerMediaControllerITF _mediaController;

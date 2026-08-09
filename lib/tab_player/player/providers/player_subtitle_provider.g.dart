@@ -33,7 +33,7 @@ final class PlayerSubtitleProvider
   PlayerSubtitle create() => PlayerSubtitle();
 }
 
-String _$playerSubtitleHash() => r'7f473fe20d68ddd094e7eadaa78f89e0f819d8f1';
+String _$playerSubtitleHash() => r'14324ea3e468baeb84b4bcbb6ff11a8dc1907db1';
 
 abstract class _$PlayerSubtitle extends $AsyncNotifier<PlayerSubtitleState> {
   FutureOr<PlayerSubtitleState> build();

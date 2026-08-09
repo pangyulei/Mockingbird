@@ -1,4 +1,4 @@
-import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
+import 'package:mockingbird/tab_player/player/player_media_controller.dart';
 
 sealed class PlayerMediaState {
   const PlayerMediaState();

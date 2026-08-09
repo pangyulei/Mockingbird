@@ -3,6 +3,7 @@ import 'package:defer/defer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/db/providers/db_playing_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
@@ -156,7 +157,7 @@ class PlayerNotifier extends Notifier<void> {
     _scrollController.safeScrollTo(index, alignment: 0.3);
   }
 
-  void tapSentence(int? id) async {
+  void tapSentence(String id) async {
     // if (id == null) return;
     // final sentenceIndex = _sentenceList.firstIndexWhereOrNull(
     //   (sen) => sen.id == id,

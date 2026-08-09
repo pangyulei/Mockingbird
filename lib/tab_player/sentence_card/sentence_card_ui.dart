@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mockingbird/tab_player/sentence_card/sentence_card_provider.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 
 class SentenceCardUI extends ConsumerWidget {
-  final int _index;
-  final SentenceCardState _state;
-  final void Function(WidgetRef ref, int index) _onTapCallback;
-  const SentenceCardUI(
-    this._index,
-    this._state,
-    this._onTapCallback, {
-    super.key,
-  });
+  final String _id;
+  final void Function(WidgetRef ref, String id) _onTapCallback;
+  const SentenceCardUI(this._id, this._onTapCallback, {super.key});
 
   void _onTap(WidgetRef ref) {
-    _onTapCallback(ref, _index);
+    _onTapCallback(ref, _id);
   }
 
   @override
@@ -27,71 +22,96 @@ class SentenceCardUI extends ConsumerWidget {
       child: InkWell(
         onTap: () => _onTap(ref),
         borderRadius: BorderRadius.circular(16),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          decoration: BoxDecoration(
-            color: _state.playing
-                ? colorScheme.primaryContainer.withValues(alpha: 0.8)
-                : colorScheme.surface,
-            borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(16),
-              topRight: const Radius.circular(16),
-              bottomRight: const Radius.circular(16),
-              bottomLeft: Radius.circular(_state.playing ? 4 : 16),
-            ),
-            boxShadow: _state.playing
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.2),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-            border: Border.all(
-              color: _state.playing
-                  ? colorScheme.primary.withValues(alpha: 0.3)
-                  : Colors.white.withValues(alpha: 0.05),
-              width: 1,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _state.text,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: _state.playing
-                        ? colorScheme.onPrimaryContainer
-                        : colorScheme.onSurface,
-                    fontSize: 16,
-                    height: 1.4,
-                    fontWeight: _state.playing
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
+        child: Consumer(
+          builder: (context, ref, child) {
+            final playing = ref.watch(
+              sentenceCardProvider(_id).select((st) => st.playing),
+            );
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              decoration: BoxDecoration(
+                color: playing
+                    ? colorScheme.primaryContainer.withValues(alpha: 0.8)
+                    : colorScheme.surface,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(16),
+                  topRight: const Radius.circular(16),
+                  bottomRight: const Radius.circular(16),
+                  bottomLeft: Radius.circular(playing ? 4 : 16),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                boxShadow: playing
+                    ? [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+                border: Border.all(
+                  color: playing
+                      ? colorScheme.primary.withValues(alpha: 0.3)
+                      : Colors.white.withValues(alpha: 0.05),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _state.period,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: _state.playing
-                            ? colorScheme.primary
-                            : colorScheme.outline,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final (text, playing) = ref.watch(
+                          sentenceCardProvider(
+                            _id,
+                          ).select((st) => (st.text, st.playing)),
+                        );
+                        return Text(
+                          text,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: playing
+                                ? colorScheme.onPrimaryContainer
+                                : colorScheme.onSurface,
+                            fontSize: 16,
+                            height: 1.4,
+                            fontWeight: playing
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final (period, playing) = ref.watch(
+                              sentenceCardProvider(
+                                _id,
+                              ).select((st) => (st.period, st.playing)),
+                            );
+                            return Text(
+                              period,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: playing
+                                    ? colorScheme.primary
+                                    : colorScheme.outline,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         ),
       ),
     );

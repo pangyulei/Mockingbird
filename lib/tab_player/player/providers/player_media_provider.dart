@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_playing_media_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_controller.dart';
+import 'package:mockingbird/tab_player/player/player_media_controller.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_asset_state.dart';

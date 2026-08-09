@@ -77,7 +77,6 @@ class SubtitleParser {
     }
     if (sentenceList.isNotEmpty) {
       return SubtitleEntity(
-        id: const Uuid().v4(),
         name: name,
         sentenceList: sentenceList,
       );
@@ -152,7 +151,6 @@ class SubtitleParser {
     }
     if (sentenceList.isNotEmpty) {
       return SubtitleEntity(
-        id: const Uuid().v4(),
         name: name,
         sentenceList: sentenceList,
       );

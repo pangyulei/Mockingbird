@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'db_metadata_provider.g.dart';
 
-@Riverpod(name:'dbMetadataProvider', keepAlive: true)
+@Riverpod(name: 'dbMetadataProvider', keepAlive: true)
 class DBMetadata extends _$DBMetadata {
   @override
   Future<MetadataEntity> build() async {
@@ -14,8 +14,8 @@ class DBMetadata extends _$DBMetadata {
 
   Future<void> setPlayingId(String id) async {
     final pref = await future;
-    if (pref.playingId != id) {
-      await _updateMetadata((pref) => pref.copyWith(playingId: () => id));
+    if (pref.playingMediaId != id) {
+      await _updateMetadata((pref) => pref.copyWith(playingMediaId: () => id));
     }
   }
 
