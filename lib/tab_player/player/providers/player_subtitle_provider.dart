@@ -9,7 +9,7 @@ class PlayerSubtitle extends _$PlayerSubtitle {
   @override
   Future<PlayerSubtitleState> build() async {
     final subtitle = await ref.watch(dbPlayingSubtitleProvider.future);
-    if (subtitle == null) return const PlayerSubtitleNull();
+    if (subtitle == null) return const PlayerSubtitleEmpty();
     return PlayerSubtitleData(
       sentenceIdList: subtitle.sentenceList.map((s) => s.id).toList(),
     );

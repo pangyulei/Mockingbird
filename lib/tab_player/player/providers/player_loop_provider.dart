@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/db/providers/db_preference_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_loop_state.dart';
-import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../db/entities/sentence_entity.dart';
@@ -13,10 +13,15 @@ part 'player_loop_provider.g.dart';
 class PlayerLoop extends _$PlayerLoop {
   @override
   Future<PlayerLoopState> build() async {
+    debugPrint('loop provider building');
+    ref.onDispose(() {
+      debugPrint('loop provider dispose');
+    });
     final preferenceLoop = await ref.read(
       dbPreferenceProvider.selectAsync((st) => st.loop),
     );
     final spot = await ref.read(playerSpotProvider.future);
+    debugPrint('loop provider built');
     return PlayerLoopState(
       loop: preferenceLoop,
       loopIndex: preferenceLoop ? spot?.playingSentenceIndex : null,

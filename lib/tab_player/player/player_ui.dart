@@ -9,13 +9,12 @@ import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_title_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_asset_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
 import 'package:mockingbird/tool/shrink_ui.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../app/app_route.dart';
-import '../../tool/extensions.dart';
 import '../sentence_card/sentence_card_ui.dart';
 
 class PlayerUI extends ConsumerStatefulWidget {
@@ -30,9 +29,9 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
 
   @override
   Widget build(BuildContext ctx) {
-    ref.listen(playerProvider(_scrollController), (previous, next) {
-      //keep playerProvider alive while page exist
-    });
+    //keep playerProvider alive while page exist
+    ref.listen(playerProvider(_scrollController), (previous, next) {});
+    ref.listen(playerLoopProvider, (previous, next) {});
     final stateType = ref.watch(
       playerMediaProvider.select((st) => st.value?.runtimeType),
     );
@@ -302,7 +301,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                   });
                 },
               );
-            } else if (data is PlayerSubtitleNull) {
+            } else if (data is PlayerSubtitleEmpty) {
               return _noSubtitle(ctx, ref);
             } else {
               return const ShrinkUI();
@@ -689,13 +688,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     return Consumer(
       builder: (ctx, ref, child) {
         final hasSubtitle = ref.watch(
-          playerSubtitleProvider
-              .select((st) => st.value)
-              .select(
-                (data) =>
-                    data?.as<PlayerSubtitleData>()?.sentenceIdList.isNotEmpty ??
-                    false,
-              ),
+          playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData),
         );
         if (!hasSubtitle) return const ShrinkUI();
         final loop = ref.watch(

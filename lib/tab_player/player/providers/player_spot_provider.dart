@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:mockingbird/db/providers/db_playing_subtitle_provider.dart';
 import 'package:mockingbird/db/providers/db_subtitle_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_asset_state.dart';
+import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_spot_state.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

@@ -1,16 +1,13 @@
-import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
-
 sealed class PlayerSubtitleState {
   const PlayerSubtitleState();
 }
 
-class PlayerSubtitleNull extends PlayerSubtitleState {
-  const PlayerSubtitleNull();
+class PlayerSubtitleEmpty extends PlayerSubtitleState {
+  const PlayerSubtitleEmpty();
 }
 
 class PlayerSubtitleData extends PlayerSubtitleState {
   final List<String> sentenceIdList;
 
   const PlayerSubtitleData({required this.sentenceIdList});
-
 }
