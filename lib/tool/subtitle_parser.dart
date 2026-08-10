@@ -16,11 +16,10 @@ class SubtitleParser {
   static Future<SubtitleEntity?> parseFile(File file) async {
     final content = await file.readAsString();
     final extension = p.extension(file.path);
-    final name = p.basename(file.path);
     if (extension.toLowerCase() == '.srt') {
-      return _parseSrt(name, content);
+      return _parseSrt(file.path, content);
     } else if (extension.toLowerCase() == '.vtt') {
-      return _parseVtt(name, content);
+      return _parseVtt(file.path, content);
     }
     debugPrint(
       'We only support .srt .vtt,\nyour subtitle: ${p.extension(file.path)}',
@@ -28,7 +27,7 @@ class SubtitleParser {
     return null;
   }
 
-  static SubtitleEntity? _parseSrt(String name, String content) {
+  static SubtitleEntity? _parseSrt(String path, String content) {
     final sentenceList = <SentenceEntity>[];
     // Split by double newline (supporting both \n and \r\n)
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
@@ -76,10 +75,7 @@ class SubtitleParser {
       }
     }
     if (sentenceList.isNotEmpty) {
-      return SubtitleEntity(
-        name: name,
-        sentenceList: sentenceList,
-      );
+      return SubtitleEntity(path: path, sentenceList: sentenceList);
     } else {
       return null;
     }
@@ -104,7 +100,7 @@ class SubtitleParser {
     );
   }
 
-  static SubtitleEntity? _parseVtt(String name, String content) {
+  static SubtitleEntity? _parseVtt(String path, String content) {
     final sentenceList = <SentenceEntity>[];
     final blocks = content.trim().split(RegExp(r'(\r?\n){2,}'));
 
@@ -150,10 +146,7 @@ class SubtitleParser {
       }
     }
     if (sentenceList.isNotEmpty) {
-      return SubtitleEntity(
-        name: name,
-        sentenceList: sentenceList,
-      );
+      return SubtitleEntity(path: path, sentenceList: sentenceList);
     } else {
       return null;
     }
