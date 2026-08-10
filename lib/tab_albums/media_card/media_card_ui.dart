@@ -15,7 +15,7 @@ class MediaCardUI extends ConsumerWidget {
   Widget build(BuildContext ctx, WidgetRef ref) {
     final theme = Theme.of(ctx);
     final colorScheme = theme.colorScheme;
-    final playing = ref.watch(mediaCardProvider(_id).select((st) => st.value?.playing ?? false));
+    final playing = ref.watch(mediaCardProvider(_id).select((st) => st.playing));
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -66,7 +66,7 @@ class MediaCardUI extends ConsumerWidget {
         final (name, playing) = ref.watch(
           mediaCardProvider(
             _id,
-          ).select((st) => st.value).select((st) => (st?.name ?? '', st?.playing ?? false)),
+          ).select((st) => (st.name, st.playing)),
         );
         return (playing && name.isNotEmpty)
             ? SizedBox(
@@ -118,7 +118,7 @@ class MediaCardUI extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         final playing = ref.watch(
-          mediaCardProvider(_id).select((st) => st.value?.playing ?? false),
+          mediaCardProvider(_id).select((st) => st.playing),
         );
         return Container(
           width: 48,
