@@ -191,16 +191,18 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     WidgetRef ref,
     PlayerMediaControllerITF mediaController,
   ) {
+    debugPrint('ui media ratio ${mediaController.ratio}');
     const ratio = 16 / 9.0;
     return AspectRatio(
       aspectRatio: ratio,
       child: Stack(
         alignment: .center,
         children: [
-          AspectRatio(
-            aspectRatio: mediaController.ratio,
-            child: mediaController.video,
-          ),
+          mediaController.video,
+          // AspectRatio(
+          //   aspectRatio: mediaController.ratio,
+          //   child: ,
+          // ),
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,

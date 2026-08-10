@@ -93,6 +93,7 @@ class PlayerMediaController implements PlayerMediaControllerITF {
     final width = _player.state.width?.toDouble();
     final height = _player.state.height?.toDouble();
     if (width != null && height != null && height != 0) {
+      debugPrint('media ratio $width/$height');
       return width / height;
     } else {
       return 1;
