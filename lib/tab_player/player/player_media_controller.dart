@@ -20,25 +20,15 @@ abstract interface class PlayerMediaControllerITF {
   double get ratio;
   AssetType get type;
   Widget get video;
-  FutureOr<void> dispose();
-  void listenPosition(
+  StreamSubscription listenPosition(
     void Function(PlayerMediaControllerITF assetController, Duration position)
-    listener,
-  );
-  void listenPlaying(
-    void Function(PlayerMediaControllerITF assetController, bool playing)
-    listener,
-  );
-  void listenCompleted(
-    void Function(PlayerMediaControllerITF assetController, bool completed)
     listener,
   );
 }
 
 class PlayerMediaController implements PlayerMediaControllerITF {
-  AssetEntity? _asset;
+  AssetEntity? _media;
   final _player = Player();
-  final _subs = <StreamSubscription>[];
   PlayerMediaController();
 
   @override
@@ -101,11 +91,11 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   }
 
   @override
-  AssetType get type => _asset?.type ?? AssetType.video;
+  AssetType get type => _media?.type ?? AssetType.video;
 
   @override
   FutureOr<void> open(AssetEntity asset) async {
-    _asset = asset;
+    _media = asset;
     final path = (await asset.file)?.path;
     if (path != null) {
       await _player.open(Media(path));
@@ -113,46 +103,16 @@ class PlayerMediaController implements PlayerMediaControllerITF {
   }
 
   @override
-  FutureOr<void> dispose() async {
-    for (final sub in _subs) {
-      sub.cancel();
-    }
-    await _player.dispose();
-  }
-
-  @override
   bool get completed => _player.state.completed;
 
   @override
-  void listenPosition(
+  StreamSubscription listenPosition(
     void Function(PlayerMediaControllerITF assetController, Duration position)
     listener,
   ) {
-    final sub = _player.stream.position.listen((position) {
+    return _player.stream.position.listen((position) {
       listener(this, position);
     });
-    _subs.add(sub);
   }
 
-  @override
-  void listenPlaying(
-    void Function(PlayerMediaControllerITF assetController, bool playing)
-    listener,
-  ) {
-    final sub = _player.stream.playing.listen((playing) {
-      listener(this, playing);
-    });
-    _subs.add(sub);
-  }
-
-  @override
-  void listenCompleted(
-    void Function(PlayerMediaControllerITF assetController, bool completed)
-    listener,
-  ) {
-    final sub = _player.stream.completed.listen((completed) {
-      listener(this, completed);
-    });
-    _subs.add(sub);
-  }
 }

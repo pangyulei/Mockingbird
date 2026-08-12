@@ -199,10 +199,6 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         alignment: .center,
         children: [
           mediaController.video,
-          // AspectRatio(
-          //   aspectRatio: mediaController.ratio,
-          //   child: ,
-          // ),
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,

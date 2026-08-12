@@ -16,44 +16,27 @@ class BackgroundAudioHandlerNotifier extends Notifier<BackgroundAudioHandler> {
     });
     // Use read instead of watch to avoid rebuilding the handler
     final mediaController = ref.read(playerMediaControllerProvider);
+    //TODO这里用 mediaController会不会造成play pause ui不一致的问题
     final handler = BackgroundAudioHandler(mediaController);
-
-    // ref.listen(dbPlayingMediaProvider.select((st) => st.value), (
-    //   previous,
-    //   media,
-    // ) {
-    //   if (media == null) return;
-    //   final album = media.albumList.first;
-    //   handler.mb_updateMediaItem(
-    //     MediaItem(
-    //       id: media.id.toString(),
-    //       title: media.name,
-    //       album: album.name,
-    //       duration: mediaController.mb_duration,
-    //       artUri: album.cover?.toUri(),
-    //     ),
-    //   );
-    // }, fireImmediately: true);
-
     return handler;
   }
 
   Future<void> updateMediaItem() async {
-    final asset = ref.read(dbPlayingMediaProvider.select((st) => st.value));
-    if (asset == null) {
+    final media = ref.read(dbPlayingMediaProvider.select((st) => st.value));
+    if (media == null) {
       state.setup(item: null, playing: false, position: const Duration(seconds: 0));
     } else {
-      final path = (await asset.file)?.path ?? '';
+      final path = (await media.file)?.path ?? '';
       final album = p.basename(p.dirname(path));
       final (playing, position) = ref.read(
         playerMediaControllerProvider.select((st) => (st.playing, st.position)),
       );
       state.setup(
         item: MediaItem(
-          id: asset.id,
-          title: await asset.titleAsync,
+          id: media.id,
+          title: await media.titleAsync,
           album: album,
-          duration: asset.videoDuration,
+          duration: media.videoDuration,
           artUri: null, //TODO fix artUri
         ),
         playing: playing,

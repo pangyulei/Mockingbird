@@ -1,6 +1,8 @@
 //seperate with videocontroller provider, so if you update media's name or its subtitle,
 //the videocontroller wont rebuild
 
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,13 +17,18 @@ import '../../../tool/extensions.dart';
 final playerMediaProvider = AsyncNotifierProvider.autoDispose(PlayerMediaNotifier.new);
 
 class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
+  StreamSubscription? _sub;
+
   @override
   Future<PlayerMediaState> build() async {
-    final asset = (await ref.watch(dbPlayingMediaProvider.future));
-    if (asset == null) return const PlayerMediaNull();
+    ref.onDispose(() {
+      _sub?.cancel();
+    });
+    final media = (await ref.watch(dbPlayingMediaProvider.future));
+    if (media == null) return const PlayerMediaNull();
     //because of this is read and have to await, this has to be a AsyncNotifier
     final mediaController = ref.watch(playerMediaControllerProvider);
-    await mediaController.open(asset);
+    await mediaController.open(media);
     final (speed, volume) = ref.read(playerSettingProvider.select((st) => (st.speed, st.volume)));
     await mediaController.setSpeed(speed);
     await mediaController.setVolume(volume);
@@ -29,14 +36,14 @@ class PlayerMediaNotifier extends AsyncNotifier<PlayerMediaState> {
     //I dont know why but we need to force it play
     await mediaController.play();
     // ref.read(playerSubtitleProvider.notifier).scrollToTop();
-    mediaController.listenPosition(_mediaPositionChanged);
+    _sub = mediaController.listenPosition(_mediaPositionChanged);
     _listen();
     return PlayerMediaData(position_ms: 0, mediaController: mediaController, playing: true);
   }
 
   void _mediaPositionChanged(PlayerMediaControllerITF mediaController, Duration position) async {
     //for video slider moving along with playing
-    var data = state.value;
+    var data = await future;
     if (data is! PlayerMediaData) return;
     data = data.copyWith(position_ms: position.inMilliseconds);
     state = AsyncData(data);

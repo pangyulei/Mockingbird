@@ -13,15 +13,10 @@ part 'player_loop_provider.g.dart';
 class PlayerLoop extends _$PlayerLoop {
   @override
   Future<PlayerLoopState> build() async {
-    debugPrint('loop provider building');
-    ref.onDispose(() {
-      debugPrint('loop provider dispose');
-    });
     final preferenceLoop = await ref.read(
       dbPreferenceProvider.selectAsync((st) => st.loop),
     );
     final spot = await ref.read(playerSpotProvider.future);
-    debugPrint('loop provider built');
     return PlayerLoopState(
       loop: preferenceLoop,
       loopIndex: preferenceLoop ? spot?.playingSentenceIndex : null,

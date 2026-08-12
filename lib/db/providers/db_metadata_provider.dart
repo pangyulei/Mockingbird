@@ -34,12 +34,10 @@ class DBMetadata extends _$DBMetadata {
     MetadataEntity Function(MetadataEntity metadata) getter,
   ) async {
     final metadata = await future;
-    debugPrint('pref provider state got');
     final updatedMetadata = getter(metadata);
     if (updatedMetadata != metadata) {
       await DBLogic().updateMetadata(updatedMetadata);
       state = AsyncData(updatedMetadata);
     }
-    debugPrint('pref provider updated');
   }
 }

@@ -103,12 +103,12 @@ class PlayerNotifier extends Notifier<void> {
           .select((data) => data?.position_ms),
       (previous, position_ms) {
         if (position_ms == null) return;
-        _videoPositionChanged(Duration(milliseconds: position_ms));
+        _mediaPositionChanged(Duration(milliseconds: position_ms));
       },
     );
   }
 
-  void _videoPositionChanged(Duration position) async {
+  void _mediaPositionChanged(Duration position) async {
     //handle loop seek to begin
     debugPrint('position change read loop provider');
     final loopSentence = await ref.read(

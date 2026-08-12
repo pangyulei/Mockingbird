@@ -9,12 +9,7 @@ part 'db_preference_provider.g.dart';
 class DBPreference extends _$DBPreference {
   @override
   Future<PreferenceEntity> build() async {
-    debugPrint('pref provider build');
-    ref.onDispose(() {
-      debugPrint('pref provider dispose');
-    });
     final preference = await DBLogic().loadPreference();
-    debugPrint('pref provider built');
     return preference ?? PreferenceEntity.empty();
   }
 
@@ -26,12 +21,10 @@ class DBPreference extends _$DBPreference {
     PreferenceEntity Function(PreferenceEntity pref) getter,
   ) async {
     final pref = await future;
-    debugPrint('pref provider state got');
     final updatedPref = getter(pref);
     if (updatedPref != pref) {
       await DBLogic().updatePreference(updatedPref);
       state = AsyncData(updatedPref);
     }
-    debugPrint('pref provider updated');
   }
 }
