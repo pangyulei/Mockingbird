@@ -33,7 +33,7 @@ final class DBPreferenceProvider
   DBPreference create() => DBPreference();
 }
 
-String _$dBPreferenceHash() => r'32518820f8f0de6629acdb4379a56ac02aaaea92';
+String _$dBPreferenceHash() => r'4d5b468690b56dc72134624cb7c0c6f4c9b90f61';
 
 abstract class _$DBPreference extends $AsyncNotifier<PreferenceEntity> {
   FutureOr<PreferenceEntity> build();

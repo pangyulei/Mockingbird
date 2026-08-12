@@ -5,14 +5,15 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'db_album_provider.g.dart';
 
 @Riverpod(name: 'dbAlbumProvider')
-class DBFolder extends _$DBFolder {
+class DBAlbum extends _$DBAlbum {
   @override
   Future<AssetPathEntity?> build(String? id) async {
     if (id == null) return null;
-    return await ref.watch(
-      dbAlbumListProvider.selectAsync(
-        (al) => {for (final a in al) a.id: a}[id],
-      ),
-    );
+    return await AssetPathEntity.fromId(id);
+    // return await ref.watch(
+    //   dbAlbumListProvider.selectAsync(
+    //     (al) => {for (final a in al) a.id: a}[id],
+    //   ),
+    // );
   }
 }

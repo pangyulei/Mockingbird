@@ -25,7 +25,12 @@ class AlbumDetailUI extends ConsumerWidget {
             final (name, count) = ref.watch(
               albumDetailProvider(_id)
                   .select((st) => st.value)
-                  .select((st) => (st?.name ?? 'Album not found', st?.assetIdList.length ?? '0')),
+                  .select(
+                    (st) => (
+                      st?.name ?? 'Album not found',
+                      st?.mediaIdList.length ?? '0',
+                    ),
+                  ),
             );
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +38,9 @@ class AlbumDetailUI extends ConsumerWidget {
                 Text(name),
                 Text(
                   '$count assets',
-                  style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.outline),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.outline,
+                  ),
                 ),
               ],
             );
@@ -43,14 +50,16 @@ class AlbumDetailUI extends ConsumerWidget {
       ),
       body: Consumer(
         builder: (context, ref, child) {
-          final assetIdList = ref.watch(
-            albumDetailProvider(_id).select((st) => st.value?.assetIdList ?? []),
+          final mediaIdList = ref.watch(
+            albumDetailProvider(
+              _id,
+            ).select((st) => st.value?.mediaIdList ?? []),
           );
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: assetIdList.length,
+            itemCount: mediaIdList.length,
             itemBuilder: (context, i) {
-              return MediaCardUI(assetIdList[i]);
+              return MediaCardUI(mediaIdList[i]);
             },
           );
         },

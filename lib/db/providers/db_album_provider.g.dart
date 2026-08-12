@@ -9,13 +9,13 @@ part of 'db_album_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(DBFolder)
-final dbAlbumProvider = DBFolderFamily._();
+@ProviderFor(DBAlbum)
+final dbAlbumProvider = DBAlbumFamily._();
 
-final class DBFolderProvider
-    extends $AsyncNotifierProvider<DBFolder, AssetPathEntity?> {
-  DBFolderProvider._({
-    required DBFolderFamily super.from,
+final class DBAlbumProvider
+    extends $AsyncNotifierProvider<DBAlbum, AssetPathEntity?> {
+  DBAlbumProvider._({
+    required DBAlbumFamily super.from,
     required String? super.argument,
   }) : super(
          retry: null,
@@ -26,7 +26,7 @@ final class DBFolderProvider
        );
 
   @override
-  String debugGetCreateSourceHash() => _$dBFolderHash();
+  String debugGetCreateSourceHash() => _$dBAlbumHash();
 
   @override
   String toString() {
@@ -37,11 +37,11 @@ final class DBFolderProvider
 
   @$internal
   @override
-  DBFolder create() => DBFolder();
+  DBAlbum create() => DBAlbum();
 
   @override
   bool operator ==(Object other) {
-    return other is DBFolderProvider && other.argument == argument;
+    return other is DBAlbumProvider && other.argument == argument;
   }
 
   @override
@@ -50,18 +50,18 @@ final class DBFolderProvider
   }
 }
 
-String _$dBFolderHash() => r'f6a3190a6de95d227044678e332d9d35cf1463ab';
+String _$dBAlbumHash() => r'8d8acd0060037a6f0532d624b5ee393413a5f478';
 
-final class DBFolderFamily extends $Family
+final class DBAlbumFamily extends $Family
     with
         $ClassFamilyOverride<
-          DBFolder,
+          DBAlbum,
           AsyncValue<AssetPathEntity?>,
           AssetPathEntity?,
           FutureOr<AssetPathEntity?>,
           String?
         > {
-  DBFolderFamily._()
+  DBAlbumFamily._()
     : super(
         retry: null,
         name: r'dbAlbumProvider',
@@ -70,14 +70,14 @@ final class DBFolderFamily extends $Family
         isAutoDispose: true,
       );
 
-  DBFolderProvider call(String? id) =>
-      DBFolderProvider._(argument: id, from: this);
+  DBAlbumProvider call(String? id) =>
+      DBAlbumProvider._(argument: id, from: this);
 
   @override
   String toString() => r'dbAlbumProvider';
 }
 
-abstract class _$DBFolder extends $AsyncNotifier<AssetPathEntity?> {
+abstract class _$DBAlbum extends $AsyncNotifier<AssetPathEntity?> {
   late final _$args = ref.$arg as String?;
   String? get id => _$args;
 

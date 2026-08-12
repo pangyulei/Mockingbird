@@ -50,7 +50,7 @@ final class DBMediaProvider
   }
 }
 
-String _$dBMediaHash() => r'bebddb79a975dc23c0dd0cba1c6000f70464db9f';
+String _$dBMediaHash() => r'483cf26879c4afe42f9df9b9ee0565ab5be50c49';
 
 final class DBMediaFamily extends $Family
     with

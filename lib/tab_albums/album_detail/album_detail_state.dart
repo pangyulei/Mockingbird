@@ -1,14 +1,13 @@
-
 class AlbumDetailState {
   final String name;
-  final List<String> assetIdList;
+  final List<String> mediaIdList;
 
-  const AlbumDetailState({required this.name, required this.assetIdList});
+  const AlbumDetailState({required this.name, required this.mediaIdList});
 
-  AlbumDetailState copyWith({String? name, List<String>? assetIdList}) {
+  AlbumDetailState copyWith({String? name, List<String>? mediaIdList}) {
     return AlbumDetailState(
       name: name ?? this.name,
-      assetIdList: assetIdList ?? this.assetIdList,
+      mediaIdList: mediaIdList ?? this.mediaIdList,
     );
   }
 }

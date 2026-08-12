@@ -11,8 +11,14 @@ class AlbumDetail extends _$AlbumDetail {
     final album = await ref.watch(dbAlbumProvider(id).future);
     if (album == null) return null;
 
-    final assetList = await album.getAssetListRange(start: 0, end: await album.assetCountAsync);
+    final assetList = await album.getAssetListRange(
+      start: 0,
+      end: await album.assetCountAsync,
+    );
 
-    return AlbumDetailState(name: album.name, assetIdList: assetList.map((a) => a.id).toList());
+    return AlbumDetailState(
+      name: album.name,
+      mediaIdList: assetList.map((a) => a.id).toList(),
+    );
   }
 }
