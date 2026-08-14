@@ -9,6 +9,7 @@ import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../db/entities/sentence_entity.dart';
+import '../../../tool/extensions.dart';
 
 part 'player_spot_provider.g.dart';
 
@@ -16,22 +17,19 @@ part 'player_spot_provider.g.dart';
 class PlayerSpot extends _$PlayerSpot {
   @override
   Future<PlayerSpotState?> build() async {
-    final int? position_ms = await ref.watch(
-      playerMediaProvider.selectAsync((st) {
-        if (st is! PlayerMediaData) return null;
-        return st.position_ms;
-      }),
+    final position = await ref.watch(
+      playerMediaProvider.selectAsync((st) => st.as<PlayerMediaData>()?.position),
     );
-    if (position_ms == null) {
+    
+    if (position == null) {
       return null;
     }
     final List<SentenceEntity>? sentenceList = await ref.watch(
       dbPlayingSubtitleProvider.selectAsync((st) => st?.sentenceList),
     );
-    if (sentenceList == null) {
+    if (sentenceList == null || sentenceList.isEmpty) {
       return null;
     }
-    final position = Duration(milliseconds: position_ms);
     final playingSentenceIndex = _sentenceIndexByPosition(position, sentenceList);
     final playingSentence = playingSentenceIndex == null
         ? null

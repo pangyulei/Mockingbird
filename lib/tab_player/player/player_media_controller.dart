@@ -21,7 +21,11 @@ abstract interface class PlayerMediaControllerITF {
   AssetType get type;
   Widget get video;
   StreamSubscription listenPosition(
-    void Function(PlayerMediaControllerITF assetController, Duration position)
+    void Function(PlayerMediaControllerITF mediaController, Duration position)
+    listener,
+  );
+  StreamSubscription listenDuration(
+    void Function(PlayerMediaControllerITF mediaController, Duration duration)
     listener,
   );
 }
@@ -107,11 +111,20 @@ class PlayerMediaController implements PlayerMediaControllerITF {
 
   @override
   StreamSubscription listenPosition(
-    void Function(PlayerMediaControllerITF assetController, Duration position)
+    void Function(PlayerMediaControllerITF mediaController, Duration position)
     listener,
   ) {
     return _player.stream.position.listen((position) {
       listener(this, position);
+    });
+  }
+  @override
+  StreamSubscription listenDuration(
+    void Function(PlayerMediaControllerITF mediaController, Duration duration)
+    listener,
+  ) {
+    return _player.stream.duration.listen((duration) {
+      listener(this, duration);
     });
   }
 

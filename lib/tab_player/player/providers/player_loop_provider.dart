@@ -16,20 +16,6 @@ class PlayerLoop extends _$PlayerLoop {
       dbPreferenceProvider.selectAsync((st) => st.loop),
     );
     final spot = await ref.read(playerSpotProvider.future);
-    ref.listen(playerSpotProvider.select((st) => st.value), (
-      previous,
-      spot,
-    ) async {
-      final data = await future;
-      if (data.loop) {
-        state = AsyncData(
-          data.copyWith(
-            loopSentence: () => spot?.playingSentence,
-            loopIndex: () => spot?.playingSentenceIndex,
-          ),
-        );
-      }
-    });
     return PlayerLoopState(
       loop: preferenceLoop,
       loopIndex: preferenceLoop ? spot?.playingSentenceIndex : null,

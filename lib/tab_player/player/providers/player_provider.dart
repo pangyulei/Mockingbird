@@ -96,38 +96,32 @@ class PlayerNotifier extends Notifier<void> {
     ref.listen(
       playerMediaProvider
           .select(
-            (st) => st.value is PlayerMediaData
-                ? (st.value as PlayerMediaData)
-                : null,
-          )
-          .select((data) => data?.position_ms),
-      (previous, position_ms) {
-        if (position_ms == null) return;
-        _mediaPositionChanged(Duration(milliseconds: position_ms));
+            (st) => st.value?.as<PlayerMediaData>()?.position,
+          ),
+      (_, position) {
+        if (position == null) return;
+        _mediaPositionChanged(position);
       },
     );
   }
 
   void _mediaPositionChanged(Duration position) async {
     //handle loop seek to begin
-    debugPrint('position change read loop provider');
     final loopSentence = await ref.read(
       playerLoopProvider.selectAsync((st) => st.loopSentence),
     );
-    debugPrint('position changing loop $loopSentence');
     if (!_isDraggingVideoSlider && loopSentence != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       // debugPrint('position changing loop $sentence');
       if (position > loopSentence.end) {
-        debugPrint('position changing loop seek to ${loopSentence.start}');
         await ref.read(playerMediaProvider.notifier).seek(loopSentence.start);
       }
     }
   }
 
   Future<void> videoSliderStartChanged(
-    double position_ms,
-    double duration_ms,
+    Duration position,
+    Duration duration,
   ) async {
     _isDraggingVideoSlider = true;
     _isPlayingBeforeDraged = ref.read(
@@ -135,21 +129,19 @@ class PlayerNotifier extends Notifier<void> {
     );
     debugPrint('slider: start');
     await ref.read(playerMediaProvider.notifier).pause();
-    final position = Duration(milliseconds: position_ms.toInt());
     await ref.read(playerMediaProvider.notifier).seek(position);
   }
 
   Future<void> videoSliderChanging(
-    double position_ms,
-    double duration_ms,
+    Duration position,
+    Duration duration,
   ) async {
-    final position = Duration(milliseconds: position_ms.toInt());
     await ref.read(playerMediaProvider.notifier).seek(position);
   }
 
   Future<void> videoSliderEndChanged(
-    double position_ms,
-    double duration_ms,
+    Duration position,
+    Duration duration,
   ) async {
     await defer(
       () async {
@@ -157,7 +149,6 @@ class PlayerNotifier extends Notifier<void> {
         debugPrint('slider: end');
       },
       () async {
-        final position = Duration(milliseconds: position_ms.toInt());
         // seek to sentence start
         final spot = ref.read(playerSpotProvider.select((st) => st.value));
         ref
@@ -176,7 +167,6 @@ class PlayerNotifier extends Notifier<void> {
           seekToPosition = position;
         }
         await ref.read(playerMediaProvider.notifier).seek(seekToPosition);
-        final duration = Duration(milliseconds: duration_ms.toInt());
         if (_isPlayingBeforeDraged && position < duration) {
           await ref.read(playerMediaProvider.notifier).play();
         }

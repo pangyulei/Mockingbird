@@ -16,7 +16,7 @@ void main() async {
   final providerContainer = ProviderContainer(
       observers: [
         RiverpodDevToolsObserver(),
-        LoggerObserver(),
+        // LoggerObserver(),
       ],
   );
   final backgroundAudioHandler = providerContainer.read(

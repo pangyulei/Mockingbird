@@ -11,6 +11,7 @@ import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider
 import 'package:mockingbird/tab_player/player/providers/player_title_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:mockingbird/tool/shrink_ui.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -76,32 +77,32 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
 
   void _onVideoSliderStartChanged(
     WidgetRef ref,
-    double position_ms,
-    double duration_ms,
+    Duration position,
+    Duration duration,
   ) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
-        .videoSliderStartChanged(position_ms, duration_ms);
+        .videoSliderStartChanged(position, duration);
   }
 
   void _onVideoSliderChanging(
     WidgetRef ref,
-    double position_ms,
-    double duration_ms,
+    Duration position,
+    Duration duration,
   ) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
-        .videoSliderChanging(position_ms, duration_ms);
+        .videoSliderChanging(position, duration);
   }
 
   void _onVideoSliderEndChanged(
     WidgetRef ref,
-    double position_ms,
-    double duration_ms,
+    Duration position,
+    Duration duration,
   ) async {
     await ref
         .read(playerProvider(_scrollController).notifier)
-        .videoSliderEndChanged(position_ms, duration_ms);
+        .videoSliderEndChanged(position, duration);
   }
 
   void _onScrollToPlayingSentence(WidgetRef ref) {
@@ -493,25 +494,34 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       ),
       child: Consumer(
         builder: (context, ref, child) {
-          final position = ref.watch(
-            playerMediaProvider.select(
-              (st) => (st.value as PlayerMediaData).position_ms.toDouble(),
-            ),
-          );
-          final duration_ms = mediaController.duration.inMilliseconds
-              .toDouble();
-          // final val = position.clamp(0, duration_ms).toDouble();
-          debugPrint(
-            'slider ui pos $position ${mediaController.position} max $duration_ms',
+          final (position, duration) = ref.watch(
+            playerMediaProvider
+                .select((st) => st.value?.as<PlayerMediaData>())
+                .select(
+                  (st) => (
+                    st?.position ?? const Duration(seconds: 0),
+                    st?.duration ?? const Duration(seconds: 0),
+                  ),
+                ),
           );
           return Slider(
-            value: position,
-            max: duration_ms,
-            onChangeStart: (val) =>
-                _onVideoSliderStartChanged(ref, val, duration_ms),
-            onChanged: (val) => _onVideoSliderChanging(ref, val, duration_ms),
-            onChangeEnd: (val) =>
-                _onVideoSliderEndChanged(ref, val, duration_ms),
+            value: position.inMilliseconds.toDouble(),
+            max: duration.inMilliseconds.toDouble(),
+            onChangeStart: (val) => _onVideoSliderStartChanged(
+              ref,
+              Duration(milliseconds: val.toInt()),
+              duration,
+            ),
+            onChanged: (val) => _onVideoSliderChanging(
+              ref,
+              Duration(milliseconds: val.toInt()),
+              duration,
+            ),
+            onChangeEnd: (val) => _onVideoSliderEndChanged(
+              ref,
+              Duration(milliseconds: val.toInt()),
+              duration,
+            ),
           );
         },
       ),

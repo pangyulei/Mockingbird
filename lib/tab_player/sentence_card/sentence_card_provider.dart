@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/db/providers/db_sentence_provider.dart';
-import 'package:mockingbird/db/providers/db_subtitle_list_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

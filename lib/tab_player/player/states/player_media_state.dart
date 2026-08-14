@@ -11,17 +11,20 @@ class PlayerMediaNull extends PlayerMediaState {
 class PlayerMediaData extends PlayerMediaState {
   final PlayerMediaControllerITF mediaController;
   final bool playing;
-  final int position_ms;
+  final Duration position;
+  final Duration duration;
 
   const PlayerMediaData({
-    required this.position_ms,
+    required this.position,
+    required this.duration,
     required this.playing,
     required this.mediaController,
   });
 
-  PlayerMediaData copyWith({int? position_ms, bool? playing}) {
+  PlayerMediaData copyWith({Duration? position, Duration? duration, bool? playing}) {
     return PlayerMediaData(
-      position_ms: position_ms ?? this.position_ms,
+      position: position ?? this.position,
+      duration: duration ?? this.duration,
       mediaController: mediaController,
       playing: playing ?? this.playing,
     );

@@ -33,7 +33,7 @@ final class PlayerLoopProvider
   PlayerLoop create() => PlayerLoop();
 }
 
-String _$playerLoopHash() => r'8623613fa1bf6060821020ae731d2ff54bf26c17';
+String _$playerLoopHash() => r'b7baa21dd9f63c98baa9fdce8bdaf50a1edcda76';
 
 abstract class _$PlayerLoop extends $AsyncNotifier<PlayerLoopState> {
   FutureOr<PlayerLoopState> build();

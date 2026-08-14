@@ -7,10 +7,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../entities/subtitle_entity.dart';
 
-part 'db_subtitle_list_provider.g.dart';
+part 'db_playing_subtitle_list_provider.g.dart';
 
-@Riverpod(name: 'dbSubtitleListProvider')
-class DBSubtitleList extends _$DBSubtitleList {
+@Riverpod(name: 'dbPlayingSubtitleListProvider')
+class DBPlayingSubtitleList extends _$DBPlayingSubtitleList {
   @override
   Future<List<SubtitleEntity>> build() async {
     //找到同目录下的名称对应上的srt或vtt字幕文件
