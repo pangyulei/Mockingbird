@@ -15,7 +15,7 @@ void main() async {
   MediaKit.ensureInitialized();
   final providerContainer = ProviderContainer(
       observers: [
-        RiverpodDevToolsObserver(),
+        // RiverpodDevToolsObserver(),
         // LoggerObserver(),
       ],
   );

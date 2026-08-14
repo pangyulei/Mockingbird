@@ -50,7 +50,7 @@ final class DBSubtitleProvider
   }
 }
 
-String _$dBSubtitleHash() => r'a726b30520adace8d7eff380fb8874c17be68f72';
+String _$dBSubtitleHash() => r'39df3a32964decfaba05b4a55435f0303470b37d';
 
 final class DBSubtitleFamily extends $Family
     with

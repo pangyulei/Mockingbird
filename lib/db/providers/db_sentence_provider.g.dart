@@ -50,7 +50,7 @@ final class DBSentenceProvider
   }
 }
 
-String _$dBSentenceHash() => r'b6ef049e2b5c2a1029867ade5eb6534e75541404';
+String _$dBSentenceHash() => r'2cf8ecf7498c97f142db0f3bd793a09e560a7fcd';
 
 final class DBSentenceFamily extends $Family
     with

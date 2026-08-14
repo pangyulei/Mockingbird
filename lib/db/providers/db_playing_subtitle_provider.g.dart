@@ -33,7 +33,7 @@ final class DBPlayingSubtitleProvider
   DBPlayingSubtitle create() => DBPlayingSubtitle();
 }
 
-String _$dBPlayingSubtitleHash() => r'f9dca6efdcdc14873c6ea1bc96a8506caf029843';
+String _$dBPlayingSubtitleHash() => r'dad95f3dc05d41b737d7ce65fb01a5281e959fae';
 
 abstract class _$DBPlayingSubtitle extends $AsyncNotifier<SubtitleEntity?> {
   FutureOr<SubtitleEntity?> build();

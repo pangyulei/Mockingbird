@@ -504,9 +504,11 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                   ),
                 ),
           );
+          final max = duration.inMilliseconds.toDouble();
+          final val = position.inMilliseconds.clamp(0, max).toDouble();
           return Slider(
-            value: position.inMilliseconds.toDouble(),
-            max: duration.inMilliseconds.toDouble(),
+            value: val,
+            max: max,
             onChangeStart: (val) => _onVideoSliderStartChanged(
               ref,
               Duration(milliseconds: val.toInt()),
