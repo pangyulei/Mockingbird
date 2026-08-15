@@ -6,18 +6,13 @@ import 'package:mockingbird/app/app_lifecycle_handler.dart';
 import 'package:mockingbird/app/app_ui.dart';
 import 'package:mockingbird/db/db_objectbox.dart';
 import 'package:mockingbird/tab_player/player/providers/background_audio_handler_provider.dart';
-import 'package:mockingbird/tool/logger_observer.dart';
-import 'package:riverpod_devtools/riverpod_devtools.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); //objectbox official code
   await DBObjectBox.init();
   MediaKit.ensureInitialized();
-  final providerContainer = ProviderContainer(
-      observers: [
-        // RiverpodDevToolsObserver(),
-        // LoggerObserver(),
-      ],
+  final providerContainer = ProviderContainer(observers: [
+    ],
   );
   final backgroundAudioHandler = providerContainer.read(
     backgroundAudioHandlerProvider,
@@ -32,12 +27,15 @@ void main() async {
       androidShowNotificationBadge: true,
     ),
   );
-  final bgAudioNotifier = providerContainer.read(backgroundAudioHandlerProvider.notifier);
-  WidgetsBinding.instance.addObserver(AppLifecycleHandler(bgAudioNotifier));
-  runApp(
-    UncontrolledProviderScope(
-      container: providerContainer,
-      child: const AppUI(),
-    ),
+  final bgAudioNotifier = providerContainer.read(
+    backgroundAudioHandlerProvider.notifier,
   );
+  WidgetsBinding.instance.addObserver(AppLifecycleHandler(bgAudioNotifier));
+  runApp(const AppUI());
+  // runApp(
+  //   UncontrolledProviderScope(
+  //     container: providerContainer,
+  //     child: const AppUI(),
+  //   ),
+  // );
 }

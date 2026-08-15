@@ -13,8 +13,8 @@ class DBLogic {
   DBLogic.store(this._store); //for unit test
   DBLogic() : this.store(DBObjectBox().store);
 
-  Future<MetadataEntity?> loadMetadata() async {
-    return (await _store.box<MetadataEntity>().getAllAsync()).firstOrNull;
+  Future<MetadataEntity> loadMetadata() async {
+    return (await _store.box<MetadataEntity>().getAllAsync()).firstOrNull ?? MetadataEntity.empty();
   }
 
   Future<MetadataEntity> updateMetadata(MetadataEntity metadata) async {

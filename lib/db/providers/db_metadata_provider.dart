@@ -9,7 +9,7 @@ part 'db_metadata_provider.g.dart';
 class DBMetadata extends _$DBMetadata {
   @override
   Future<MetadataEntity> build() async {
-    return (await DBLogic().loadMetadata()) ?? MetadataEntity.empty();
+    return await DBLogic().loadMetadata();
   }
 
   Future<void> setPlayingMediaId(String id) async {

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_provider.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_bloc.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_events.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:mockingbird/tool/shrink_ui.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../tool/extensions.dart';
 
-class AlbumListUI extends ConsumerStatefulWidget {
+class AlbumListUI extends StatefulWidget {
   const AlbumListUI({super.key});
 
   @override
-  ConsumerState<AlbumListUI> createState() => _AlbumListUIState();
+  State<AlbumListUI> createState() => _AlbumListUIState();
 }
 
-class _AlbumListUIState extends ConsumerState<AlbumListUI> with WidgetsBindingObserver {
+class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
@@ -31,31 +32,40 @@ class _AlbumListUIState extends ConsumerState<AlbumListUI> with WidgetsBindingOb
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      ref.invalidate(albumListProvider);
+      // ref.invalidate(albumListProvider); TODO handle this
     }
   }
 
   @override
   Widget build(BuildContext ctx) {
-    final stateType = ref.watch(albumListProvider.select((st) => st.value?.runtimeType));
-    debugPrint('albumlist stateType: $stateType');
-    // showLoading(stateType == null);
-    switch (stateType) {
-      case AlbumListNotYetRequested:
-        return _pageForRequestPermissions();
-      case AlbumListPermissionDenied:
-        return _pageForGrantPermissionsViaSetting();
-      case AlbumListEmpty:
-        return _empty();
-      case AlbumListData:
-        return _page();
-      default:
-        //Null/null, means its asyncloading without data, initial load situation
-        return Scaffold(appBar: _appBar());
-    }
+    return BlocProvider(
+      create: (ctx) => AlbumListBloc()..add(const AlbumListLoadingEvent()),
+      child: Builder(
+        builder: (ctx) {
+          final stateType = ctx.select<AlbumListBloc, Type>(
+            (bloc) => bloc.state.runtimeType,
+          );
+          switch (stateType) {
+            case AlbumListLoadingState:
+              return Scaffold(appBar: _appBar());
+            case AlbumListNotYetRequestedState:
+              return _pageForRequestPermissions();
+            case AlbumListPermissionDeniedState:
+              return _pageForGrantPermissionsViaSetting();
+            case AlbumListEmptyState:
+              return _pageForEmpty();
+            case AlbumListDataState:
+              return _pageForData();
+            default:
+              assert(false, 'no such album list state $stateType');
+              return const SizedBox.shrink();
+          }
+        },
+      ),
+    );
   }
 
-  Widget _empty() {
+  Widget _pageForEmpty() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Scaffold(
@@ -144,9 +154,9 @@ class _AlbumListUIState extends ConsumerState<AlbumListUI> with WidgetsBindingOb
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
-                onPressed: () async {
-                  await ref.read(albumListProvider.notifier).requestPermission();
-                },
+                onPressed: () => context.read<AlbumListBloc>().add(
+                  const AlbumListRequestPermissionEvent(),
+                ),
                 icon: const Icon(Icons.settings_suggest_rounded),
                 label: const Text('Grant Permission'),
               ),
@@ -212,7 +222,7 @@ class _AlbumListUIState extends ConsumerState<AlbumListUI> with WidgetsBindingOb
     );
   }
 
-  Widget _page() {
+  Widget _pageForData() {
     return Scaffold(appBar: _appBar(), body: _grid());
   }
 
@@ -222,17 +232,18 @@ class _AlbumListUIState extends ConsumerState<AlbumListUI> with WidgetsBindingOb
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text('Albums'),
-          Consumer(
-            builder: (context, ref, child) {
-              final int? albumCount = ref.watch(
-                albumListProvider.select((st) => st.value?.as<AlbumListData>()?.albumIdList.length),
+          Builder(
+            builder: (ctx) {
+              final albumCount = ctx.select<AlbumListBloc, int?>(
+                (bloc) =>
+                    bloc.state.as<AlbumListDataState>()?.albumIdList.length,
               );
               if (albumCount == null) return const ShrinkUI();
               return Text(
                 '$albumCount albums',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.outline),
+                style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(ctx).colorScheme.outline,
+                ),
               );
             },
           ),
@@ -244,14 +255,12 @@ class _AlbumListUIState extends ConsumerState<AlbumListUI> with WidgetsBindingOb
   }
 
   Widget _grid() {
-    //grid has to watch whole albumlist, because its order may change, but count stay same.
-
-    return Consumer(
-      builder: (context, ref, child) {
+    return Builder(
+      builder: (ctx) {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
-        final albumIdList = ref.watch(
-          albumListProvider.select((st) => st.value?.as<AlbumListData>()?.albumIdList),
+        final albumIdList = ctx.select<AlbumListBloc, List<String>?>(
+          (bloc) => bloc.state.as<AlbumListDataState>()?.albumIdList,
         );
         if (albumIdList == null) return const ShrinkUI();
         return GridView.builder(

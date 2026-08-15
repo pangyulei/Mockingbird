@@ -33,7 +33,7 @@ final class DBMetadataProvider
   DBMetadata create() => DBMetadata();
 }
 
-String _$dBMetadataHash() => r'b584b67493a81eaa2dd19352cad211613ef2d179';
+String _$dBMetadataHash() => r'bf3c37f4c14ae1e29b2a81e79f4c29fe633208e7';
 
 abstract class _$DBMetadata extends $AsyncNotifier<MetadataEntity> {
   FutureOr<MetadataEntity> build();

@@ -2,20 +2,29 @@ sealed class AlbumListState {
   const AlbumListState();
 }
 
-class AlbumListNotYetRequested extends AlbumListState {
-  const AlbumListNotYetRequested();
+class AlbumListLoadingState extends AlbumListState {
+  final AlbumListLoadedState? loaded;
+  const AlbumListLoadingState({this.loaded});
 }
 
-class AlbumListPermissionDenied extends AlbumListState {
-  const AlbumListPermissionDenied();
+sealed class AlbumListLoadedState extends AlbumListState {
+  const AlbumListLoadedState();
 }
 
-class AlbumListEmpty extends AlbumListState {
-  const AlbumListEmpty();
+class AlbumListNotYetRequestedState extends AlbumListLoadedState {
+  const AlbumListNotYetRequestedState();
 }
 
-class AlbumListData extends AlbumListState {
+class AlbumListPermissionDeniedState extends AlbumListLoadedState {
+  const AlbumListPermissionDeniedState();
+}
+
+class AlbumListEmptyState extends AlbumListLoadedState {
+  const AlbumListEmptyState();
+}
+
+class AlbumListDataState extends AlbumListLoadedState {
   final List<String> albumIdList;
 
-  const AlbumListData({required this.albumIdList});
+  const AlbumListDataState({required this.albumIdList});
 }

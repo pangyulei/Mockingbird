@@ -7,7 +7,7 @@ import Foundation
 
 import audio_service
 import audio_session
-import file_picker
+import file_picker_darwin
 import media_kit_video
 import objectbox_flutter_libs
 import package_info_plus

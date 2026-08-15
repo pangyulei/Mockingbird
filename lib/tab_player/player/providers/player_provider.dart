@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:collection/collection.dart';
 import 'package:defer/defer.dart';
 import 'package:file_picker/file_picker.dart';
@@ -9,7 +11,6 @@ import 'package:mockingbird/tab_player/player/providers/player_media_controller_
 import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
 import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
-import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
@@ -94,10 +95,9 @@ class PlayerNotifier extends Notifier<void> {
 
   void _listenToLoopSentenceEnd() {
     ref.listen(
-      playerMediaProvider
-          .select(
-            (st) => st.value?.as<PlayerMediaData>()?.position,
-          ),
+      playerMediaProvider.select(
+        (st) => st.value?.as<PlayerMediaData>()?.position,
+      ),
       (_, position) {
         if (position == null) return;
         _mediaPositionChanged(position);
@@ -132,10 +132,7 @@ class PlayerNotifier extends Notifier<void> {
     await ref.read(playerMediaProvider.notifier).seek(position);
   }
 
-  Future<void> videoSliderChanging(
-    Duration position,
-    Duration duration,
-  ) async {
+  Future<void> videoSliderChanging(Duration position, Duration duration) async {
     await ref.read(playerMediaProvider.notifier).seek(position);
   }
 
@@ -221,11 +218,11 @@ class PlayerNotifier extends Notifier<void> {
         type: FileType.custom,
         allowedExtensions: [...subtitleExtensions],
       );
-      final subtitlePath = pickedFiles?.files
+      final subtitlePath = pickedFiles
+          .map((pf) => File(pf.xFile.path))
+          .toList()
           .firstWhereOrNull(
-            (f) => f.path == null
-                ? false
-                : subtitleExtensions.contains(p.extension(f.path!)),
+            (f) => subtitleExtensions.contains(p.extension(f.path)),
           )
           ?.path;
       return subtitlePath;
