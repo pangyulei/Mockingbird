@@ -12,7 +12,6 @@ import 'package:mockingbird/tab_player/player/providers/player_title_provider.da
 import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
 import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
-import 'package:mockingbird/tool/shrink_ui.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../../app/app_route.dart';
@@ -29,7 +28,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   final _scrollController = ItemScrollController();
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     //keep playerProvider alive while page exist
     ref.listen(playerProvider(_scrollController), (previous, next) {});
     ref.listen(playerLoopProvider, (previous, next) {});
@@ -39,9 +38,9 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     debugPrint('player state type $stateType');
     switch (stateType) {
       case PlayerMediaNull:
-        return _empty(ctx);
+        return _empty(context);
       case PlayerMediaData:
-        return _page(ctx);
+        return _page(context);
       default:
         return Scaffold(appBar: _appBar());
     }
@@ -127,25 +126,25 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     ref.read(playerSettingProvider.notifier).toggleVolume();
   }
 
-  void _onGoToAlbums(BuildContext ctx) {
-    ctx.go(AppRoute.albumList);
+  void _onGoToAlbums(BuildContext context) {
+    context.go(AppRoute.albumList);
   }
 
-  Widget _page(BuildContext ctx) {
-    final theme = Theme.of(ctx);
+  Widget _page(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _appBar(),
-      body: _body(ctx),
+      body: _body(context),
       floatingActionButton: _floatingButtons(),
     );
   }
 
-  Widget _body(BuildContext ctx) {
-    return Column(children: [_videoWidgets(ctx), _sentenceList(ctx)]);
+  Widget _body(BuildContext context) {
+    return Column(children: [_videoWidgets(context), _sentenceList(context)]);
   }
 
-  Widget _videoWidgets(BuildContext ctx) {
+  Widget _videoWidgets(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
@@ -166,8 +165,8 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
           );
           return Column(
             children: [
-              _displayer(ctx, ref, videoController),
-              _controlBar(ctx, ref),
+              _displayer(context, ref, videoController),
+              _controlBar(context, ref),
             ],
           );
         },
@@ -176,19 +175,19 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget _displayer(
-    BuildContext ctx,
+    BuildContext context,
     WidgetRef ref,
     PlayerMediaControllerITF mediaController,
   ) {
     if (mediaController.type == .video) {
-      return _videoDisplayer(ctx, ref, mediaController);
+      return _videoDisplayer(context, ref, mediaController);
     } else {
-      return _audioDisplayer(ctx, ref, mediaController);
+      return _audioDisplayer(context, ref, mediaController);
     }
   }
 
   Widget _videoDisplayer(
-    BuildContext ctx,
+    BuildContext context,
     WidgetRef ref,
     PlayerMediaControllerITF mediaController,
   ) {
@@ -211,7 +210,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 8),
-                      child: _progressSlider(ctx, mediaController),
+                      child: _progressSlider(context, mediaController),
                     ),
                   ],
                 ),
@@ -228,7 +227,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget _audioDisplayer(
-    BuildContext ctx,
+    BuildContext context,
     WidgetRef ref,
     PlayerMediaControllerITF mediaController,
   ) {
@@ -249,7 +248,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: _progressSlider(ctx, mediaController),
+                child: _progressSlider(context, mediaController),
               ),
             ],
           ),
@@ -278,12 +277,12 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _sentenceList(BuildContext ctx) {
+  Widget _sentenceList(BuildContext context) {
     return Expanded(
       child: ColoredBox(
-        color: Theme.of(ctx).scaffoldBackgroundColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: Consumer(
-          builder: (ctx, ref, child) {
+          builder: (context, ref, child) {
             final data = ref.watch(playerSubtitleProvider).value;
             if (data is PlayerSubtitleData) {
               return ScrollablePositionedList.builder(
@@ -301,9 +300,9 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                 },
               );
             } else if (data is PlayerSubtitleEmpty) {
-              return _noSubtitle(ctx, ref);
+              return _noSubtitle(context, ref);
             } else {
-              return const ShrinkUI();
+              return const SizedBox.shrink();
             }
           },
         ),
@@ -311,8 +310,8 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _noSubtitle(BuildContext ctx, WidgetRef ref) {
-    final theme = Theme.of(ctx);
+  Widget _noSubtitle(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return InkWell(
       onTap: () => _onAddSubtitle(ref),
@@ -352,7 +351,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         final show = ref.watch(
           playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData),
         );
-        if (!show) return const ShrinkUI();
+        if (!show) return const SizedBox.shrink();
         final colorScheme = Theme.of(context).colorScheme;
         return Column(
           mainAxisSize: MainAxisSize.min,
@@ -389,14 +388,14 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Consumer(
-          builder: (ctx, ref, child) {
+          builder: (context, ref, child) {
             final bool showVolumeSlider = ref.watch(
               playerSettingProvider.select((st) => st.showVolumeSlider),
             );
             if (showVolumeSlider) {
-              return Expanded(child: _verticalVolumeSlider(ctx));
+              return Expanded(child: _verticalVolumeSlider(context));
             } else {
-              return const ShrinkUI();
+              return const SizedBox.shrink();
             }
           },
         ),
@@ -411,14 +410,14 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       children: [
         _volumeButton(ref),
         Consumer(
-          builder: (ctx, ref, child) {
+          builder: (context, ref, child) {
             final showVolumeSlider = ref.watch(
               playerSettingProvider.select((st) => st.showVolumeSlider),
             );
             if (showVolumeSlider) {
-              return Expanded(child: _horizontalVolumeSlider(ctx));
+              return Expanded(child: _horizontalVolumeSlider(context));
             } else {
-              return const ShrinkUI();
+              return const SizedBox.shrink();
             }
           },
         ),
@@ -445,14 +444,14 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _verticalVolumeSlider(BuildContext ctx) {
-    return RotatedBox(quarterTurns: 3, child: _horizontalVolumeSlider(ctx));
+  Widget _verticalVolumeSlider(BuildContext context) {
+    return RotatedBox(quarterTurns: 3, child: _horizontalVolumeSlider(context));
   }
 
-  Widget _horizontalVolumeSlider(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _horizontalVolumeSlider(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
-      data: SliderTheme.of(ctx).copyWith(
+      data: SliderTheme.of(context).copyWith(
         trackHeight: 3.0,
         // thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 24.0),
@@ -477,12 +476,12 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget _progressSlider(
-    BuildContext ctx,
+    BuildContext context,
     PlayerMediaControllerITF mediaController,
   ) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
-      data: SliderTheme.of(ctx).copyWith(
+      data: SliderTheme.of(context).copyWith(
         trackHeight: 3.0,
         // thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 24.0),
@@ -530,9 +529,9 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _empty(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
-    final textTheme = Theme.of(ctx).textTheme;
+  Widget _empty(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
@@ -586,7 +585,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
-                onPressed: () => _onGoToAlbums(ctx),
+                onPressed: () => _onGoToAlbums(context),
                 icon: const Icon(Icons.library_music_rounded),
                 label: const Text('Go to Albums'),
               ),
@@ -610,7 +609,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     return SizedBox(
       height: 24,
       child: Consumer(
-        builder: (ctx, ref, _) {
+        builder: (context, ref, _) {
           final title = ref.watch(
             playerTitleProvider.select((st) => st.value ?? ''),
           );
@@ -634,8 +633,8 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _controlBar(BuildContext ctx, WidgetRef ref) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _controlBar(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -646,24 +645,24 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          _playOrPauseButton(ctx),
+          _playOrPauseButton(context),
           const SizedBox(width: 16),
-          _loopButton(ctx),
+          _loopButton(context),
           const Spacer(),
-          _speedDownButton(ctx, ref),
+          _speedDownButton(context, ref),
           const SizedBox(width: 8),
-          _speedLabel(ctx, ref),
+          _speedLabel(context, ref),
           const SizedBox(width: 8),
-          _speedUpButton(ctx, ref),
+          _speedUpButton(context, ref),
         ],
       ),
     );
   }
 
-  Widget _playOrPauseButton(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _playOrPauseButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer(
-      builder: (ctx, ref, child) {
+      builder: (context, ref, child) {
         final isPlaying = ref.watch(
           playerMediaProvider.select(
             (st) => (st.value as PlayerMediaData).playing,
@@ -693,18 +692,18 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _loopButton(BuildContext ctx) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _loopButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Consumer(
-      builder: (ctx, ref, child) {
+      builder: (context, ref, child) {
         final hasSubtitle = ref.watch(
           playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData),
         );
-        if (!hasSubtitle) return const ShrinkUI();
+        if (!hasSubtitle) return const SizedBox.shrink();
         final loop = ref.watch(
           playerLoopProvider.select((st) => st.value?.loop),
         );
-        if (loop == null) return const ShrinkUI();
+        if (loop == null) return const SizedBox.shrink();
         return IconButton(
           onPressed: () => _onToggleLoop(ref),
           icon: Icon(
@@ -719,30 +718,30 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _speedDownButton(BuildContext ctx, WidgetRef ref) {
+  Widget _speedDownButton(BuildContext context, WidgetRef ref) {
     return IconButton(
       onPressed: () => _onDecSpeed(ref),
       icon: const Icon(Icons.remove_circle_outline_rounded),
-      color: Theme.of(ctx).colorScheme.outline,
+      color: Theme.of(context).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
       constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
 
-  Widget _speedUpButton(BuildContext ctx, WidgetRef ref) {
+  Widget _speedUpButton(BuildContext context, WidgetRef ref) {
     return IconButton(
       onPressed: () => _onIncSpeed(ref),
       icon: const Icon(Icons.add_circle_outline_rounded),
-      color: Theme.of(ctx).colorScheme.outline,
+      color: Theme.of(context).colorScheme.outline,
       style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
       constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
       padding: EdgeInsets.zero,
     );
   }
 
-  Widget _speedLabel(BuildContext ctx, WidgetRef ref) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+  Widget _speedLabel(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: () => _onResetSpeed(ref),
       child: Container(
@@ -752,7 +751,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Consumer(
-          builder: (ctx, ref, _) {
+          builder: (context, ref, _) {
             final speed = ref.watch(
               playerSettingProvider.select((st) => st.speed),
             );

@@ -9,6 +9,6 @@ class AlbumCardLoadingEvent extends AlbumCardEvent {
 }
 
 class AlbumCardClickEvent extends AlbumCardEvent {
-  final BuildContext ctx;
-  const AlbumCardClickEvent(this.ctx);
+  final BuildContext context;
+  const AlbumCardClickEvent(this.context);
 }

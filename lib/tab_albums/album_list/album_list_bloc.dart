@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/db/db_logic.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_events.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -30,30 +30,27 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
     PermissionState permissionState = await PhotoManager.getPermissionState(
       requestOption: option,
     );
-    emit(await _stateByPermission(permissionState));
-  }
-
-  Future<AlbumListLoadedState> _stateByPermission(
-    PermissionState permissionState,
-  ) async {
     if (!permissionState.granted) {
-      return const AlbumListPermissionDeniedState();
+      emit(const AlbumListPermissionDeniedState());
+      return;
     }
     final albumList = await PhotoManager.getAssetPathList(
       type: RequestType.audio | RequestType.video,
     );
     if (albumList.isEmpty) {
-      return const AlbumListEmptyState();
+      emit(const AlbumListEmptyState());
+      return;
     }
-    return AlbumListDataState(albumIdList: albumList.map((a) => a.id).toList());
+    emit(AlbumListDataState(albumIdList: albumList.map((a) => a.id).toList()));
   }
 
   void _onRequestPermission(
     AlbumListRequestPermissionEvent event,
     Emitter<AlbumListState> emit,
   ) async {
-    final permissionState = await PhotoManager.requestPermissionExtend();
-    emit(await _stateByPermission(permissionState));
+    await PhotoManager.requestPermissionExtend();
+    emit(const AlbumListLoadingState());
+    _onLoading(const AlbumListLoadingEvent(), emit);
   }
 }
 

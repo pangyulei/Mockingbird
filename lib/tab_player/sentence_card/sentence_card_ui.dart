@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_provider.dart';
-import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 
 class SentenceCardUI extends ConsumerWidget {
   final String _id;
@@ -13,8 +12,8 @@ class SentenceCardUI extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext ctx, WidgetRef ref) {
-    final theme = Theme.of(ctx);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Padding(

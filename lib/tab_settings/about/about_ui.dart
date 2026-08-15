@@ -7,8 +7,8 @@ class AboutUI extends ConsumerWidget {
   const AboutUI({super.key});
 
   @override
-  Widget build(BuildContext ctx, WidgetRef ref) {
-    final theme = Theme.of(ctx);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
@@ -67,15 +67,15 @@ class AboutUI extends ConsumerWidget {
               style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
             ),
             const SizedBox(height: 48),
-            _contactSection(ctx),
+            _contactSection(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _contactSection(BuildContext ctx) {
-    final theme = Theme.of(ctx);
+  Widget _contactSection(BuildContext context) {
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     return Column(
@@ -91,14 +91,14 @@ class AboutUI extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         _contactItem(
-          ctx,
+          context,
           icon: Icons.email_outlined,
           label: 'Gmail',
           value: 'pangyulei@gmail.com',
         ),
         const SizedBox(height: 12),
         _contactItem(
-          ctx,
+          context,
           icon: Icons.chat_bubble_outline,
           label: 'QQ频道',
           value: 'm0ckingbird',
@@ -108,17 +108,17 @@ class AboutUI extends ConsumerWidget {
   }
 
   Widget _contactItem(
-    BuildContext ctx, {
+    BuildContext context, {
     required IconData icon,
     required String label,
     required String value,
   }) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return InkWell(
       onTap: () {
         Clipboard.setData(ClipboardData(text: value));
-        ScaffoldMessenger.of(ctx).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               '$label copied to clipboard',
@@ -147,13 +147,13 @@ class AboutUI extends ConsumerWidget {
                 Text(
                   label,
                   style: Theme.of(
-                    ctx,
+                    context,
                   ).textTheme.labelSmall?.copyWith(color: colorScheme.outline),
                 ),
                 Text(
                   value,
                   style: Theme.of(
-                    ctx,
+                    context,
                   ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ],

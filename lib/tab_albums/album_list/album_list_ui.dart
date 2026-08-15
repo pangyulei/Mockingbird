@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_bloc.dart';
-import 'package:mockingbird/tab_albums/album_list/album_list_events.dart';
+import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
-import 'package:mockingbird/tool/shrink_ui.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../tool/extensions.dart';
@@ -37,14 +37,19 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
   }
 
   @override
-  Widget build(BuildContext ctx) {
+  Widget build(BuildContext context) {
     return BlocProvider(
-      create: (ctx) => AlbumListBloc()..add(const AlbumListLoadingEvent()),
+      create: (context) => AlbumListBloc()..add(const AlbumListLoadingEvent()),
       child: Builder(
-        builder: (ctx) {
-          final stateType = ctx.select<AlbumListBloc, Type>(
+        builder: (context) {
+          final stateType = context.select<AlbumListBloc, Type>(
             (bloc) => bloc.state.runtimeType,
           );
+          if (stateType is AlbumListLoadingState) {
+            EasyLoading.show(maskType: .clear);
+          } else {
+            EasyLoading.dismiss();
+          }
           switch (stateType) {
             case AlbumListLoadingState:
               return Scaffold(appBar: _appBar());
@@ -233,16 +238,16 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
         children: [
           const Text('Albums'),
           Builder(
-            builder: (ctx) {
-              final albumCount = ctx.select<AlbumListBloc, int?>(
+            builder: (context) {
+              final albumCount = context.select<AlbumListBloc, int?>(
                 (bloc) =>
                     bloc.state.as<AlbumListDataState>()?.albumIdList.length,
               );
-              if (albumCount == null) return const ShrinkUI();
+              if (albumCount == null) return const SizedBox.shrink();
               return Text(
                 '$albumCount albums',
-                style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(ctx).colorScheme.outline,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
                 ),
               );
             },
@@ -256,13 +261,13 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
 
   Widget _grid() {
     return Builder(
-      builder: (ctx) {
+      builder: (context) {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
-        final albumIdList = ctx.select<AlbumListBloc, List<String>?>(
+        final albumIdList = context.select<AlbumListBloc, List<String>?>(
           (bloc) => bloc.state.as<AlbumListDataState>()?.albumIdList,
         );
-        if (albumIdList == null) return const ShrinkUI();
+        if (albumIdList == null) return const SizedBox.shrink();
         return GridView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: albumIdList.length,
@@ -271,7 +276,7 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
             mainAxisSpacing: 4,
             crossAxisSpacing: 4,
           ),
-          itemBuilder: (ctx, i) {
+          itemBuilder: (context, i) {
             return AlbumCardUI(albumIdList[i]);
           },
         );

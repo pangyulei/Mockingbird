@@ -45,7 +45,8 @@ class AppRoute {
     initialLocation: AppRoute.albumList,
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
-        builder: (ctx, state, shell) => _indexesStackScaffold(ctx, shell, onAppTab),
+        builder: (context, state, shell) =>
+            _indexesStackScaffold(context, shell, onAppTab),
         branches: [
           StatefulShellBranch(routes: [_albumsRoute()]),
           StatefulShellBranch(routes: [_playerRoute()]),
@@ -66,7 +67,7 @@ class AppRoute {
       GoRoute(
         path: ':id',
         builder: (BuildContext context, GoRouterState state) {
-          final albumId = state.pathParameters['id'];
+          final albumId = state.pathParameters['id'] ?? '';
           return AlbumDetailUI(albumId);
         },
       ),
@@ -93,15 +94,17 @@ class AppRoute {
     builder: (BuildContext context, GoRouterState state) {
       return const SettingsUI();
     },
-    routes: [GoRoute(path: 'about', builder: (context, state) => const AboutUI())],
+    routes: [
+      GoRoute(path: 'about', builder: (context, state) => const AboutUI()),
+    ],
   );
 
   static Widget _indexesStackScaffold(
-    BuildContext ctx,
+    BuildContext context,
     StatefulNavigationShell shell,
     OnAppTab onAppTab,
   ) {
-    final colorScheme = Theme.of(ctx).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
       body: shell,
       bottomNavigationBar: Container(

@@ -1,13 +1,28 @@
-class AlbumDetailState {
+sealed class AlbumDetailState {
+  const AlbumDetailState();
+}
+
+class AlbumDetailLoadingState extends AlbumDetailState {
+  const AlbumDetailLoadingState();
+}
+
+sealed class AlbumDetailLoadedState extends AlbumDetailState {
+  const AlbumDetailLoadedState();
+}
+
+class AlbumDetailNotFoundState extends AlbumDetailLoadedState {
+  const AlbumDetailNotFoundState();
+}
+
+class AlbumDetailEmptyState extends AlbumDetailLoadedState {
+  final String name;
+  const AlbumDetailEmptyState(this.name);
+}
+
+class AlbumDetailDataState extends AlbumDetailLoadedState {
   final String name;
   final List<String> mediaIdList;
 
-  const AlbumDetailState({required this.name, required this.mediaIdList});
+  const AlbumDetailDataState({required this.name, required this.mediaIdList});
 
-  AlbumDetailState copyWith({String? name, List<String>? mediaIdList}) {
-    return AlbumDetailState(
-      name: name ?? this.name,
-      mediaIdList: mediaIdList ?? this.mediaIdList,
-    );
-  }
 }

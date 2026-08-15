@@ -4,19 +4,18 @@ import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/tab_settings/settings_provider.dart';
 import 'package:mockingbird/tab_settings/settings_state.dart';
-import 'package:mockingbird/tool/shrink_ui.dart';
 
 class SettingsUI extends ConsumerWidget {
   const SettingsUI({super.key});
 
   @override
-  Widget build(BuildContext ctx, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final stateType = ref.watch(
       settingsProvider.select((st) => st.value?.runtimeType),
     );
     switch (stateType) {
       case SettingsState:
-        return _page(ctx);
+        return _page(context);
       default:
         return Scaffold(appBar: _appBar());
     }
@@ -26,47 +25,47 @@ class SettingsUI extends ConsumerWidget {
     return AppBar(title: const Text('Settings'));
   }
 
-  Widget _page(BuildContext ctx) {
+  Widget _page(BuildContext context) {
     return Scaffold(
       appBar: _appBar(),
       body: ListView(
         children: [
-          _sectionHeader(ctx, 'Playback'),
+          _sectionHeader(context, 'Playback'),
           Consumer(
-            builder: (ctx, ref, child) {
+            builder: (context, ref, child) {
               final bool? loop = ref.watch(
                 settingsProvider.select((st) => st.value?.loop),
               );
-              if (loop == null) return const ShrinkUI();
+              if (loop == null) return const SizedBox.shrink();
               return SwitchListTile(
                 title: const Text('Default Loop Mode'),
                 subtitle: const Text('Loop current sentence by default'),
                 value: loop,
                 onChanged: (_) => _onToggleLoop(ref),
-                activeThumbColor: Theme.of(ctx).colorScheme.primary,
+                activeThumbColor: Theme.of(context).colorScheme.primary,
               );
             },
           ),
           const Divider(),
-          _sectionHeader(ctx, 'Support'),
+          _sectionHeader(context, 'Support'),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('About Mockingbird'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _onTapAbout(ctx),
+            onTap: () => _onTapAbout(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _sectionHeader(BuildContext ctx, String title) {
+  Widget _sectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         title.toUpperCase(),
-        style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
-          color: Theme.of(ctx).colorScheme.primary,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
@@ -78,7 +77,7 @@ class SettingsUI extends ConsumerWidget {
     await ref.read(settingsProvider.notifier).toggleLoop();
   }
 
-  void _onTapAbout(BuildContext ctx) {
-    ctx.push(AppRoute.about);
+  void _onTapAbout(BuildContext context) {
+    context.push(AppRoute.about);
   }
 }
