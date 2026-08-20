@@ -1,3 +1,5 @@
+import 'package:photo_manager/photo_manager.dart';
+
 sealed class AlbumDetailState {
   final bool loading;
   const AlbumDetailState({this.loading = false});
@@ -36,23 +38,23 @@ class AlbumDetailEmptyState extends AlbumDetailState {
 
 class AlbumDetailDataState extends AlbumDetailState {
   final String name;
-  final List<String> mediaIdList;
+  final List<AssetEntity> mediaList;
 
   const AlbumDetailDataState({
     super.loading,
     required this.name,
-    required this.mediaIdList,
+    required this.mediaList,
   });
   @override
   AlbumDetailDataState copyWith({
     bool? loading,
     String? name,
-    List<String>? mediaIdList,
+    List<AssetEntity>? mediaIdList,
   }) {
     return AlbumDetailDataState(
       loading: loading ?? this.loading,
       name: name ?? this.name,
-      mediaIdList: mediaIdList ?? this.mediaIdList,
+      mediaList: mediaIdList ?? mediaList,
     );
   }
 }

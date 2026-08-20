@@ -1,30 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_bloc.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_event.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 import '../media_card/media_card_ui.dart';
 
-class AlbumDetailUI extends StatelessWidget {
-  final String? _albumId;
+abstract interface class AlbumDetailBlocITF {
+  MediaCardBlocType mediaCardBlocAtIndex(int index);
+}
 
-  const AlbumDetailUI(this._albumId, {super.key});
+abstract class AlbumDetailBlocType
+    extends Bloc<AlbumDetailEvent, AlbumDetailState>
+    implements AlbumDetailBlocITF {
+  AlbumDetailBlocType(super.initialState);
+}
+
+class AlbumDetailUI extends StatelessWidget {
+  final AlbumDetailBlocType _bloc;
+  const AlbumDetailUI(this._bloc, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          AlbumDetailBloc(_albumId)..add(const AlbumDetailInitEvent()),
+      create: (context) => _bloc..add(const AlbumDetailInitEvent()),
       child: Builder(
         builder: (context) {
           final (stateType, loading) = context
-              .select<AlbumDetailBloc, (Type, bool)>(
+              .select<AlbumDetailBlocType, (Type, bool)>(
                 (bloc) => (bloc.state.runtimeType, bloc.state.loading),
               );
-          showLoading(loading);
+          // showLoading(loading);
           switch (stateType) {
             case AlbumDetailInitState:
               return _pageForLoading();
@@ -56,11 +64,11 @@ class AlbumDetailUI extends StatelessWidget {
         title: Builder(
           builder: (context) {
             final (name, count) = context
-                .select<AlbumDetailBloc, (String, int)>((bloc) {
+                .select<AlbumDetailBlocType, (String, int)>((bloc) {
                   final data = bloc.state.as<AlbumDetailDataState>();
                   return (
                     data?.name ?? 'Album Not Found',
-                    data?.mediaIdList.length ?? 0,
+                    data?.mediaList.length ?? 0,
                   );
                 });
             return Column(
@@ -81,14 +89,14 @@ class AlbumDetailUI extends StatelessWidget {
       ),
       body: Builder(
         builder: (context) {
-          final mediaIdList = context.select<AlbumDetailBloc, List<String>>(
-            (bloc) => bloc.state.as<AlbumDetailDataState>()?.mediaIdList ?? [],
+          final mediaList = context.select<AlbumDetailBlocType, List<AssetEntity>>(
+            (bloc) => bloc.state.as<AlbumDetailDataState>()?.mediaList ?? [],
           );
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: mediaIdList.length,
+            itemCount: mediaList.length,
             itemBuilder: (context, i) {
-              return MediaCardUI(mediaIdList[i]);
+              return MediaCardUI(_bloc.mediaCardBlocAtIndex(i));
             },
           );
         },
@@ -108,7 +116,7 @@ class AlbumDetailUI extends StatelessWidget {
       appBar: AppBar(
         title: Builder(
           builder: (context) {
-            final name = context.select<AlbumDetailBloc, String>(
+            final name = context.select<AlbumDetailBlocType, String>(
               (bloc) => bloc.state.as<AlbumDetailEmptyState>()?.name ?? '',
             );
             return Column(

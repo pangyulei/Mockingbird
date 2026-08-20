@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/tab_albums/media_card/media_card_bloc.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_event.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
+
+typedef MediaCardBlocType = Bloc<MediaCardEvent, MediaCardState>;
 
 class MediaCardUI extends StatelessWidget {
-  final String _id;
-
-  const MediaCardUI(this._id, {super.key});
+  final MediaCardBlocType _bloc;
+  const MediaCardUI(this._bloc, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => MediaCardBloc(_id)..add(const MediaCardInitEvent()),
+      create: (context) => _bloc..add(const MediaCardInitEvent()),
       child: Builder(
         builder: (context) {
           final theme = Theme.of(context);
           final colorScheme = theme.colorScheme;
-          final playing = context.select<MediaCardBloc, bool>(
+          final playing = context.select<MediaCardBlocType, bool>(
             (bloc) => bloc.state.playing,
           );
           return Container(
@@ -37,8 +38,8 @@ class MediaCardUI extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: GestureDetector(
-                onTap: () => context.read<MediaCardBloc>().add(
-                  MediaCardClickEvent(context, _id),
+                onTap: () => context.read<MediaCardBlocType>().add(
+                  MediaCardClickEvent(context),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
@@ -76,9 +77,10 @@ class MediaCardUI extends StatelessWidget {
       builder: (context) {
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
-        final (name, playing) = context.select<MediaCardBloc, (String, bool)>(
-          (bloc) => (bloc.state.name, bloc.state.playing),
-        );
+        final (name, playing) = context
+            .select<MediaCardBlocType, (String, bool)>(
+              (bloc) => (bloc.state.name, bloc.state.playing),
+            );
         return (playing && name.isNotEmpty)
             ? SizedBox(
                 height: 20,
@@ -111,7 +113,7 @@ class MediaCardUI extends StatelessWidget {
     return Builder(
       builder: (context) {
         // Mocking hasSubtitle for now, as requested.
-        final hasSubtitle = context.select<MediaCardBloc, bool>(
+        final hasSubtitle = context.select<MediaCardBlocType, bool>(
           (bloc) => bloc.state.hasSubtitle,
         );
         if (!hasSubtitle) return const SizedBox.shrink();
@@ -132,7 +134,7 @@ class MediaCardUI extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     return Builder(
       builder: (context) {
-        final playing = context.select<MediaCardBloc, bool>(
+        final playing = context.select<MediaCardBlocType, bool>(
           (bloc) => bloc.state.playing,
         );
         return Container(

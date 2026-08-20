@@ -13,8 +13,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../sentence_card/sentence_card_ui.dart';
 
 class PlayerUI extends StatefulWidget {
-  final String? _mediaId;
-  const PlayerUI({super.key, this._mediaId});
+  const PlayerUI({super.key});
 
   @override
   State<StatefulWidget> createState() => _PlayerUIState();
@@ -26,15 +25,13 @@ class _PlayerUIState extends State<PlayerUI> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          PlayerBloc(_scrollController, widget._mediaId)
-            ..add(const PlayerInitEvent()),
+      create: (context) => PlayerBloc(_scrollController),
       child: Builder(
         builder: (context) {
           final (stateType, loading) = context.select<PlayerBloc, (Type, bool)>(
             (bloc) => (bloc.state.runtimeType, bloc.state.loading),
           );
-          showLoading(loading);
+          // showLoading(loading);
           switch (stateType) {
             case PlayerInitState:
               return _pageForInit();
@@ -76,7 +73,6 @@ class _PlayerUIState extends State<PlayerUI> {
   // void _onVolumeChanged(WidgetRef ref, double newVolume) async {
   //   await ref.read(playerSettingProvider.notifier).updateVolume(newVolume);
   // }
-
 
   // void _onGoToAlbums(BuildContext context) {
   //   context.go(AppRoute.albumList);
@@ -564,7 +560,7 @@ class _PlayerUIState extends State<PlayerUI> {
     return AppBar(
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
-      automaticallyImplyLeading: false,
+      // automaticallyImplyLeading: false,
       title: _title(),
     );
   }

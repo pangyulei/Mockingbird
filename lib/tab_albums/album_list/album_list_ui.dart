@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_bloc.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
@@ -46,7 +45,7 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
               .select<AlbumListBloc, (Type, bool)>(
                 (bloc) => (bloc.state.runtimeType, bloc.state.loading),
               );
-          showLoading(loading);
+          // showLoading(loading);
           switch (stateType) {
             case AlbumListInitState:
               return _pageForInit();

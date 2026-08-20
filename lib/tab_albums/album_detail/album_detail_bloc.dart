@@ -1,10 +1,17 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mockingbird/db/db.dart';
+import 'package:mockingbird/db/entities/metadata_entity.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_event.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_bloc.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-class AlbumDetailBloc extends Bloc<AlbumDetailEvent, AlbumDetailState> {
+class AlbumDetailBloc extends AlbumDetailBlocType {
   final String? _albumId;
+  late final MetadataEntity _metadata;
   AlbumDetailBloc(this._albumId) : super(const AlbumDetailInitState()) {
     on<AlbumDetailInitEvent>(_onInit);
   }
@@ -13,6 +20,7 @@ class AlbumDetailBloc extends Bloc<AlbumDetailEvent, AlbumDetailState> {
     AlbumDetailInitEvent event,
     Emitter<AlbumDetailState> emit,
   ) async {
+    _metadata = await DB.loadMetadata();
     if (_albumId == null) {
       emit(const AlbumDetailNotFoundState());
       return;
@@ -23,11 +31,12 @@ class AlbumDetailBloc extends Bloc<AlbumDetailEvent, AlbumDetailState> {
       start: 0,
       end: await album.assetCountAsync,
     );
-    emit(
-      AlbumDetailDataState(
-        name: album.name,
-        mediaIdList: mediaList.map((a) => a.id).toList(),
-      ),
-    );
+    emit(AlbumDetailDataState(name: album.name, mediaList: mediaList));
+  }
+
+  @override
+  MediaCardBlocType mediaCardBlocAtIndex(int index) {
+    final media = state.as<AlbumDetailDataState>()?.mediaList[index];
+    return MediaCardBloc(media, _metadata.playingMediaId);
   }
 }

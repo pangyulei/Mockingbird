@@ -3,7 +3,8 @@ sealed class PlayerEvent {
 }
 
 class PlayerInitEvent extends PlayerEvent {
-  const PlayerInitEvent();
+  final String? mediaId;
+  const PlayerInitEvent(this.mediaId);
 }
 
 class PlayerPositionChangeEvent extends PlayerEvent {

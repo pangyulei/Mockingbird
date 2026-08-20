@@ -10,6 +10,10 @@ class MediaCardInitEvent extends MediaCardEvent {
 
 class MediaCardClickEvent extends MediaCardEvent {
   final BuildContext context;
-  final String mediaId;
-  const MediaCardClickEvent(this.context, this.mediaId);
+  const MediaCardClickEvent(this.context);
+}
+
+class MediaCardPlayingMediaChangeEvent extends MediaCardEvent {
+  final String? playingMediaId;
+  const MediaCardPlayingMediaChangeEvent(this.playingMediaId);
 }

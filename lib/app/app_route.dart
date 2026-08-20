@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mockingbird/tab_albums/album_detail/album_detail_bloc.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
@@ -20,7 +21,7 @@ class AppRoute {
           builder: (context, state, shell) =>
               _indexesStackScaffold(context, shell, callback),
           branches: [
-            StatefulShellBranch(routes: [_albumsRoute()]),
+            StatefulShellBranch(routes: [_albumRoute()]),
             StatefulShellBranch(routes: [_playerRoute()]),
             StatefulShellBranch(routes: [_settingsRoute()]),
           ],
@@ -38,14 +39,13 @@ class AppRoute {
 
   // static String editAlbum(int id) => '$albums/$id/edit';
 
-  static String player({String? mediaId}) =>
-      mediaId == null ? '/player' : '/player/$mediaId';
+  static String get player => '/player';
 
   static String get settings => '/settings';
 
   static String get about => '$settings/about';
 
-  static GoRoute _albumsRoute() => GoRoute(
+  static GoRoute _albumRoute() => GoRoute(
     path: albumList,
     builder: (context, state) => const AlbumListUI(),
     routes: [
@@ -57,7 +57,7 @@ class AppRoute {
         path: ':albumId',
         builder: (BuildContext context, GoRouterState state) {
           final albumId = state.pathParameters['albumId'];
-          return AlbumDetailUI(albumId);
+          return AlbumDetailUI(AlbumDetailBloc(albumId));
         },
       ),
       // GoRoute(
@@ -72,19 +72,10 @@ class AppRoute {
   );
 
   static GoRoute _playerRoute() => GoRoute(
-    path: player(),
+    path: player,
     builder: (BuildContext context, GoRouterState state) {
       return const PlayerUI();
     },
-    routes: [
-      GoRoute(
-        path: ':mediaId',
-        builder: (context, state) {
-          final mediaId = state.pathParameters['mediaId'];
-          return PlayerUI(mediaId: mediaId);
-        },
-      ),
-    ],
   );
 
   static GoRoute _settingsRoute() => GoRoute(

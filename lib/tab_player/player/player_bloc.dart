@@ -11,6 +11,7 @@ import 'package:mockingbird/db/entities/subtitle_entity.dart';
 import 'package:mockingbird/tab_player/player/player.dart';
 import 'package:mockingbird/tab_player/player/player_event.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
+import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
@@ -25,12 +26,12 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   final ItemScrollController _scrollController;
   bool _isDraggingVideoSlider = false;
   bool _isPlayingBeforeDraged = false;
-  final String? _mediaId;
+  String? _mediaId;
   final _subList = <StreamSubscription>[];
 
-  PlayerBloc(this._scrollController, this._mediaId)
-    : super(const PlayerInitState()) {
+  PlayerBloc(this._scrollController) : super(const PlayerInitState()) {
     on<PlayerInitEvent>(_onInit);
+    on<PlayerPositionChangeEvent>(_onMediaPositionChange);
     on<PlayerToggleVolumeEvent>(_onToggleVolume);
     on<PlayerPauseEvent>(_onPause);
     on<PlayerPlayEvent>(_onPlay);
@@ -41,11 +42,23 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     on<PlayerVideoSliderStartChangeEvent>(_onVideoSliderStartChange);
     on<PlayerVideoSliderChangingEvent>(_onVideoSliderChanging);
     on<PlayerVideoSliderEndChangeEvent>(_onVideoSliderEndChange);
-    _subList.add(
+    _subList.addAll([
       SharedPlayer.player.stream.position.listen(
         (position) => add(PlayerPositionChangeEvent(position)),
       ),
-    );
+      EventHub.on<HubPlayingMediaChangedEvent>(
+        (event) => add(PlayerInitEvent(event.playingMediaId)),
+      ),
+    ]);
+  }
+
+  void _onMediaPositionChange(
+    PlayerPositionChangeEvent event,
+    Emitter<PlayerState> emit,
+  ) {
+    final state = this.state;
+    if (state is! PlayerDataState) return;
+    emit(state.copyWith(position: event.position));
   }
 
   @override
@@ -201,7 +214,8 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   }
 
   void _onInit(PlayerInitEvent event, Emitter<PlayerState> emit) async {
-    emit(await _reload(_mediaId));
+    _mediaId = event.mediaId;
+    emit(await _reload(event.mediaId));
   }
 
   Future<PlayerState> _reload(String? mediaId) async {
