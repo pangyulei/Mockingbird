@@ -7,23 +7,28 @@ import 'package:mockingbird/tab_settings/about/about_ui.dart';
 
 import '../tab_settings/settings_ui.dart';
 
-typedef OnAppTab = void Function(int index, StatefulNavigationShell shell);
+typedef OnClickTab = void Function(int index, StatefulNavigationShell shell);
 
 class AppRoute {
-  static AppRoute? _instance;
-  final GoRouter router;
-
-  AppRoute._(this.router);
-
-  factory AppRoute(OnAppTab onAppTab) {
-    final instance = _instance;
-    if (instance == null) {
-      final newInstance = AppRoute._(_router(onAppTab));
-      _instance = newInstance;
-      return newInstance;
-    } else {
-      return instance;
-    }
+  static GoRouter? _router;
+  static GoRouter init(OnClickTab callback) {
+    var router = _router;
+    router ??= GoRouter(
+      initialLocation: AppRoute.albumList,
+      routes: <RouteBase>[
+        StatefulShellRoute.indexedStack(
+          builder: (context, state, shell) =>
+              _indexesStackScaffold(context, shell, callback),
+          branches: [
+            StatefulShellBranch(routes: [_albumsRoute()]),
+            StatefulShellBranch(routes: [_playerRoute()]),
+            StatefulShellBranch(routes: [_settingsRoute()]),
+          ],
+        ),
+      ],
+    );
+    _router = router;
+    return router;
   }
 
   static String get albumList => '/albums';
@@ -33,41 +38,25 @@ class AppRoute {
 
   // static String editAlbum(int id) => '$albums/$id/edit';
 
-  static String get player => '/player';
-
-  // static String playerById(int id) => '$player/$id';
+  static String player({String? mediaId}) =>
+      mediaId == null ? '/player' : '/player/$mediaId';
 
   static String get settings => '/settings';
 
   static String get about => '$settings/about';
 
-  static GoRouter _router(OnAppTab onAppTab) => GoRouter(
-    initialLocation: AppRoute.albumList,
-    routes: <RouteBase>[
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, shell) =>
-            _indexesStackScaffold(context, shell, onAppTab),
-        branches: [
-          StatefulShellBranch(routes: [_albumsRoute()]),
-          StatefulShellBranch(routes: [_playerRoute()]),
-          StatefulShellBranch(routes: [_settingsRoute()]),
-        ],
-      ),
-    ],
-  );
-
   static GoRoute _albumsRoute() => GoRoute(
     path: albumList,
     builder: (context, state) => const AlbumListUI(),
-    routes: <RouteBase>[
+    routes: [
       // GoRoute(
       //   path: 'new',
       //   builder: (context, state) => const EditAlbumUI(null),
       // ),
       GoRoute(
-        path: ':id',
+        path: ':albumId',
         builder: (BuildContext context, GoRouterState state) {
-          final albumId = state.pathParameters['id'] ?? '';
+          final albumId = state.pathParameters['albumId'];
           return AlbumDetailUI(albumId);
         },
       ),
@@ -83,10 +72,19 @@ class AppRoute {
   );
 
   static GoRoute _playerRoute() => GoRoute(
-    path: AppRoute.player,
+    path: player(),
     builder: (BuildContext context, GoRouterState state) {
       return const PlayerUI();
     },
+    routes: [
+      GoRoute(
+        path: ':mediaId',
+        builder: (context, state) {
+          final mediaId = state.pathParameters['mediaId'];
+          return PlayerUI(mediaId: mediaId);
+        },
+      ),
+    ],
   );
 
   static GoRoute _settingsRoute() => GoRoute(
@@ -102,7 +100,7 @@ class AppRoute {
   static Widget _indexesStackScaffold(
     BuildContext context,
     StatefulNavigationShell shell,
-    OnAppTab onAppTab,
+    OnClickTab onAppTab,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(

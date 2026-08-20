@@ -1,150 +1,98 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marquee/marquee.dart';
-import 'package:mockingbird/tab_player/player/player_media_controller.dart';
-import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_setting_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_subtitle_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_title_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
-import 'package:mockingbird/tab_player/player/states/player_subtitle_state.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'package:mockingbird/tab_player/player/player.dart';
+import 'package:mockingbird/tab_player/player/player_bloc.dart';
+import 'package:mockingbird/tab_player/player/player_event.dart';
+import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../../app/app_route.dart';
 import '../sentence_card/sentence_card_ui.dart';
 
-class PlayerUI extends ConsumerStatefulWidget {
-  const PlayerUI({super.key});
+class PlayerUI extends StatefulWidget {
+  final String? _mediaId;
+  const PlayerUI({super.key, this._mediaId});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => PlayerUIState();
+  State<StatefulWidget> createState() => _PlayerUIState();
 }
 
-class PlayerUIState extends ConsumerState<PlayerUI> {
+class _PlayerUIState extends State<PlayerUI> {
   final _scrollController = ItemScrollController();
 
   @override
   Widget build(BuildContext context) {
-    //keep playerProvider alive while page exist
-    ref.listen(playerProvider(_scrollController), (previous, next) {});
-    ref.listen(playerLoopProvider, (previous, next) {});
-    final stateType = ref.watch(
-      playerMediaProvider.select((st) => st.value?.runtimeType),
+    return BlocProvider(
+      create: (context) =>
+          PlayerBloc(_scrollController, widget._mediaId)
+            ..add(const PlayerInitEvent()),
+      child: Builder(
+        builder: (context) {
+          final (stateType, loading) = context.select<PlayerBloc, (Type, bool)>(
+            (bloc) => (bloc.state.runtimeType, bloc.state.loading),
+          );
+          showLoading(loading);
+          switch (stateType) {
+            case PlayerInitState:
+              return _pageForInit();
+            case PlayerEmptyState:
+              return _pageForEmpty(context);
+            case PlayerDataState:
+              return _pageForData(context);
+            default:
+              assert(false, 'stateType $stateType missed');
+              return const SizedBox.shrink();
+          }
+        },
+      ),
     );
-    debugPrint('player state type $stateType');
-    switch (stateType) {
-      case PlayerMediaNull:
-        return _empty(context);
-      case PlayerMediaData:
-        return _page(context);
-      default:
-        return Scaffold(appBar: _appBar());
-    }
   }
 
-  void _onAddSubtitle(WidgetRef ref) async {
-    // await ref.read(playerProvider(_scrollController).notifier).addSubtitle();
+  Widget _pageForInit() {
+    return Scaffold(appBar: _appBar());
   }
 
-  void _onToggleLoop(WidgetRef ref) {
-    ref.read(playerLoopProvider.notifier).toggleLoop();
-  }
+  // void _onAddSubtitle(WidgetRef ref) async {
+  //   // await ref.read(playerProvider(_scrollController).notifier).addSubtitle();
+  // }
 
-  void _onPause(WidgetRef ref) async {
-    await ref.read(playerMediaProvider.notifier).pause();
-  }
+  // void _onScrollToPlayingSentence(WidgetRef ref) {
+  //   ref
+  //       .read(playerProvider(_scrollController).notifier)
+  //       .scrollToPlayingSentence();
+  // }
 
-  void _onPlay(WidgetRef ref) async {
-    await ref.read(playerMediaProvider.notifier).play();
-  }
+  // void _onScrollToTop(WidgetRef ref) {
+  //   ref.read(playerProvider(_scrollController).notifier).scrollToTop();
+  // }
 
-  void _onDecSpeed(WidgetRef ref) async {
-    await ref.read(playerSettingProvider.notifier).decSpeed();
-  }
+  // void _onScrollToBottom(WidgetRef ref) {
+  //   ref.read(playerProvider(_scrollController).notifier).scrollToBottom();
+  // }
 
-  void _onIncSpeed(WidgetRef ref) async {
-    await ref.read(playerSettingProvider.notifier).incSpeed();
-  }
+  // void _onVolumeChanged(WidgetRef ref, double newVolume) async {
+  //   await ref.read(playerSettingProvider.notifier).updateVolume(newVolume);
+  // }
 
-  void _onResetSpeed(WidgetRef ref) async {
-    await ref.read(playerSettingProvider.notifier).resetSpeed();
-  }
 
-  void _onVideoSliderStartChanged(
-    WidgetRef ref,
-    Duration position,
-    Duration duration,
-  ) async {
-    await ref
-        .read(playerProvider(_scrollController).notifier)
-        .videoSliderStartChanged(position, duration);
-  }
+  // void _onGoToAlbums(BuildContext context) {
+  //   context.go(AppRoute.albumList);
+  // }
 
-  void _onVideoSliderChanging(
-    WidgetRef ref,
-    Duration position,
-    Duration duration,
-  ) async {
-    await ref
-        .read(playerProvider(_scrollController).notifier)
-        .videoSliderChanging(position, duration);
-  }
-
-  void _onVideoSliderEndChanged(
-    WidgetRef ref,
-    Duration position,
-    Duration duration,
-  ) async {
-    await ref
-        .read(playerProvider(_scrollController).notifier)
-        .videoSliderEndChanged(position, duration);
-  }
-
-  void _onScrollToPlayingSentence(WidgetRef ref) {
-    ref
-        .read(playerProvider(_scrollController).notifier)
-        .scrollToPlayingSentence();
-  }
-
-  void _onScrollToTop(WidgetRef ref) {
-    ref.read(playerProvider(_scrollController).notifier).scrollToTop();
-  }
-
-  void _onScrollToBottom(WidgetRef ref) {
-    ref.read(playerProvider(_scrollController).notifier).scrollToBottom();
-  }
-
-  void _onVolumeChanged(WidgetRef ref, double newVolume) async {
-    await ref.read(playerSettingProvider.notifier).updateVolume(newVolume);
-  }
-
-  void _onToggleVolume(WidgetRef ref) {
-    ref.read(playerSettingProvider.notifier).toggleVolume();
-  }
-
-  void _onGoToAlbums(BuildContext context) {
-    context.go(AppRoute.albumList);
-  }
-
-  Widget _page(BuildContext context) {
+  Widget _pageForData(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _appBar(),
-      body: _body(context),
+      body: Column(children: [_videoWidget(), _subtitleWidget()]),
       floatingActionButton: _floatingButtons(),
     );
   }
 
-  Widget _body(BuildContext context) {
-    return Column(children: [_videoWidgets(context), _sentenceList(context)]);
-  }
-
-  Widget _videoWidgets(BuildContext context) {
+  Widget _videoWidget() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
@@ -156,49 +104,32 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
           ),
         ],
       ),
-      child: Consumer(
-        builder: (context, ref, child) {
-          final videoController = ref.watch(
-            playerMediaProvider.select(
-              (st) => (st.value as PlayerMediaData).mediaController,
-            ),
-          );
-          return Column(
-            children: [
-              _displayer(context, ref, videoController),
-              _controlBar(context, ref),
-            ],
-          );
-        },
-      ),
+      child: Column(children: [_displayer(), _controlBar()]),
     );
   }
 
-  Widget _displayer(
-    BuildContext context,
-    WidgetRef ref,
-    PlayerMediaControllerITF mediaController,
-  ) {
-    if (mediaController.type == .video) {
-      return _videoDisplayer(context, ref, mediaController);
-    } else {
-      return _audioDisplayer(context, ref, mediaController);
-    }
+  Widget _displayer() {
+    return Builder(
+      builder: (context) {
+        final mediaType = context.select<PlayerBloc, AssetType>(
+          (bloc) => bloc.state.as<PlayerDataState>()?.mediaType ?? .video,
+        );
+        if (mediaType == .video) {
+          return _videoDisplayer();
+        } else {
+          return _audioDisplayer();
+        }
+      },
+    );
   }
 
-  Widget _videoDisplayer(
-    BuildContext context,
-    WidgetRef ref,
-    PlayerMediaControllerITF mediaController,
-  ) {
-    debugPrint('ui media ratio ${mediaController.ratio}');
-    const ratio = 16 / 9.0;
+  Widget _videoDisplayer() {
     return AspectRatio(
-      aspectRatio: ratio,
+      aspectRatio: 16 / 9.0,
       child: Stack(
         alignment: .center,
         children: [
-          mediaController.video,
+          _player(),
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,
@@ -210,14 +141,14 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 8),
-                      child: _progressSlider(context, mediaController),
+                      child: _progressSlider(),
                     ),
                   ],
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(right: 16, bottom: 8),
-                child: _verticalVolumeWidgets(ref),
+                child: _verticalVolumeWidgets(),
               ),
             ],
           ),
@@ -226,16 +157,20 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _audioDisplayer(
-    BuildContext context,
-    WidgetRef ref,
-    PlayerMediaControllerITF mediaController,
-  ) {
+  Widget _player() {
+    return Video(
+      controller: VideoController(SharedPlayer.player),
+      pauseUponEnteringBackgroundMode: false,
+      resumeUponEnteringForegroundMode: false,
+    );
+  }
+
+  Widget _audioDisplayer() {
     return SizedBox(
       height: 150,
       child: Stack(
         children: [
-          mediaController.video,
+          _player(),
           _gradientDisplayerOverlay(),
           Column(
             mainAxisSize: .max,
@@ -243,12 +178,12 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                child: _horizontalVolumeWidgets(ref),
+                child: _horizontalVolumeWidgets(),
               ),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: _progressSlider(context, mediaController),
+                child: _progressSlider(),
               ),
             ],
           ),
@@ -277,32 +212,36 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _sentenceList(BuildContext context) {
+  Widget _subtitleWidget() {
     return Expanded(
       child: ColoredBox(
         color: Theme.of(context).scaffoldBackgroundColor,
-        child: Consumer(
-          builder: (context, ref, child) {
-            final data = ref.watch(playerSubtitleProvider).value;
-            if (data is PlayerSubtitleData) {
-              return ScrollablePositionedList.builder(
-                itemCount: data.sentenceIdList.length,
-                itemScrollController: _scrollController,
-                itemBuilder: (context, i) {
-                  return SentenceCardUI(data.sentenceIdList[i], (
-                    ref,
-                    sentenceId,
-                  ) {
-                    ref
-                        .read(playerProvider(_scrollController).notifier)
-                        .tapSentence(sentenceId);
-                  });
-                },
-              );
-            } else if (data is PlayerSubtitleEmpty) {
-              return _noSubtitle(context, ref);
-            } else {
+        child: Builder(
+          builder: (context) {
+            final subtitle = context.select<PlayerBloc, PlayerSubtitleState?>(
+              (bloc) => bloc.state.as<PlayerDataState>()?.subtitle,
+            );
+            if (subtitle == null) {
               return const SizedBox.shrink();
+            }
+            switch (subtitle) {
+              case PlayerSubtitleDataState subtitle:
+                return ScrollablePositionedList.builder(
+                  itemCount: subtitle.sentenceList.length,
+                  itemScrollController: _scrollController,
+                  itemBuilder: (context, i) {
+                    return SentenceCardUI(subtitle.sentenceList[i], (
+                      ref,
+                      sentenceId,
+                    ) {
+                      // ref
+                      //     .read(playerProvider(_scrollController).notifier)
+                      //     .tapSentence(sentenceId);
+                    });
+                  },
+                );
+              case PlayerSubtitleEmptyState _:
+                return _noSubtitle();
             }
           },
         ),
@@ -310,11 +249,13 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _noSubtitle(BuildContext context, WidgetRef ref) {
+  Widget _noSubtitle() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return InkWell(
-      onTap: () => _onAddSubtitle(ref),
+      onTap: () {
+        // => _onAddSubtitle(ref)
+      },
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -346,19 +287,23 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   }
 
   Widget? _floatingButtons() {
-    return Consumer(
-      builder: (context, ref, child) {
-        final show = ref.watch(
-          playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData),
+    return Builder(
+      builder: (context) {
+        final hasSubtitle = context.select<PlayerBloc, bool>(
+          (bloc) =>
+              bloc.state.as<PlayerDataState>()?.subtitle
+                  is PlayerSubtitleDataState,
         );
-        if (!show) return const SizedBox.shrink();
+        if (!hasSubtitle) return const SizedBox.shrink();
         final colorScheme = Theme.of(context).colorScheme;
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             FloatingActionButton.small(
               heroTag: 'scroll_top',
-              onPressed: () => _onScrollToTop(ref),
+              onPressed: () {
+                // _onScrollToTop(ref)
+              },
               backgroundColor: colorScheme.surfaceContainerHighest,
               foregroundColor: colorScheme.primary,
               child: const Icon(Icons.keyboard_arrow_up_rounded),
@@ -366,13 +311,17 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             const SizedBox(height: 8),
             FloatingActionButton.small(
               heroTag: 'scroll_focus',
-              onPressed: () => _onScrollToPlayingSentence(ref),
+              onPressed: () {
+                // _onScrollToPlayingSentence(ref)
+              },
               child: const Icon(Icons.center_focus_strong_rounded),
             ),
             const SizedBox(height: 8),
             FloatingActionButton.small(
               heroTag: 'scroll_bottom',
-              onPressed: () => _onScrollToBottom(ref),
+              onPressed: () {
+                // _onScrollToBottom(ref)
+              },
               backgroundColor: colorScheme.surfaceContainerHighest,
               foregroundColor: colorScheme.primary,
               child: const Icon(Icons.keyboard_arrow_down_rounded),
@@ -383,14 +332,15 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _verticalVolumeWidgets(WidgetRef ref) {
+  Widget _verticalVolumeWidgets() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Consumer(
-          builder: (context, ref, child) {
-            final bool showVolumeSlider = ref.watch(
-              playerSettingProvider.select((st) => st.showVolumeSlider),
+        Builder(
+          builder: (context) {
+            final bool showVolumeSlider = context.select<PlayerBloc, bool>(
+              (bloc) =>
+                  bloc.state.as<PlayerDataState>()?.showVolumeSlider ?? false,
             );
             if (showVolumeSlider) {
               return Expanded(child: _verticalVolumeSlider(context));
@@ -399,20 +349,21 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
             }
           },
         ),
-        _volumeButton(ref),
+        _volumeButton(),
       ],
     );
   }
 
-  Widget _horizontalVolumeWidgets(WidgetRef ref) {
+  Widget _horizontalVolumeWidgets() {
     return Row(
       mainAxisAlignment: .start,
       children: [
-        _volumeButton(ref),
-        Consumer(
-          builder: (context, ref, child) {
-            final showVolumeSlider = ref.watch(
-              playerSettingProvider.select((st) => st.showVolumeSlider),
+        _volumeButton(),
+        Builder(
+          builder: (context) {
+            final bool showVolumeSlider = context.select<PlayerBloc, bool>(
+              (bloc) =>
+                  bloc.state.as<PlayerDataState>()?.showVolumeSlider ?? false,
             );
             if (showVolumeSlider) {
               return Expanded(child: _horizontalVolumeSlider(context));
@@ -425,22 +376,26 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _volumeButton(WidgetRef ref) {
-    return IconButton(
-      onPressed: () => _onToggleVolume(ref),
-      icon: Consumer(
-        builder: (context, ref, child) {
-          final volume = ref.watch(
-            playerSettingProvider.select((st) => st.volume),
-          );
-          final icon = volume == 0
-              ? Icons.volume_off_rounded
-              : Icons.volume_up_rounded;
-          return Icon(icon);
+  Widget _volumeButton() {
+    return Builder(
+      builder: (context) => IconButton(
+        onPressed: () {
+          context.read<PlayerBloc>().add(const PlayerToggleVolumeEvent());
         },
+        icon: Builder(
+          builder: (context) {
+            final volume = context.select<PlayerBloc, double>(
+              (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? 1,
+            );
+            final icon = volume == 0
+                ? Icons.volume_off_rounded
+                : Icons.volume_up_rounded;
+            return Icon(icon);
+          },
+        ),
+        color: Colors.white,
+        iconSize: 32,
       ),
-      color: Colors.white,
-      iconSize: 32,
     );
   }
 
@@ -461,24 +416,23 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         // padding: EdgeInsets.zero,
         thumbSize: WidgetStateProperty.all(const Size(20, 20)),
       ),
-      child: Consumer(
-        builder: (context, ref, child) {
-          final volume = ref.watch(
-            playerSettingProvider.select((st) => st.volume),
+      child: Builder(
+        builder: (context) {
+          final volume = context.select<PlayerBloc, double>(
+            (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? 1,
           );
           return Slider(
             value: volume,
-            onChanged: (newVolume) => _onVolumeChanged(ref, newVolume),
+            onChanged: (newVolume) {
+              // => _onVolumeChanged(ref, newVolume)
+            },
           );
         },
       ),
     );
   }
 
-  Widget _progressSlider(
-    BuildContext context,
-    PlayerMediaControllerITF mediaController,
-  ) {
+  Widget _progressSlider() {
     final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
@@ -491,45 +445,53 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
         // padding: EdgeInsets.zero,
         thumbSize: WidgetStateProperty.all(const Size(20, 20)),
       ),
-      child: Consumer(
-        builder: (context, ref, child) {
-          final (position, duration) = ref.watch(
-            playerMediaProvider
-                .select((st) => st.value?.as<PlayerMediaData>())
-                .select(
-                  (st) => (
-                    st?.position ?? const Duration(seconds: 0),
-                    st?.duration ?? const Duration(seconds: 0),
-                  ),
+      child: Builder(
+        builder: (context) {
+          final (position, duration) = context
+              .select<PlayerBloc, (Duration, Duration)>(
+                (bloc) => (
+                  bloc.state.as<PlayerDataState>()?.position ??
+                      const Duration(seconds: 0),
+                  bloc.state.as<PlayerDataState>()?.duration ??
+                      const Duration(seconds: 0),
                 ),
-          );
+              );
           final max = duration.inMilliseconds.toDouble();
           final val = position.inMilliseconds.clamp(0, max).toDouble();
           return Slider(
             value: val,
             max: max,
-            onChangeStart: (val) => _onVideoSliderStartChanged(
-              ref,
-              Duration(milliseconds: val.toInt()),
-              duration,
-            ),
-            onChanged: (val) => _onVideoSliderChanging(
-              ref,
-              Duration(milliseconds: val.toInt()),
-              duration,
-            ),
-            onChangeEnd: (val) => _onVideoSliderEndChanged(
-              ref,
-              Duration(milliseconds: val.toInt()),
-              duration,
-            ),
+            onChangeStart: (val) {
+              context.read<PlayerBloc>().add(
+                PlayerVideoSliderStartChangeEvent(
+                  Duration(milliseconds: val.toInt()),
+                  duration,
+                ),
+              );
+            },
+            onChanged: (val) {
+              context.read<PlayerBloc>().add(
+                PlayerVideoSliderChangingEvent(
+                  Duration(milliseconds: val.toInt()),
+                  duration,
+                ),
+              );
+            },
+            onChangeEnd: (val) {
+              context.read<PlayerBloc>().add(
+                PlayerVideoSliderEndChangeEvent(
+                  Duration(milliseconds: val.toInt()),
+                  duration,
+                ),
+              );
+            },
           );
         },
       ),
     );
   }
 
-  Widget _empty(BuildContext context) {
+  Widget _pageForEmpty(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
@@ -585,7 +547,9 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
               ),
               const SizedBox(height: 32),
               FilledButton.icon(
-                onPressed: () => _onGoToAlbums(context),
+                onPressed: () {
+                  // _onGoToAlbums(context)
+                },
                 icon: const Icon(Icons.library_music_rounded),
                 label: const Text('Go to Albums'),
               ),
@@ -608,10 +572,10 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
   Widget _title() {
     return SizedBox(
       height: 24,
-      child: Consumer(
-        builder: (context, ref, _) {
-          final title = ref.watch(
-            playerTitleProvider.select((st) => st.value ?? ''),
+      child: Builder(
+        builder: (context) {
+          final title = context.select<PlayerBloc, String>(
+            (bloc) => bloc.state.as<PlayerDataState>()?.title ?? '',
           );
           if (title.isEmpty) {
             return const Text('');
@@ -633,7 +597,7 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _controlBar(BuildContext context, WidgetRef ref) {
+  Widget _controlBar() {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
@@ -645,39 +609,37 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          _playOrPauseButton(context),
+          _playOrPauseButton(),
           const SizedBox(width: 16),
-          _loopButton(context),
+          _loopButton(),
           const Spacer(),
-          _speedDownButton(context, ref),
+          _speedDownButton(),
           const SizedBox(width: 8),
-          _speedLabel(context, ref),
+          _speedLabel(),
           const SizedBox(width: 8),
-          _speedUpButton(context, ref),
+          _speedUpButton(),
         ],
       ),
     );
   }
 
-  Widget _playOrPauseButton(BuildContext context) {
+  Widget _playOrPauseButton() {
     final colorScheme = Theme.of(context).colorScheme;
-    return Consumer(
-      builder: (context, ref, child) {
-        final isPlaying = ref.watch(
-          playerMediaProvider.select(
-            (st) => (st.value as PlayerMediaData).playing,
-          ),
+    return Builder(
+      builder: (context) {
+        final playing = context.select<PlayerBloc, bool>(
+          (bloc) => bloc.state.as<PlayerDataState>()?.playing ?? false,
         );
         return IconButton.filled(
           onPressed: () {
-            if (isPlaying) {
-              _onPause(ref);
+            if (playing) {
+              context.read<PlayerBloc>().add(const PlayerPauseEvent());
             } else {
-              _onPlay(ref);
+              context.read<PlayerBloc>().add(const PlayerPlayEvent());
             }
           },
           icon: Icon(
-            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
             size: 24,
           ),
           style: IconButton.styleFrom(
@@ -692,78 +654,94 @@ class PlayerUIState extends ConsumerState<PlayerUI> {
     );
   }
 
-  Widget _loopButton(BuildContext context) {
+  Widget _loopButton() {
     final colorScheme = Theme.of(context).colorScheme;
-    return Consumer(
-      builder: (context, ref, child) {
-        final hasSubtitle = ref.watch(
-          playerSubtitleProvider.select((st) => st.value is PlayerSubtitleData),
+    return Builder(
+      builder: (context) {
+        final hasSubtitle = context.select<PlayerBloc, bool>(
+          (bloc) =>
+              bloc.state.as<PlayerDataState>()?.subtitle
+                  is PlayerSubtitleDataState,
         );
         if (!hasSubtitle) return const SizedBox.shrink();
-        final loop = ref.watch(
-          playerLoopProvider.select((st) => st.value?.loop),
+        final loop = context.select<PlayerBloc, bool>(
+          (bloc) => bloc.state.as<PlayerDataState>()?.loopIndex != null,
         );
-        if (loop == null) return const SizedBox.shrink();
-        return IconButton(
-          onPressed: () => _onToggleLoop(ref),
-          icon: Icon(
-            loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-            color: loop ? colorScheme.primary : colorScheme.outline,
+        return Builder(
+          builder: (context) => IconButton(
+            onPressed: () {
+              context.read<PlayerBloc>().add(const PlayerToggleLoopEvent());
+            },
+            icon: Icon(
+              loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+              color: loop ? colorScheme.primary : colorScheme.outline,
+            ),
+            style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+            constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+            padding: EdgeInsets.zero,
           ),
-          style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
-          constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-          padding: EdgeInsets.zero,
         );
       },
     );
   }
 
-  Widget _speedDownButton(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      onPressed: () => _onDecSpeed(ref),
-      icon: const Icon(Icons.remove_circle_outline_rounded),
-      color: Theme.of(context).colorScheme.outline,
-      style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
-      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-      padding: EdgeInsets.zero,
+  Widget _speedDownButton() {
+    return Builder(
+      builder: (context) => IconButton(
+        onPressed: () {
+          context.read<PlayerBloc>().add(const PlayerDecSpeedEvent());
+        },
+        icon: const Icon(Icons.remove_circle_outline_rounded),
+        color: Theme.of(context).colorScheme.outline,
+        style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+        padding: EdgeInsets.zero,
+      ),
     );
   }
 
-  Widget _speedUpButton(BuildContext context, WidgetRef ref) {
-    return IconButton(
-      onPressed: () => _onIncSpeed(ref),
-      icon: const Icon(Icons.add_circle_outline_rounded),
-      color: Theme.of(context).colorScheme.outline,
-      style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
-      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-      padding: EdgeInsets.zero,
+  Widget _speedUpButton() {
+    return Builder(
+      builder: (context) => IconButton(
+        onPressed: () {
+          context.read<PlayerBloc>().add(const PlayerIncSpeedEvent());
+        },
+        icon: const Icon(Icons.add_circle_outline_rounded),
+        color: Theme.of(context).colorScheme.outline,
+        style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+        padding: EdgeInsets.zero,
+      ),
     );
   }
 
-  Widget _speedLabel(BuildContext context, WidgetRef ref) {
+  Widget _speedLabel() {
     final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () => _onResetSpeed(ref),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Consumer(
-          builder: (context, ref, _) {
-            final speed = ref.watch(
-              playerSettingProvider.select((st) => st.speed),
-            );
-            return Text(
-              '${speed}x',
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
-            );
-          },
+    return Builder(
+      builder: (context) => GestureDetector(
+        onTap: () =>
+            context.read<PlayerBloc>().add(const PlayerResetSpeedEvent()),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Builder(
+            builder: (context) {
+              final speed = context.select<PlayerBloc, double>(
+                (bloc) => bloc.state.as<PlayerDataState>()?.speed ?? 1,
+              );
+              return Text(
+                '${speed}x',
+                style: TextStyle(
+                  color: colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

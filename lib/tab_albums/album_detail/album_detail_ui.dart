@@ -9,27 +9,24 @@ import 'package:mockingbird/tool/extensions.dart';
 import '../media_card/media_card_ui.dart';
 
 class AlbumDetailUI extends StatelessWidget {
-  final String _id;
+  final String? _albumId;
 
-  const AlbumDetailUI(this._id, {super.key});
+  const AlbumDetailUI(this._albumId, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          AlbumDetailBloc(_id)..add(const AlbumDetailLoadingEvent()),
+          AlbumDetailBloc(_albumId)..add(const AlbumDetailInitEvent()),
       child: Builder(
         builder: (context) {
-          final stateType = context.select<AlbumDetailBloc, Type>(
-            (bloc) => bloc.state.runtimeType,
-          );
-          if (stateType is AlbumDetailLoadingState) {
-            EasyLoading.show(maskType: .clear);
-          } else {
-            EasyLoading.dismiss();
-          }
+          final (stateType, loading) = context
+              .select<AlbumDetailBloc, (Type, bool)>(
+                (bloc) => (bloc.state.runtimeType, bloc.state.loading),
+              );
+          showLoading(loading);
           switch (stateType) {
-            case AlbumDetailLoadingState:
+            case AlbumDetailInitState:
               return _pageForLoading();
             case AlbumDetailNotFoundState:
               return _pageForNotFound();

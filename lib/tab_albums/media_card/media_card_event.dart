@@ -4,11 +4,12 @@ sealed class MediaCardEvent {
   const MediaCardEvent();
 }
 
-class MediaCardLoadingEvent extends MediaCardEvent {
-  const MediaCardLoadingEvent();
+class MediaCardInitEvent extends MediaCardEvent {
+  const MediaCardInitEvent();
 }
 
 class MediaCardClickEvent extends MediaCardEvent {
   final BuildContext context;
-  const MediaCardClickEvent(this.context);
+  final String mediaId;
+  const MediaCardClickEvent(this.context, this.mediaId);
 }

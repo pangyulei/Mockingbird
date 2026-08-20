@@ -12,8 +12,7 @@ class MediaCardUI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          MediaCardBloc(_id)..add(const MediaCardLoadingEvent()),
+      create: (context) => MediaCardBloc(_id)..add(const MediaCardInitEvent()),
       child: Builder(
         builder: (context) {
           final theme = Theme.of(context);
@@ -39,7 +38,7 @@ class MediaCardUI extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: GestureDetector(
                 onTap: () => context.read<MediaCardBloc>().add(
-                  MediaCardClickEvent(context),
+                  MediaCardClickEvent(context, _id),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(

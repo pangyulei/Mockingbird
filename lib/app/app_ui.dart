@@ -22,14 +22,14 @@ class AppUIState extends ConsumerState<AppUI> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRoute((index, shell) {
+      routerConfig: AppRoute.init((index, shell) {
         // ➔ 切换 Tab 的核心方法
         shell.goBranch(
           index,
           initialLocation:
               index == shell.currentIndex, // 重复点击当前 Tab 会回到该 Tab 的根路由
         );
-      }).router,
+      }),
       theme: _theme(),
       builder: EasyLoading.init(),
       // builder: (context, child) => _home(),

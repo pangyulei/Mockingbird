@@ -2,8 +2,8 @@ sealed class AlbumListEvent {
   const AlbumListEvent();
 }
 
-class AlbumListLoadingEvent extends AlbumListEvent {
-  const AlbumListLoadingEvent();
+class AlbumListInitEvent extends AlbumListEvent {
+  const AlbumListInitEvent();
 }
 
 class AlbumListRequestPermissionEvent extends AlbumListEvent {

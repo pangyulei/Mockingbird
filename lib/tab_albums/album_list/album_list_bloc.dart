@@ -1,23 +1,23 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mockingbird/db/db_logic.dart';
+import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
-  AlbumListBloc() : super(const AlbumListLoadingState()) {
-    on<AlbumListLoadingEvent>(_onLoading);
+  AlbumListBloc() : super(const AlbumListInitState()) {
+    on<AlbumListInitEvent>(_onInit);
     on<AlbumListRequestPermissionEvent>(_onRequestPermission);
   }
 
-  void _onLoading(
-    AlbumListLoadingEvent event,
-    Emitter<AlbumListState> emit,
-  ) async {
-    final metadata = await DBLogic().loadMetadata();
+  void _onInit(AlbumListInitEvent event, Emitter<AlbumListState> emit) async {
+    emit(await _reload());
+  }
+
+  Future<AlbumListState> _reload() async {
+    final metadata = await DB.loadMetadata();
     if (!metadata.permissionRequested) {
-      emit(const AlbumListNotYetRequestedState());
-      return;
+      return const AlbumListNotYetRequestedState();
     }
     //mediaLocation is for media's GPS info, I dont need that.
     //first time state is denied, only allow selected, is limited, allow-all is limited
@@ -31,17 +31,15 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
       requestOption: option,
     );
     if (!permissionState.granted) {
-      emit(const AlbumListPermissionDeniedState());
-      return;
+      return const AlbumListPermissionDeniedState();
     }
     final albumList = await PhotoManager.getAssetPathList(
       type: RequestType.audio | RequestType.video,
     );
     if (albumList.isEmpty) {
-      emit(const AlbumListEmptyState());
-      return;
+      return const AlbumListEmptyState();
     }
-    emit(AlbumListDataState(albumIdList: albumList.map((a) => a.id).toList()));
+    return AlbumListDataState(albumIdList: albumList.map((a) => a.id).toList());
   }
 
   void _onRequestPermission(
@@ -49,8 +47,8 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
     Emitter<AlbumListState> emit,
   ) async {
     await PhotoManager.requestPermissionExtend();
-    emit(const AlbumListLoadingState());
-    _onLoading(const AlbumListLoadingEvent(), emit);
+    emit(state.copyWith(loading: true));
+    emit(await _reload());
   }
 }
 

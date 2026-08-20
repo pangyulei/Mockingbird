@@ -8,7 +8,7 @@ import 'package:photo_manager/photo_manager.dart';
 class AlbumCardBloc extends Bloc<AlbumCardEvent, AlbumCardState> {
   final String _id;
   AlbumCardBloc(this._id) : super(const AlbumCardState.empty()) {
-    on<AlbumCardLoadingEvent>(_onLoading);
+    on<AlbumCardInitEvent>(_onInit);
     on<AlbumCardClickEvent>(_onClick);
   }
 
@@ -16,8 +16,8 @@ class AlbumCardBloc extends Bloc<AlbumCardEvent, AlbumCardState> {
     event.context.go(AppRoute.albumDetail(_id));
   }
 
-  void _onLoading(
-    AlbumCardLoadingEvent event,
+  void _onInit(
+    AlbumCardInitEvent event,
     Emitter<AlbumCardState> emit,
   ) async {
     final album = await AssetPathEntity.fromId(_id);

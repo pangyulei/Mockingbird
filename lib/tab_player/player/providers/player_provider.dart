@@ -1,234 +1,182 @@
-import 'dart:io';
+// import 'dart:io';
 
-import 'package:collection/collection.dart';
-import 'package:defer/defer.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/db/providers/db_playing_subtitle_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
-import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
-import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
-import 'package:path/path.dart' as p;
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+// import 'package:collection/collection.dart';
+// import 'package:defer/defer.dart';
+// import 'package:file_picker/file_picker.dart';
+// import 'package:flutter/cupertino.dart';
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+// import 'package:mockingbird/db/providers/db_playing_subtitle_provider.dart';
+// import 'package:mockingbird/tab_player/player/providers/player_loop_provider.dart';
+// import 'package:mockingbird/tab_player/player/providers/player_media_controller_provider.dart';
+// import 'package:mockingbird/tab_player/player/providers/player_media_provider.dart';
+// import 'package:mockingbird/tab_player/player/providers/player_spot_provider.dart';
+// import 'package:mockingbird/tab_player/player/states/player_media_state.dart';
+// import 'package:path/path.dart' as p;
+// import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../../../db/entities/sentence_entity.dart';
-import '../../../db/entities/subtitle_entity.dart';
-import '../../../tool/extensions.dart';
+// import '../../../db/entities/sentence_entity.dart';
+// import '../../../db/entities/subtitle_entity.dart';
+// import '../../../tool/extensions.dart';
 
-final playerProvider = NotifierProvider.autoDispose
-    .family<PlayerNotifier, void, ItemScrollController>(PlayerNotifier.new);
+// final playerProvider = NotifierProvider.autoDispose
+//     .family<PlayerNotifier, void, ItemScrollController>(PlayerNotifier.new);
 
-class PlayerNotifier extends Notifier<void> {
-  bool _isDraggingVideoSlider = false;
-  bool _isPlayingBeforeDraged = false;
-  int? _prevPlayingSentenceIndex;
-  SubtitleEntity? _prevSubtitle;
+// class PlayerNotifier extends Notifier<void> {
 
-  SubtitleEntity? get _subtitle => ref.read(dbPlayingSubtitleProvider).value;
+//   int? _prevPlayingSentenceIndex;
+//   SubtitleEntity? _prevSubtitle;
 
-  List<SentenceEntity> get _sentenceList => _subtitle?.sentenceList ?? [];
+//   SubtitleEntity? get _subtitle => ref.read(dbPlayingSubtitleProvider).value;
 
-  bool get _loop =>
-      ref.read(playerLoopProvider.select((st) => st.value?.loop)) == true;
-  final ItemScrollController _scrollController;
+//   List<SentenceEntity> get _sentenceList => _subtitle?.sentenceList ?? [];
 
-  PlayerNotifier(this._scrollController);
+//   bool get _loop =>
+//       ref.read(playerLoopProvider.select((st) => st.value?.loop)) == true;
+//   final ItemScrollController _scrollController;
 
-  @override
-  void build() {
-    _listenToLoopSentenceEnd();
-    _listenToPlayingSentenceChanged();
-  }
+//   PlayerNotifier(this._scrollController);
 
-  void _listenToPlayingSentenceChanged() async {
-    ref.listen(playerSpotProvider.select((st) => st.value), (
-      previous,
-      spot,
-    ) async {
-      //handle scroll
-      await defer(
-        () async {
-          _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
-          _prevSubtitle = _subtitle;
-        },
-        () async {
-          final isSubtitleChanged = _prevSubtitle != _subtitle;
-          if (isSubtitleChanged) {
-            _scrollController.safeJumpTo(
-              spot?.playingSentenceIndex,
-              alignment: 0.3,
-            );
-            ref
-                .read(playerLoopProvider.notifier)
-                .updateIndexAndSentenceIfLoop(
-                  spot?.playingSentenceIndex,
-                  spot?.playingSentence,
-                );
-            return;
-          }
-          final bool isSentenceChanged =
-              spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
-          final loop = await ref.read(
-            playerLoopProvider.selectAsync((st) => st.loop),
-          );
-          if (isSentenceChanged) {
-            if (_isDraggingVideoSlider) {
-              _scrollController.safeJumpTo(
-                spot?.playingSentenceIndex,
-                alignment: 0.3,
-              );
-            } else if (!loop) {
-              //playing auto scroll to next sentence, not for loop mode
-              _scrollController.safeScrollTo(
-                spot?.playingSentenceIndex,
-                alignment: 0.3,
-              );
-            }
-          }
-        },
-      );
-    });
-  }
+//   @override
+//   void build() {
+//     _listenToLoopSentenceEnd();
+//     _listenToPlayingSentenceChanged();
+//   }
 
-  void _listenToLoopSentenceEnd() {
-    ref.listen(
-      playerMediaProvider.select(
-        (st) => st.value?.as<PlayerMediaData>()?.position,
-      ),
-      (_, position) {
-        if (position == null) return;
-        _mediaPositionChanged(position);
-      },
-    );
-  }
+//   void _listenToPlayingSentenceChanged() async {
+//     ref.listen(playerSpotProvider.select((st) => st.value), (
+//       previous,
+//       spot,
+//     ) async {
+//       //handle scroll
+//       await defer(
+//         () async {
+//           _prevPlayingSentenceIndex = spot?.playingSentenceIndex;
+//           _prevSubtitle = _subtitle;
+//         },
+//         () async {
+//           final isSubtitleChanged = _prevSubtitle != _subtitle;
+//           if (isSubtitleChanged) {
+//             _scrollController.safeJumpTo(
+//               spot?.playingSentenceIndex,
+//               alignment: 0.3,
+//             );
+//             ref
+//                 .read(playerLoopProvider.notifier)
+//                 .updateIndexAndSentenceIfLoop(
+//                   spot?.playingSentenceIndex,
+//                   spot?.playingSentence,
+//                 );
+//             return;
+//           }
+//           final bool isSentenceChanged =
+//               spot?.playingSentenceIndex != _prevPlayingSentenceIndex;
+//           final loop = await ref.read(
+//             playerLoopProvider.selectAsync((st) => st.loop),
+//           );
+//           if (isSentenceChanged) {
+//             if (_isDraggingVideoSlider) {
+//               _scrollController.safeJumpTo(
+//                 spot?.playingSentenceIndex,
+//                 alignment: 0.3,
+//               );
+//             } else if (!loop) {
+//               //playing auto scroll to next sentence, not for loop mode
+//               _scrollController.safeScrollTo(
+//                 spot?.playingSentenceIndex,
+//                 alignment: 0.3,
+//               );
+//             }
+//           }
+//         },
+//       );
+//     });
+//   }
 
-  void _mediaPositionChanged(Duration position) async {
-    //handle loop seek to begin
-    final loopSentence = await ref.read(
-      playerLoopProvider.selectAsync((st) => st.loopSentence),
-    );
-    if (!_isDraggingVideoSlider && loopSentence != null) {
-      //if repeat one is turn on, while sentence finished, seek to beginning
-      // debugPrint('position changing loop $sentence');
-      if (position > loopSentence.end) {
-        await ref.read(playerMediaProvider.notifier).seek(loopSentence.start);
-      }
-    }
-  }
+//   void _listenToLoopSentenceEnd() {
+//     ref.listen(
+//       playerMediaProvider.select(
+//         (st) => st.value?.as<PlayerMediaData>()?.position,
+//       ),
+//       (_, position) {
+//         if (position == null) return;
+//         _mediaPositionChanged(position);
+//       },
+//     );
+//   }
 
-  Future<void> videoSliderStartChanged(
-    Duration position,
-    Duration duration,
-  ) async {
-    _isDraggingVideoSlider = true;
-    _isPlayingBeforeDraged = ref.read(
-      playerMediaControllerProvider.select((st) => st.playing),
-    );
-    debugPrint('slider: start');
-    await ref.read(playerMediaProvider.notifier).pause();
-    await ref.read(playerMediaProvider.notifier).seek(position);
-  }
+//   void _mediaPositionChanged(Duration position) async {
+//     //handle loop seek to begin
+//     final loopSentence = await ref.read(
+//       playerLoopProvider.selectAsync((st) => st.loopSentence),
+//     );
+//     if (!_isDraggingVideoSlider && loopSentence != null) {
+//       //if repeat one is turn on, while sentence finished, seek to beginning
+//       // debugPrint('position changing loop $sentence');
+//       if (position > loopSentence.end) {
+//         await ref.read(playerMediaProvider.notifier).seek(loopSentence.start);
+//       }
+//     }
+//   }
 
-  Future<void> videoSliderChanging(Duration position, Duration duration) async {
-    await ref.read(playerMediaProvider.notifier).seek(position);
-  }
 
-  Future<void> videoSliderEndChanged(
-    Duration position,
-    Duration duration,
-  ) async {
-    await defer(
-      () async {
-        _isDraggingVideoSlider = false;
-        debugPrint('slider: end');
-      },
-      () async {
-        // seek to sentence start
-        final spot = ref.read(playerSpotProvider.select((st) => st.value));
-        ref
-            .read(playerLoopProvider.notifier)
-            .updateIndexAndSentenceIfLoop(
-              spot?.playingSentenceIndex!,
-              spot?.playingSentence!,
-            );
-        final Duration seekToPosition;
-        final playingSentenceStart = spot?.playingSentence?.start;
-        if (_loop && playingSentenceStart != null) {
-          debugPrint('slider end seek to sentence start $playingSentenceStart');
-          seekToPosition = playingSentenceStart;
-        } else {
-          debugPrint('slider end seek to pos $position');
-          seekToPosition = position;
-        }
-        await ref.read(playerMediaProvider.notifier).seek(seekToPosition);
-        if (_isPlayingBeforeDraged && position < duration) {
-          await ref.read(playerMediaProvider.notifier).play();
-        }
-      },
-    );
-  }
+//   void scrollToTop() {
+//     _scrollController.safeScrollTo(0);
+//   }
 
-  void scrollToTop() {
-    _scrollController.safeScrollTo(0);
-  }
+//   void scrollToBottom() {
+//     _scrollController.safeScrollTo(_sentenceList.length - 1);
+//   }
 
-  void scrollToBottom() {
-    _scrollController.safeScrollTo(_sentenceList.length - 1);
-  }
+//   void scrollToPlayingSentence() {
+//     final index = ref.read(
+//       playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
+//     );
+//     _scrollController.safeScrollTo(index, alignment: 0.3);
+//   }
 
-  void scrollToPlayingSentence() {
-    final index = ref.read(
-      playerSpotProvider.select((st) => st.value?.playingSentenceIndex),
-    );
-    _scrollController.safeScrollTo(index, alignment: 0.3);
-  }
+//   void tapSentence(String id) async {
+//     // if (id == null) return;
+//     // final sentenceIndex = _sentenceList.firstIndexWhereOrNull(
+//     //   (sen) => sen.id == id,
+//     // );
+//     // if (sentenceIndex == null) return;
+//     // /*Fix loop mode, tap sentence bug
+//     // in loop mode, you seek from s(n)->s(n+1),
+//     // because it beyond s(n) end, so it trigger reseek to start
+//     // same reason you seek from s(n)->s(n-1) will works perfectly,
+//     // so in loop mode, which sentence is loop wee need to manually maintain,
+//     // can't rely on position listening
+//     //  */
+//     // final sentence = _sentenceList[sentenceIndex];
+//     // debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
+//     // if (_isLoop) {
+//     //   _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
+//     //   ref
+//     //       .read(playerLoopProvider.notifier)
+//     //       .updateIndexAndSentenceIfLoop(sentenceIndex, sentence);
+//     // }
+//     // await ref.read(playerMediaProvider.notifier).seek(sentence.start);
+//     // await ref.read(playerMediaProvider.notifier).play();
+//   }
 
-  void tapSentence(String id) async {
-    // if (id == null) return;
-    // final sentenceIndex = _sentenceList.firstIndexWhereOrNull(
-    //   (sen) => sen.id == id,
-    // );
-    // if (sentenceIndex == null) return;
-    // /*Fix loop mode, tap sentence bug
-    // in loop mode, you seek from s(n)->s(n+1),
-    // because it beyond s(n) end, so it trigger reseek to start
-    // same reason you seek from s(n)->s(n-1) will works perfectly,
-    // so in loop mode, which sentence is loop wee need to manually maintain,
-    // can't rely on position listening
-    //  */
-    // final sentence = _sentenceList[sentenceIndex];
-    // debugPrint('tap id($id) index($sentenceIndex): ${sentence.text}');
-    // if (_isLoop) {
-    //   _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
-    //   ref
-    //       .read(playerLoopProvider.notifier)
-    //       .updateIndexAndSentenceIfLoop(sentenceIndex, sentence);
-    // }
-    // await ref.read(playerMediaProvider.notifier).seek(sentence.start);
-    // await ref.read(playerMediaProvider.notifier).play();
-  }
-
-  Future<String?> _pickOneSubtitle() async {
-    try {
-      final subtitleExtensions = {'.srt', '.vtt'};
-      final pickedFiles = await FilePicker.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: [...subtitleExtensions],
-      );
-      final subtitlePath = pickedFiles
-          .map((pf) => File(pf.xFile.path))
-          .toList()
-          .firstWhereOrNull(
-            (f) => subtitleExtensions.contains(p.extension(f.path)),
-          )
-          ?.path;
-      return subtitlePath;
-    } catch (e) {
-      debugPrint('Error adding subtitle: $e');
-      return null;
-    }
-  }
-}
+//   Future<String?> _pickOneSubtitle() async {
+//     try {
+//       final subtitleExtensions = {'.srt', '.vtt'};
+//       final pickedFiles = await FilePicker.pickFiles(
+//         type: FileType.custom,
+//         allowedExtensions: [...subtitleExtensions],
+//       );
+//       final subtitlePath = pickedFiles
+//           .map((pf) => File(pf.xFile.path))
+//           .toList()
+//           .firstWhereOrNull(
+//             (f) => subtitleExtensions.contains(p.extension(f.path)),
+//           )
+//           ?.path;
+//       return subtitlePath;
+//     } catch (e) {
+//       debugPrint('Error adding subtitle: $e');
+//       return null;
+//     }
+//   }
+// }

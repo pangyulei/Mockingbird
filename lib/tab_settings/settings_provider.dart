@@ -8,11 +8,11 @@ part 'settings_provider.g.dart';
 class Settings extends _$Settings {
   @override
   Future<SettingsState> build() async {
-    final preference = await ref.watch(dbPreferenceProvider.future);
-    return SettingsState(loop: preference.loop);
+    // final preference = await ref.watch(dbPreferenceProvider.future);
+    return SettingsState(loop: false);
   }
 
   Future<void> toggleLoop() async {
-    await ref.read(dbPreferenceProvider.notifier).toggleLoop();
+    // await ref.read(dbPreferenceProvider.notifier).toggleLoop();
   }
 }

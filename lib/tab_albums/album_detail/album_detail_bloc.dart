@@ -4,18 +4,21 @@ import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumDetailBloc extends Bloc<AlbumDetailEvent, AlbumDetailState> {
-  final String _id;
-  AlbumDetailBloc(this._id)
-    : super(const AlbumDetailLoadingState()) {
-    on<AlbumDetailLoadingEvent>(_onLoading);
+  final String? _albumId;
+  AlbumDetailBloc(this._albumId) : super(const AlbumDetailInitState()) {
+    on<AlbumDetailInitEvent>(_onInit);
   }
 
-  void _onLoading(
-    AlbumDetailLoadingEvent event,
+  void _onInit(
+    AlbumDetailInitEvent event,
     Emitter<AlbumDetailState> emit,
   ) async {
-    //TODO handle '' id
-    final album = await AssetPathEntity.fromId(_id);
+    if (_albumId == null) {
+      emit(const AlbumDetailNotFoundState());
+      return;
+    }
+    //TODO handle '' id, try-catch?
+    final album = await AssetPathEntity.fromId(_albumId);
     final mediaList = await album.getAssetListRange(
       start: 0,
       end: await album.assetCountAsync,

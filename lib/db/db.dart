@@ -1,31 +1,48 @@
 import 'package:collection/collection.dart';
-import 'package:mockingbird/db/db_objectbox.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mockingbird/db/entities/metadata_entity.dart';
 import 'package:mockingbird/db/entities/preference_entity.dart';
-import 'package:objectbox/objectbox.dart';
-
+import 'package:mockingbird/objectbox.g.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 // typedef MF_SF = ({File mediaFile, File? subtitleFile});
 // typedef M_SF = ({EnMedia media, File subtitleFile});
 
-class DBLogic {
-  final Store _store;
-
-  DBLogic.store(this._store); //for unit test
-  DBLogic() : this.store(DBObjectBox().store);
-
-  Future<MetadataEntity> loadMetadata() async {
-    return (await _store.box<MetadataEntity>().getAllAsync()).firstOrNull ?? MetadataEntity.empty();
+class DB {
+  static late final Store _store;
+  static Future<void> init({Store? store}) async {
+    if (store == null) {
+      final appDir = await getApplicationDocumentsDirectory();
+      // Future<Store> openStore() {...} is defined in the generated objectbox.g.dart
+      _store = await openStore(directory: p.join(appDir.path, "db_objectbox"));
+    } else {
+      _store = store;
+    }
+    if (kDebugMode) {
+      if (Admin.isAvailable()) {
+        Admin(_store);
+      } else {
+        debugPrint('ObjectBox Admin is NOT available');
+      }
+    }
   }
 
-  Future<MetadataEntity> updateMetadata(MetadataEntity metadata) async {
+  static Future<MetadataEntity> loadMetadata() async {
+    return (await _store.box<MetadataEntity>().getAllAsync()).firstOrNull ??
+        MetadataEntity.empty();
+  }
+
+  static Future<MetadataEntity> updateMetadata(MetadataEntity metadata) async {
     return await _store.box<MetadataEntity>().putAndGetAsync(metadata);
   }
 
-  Future<PreferenceEntity?> loadPreference() async {
+  static Future<PreferenceEntity?> loadPreference() async {
     return (await _store.box<PreferenceEntity>().getAllAsync()).firstOrNull;
   }
 
-  Future<PreferenceEntity> updatePreference(PreferenceEntity preference) async {
+  static Future<PreferenceEntity> updatePreference(
+    PreferenceEntity preference,
+  ) async {
     return await _store.box<PreferenceEntity>().putAndGetAsync(preference);
   }
 

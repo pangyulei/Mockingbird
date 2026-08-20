@@ -4,21 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:mockingbird/app/app_lifecycle_handler.dart';
 import 'package:mockingbird/app/app_ui.dart';
-import 'package:mockingbird/db/db_objectbox.dart';
-import 'package:mockingbird/tab_player/player/providers/background_audio_handler_provider.dart';
+import 'package:mockingbird/db/db.dart';
+import 'package:mockingbird/tab_player/player/background_audio.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); //objectbox official code
-  await DBObjectBox.init();
+  await DB.init();
   MediaKit.ensureInitialized();
-  final providerContainer = ProviderContainer(observers: [
-    ],
-  );
-  final backgroundAudioHandler = providerContainer.read(
-    backgroundAudioHandlerProvider,
-  );
   await AudioService.init(
-    builder: () => backgroundAudioHandler,
+    builder: () => SharedBackgroundAudio.audio,
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.raypang.mockingbird.background_audio',
       androidNotificationChannelName: 'Mockingbird',
@@ -27,15 +21,6 @@ void main() async {
       androidShowNotificationBadge: true,
     ),
   );
-  final bgAudioNotifier = providerContainer.read(
-    backgroundAudioHandlerProvider.notifier,
-  );
-  WidgetsBinding.instance.addObserver(AppLifecycleHandler(bgAudioNotifier));
+  WidgetsBinding.instance.addObserver(AppLifecycleHandler());
   runApp(const AppUI());
-  // runApp(
-  //   UncontrolledProviderScope(
-  //     container: providerContainer,
-  //     child: const AppUI(),
-  //   ),
-  // );
 }

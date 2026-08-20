@@ -39,20 +39,17 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AlbumListBloc()..add(const AlbumListLoadingEvent()),
+      create: (context) => AlbumListBloc()..add(const AlbumListInitEvent()),
       child: Builder(
         builder: (context) {
-          final stateType = context.select<AlbumListBloc, Type>(
-            (bloc) => bloc.state.runtimeType,
-          );
-          if (stateType is AlbumListLoadingState) {
-            EasyLoading.show(maskType: .clear);
-          } else {
-            EasyLoading.dismiss();
-          }
+          final (stateType, loading) = context
+              .select<AlbumListBloc, (Type, bool)>(
+                (bloc) => (bloc.state.runtimeType, bloc.state.loading),
+              );
+          showLoading(loading);
           switch (stateType) {
-            case AlbumListLoadingState:
-              return Scaffold(appBar: _appBar());
+            case AlbumListInitState:
+              return _pageForInit();
             case AlbumListNotYetRequestedState:
               return _pageForRequestPermissions();
             case AlbumListPermissionDeniedState:
@@ -62,12 +59,16 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
             case AlbumListDataState:
               return _pageForData();
             default:
-              assert(false, 'no such album list state $stateType');
+              assert(false, 'stateType $stateType missed');
               return const SizedBox.shrink();
           }
         },
       ),
     );
+  }
+
+  Widget _pageForInit() {
+    return Scaffold(appBar: _appBar());
   }
 
   Widget _pageForEmpty() {

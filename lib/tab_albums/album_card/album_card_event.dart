@@ -4,8 +4,8 @@ sealed class AlbumCardEvent {
   const AlbumCardEvent();
 }
 
-class AlbumCardLoadingEvent extends AlbumCardEvent {
-  const AlbumCardLoadingEvent();
+class AlbumCardInitEvent extends AlbumCardEvent {
+  const AlbumCardInitEvent();
 }
 
 class AlbumCardClickEvent extends AlbumCardEvent {

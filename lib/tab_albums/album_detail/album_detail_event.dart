@@ -2,6 +2,6 @@ sealed class AlbumDetailEvent {
   const AlbumDetailEvent();
 }
 
-class AlbumDetailLoadingEvent extends AlbumDetailEvent {
-  const AlbumDetailLoadingEvent();
+class AlbumDetailInitEvent extends AlbumDetailEvent {
+  const AlbumDetailInitEvent();
 }
