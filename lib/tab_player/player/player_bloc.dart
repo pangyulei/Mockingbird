@@ -81,6 +81,7 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
   void _onPlay(PlayerPlayEvent event, Emitter<PlayerState> emit) async {
     final state = this.state;
     if (state is! PlayerDataState) return;
+    emit(state.copyWith(playing: true));
     if (state.position >= state.duration) {
       await SharedPlayer.player.seek(const Duration(seconds: 0));
     }
@@ -242,32 +243,18 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     final subtitleState = subtitle == null
         ? const PlayerSubtitleEmptyState()
         : PlayerSubtitleDataState(sentenceList: subtitle.sentenceList);
-    final state = this.state;
-    if (state is PlayerDataState) {
-      return state.copyWith(
-        title: title,
-        loading: false,
-        position: const Duration(seconds: 0),
-        duration: player.state.duration,
-        mediaType: media.type,
-        subtitle: subtitleState,
-        loopIndex: () => null,
-        showVolumeSlider: false,
-      );
-    } else {
-      return PlayerDataState(
-        showVolumeSlider: false,
-        loopIndex: null,
-        playing: false,
-        subtitle: subtitleState,
-        position: const Duration(seconds: 0),
-        duration: player.state.duration,
-        volume: 100,
-        speed: 1,
-        mediaType: media.type,
-        title: title,
-      );
-    }
+    return PlayerDataState(
+      showVolumeSlider: false,
+      loopIndex: null,
+      playing: true,
+      subtitle: subtitleState,
+      position: const Duration(seconds: 0),
+      duration: player.state.duration,
+      volume: 100,
+      speed: 1,
+      mediaType: media.type,
+      title: title,
+    );
   }
 
   Future<List<SubtitleEntity>> _loadSubtitleList(File mediaFile) async {

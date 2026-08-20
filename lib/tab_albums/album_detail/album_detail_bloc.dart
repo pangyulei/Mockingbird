@@ -37,6 +37,7 @@ class AlbumDetailBloc extends AlbumDetailBlocType {
   @override
   MediaCardBlocType mediaCardBlocAtIndex(int index) {
     final media = state.as<AlbumDetailDataState>()?.mediaList[index];
-    return MediaCardBloc(media, _metadata.playingMediaId);
+    final initialPlaying = media?.id == _metadata.playingMediaId;
+    return MediaCardBloc(media, initialPlaying);
   }
 }

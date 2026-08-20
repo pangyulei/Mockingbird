@@ -11,9 +11,9 @@ import 'package:photo_manager/photo_manager.dart';
 
 class MediaCardBloc extends MediaCardBlocType {
   final AssetEntity? _media;
-  final String? _playingMediaId;
+  final bool _initialPlaying;
   final _subList = <StreamSubscription>[];
-  MediaCardBloc(this._media, this._playingMediaId)
+  MediaCardBloc(this._media, this._initialPlaying)
     : super(const MediaCardState.empty()) {
     on<MediaCardInitEvent>(_onInit);
     on<MediaCardClickEvent>(_onClick);
@@ -55,7 +55,7 @@ class MediaCardBloc extends MediaCardBlocType {
       MediaCardState(
         name: title,
         type: _media.type,
-        playing: _media.id == _playingMediaId,
+        playing: _initialPlaying,
         hasSubtitle: false, //TODO hassubtitle
       ),
     );
