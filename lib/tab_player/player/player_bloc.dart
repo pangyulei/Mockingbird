@@ -239,7 +239,7 @@ class PlayerBloc extends Bloc<PlayerEvent, PlayerState> {
     final metadata = await DB.loadMetadata();
     final subtitle = subtitleList.firstWhereOrNull(
       (s) => s.name == metadata.playingSubtitleName,
-    );
+    ) ?? subtitleList.firstOrNull;
     final subtitleState = subtitle == null
         ? const PlayerSubtitleEmptyState()
         : PlayerSubtitleDataState(sentenceList: subtitle.sentenceList);
