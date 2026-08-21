@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mockingbird/tab_albums/album_detail/album_detail_bloc.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_event.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:mockingbird/tool/extensions.dart';
@@ -89,14 +88,19 @@ class AlbumDetailUI extends StatelessWidget {
       ),
       body: Builder(
         builder: (context) {
-          final mediaList = context.select<AlbumDetailBlocType, List<AssetEntity>>(
-            (bloc) => bloc.state.as<AlbumDetailDataState>()?.mediaList ?? [],
-          );
+          final mediaList = context
+              .select<AlbumDetailBlocType, List<AssetEntity>>(
+                (bloc) =>
+                    bloc.state.as<AlbumDetailDataState>()?.mediaList ?? [],
+              );
           return ListView.builder(
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemCount: mediaList.length,
             itemBuilder: (context, i) {
-              return MediaCardUI(_bloc.mediaCardBlocAtIndex(i));
+              final mediaCardBloc = context
+                  .read<AlbumDetailBlocType>()
+                  .mediaCardBlocAtIndex(i);
+              return MediaCardUI(mediaCardBloc);
             },
           );
         },

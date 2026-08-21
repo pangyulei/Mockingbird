@@ -1,10 +1,43 @@
+import 'package:flutter/widgets.dart';
+
 sealed class PlayerEvent {
   const PlayerEvent();
 }
 
 class PlayerInitEvent extends PlayerEvent {
+  const PlayerInitEvent();
+}
+
+class PlayerClickSentenceEvent extends PlayerEvent {
+  final String sentenceId;
+  const PlayerClickSentenceEvent(this.sentenceId);
+}
+
+class PlayerGoToAlbumListEvent extends PlayerEvent {
+  final BuildContext context;
+  const PlayerGoToAlbumListEvent(this.context);
+}
+
+class PlayerScrollToTopEvent extends PlayerEvent {
+  const PlayerScrollToTopEvent();
+}
+
+class PlayerScrollToBottomEvent extends PlayerEvent {
+  const PlayerScrollToBottomEvent();
+}
+
+class PlayerScrollToPlayingSentenceEvent extends PlayerEvent {
+  const PlayerScrollToPlayingSentenceEvent();
+}
+
+class PlayerMediaChangeEvent extends PlayerEvent {
   final String? mediaId;
-  const PlayerInitEvent(this.mediaId);
+  const PlayerMediaChangeEvent(this.mediaId);
+}
+
+class PlayerVolumeChangeEvent extends PlayerEvent {
+  final double volume;
+  const PlayerVolumeChangeEvent(this.volume);
 }
 
 class PlayerPositionChangeEvent extends PlayerEvent {

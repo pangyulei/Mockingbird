@@ -3,17 +3,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marquee/marquee.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:mockingbird/tab_player/player/player.dart';
-import 'package:mockingbird/tab_player/player/player_bloc.dart';
 import 'package:mockingbird/tab_player/player/player_event.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
+import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../sentence_card/sentence_card_ui.dart';
+abstract interface class PlayerBlocITF {
+  SentenceCardBlocType sentenceCardBlocAtIndex(int index);
+}
+
+abstract class PlayerBlocType extends Bloc<PlayerEvent, PlayerState>
+    implements PlayerBlocITF {
+  PlayerBlocType(super.initialState);
+}
 
 class PlayerUI extends StatefulWidget {
-  const PlayerUI({super.key});
+  final PlayerBlocType Function(ItemScrollController scrollController)
+  _blocCreater;
+  const PlayerUI(this._blocCreater, {super.key});
 
   @override
   State<StatefulWidget> createState() => _PlayerUIState();
@@ -21,16 +30,24 @@ class PlayerUI extends StatefulWidget {
 
 class _PlayerUIState extends State<PlayerUI> {
   final _scrollController = ItemScrollController();
+  late final PlayerBlocType _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = widget._blocCreater(_scrollController);
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => PlayerBloc(_scrollController),
+      create: (context) => _bloc,
       child: Builder(
         builder: (context) {
-          final (stateType, loading) = context.select<PlayerBloc, (Type, bool)>(
-            (bloc) => (bloc.state.runtimeType, bloc.state.loading),
-          );
+          final (stateType, loading) = context
+              .select<PlayerBlocType, (Type, bool)>(
+                (bloc) => (bloc.state.runtimeType, bloc.state.loading),
+              );
           // showLoading(loading);
           switch (stateType) {
             case PlayerInitState:
@@ -54,28 +71,6 @@ class _PlayerUIState extends State<PlayerUI> {
 
   // void _onAddSubtitle(WidgetRef ref) async {
   //   // await ref.read(playerProvider(_scrollController).notifier).addSubtitle();
-  // }
-
-  // void _onScrollToPlayingSentence(WidgetRef ref) {
-  //   ref
-  //       .read(playerProvider(_scrollController).notifier)
-  //       .scrollToPlayingSentence();
-  // }
-
-  // void _onScrollToTop(WidgetRef ref) {
-  //   ref.read(playerProvider(_scrollController).notifier).scrollToTop();
-  // }
-
-  // void _onScrollToBottom(WidgetRef ref) {
-  //   ref.read(playerProvider(_scrollController).notifier).scrollToBottom();
-  // }
-
-  // void _onVolumeChanged(WidgetRef ref, double newVolume) async {
-  //   await ref.read(playerSettingProvider.notifier).updateVolume(newVolume);
-  // }
-
-  // void _onGoToAlbums(BuildContext context) {
-  //   context.go(AppRoute.albumList);
   // }
 
   Widget _pageForData(BuildContext context) {
@@ -107,7 +102,7 @@ class _PlayerUIState extends State<PlayerUI> {
   Widget _displayer() {
     return Builder(
       builder: (context) {
-        final mediaType = context.select<PlayerBloc, AssetType>(
+        final mediaType = context.select<PlayerBlocType, AssetType>(
           (bloc) => bloc.state.as<PlayerDataState>()?.mediaType ?? .video,
         );
         if (mediaType == .video) {
@@ -214,9 +209,10 @@ class _PlayerUIState extends State<PlayerUI> {
         color: Theme.of(context).scaffoldBackgroundColor,
         child: Builder(
           builder: (context) {
-            final subtitle = context.select<PlayerBloc, PlayerSubtitleState?>(
-              (bloc) => bloc.state.as<PlayerDataState>()?.subtitle,
-            );
+            final subtitle = context
+                .select<PlayerBlocType, PlayerSubtitleState?>(
+                  (bloc) => bloc.state.as<PlayerDataState>()?.subtitle,
+                );
             if (subtitle == null) {
               return const SizedBox.shrink();
             }
@@ -226,14 +222,18 @@ class _PlayerUIState extends State<PlayerUI> {
                   itemCount: subtitle.sentenceList.length,
                   itemScrollController: _scrollController,
                   itemBuilder: (context, i) {
-                    return SentenceCardUI(subtitle.sentenceList[i], (
-                      ref,
-                      sentenceId,
-                    ) {
-                      // ref
-                      //     .read(playerProvider(_scrollController).notifier)
-                      //     .tapSentence(sentenceId);
-                    });
+                    final sentenceCardBloc = context
+                        .read<PlayerBlocType>()
+                        .sentenceCardBlocAtIndex(i);
+                    return SentenceCardUI(sentenceCardBloc);
+                    // return SentenceCardUI(subtitle.sentenceList[i], (
+                    //   ref,
+                    //   sentenceId,
+                    // ) {
+                    //   // ref
+                    //   //     .read(playerProvider(_scrollController).notifier)
+                    //   //     .tapSentence(sentenceId);
+                    // });
                   },
                 );
               case PlayerSubtitleEmptyState _:
@@ -285,7 +285,7 @@ class _PlayerUIState extends State<PlayerUI> {
   Widget? _floatingButtons() {
     return Builder(
       builder: (context) {
-        final hasSubtitle = context.select<PlayerBloc, bool>(
+        final hasSubtitle = context.select<PlayerBlocType, bool>(
           (bloc) =>
               bloc.state.as<PlayerDataState>()?.subtitle
                   is PlayerSubtitleDataState,
@@ -298,7 +298,9 @@ class _PlayerUIState extends State<PlayerUI> {
             FloatingActionButton.small(
               heroTag: 'scroll_top',
               onPressed: () {
-                // _onScrollToTop(ref)
+                context.read<PlayerBlocType>().add(
+                  const PlayerScrollToTopEvent(),
+                );
               },
               backgroundColor: colorScheme.surfaceContainerHighest,
               foregroundColor: colorScheme.primary,
@@ -308,7 +310,9 @@ class _PlayerUIState extends State<PlayerUI> {
             FloatingActionButton.small(
               heroTag: 'scroll_focus',
               onPressed: () {
-                // _onScrollToPlayingSentence(ref)
+                context.read<PlayerBlocType>().add(
+                  const PlayerScrollToPlayingSentenceEvent(),
+                );
               },
               child: const Icon(Icons.center_focus_strong_rounded),
             ),
@@ -316,7 +320,9 @@ class _PlayerUIState extends State<PlayerUI> {
             FloatingActionButton.small(
               heroTag: 'scroll_bottom',
               onPressed: () {
-                // _onScrollToBottom(ref)
+                context.read<PlayerBlocType>().add(
+                  const PlayerScrollToBottomEvent(),
+                );
               },
               backgroundColor: colorScheme.surfaceContainerHighest,
               foregroundColor: colorScheme.primary,
@@ -334,7 +340,7 @@ class _PlayerUIState extends State<PlayerUI> {
       children: [
         Builder(
           builder: (context) {
-            final bool showVolumeSlider = context.select<PlayerBloc, bool>(
+            final bool showVolumeSlider = context.select<PlayerBlocType, bool>(
               (bloc) =>
                   bloc.state.as<PlayerDataState>()?.showVolumeSlider ?? false,
             );
@@ -357,7 +363,7 @@ class _PlayerUIState extends State<PlayerUI> {
         _volumeButton(),
         Builder(
           builder: (context) {
-            final bool showVolumeSlider = context.select<PlayerBloc, bool>(
+            final bool showVolumeSlider = context.select<PlayerBlocType, bool>(
               (bloc) =>
                   bloc.state.as<PlayerDataState>()?.showVolumeSlider ?? false,
             );
@@ -376,11 +382,11 @@ class _PlayerUIState extends State<PlayerUI> {
     return Builder(
       builder: (context) => IconButton(
         onPressed: () {
-          context.read<PlayerBloc>().add(const PlayerToggleVolumeEvent());
+          context.read<PlayerBlocType>().add(const PlayerToggleVolumeEvent());
         },
         icon: Builder(
           builder: (context) {
-            final volume = context.select<PlayerBloc, double>(
+            final volume = context.select<PlayerBlocType, double>(
               (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? 1,
             );
             final icon = volume == 0
@@ -414,13 +420,17 @@ class _PlayerUIState extends State<PlayerUI> {
       ),
       child: Builder(
         builder: (context) {
-          final volume = context.select<PlayerBloc, double>(
-            (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? 1,
+          const double maxVolume = 100;
+          final volume = context.select<PlayerBlocType, double>(
+            (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? maxVolume,
           );
           return Slider(
             value: volume,
-            onChanged: (newVolume) {
-              // => _onVolumeChanged(ref, newVolume)
+            max: maxVolume,
+            onChanged: (volume) {
+              context.read<PlayerBlocType>().add(
+                PlayerVolumeChangeEvent(volume),
+              );
             },
           );
         },
@@ -444,7 +454,7 @@ class _PlayerUIState extends State<PlayerUI> {
       child: Builder(
         builder: (context) {
           final (position, duration) = context
-              .select<PlayerBloc, (Duration, Duration)>(
+              .select<PlayerBlocType, (Duration, Duration)>(
                 (bloc) => (
                   bloc.state.as<PlayerDataState>()?.position ??
                       const Duration(seconds: 0),
@@ -458,7 +468,7 @@ class _PlayerUIState extends State<PlayerUI> {
             value: val,
             max: max,
             onChangeStart: (val) {
-              context.read<PlayerBloc>().add(
+              context.read<PlayerBlocType>().add(
                 PlayerVideoSliderStartChangeEvent(
                   Duration(milliseconds: val.toInt()),
                   duration,
@@ -466,7 +476,7 @@ class _PlayerUIState extends State<PlayerUI> {
               );
             },
             onChanged: (val) {
-              context.read<PlayerBloc>().add(
+              context.read<PlayerBlocType>().add(
                 PlayerVideoSliderChangingEvent(
                   Duration(milliseconds: val.toInt()),
                   duration,
@@ -474,7 +484,7 @@ class _PlayerUIState extends State<PlayerUI> {
               );
             },
             onChangeEnd: (val) {
-              context.read<PlayerBloc>().add(
+              context.read<PlayerBlocType>().add(
                 PlayerVideoSliderEndChangeEvent(
                   Duration(milliseconds: val.toInt()),
                   duration,
@@ -544,7 +554,9 @@ class _PlayerUIState extends State<PlayerUI> {
               const SizedBox(height: 32),
               FilledButton.icon(
                 onPressed: () {
-                  // _onGoToAlbums(context)
+                  context.read<PlayerBlocType>().add(
+                    PlayerGoToAlbumListEvent(context),
+                  );
                 },
                 icon: const Icon(Icons.library_music_rounded),
                 label: const Text('Go to Albums'),
@@ -570,7 +582,7 @@ class _PlayerUIState extends State<PlayerUI> {
       height: 24,
       child: Builder(
         builder: (context) {
-          final title = context.select<PlayerBloc, String>(
+          final title = context.select<PlayerBlocType, String>(
             (bloc) => bloc.state.as<PlayerDataState>()?.title ?? '',
           );
           if (title.isEmpty) {
@@ -623,15 +635,15 @@ class _PlayerUIState extends State<PlayerUI> {
     final colorScheme = Theme.of(context).colorScheme;
     return Builder(
       builder: (context) {
-        final playing = context.select<PlayerBloc, bool>(
+        final playing = context.select<PlayerBlocType, bool>(
           (bloc) => bloc.state.as<PlayerDataState>()?.playing ?? false,
         );
         return IconButton.filled(
           onPressed: () {
             if (playing) {
-              context.read<PlayerBloc>().add(const PlayerPauseEvent());
+              context.read<PlayerBlocType>().add(const PlayerPauseEvent());
             } else {
-              context.read<PlayerBloc>().add(const PlayerPlayEvent());
+              context.read<PlayerBlocType>().add(const PlayerPlayEvent());
             }
           },
           icon: Icon(
@@ -654,19 +666,19 @@ class _PlayerUIState extends State<PlayerUI> {
     final colorScheme = Theme.of(context).colorScheme;
     return Builder(
       builder: (context) {
-        final hasSubtitle = context.select<PlayerBloc, bool>(
+        final hasSubtitle = context.select<PlayerBlocType, bool>(
           (bloc) =>
               bloc.state.as<PlayerDataState>()?.subtitle
                   is PlayerSubtitleDataState,
         );
         if (!hasSubtitle) return const SizedBox.shrink();
-        final loop = context.select<PlayerBloc, bool>(
+        final loop = context.select<PlayerBlocType, bool>(
           (bloc) => bloc.state.as<PlayerDataState>()?.loopIndex != null,
         );
         return Builder(
           builder: (context) => IconButton(
             onPressed: () {
-              context.read<PlayerBloc>().add(const PlayerToggleLoopEvent());
+              context.read<PlayerBlocType>().add(const PlayerToggleLoopEvent());
             },
             icon: Icon(
               loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
@@ -685,7 +697,7 @@ class _PlayerUIState extends State<PlayerUI> {
     return Builder(
       builder: (context) => IconButton(
         onPressed: () {
-          context.read<PlayerBloc>().add(const PlayerDecSpeedEvent());
+          context.read<PlayerBlocType>().add(const PlayerDecSpeedEvent());
         },
         icon: const Icon(Icons.remove_circle_outline_rounded),
         color: Theme.of(context).colorScheme.outline,
@@ -700,7 +712,7 @@ class _PlayerUIState extends State<PlayerUI> {
     return Builder(
       builder: (context) => IconButton(
         onPressed: () {
-          context.read<PlayerBloc>().add(const PlayerIncSpeedEvent());
+          context.read<PlayerBlocType>().add(const PlayerIncSpeedEvent());
         },
         icon: const Icon(Icons.add_circle_outline_rounded),
         color: Theme.of(context).colorScheme.outline,
@@ -716,7 +728,7 @@ class _PlayerUIState extends State<PlayerUI> {
     return Builder(
       builder: (context) => GestureDetector(
         onTap: () =>
-            context.read<PlayerBloc>().add(const PlayerResetSpeedEvent()),
+            context.read<PlayerBlocType>().add(const PlayerResetSpeedEvent()),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -725,7 +737,7 @@ class _PlayerUIState extends State<PlayerUI> {
           ),
           child: Builder(
             builder: (context) {
-              final speed = context.select<PlayerBloc, double>(
+              final speed = context.select<PlayerBlocType, double>(
                 (bloc) => bloc.state.as<PlayerDataState>()?.speed ?? 1,
               );
               return Text(

@@ -2,22 +2,36 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/db/entities/sentence_entity.dart';
+import 'package:mockingbird/tab_player/player/player_event.dart';
+import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
+import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 
-class SentenceCardBloc extends Bloc<SentenceCardEvent, SentenceCardState> {
+class SentenceCardBloc extends SentenceCardBlocType {
   final _subList = <StreamSubscription>[];
-  final SentenceEntity _sentence;
-  SentenceCardBloc(this._sentence) : super(const SentenceCardState.empty()) {
+  final SentenceEntity? _sentence;
+  final bool _initialPlaying;
+  SentenceCardBloc(this._sentence, this._initialPlaying)
+    : super(const SentenceCardState.empty()) {
     on<SentenceCardInitEvent>(_onInit);
     on<SentenceCardPlayingSentenceChangedEvent>(_onPlayingSentenceChanged);
+    on<SentenceCardClickEvent>(_onClick);
     _subList.add(
       EventHub.on<HubPlayingSentenceChangedEvent>(
         (event) => add(
           SentenceCardPlayingSentenceChangedEvent(event.playingSentenceId),
         ),
       ),
+    );
+  }
+
+  void _onClick(SentenceCardClickEvent event, Emitter<SentenceCardState> emit) {
+    final sentenceId = _sentence?.id;
+    if (sentenceId == null) return;
+    event.context.read<PlayerBlocType>().add(
+      PlayerClickSentenceEvent(sentenceId),
     );
   }
 
@@ -30,10 +44,13 @@ class SentenceCardBloc extends Bloc<SentenceCardEvent, SentenceCardState> {
   }
 
   void _onInit(SentenceCardInitEvent event, Emitter<SentenceCardState> emit) {
+    final sentence = _sentence;
+    if (sentence == null) return;
     emit(
       state.copyWith(
-        text: _sentence.text,
-        period: '${_sentence.start.desc} - ${_sentence.end.desc}',
+        text: sentence.text,
+        period: '${sentence.start.desc} - ${sentence.end.desc}',
+        playing: _initialPlaying,
       ),
     );
   }
@@ -42,7 +59,7 @@ class SentenceCardBloc extends Bloc<SentenceCardEvent, SentenceCardState> {
     SentenceCardPlayingSentenceChangedEvent event,
     Emitter<SentenceCardState> emit,
   ) {
-    emit(state.copyWith(playing: _sentence.id == event.playingSentenceId));
+    emit(state.copyWith(playing: _sentence?.id == event.playingSentenceId));
   }
 }
 

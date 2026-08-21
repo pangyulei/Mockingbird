@@ -11,7 +11,7 @@ class HubPlayingMediaChangedEvent extends HubEvent {
   const HubPlayingMediaChangedEvent(this.playingMediaId);
 }
 class HubPlayingSentenceChangedEvent extends HubEvent {
-  final String playingSentenceId;
+  final String? playingSentenceId;
   const HubPlayingSentenceChangedEvent(this.playingSentenceId);
 }
 
