@@ -29,8 +29,8 @@ const double _kStepPlaySpeed = 0.25;
 
 class PlayerBloc extends PlayerBlocType {
   final ItemScrollController _scrollController;
-  bool _isDraggingVideoSlider = false;
-  bool _isPlayingBeforeDraged = false;
+  bool _draggingVideoSlider = false;
+  bool _videoSliderRestorePlaying = false;
   String? _mediaId;
   SubtitleEntity? _subtitle;
   SubtitleEntity? _prevSubtitle;
@@ -157,7 +157,7 @@ class PlayerBloc extends PlayerBlocType {
     final loopSentence = loopIndex == null
         ? null
         : _subtitle?.sentenceList[loopIndex];
-    if (!_isDraggingVideoSlider && loopSentence != null) {
+    if (!_draggingVideoSlider && loopSentence != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       // debugPrint('position changing loop $sentence');
       if (event.position > loopSentence.end) {
@@ -173,7 +173,7 @@ class PlayerBloc extends PlayerBlocType {
       _scrollController.safeJumpTo(_spot?.index, alignment: 0.3);
     } else if (isSentenceChanged) {
       EventHub.emit(HubPlayingSentenceChangedEvent(_spot?.sentence.id));
-      if (_isDraggingVideoSlider) {
+      if (_draggingVideoSlider) {
         _scrollController.safeJumpTo(_spot?.index, alignment: 0.3);
       } else if (loopIndex == null) {
         //playing auto scroll to next sentence, not for loop mode
@@ -239,8 +239,8 @@ class PlayerBloc extends PlayerBlocType {
   ) async {
     final state = this.state;
     if (state is! PlayerDataState) return;
-    _isDraggingVideoSlider = true;
-    _isPlayingBeforeDraged = state.playing;
+    _draggingVideoSlider = true;
+    _videoSliderRestorePlaying = state.playing;
     emit(state.copyWith(playing: false));
     await SharedPlayer.player.pause();
     await SharedPlayer.player.seek(event.position);
@@ -259,7 +259,7 @@ class PlayerBloc extends PlayerBlocType {
   ) async {
     final newState = await defer<PlayerState>(
       () async {
-        _isDraggingVideoSlider = false;
+        _draggingVideoSlider = false;
       },
       () async {
         var state = this.state;
@@ -279,7 +279,7 @@ class PlayerBloc extends PlayerBlocType {
           targetPosition = event.position;
         }
         await SharedPlayer.player.seek(targetPosition);
-        if (_isPlayingBeforeDraged && event.position < event.duration) {
+        if (_videoSliderRestorePlaying && event.position < event.duration) {
           state = state.copyWith(playing: true);
           await SharedPlayer.player.play();
         }
