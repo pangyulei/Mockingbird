@@ -6,10 +6,11 @@ sealed class HubEvent {
   const HubEvent();
 }
 
-class HubPlayingMediaChangedEvent extends HubEvent {
+class HubPlayMediaEvent extends HubEvent {
   final String? playingMediaId;
-  const HubPlayingMediaChangedEvent(this.playingMediaId);
+  const HubPlayMediaEvent(this.playingMediaId);
 }
+
 class HubPlayingSentenceChangedEvent extends HubEvent {
   final String? playingSentenceId;
   const HubPlayingSentenceChangedEvent(this.playingSentenceId);

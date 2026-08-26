@@ -1,7 +1,7 @@
 import 'package:photo_manager/photo_manager.dart';
 
 sealed class AlbumDetailState {
-  final bool loading;
+  final bool loading; //TODO use easyloading, no need to define loading flag
   const AlbumDetailState({this.loading = false});
   AlbumDetailState copyWith({bool? loading});
 }

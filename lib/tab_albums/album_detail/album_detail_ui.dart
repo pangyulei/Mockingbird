@@ -24,7 +24,10 @@ class AlbumDetailUI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => _bloc..add(const AlbumDetailInitEvent()),
+      create: (context) {
+        debugPrint('albumdetail ui blocprovider create called');
+        return _bloc..add(const AlbumDetailInitEvent());
+      },
       child: Builder(
         builder: (context) {
           final (stateType, loading) = context

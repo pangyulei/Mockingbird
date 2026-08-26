@@ -22,12 +22,12 @@ extension IterableHelper<E> on Iterable<E> {
 extension ScrollHelper on ItemScrollController {
   void safeJumpTo(int? index, {double alignment = 0}) {
     if (isAttached && index != null) {
-      debugPrint('${identityHashCode(this)} will jump to index $index');
+      // debugPrint('${identityHashCode(this)} will jump to index $index');
       jumpTo(index: index, alignment: alignment);
     } else {
-      debugPrint(
-        '${identityHashCode(this)} jump fail, attached $isAttached, index $index',
-      );
+      // debugPrint(
+      //   '${identityHashCode(this)} jump fail, attached $isAttached, index $index',
+      // );
     }
   }
 
@@ -37,14 +37,14 @@ extension ScrollHelper on ItemScrollController {
     Duration duration = const Duration(milliseconds: 250),
   }) {
     if (isAttached && index != null) {
-      debugPrint(
-        '${identityHashCode(this)} will scroll to index $index align $alignment',
-      );
+      // debugPrint(
+      //   '${identityHashCode(this)} will scroll to index $index align $alignment',
+      // );
       scrollTo(index: index, duration: duration, alignment: alignment);
     } else {
-      debugPrint(
-        '${identityHashCode(this)} scroll fail, attached $isAttached, index $index',
-      );
+      // debugPrint(
+      //   '${identityHashCode(this)} scroll fail, attached $isAttached, index $index',
+      // );
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/tab_player/player/player_event.dart';
@@ -11,10 +12,8 @@ import 'package:mockingbird/tool/event_hub.dart';
 
 class SentenceCardBloc extends SentenceCardBlocType {
   final _subList = <StreamSubscription>[];
-  final SentenceEntity? _sentence;
-  final bool _initialPlaying;
-  SentenceCardBloc(this._sentence, this._initialPlaying)
-    : super(const SentenceCardState.empty()) {
+  SentenceEntity? _sentence;
+  SentenceCardBloc() : super(const SentenceCardState.empty()) {
     on<SentenceCardInitEvent>(_onInit);
     on<SentenceCardPlayingSentenceChangedEvent>(_onPlayingSentenceChanged);
     on<SentenceCardClickEvent>(_onClick);
@@ -44,14 +43,18 @@ class SentenceCardBloc extends SentenceCardBlocType {
   }
 
   void _onInit(SentenceCardInitEvent event, Emitter<SentenceCardState> emit) {
-    final sentence = _sentence;
+    _sentence = event.sentence;
+    final sentence = event.sentence;
     if (sentence == null) return;
     emit(
-      state.copyWith(
+      SentenceCardState(
         text: sentence.text,
         period: '${sentence.start.desc} - ${sentence.end.desc}',
-        playing: _initialPlaying,
+        playing: event.playing,
       ),
+    );
+    debugPrint(
+      'sentence-card-bloc ${identityHashCode(this)} on-inited playing ${event.playing}',
     );
   }
 

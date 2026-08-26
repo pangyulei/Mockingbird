@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
@@ -11,7 +12,9 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
   }
 
   void _onInit(AlbumListInitEvent event, Emitter<AlbumListState> emit) async {
+    EasyLoading.show(maskType: .clear);
     emit(await _reload());
+    EasyLoading.dismiss();
   }
 
   Future<AlbumListState> _reload() async {

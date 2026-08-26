@@ -19,7 +19,7 @@ class MediaCardBloc extends MediaCardBlocType {
     on<MediaCardClickEvent>(_onClick);
     on<MediaCardPlayingMediaChangeEvent>(_onPlayingMediaChange);
     _subList.addAll([
-      EventHub.on<HubPlayingMediaChangedEvent>(
+      EventHub.on<HubPlayMediaEvent>(
         (event) => add(MediaCardPlayingMediaChangeEvent(event.playingMediaId)),
       ),
     ]);
@@ -42,8 +42,8 @@ class MediaCardBloc extends MediaCardBlocType {
 
   void _onClick(MediaCardClickEvent event, Emitter<MediaCardState> emit) async {
     if (_media == null) return;
-    EventHub.emit(HubPlayingMediaChangedEvent(_media.id));
-    event.context.go(AppRoute.player);
+    EventHub.emit(HubPlayMediaEvent(_media.id));
+    event.context.go(AppRoute.playerById(_media.id));
   }
 
   void _onInit(_, Emitter<MediaCardState> emit) async {

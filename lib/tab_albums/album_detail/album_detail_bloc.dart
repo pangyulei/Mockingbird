@@ -1,4 +1,7 @@
+import 'package:defer/defer.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/entities/metadata_entity.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_event.dart';
@@ -16,22 +19,36 @@ class AlbumDetailBloc extends AlbumDetailBlocType {
     on<AlbumDetailInitEvent>(_onInit);
   }
 
+  @override
+  Future<void> close() {
+    debugPrint('albumdetail close');
+    return super.close();
+  }
+
   void _onInit(
     AlbumDetailInitEvent event,
     Emitter<AlbumDetailState> emit,
   ) async {
-    _metadata = await DB.loadMetadata();
-    if (_albumId == null) {
-      emit(const AlbumDetailNotFoundState());
-      return;
-    }
-    //TODO handle '' id, try-catch?
-    final album = await AssetPathEntity.fromId(_albumId);
-    final mediaList = await album.getAssetListRange(
-      start: 0,
-      end: await album.assetCountAsync,
+    EasyLoading.show(maskType: .clear);
+    await defer(
+      () async {
+        EasyLoading.dismiss();
+      },
+      () async {
+        _metadata = await DB.loadMetadata();
+        if (_albumId == null) {
+          emit(const AlbumDetailNotFoundState());
+          return;
+        }
+        //TODO handle '' id, try-catch?
+        final album = await AssetPathEntity.fromId(_albumId);
+        final mediaList = await album.getAssetListRange(
+          start: 0,
+          end: await album.assetCountAsync,
+        );
+        emit(AlbumDetailDataState(name: album.name, mediaList: mediaList));
+      },
     );
-    emit(AlbumDetailDataState(name: album.name, mediaList: mediaList));
   }
 
   @override

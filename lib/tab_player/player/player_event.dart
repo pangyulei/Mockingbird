@@ -5,7 +5,13 @@ sealed class PlayerEvent {
 }
 
 class PlayerInitEvent extends PlayerEvent {
-  const PlayerInitEvent();
+  final String? mediaId;
+  const PlayerInitEvent(this.mediaId);
+}
+
+class PlayerPlayMediaEvent extends PlayerEvent {
+  final String? mediaId;
+  const PlayerPlayMediaEvent(this.mediaId);
 }
 
 class PlayerClickSentenceEvent extends PlayerEvent {
@@ -28,11 +34,6 @@ class PlayerScrollToBottomEvent extends PlayerEvent {
 
 class PlayerScrollToPlayingSentenceEvent extends PlayerEvent {
   const PlayerScrollToPlayingSentenceEvent();
-}
-
-class PlayerMediaChangeEvent extends PlayerEvent {
-  final String? mediaId;
-  const PlayerMediaChangeEvent(this.mediaId);
 }
 
 class PlayerVolumeChangeEvent extends PlayerEvent {

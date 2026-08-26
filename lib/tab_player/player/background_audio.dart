@@ -1,6 +1,6 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:mockingbird/db/db.dart';
-import 'package:mockingbird/tab_player/player/player.dart';
+import 'package:mockingbird/tool/event_hub.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 
@@ -9,6 +9,8 @@ class SharedBackgroundAudio {
 }
 
 class BackgroundAudio extends BaseAudioHandler {
+  BackgroundAudio() {
+  }
   void update() async {
     final mediaId = (await DB.loadMetadata()).playingMediaId;
     if (mediaId == null) return;
@@ -26,8 +28,8 @@ class BackgroundAudio extends BaseAudioHandler {
           duration: media.videoDuration,
           artUri: null, //TODO fix artUri
         ),
-        playing: SharedPlayer.player.state.playing,
-        position: SharedPlayer.player.state.position,
+        playing: false,//TODO
+        position: const Duration(seconds: 0),
       );
     }
   }
@@ -50,12 +52,12 @@ class BackgroundAudio extends BaseAudioHandler {
 
   @override
   Future<void> play() async {
-    await SharedPlayer.player.play();
+    // await SharedPlayer.player.play();
   }
 
   @override
   Future<void> pause() async {
-    await SharedPlayer.player.pause();
+    // await SharedPlayer.player.pause();
   }
 
   // @override
@@ -72,6 +74,6 @@ class BackgroundAudio extends BaseAudioHandler {
 
   @override
   Future<void> seek(Duration position) async {
-    await SharedPlayer.player.seek(position);
+    // await SharedPlayer.player.seek(position);
   }
 }

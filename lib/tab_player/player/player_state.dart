@@ -1,27 +1,18 @@
 import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:video_player/video_player.dart';
 
 sealed class PlayerState {
-  final bool loading;
-  const PlayerState({this.loading = false});
-  PlayerState copyWith({bool? loading});
+  const PlayerState();
 }
 
 class PlayerInitState extends PlayerState {
-  const PlayerInitState() : super(loading: true);
-  @override
-  PlayerInitState copyWith({bool? loading}) {
-    return this;
-  }
+  const PlayerInitState();
 }
 
 class PlayerEmptyState extends PlayerState {
-  const PlayerEmptyState({super.loading});
-
-  @override
-  PlayerEmptyState copyWith({bool? loading}) {
-    return PlayerEmptyState(loading: loading ?? this.loading);
-  }
+  const PlayerEmptyState();
 }
 
 class PlayerDataState extends PlayerState {
@@ -35,8 +26,11 @@ class PlayerDataState extends PlayerState {
   final bool showVolumeSlider;
   final AssetType mediaType;
   final PlayerSubtitleState subtitle;
+  final VideoPlayerController player;
+  final ItemScrollController scroller;
   const PlayerDataState({
-    super.loading,
+    required this.scroller,
+    required this.player,
     required this.showVolumeSlider,
     required this.loopIndex,
     required this.playing,
@@ -49,11 +43,9 @@ class PlayerDataState extends PlayerState {
     required this.title,
   });
 
-  @override
   PlayerDataState copyWith({
     int? Function()? loopIndex,
     bool? playing,
-    bool? loading,
     double? volume,
     double? speed,
     PlayerSubtitleState? subtitle,
@@ -68,13 +60,14 @@ class PlayerDataState extends PlayerState {
       playing: playing ?? this.playing,
       title: title ?? this.title,
       mediaType: mediaType ?? this.mediaType,
-      loading: loading ?? this.loading,
       subtitle: subtitle ?? this.subtitle,
       showVolumeSlider: showVolumeSlider ?? this.showVolumeSlider,
       volume: volume ?? this.volume,
       speed: speed ?? this.speed,
       position: position ?? this.position,
       duration: duration ?? this.duration,
+      player: player,
+      scroller: scroller,
     );
   }
 }

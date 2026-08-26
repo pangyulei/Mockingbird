@@ -4,6 +4,7 @@ import 'package:mockingbird/tab_albums/album_detail/album_detail_bloc.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/tab_player/player/player_bloc.dart';
+import 'package:mockingbird/tab_player/player/player_event.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_settings/about/about_ui.dart';
 
@@ -36,11 +37,12 @@ class AppRoute {
   static String get albumList => '/albums';
 
   // static String get addAlbum => '$albums/new';
-  static String albumDetail(String id) => '$albumList/$id';
+  static String albumById(String id) => '$albumList/$id';
 
   // static String editAlbum(int id) => '$albums/$id/edit';
 
   static String get player => '/player';
+  static String playerById(String mediaId) => '$player?mediaId=$mediaId';
 
   static String get settings => '/settings';
 
@@ -50,32 +52,25 @@ class AppRoute {
     path: albumList,
     builder: (context, state) => const AlbumListUI(),
     routes: [
-      // GoRoute(
-      //   path: 'new',
-      //   builder: (context, state) => const EditAlbumUI(null),
-      // ),
       GoRoute(
         path: ':albumId',
         builder: (BuildContext context, GoRouterState state) {
           final albumId = state.pathParameters['albumId'];
+          debugPrint('albumdetail go-router create instance $albumId');
           return AlbumDetailUI(AlbumDetailBloc(albumId));
         },
       ),
-      // GoRoute(
-      //   path: ':id/edit',
-      //   builder: (context, state) {
-      //     final albumIdStr = state.pathParameters['id'];
-      //     final albumId = albumIdStr == null ? null : int.tryParse(albumIdStr);
-      //     return EditAlbumUI(albumId);
-      //   },
-      // ),
     ],
   );
 
   static GoRoute _playerRoute() => GoRoute(
     path: player,
     builder: (BuildContext context, GoRouterState state) {
-      return PlayerUI((scrollController) => PlayerBloc(scrollController));
+      // final mediaId = state.pathParameters['mediaId'];
+      final mediaId = state.uri.queryParameters['mediaId'];
+      debugPrint('player go-router create mediaId($mediaId)');
+      final playerBloc = SharedPlayerBloc.instance;
+      return PlayerUI(playerBloc..add(PlayerInitEvent(mediaId)));
     },
   );
 
@@ -92,7 +87,7 @@ class AppRoute {
   static Widget _indexesStackScaffold(
     BuildContext context,
     StatefulNavigationShell shell,
-    OnClickTab onAppTab,
+    OnClickTab onClickTab,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
@@ -109,8 +104,7 @@ class AppRoute {
         child: BottomNavigationBar(
           currentIndex: shell.currentIndex,
           onTap: (index) {
-            onAppTab(index, shell);
-            // _logic.app_selectedIndex(index, shell);
+            onClickTab(index, shell);
           },
           elevation: 0,
           backgroundColor: const Color(0xFF17212B),

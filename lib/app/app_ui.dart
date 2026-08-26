@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
@@ -30,6 +31,7 @@ class AppUIState extends ConsumerState<AppUI> {
         );
       }),
       theme: _theme(),
+      builder: EasyLoading.init(),
     );
   }
 

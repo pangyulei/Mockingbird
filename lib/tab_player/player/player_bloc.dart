@@ -3,18 +3,19 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:defer/defer.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:go_router/go_router.dart';
-import 'package:media_kit/media_kit.dart' hide PlayerState;
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/db/entities/subtitle_entity.dart';
-import 'package:mockingbird/tab_player/player/player.dart';
 import 'package:mockingbird/tab_player/player/player_event.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_bloc.dart';
+import 'package:mockingbird/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
@@ -22,13 +23,19 @@ import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:video_player/video_player.dart';
 
 const double _kMaxPlaySpeed = 3.0;
 const double _kMinPlaySpeed = 0.25;
 const double _kStepPlaySpeed = 0.25;
 
+class SharedPlayerBloc {
+  static final instance = PlayerBloc();
+}
+
 class PlayerBloc extends PlayerBlocType {
-  final ItemScrollController _scrollController;
+  VideoPlayerController? _player;
+  final _scroller = ItemScrollController();
   bool _draggingVideoSlider = false;
   bool _videoSliderRestorePlaying = false;
   String? _mediaId;
@@ -38,14 +45,15 @@ class PlayerBloc extends PlayerBlocType {
   ({int index, SentenceEntity sentence})? _spot;
   final _subList = <StreamSubscription>[];
 
-  PlayerBloc(this._scrollController) : super(const PlayerInitState()) {
+  PlayerBloc() : super(const PlayerInitState()) {
+    debugPrint('player bloc ${identityHashCode(this)} created');
     on<PlayerInitEvent>(_onInit);
+    // on<Player PlayMediaEvent>(_onPlayMedia);
     on<PlayerClickSentenceEvent>(_onClickSentence);
     on<PlayerScrollToTopEvent>(_onScrollToTop);
     on<PlayerScrollToBottomEvent>(_onScrollToBottom);
     on<PlayerScrollToPlayingSentenceEvent>(_onScrollToPlayingSentence);
     on<PlayerGoToAlbumListEvent>(_onGoToAlbumList);
-    on<PlayerMediaChangeEvent>(_onMediaChange);
     on<PlayerPositionChangeEvent>(_onPositionChange);
     on<PlayerToggleVolumeEvent>(_onToggleVolume);
     on<PlayerPauseEvent>(_onPause);
@@ -59,12 +67,9 @@ class PlayerBloc extends PlayerBlocType {
     on<PlayerVideoSliderEndChangeEvent>(_onVideoSliderEndChange);
     on<PlayerVolumeChangeEvent>(_onVolumeChange);
     _subList.addAll([
-      SharedPlayer.player.stream.position.listen(
-        (position) => add(PlayerPositionChangeEvent(position)),
-      ),
-      EventHub.on<HubPlayingMediaChangedEvent>(
-        (event) => add(PlayerMediaChangeEvent(event.playingMediaId)),
-      ),
+      // EventHub.on<HubPlayMediaEvent>(
+      //   (event) => add(PlayerPlayMediaEvent(event.playingMediaId)),
+      // ),
     ]);
   }
 
@@ -90,14 +95,14 @@ class PlayerBloc extends PlayerBlocType {
     if (state.loopIndex != null) {
       state = state.copyWith(loopIndex: () => sentenceIndex);
     }
-    _scrollController.safeScrollTo(sentenceIndex, alignment: 0.3);
+    _scroller.safeScrollTo(sentenceIndex, alignment: 0.3);
     emit(state.copyWith(playing: true));
-    await SharedPlayer.player.seek(sentence.start);
-    await SharedPlayer.player.play();
+    await _player?.seekTo(sentence.start);
+    await _player?.play();
   }
 
   void _onScrollToTop(PlayerScrollToTopEvent event, Emitter<PlayerState> emit) {
-    _scrollController.safeScrollTo(0);
+    _scroller.safeScrollTo(0);
   }
 
   void _onScrollToBottom(
@@ -106,7 +111,7 @@ class PlayerBloc extends PlayerBlocType {
   ) {
     final subtitle = _subtitle;
     if (subtitle == null || subtitle.sentenceList.isEmpty) return;
-    _scrollController.safeScrollTo(subtitle.sentenceList.length - 1);
+    _scroller.safeScrollTo(subtitle.sentenceList.length - 1);
   }
 
   void _onScrollToPlayingSentence(
@@ -115,7 +120,7 @@ class PlayerBloc extends PlayerBlocType {
   ) {
     final index = _spot?.index;
     if (index == null) return;
-    _scrollController.safeScrollTo(index, alignment: 0.3);
+    _scroller.safeScrollTo(index, alignment: 0.3);
   }
 
   void _onGoToAlbumList(
@@ -132,7 +137,7 @@ class PlayerBloc extends PlayerBlocType {
     var state = this.state;
     if (state is! PlayerDataState) return;
     emit(state.copyWith(volume: event.volume));
-    await SharedPlayer.player.setVolume(event.volume);
+    await _player?.setVolume(event.volume);
   }
 
   void _onPositionChange(
@@ -141,15 +146,16 @@ class PlayerBloc extends PlayerBlocType {
   ) async {
     var state = this.state;
     if (state is! PlayerDataState) return;
+    final player = _player;
+    if (player == null) return;
     state = state.copyWith(position: event.position);
     emit(state);
-    final player = SharedPlayer.player;
-    if (event.position >= player.state.duration) {
+    if (event.position >= player.value.duration) {
       //if video end of duration, play/pause button should update
       //feature: replay if auto play to end
       state = state.copyWith(playing: true);
       emit(state);
-      await player.seek(const Duration(seconds: 0));
+      await player.seekTo(const Duration(seconds: 0));
       await player.play();
     }
     //handle loop reseek
@@ -161,7 +167,7 @@ class PlayerBloc extends PlayerBlocType {
       //if repeat one is turn on, while sentence finished, seek to beginning
       // debugPrint('position changing loop $sentence');
       if (event.position > loopSentence.end) {
-        await player.seek(loopSentence.start);
+        await player.seekTo(loopSentence.start);
       }
     }
     //handle scroll
@@ -170,14 +176,14 @@ class PlayerBloc extends PlayerBlocType {
     final isSentenceChanged = _spot?.index != _prevPlayingSentenceIndex;
     if (isSubtitleChanged) {
       EventHub.emit(HubPlayingSentenceChangedEvent(_spot?.sentence.id));
-      _scrollController.safeJumpTo(_spot?.index, alignment: 0.3);
+      _scroller.safeJumpTo(_spot?.index, alignment: 0.3);
     } else if (isSentenceChanged) {
       EventHub.emit(HubPlayingSentenceChangedEvent(_spot?.sentence.id));
       if (_draggingVideoSlider) {
-        _scrollController.safeJumpTo(_spot?.index, alignment: 0.3);
+        _scroller.safeJumpTo(_spot?.index, alignment: 0.3);
       } else if (loopIndex == null) {
         //playing auto scroll to next sentence, not for loop mode
-        _scrollController.safeScrollTo(_spot?.index, alignment: 0.3);
+        _scroller.safeScrollTo(_spot?.index, alignment: 0.3);
       }
     }
     _prevSubtitle = _subtitle;
@@ -186,9 +192,11 @@ class PlayerBloc extends PlayerBlocType {
 
   @override
   Future<void> close() {
+    debugPrint('player bloc ${identityHashCode(this)} closed');
     for (final sub in _subList) {
       sub.cancel();
     }
+    _player?.dispose();
     return super.close();
   }
 
@@ -206,16 +214,16 @@ class PlayerBloc extends PlayerBlocType {
     if (state is! PlayerDataState) return;
     emit(state.copyWith(playing: true));
     if (state.position >= state.duration) {
-      await SharedPlayer.player.seek(const Duration(seconds: 0));
+      await _player?.seekTo(const Duration(seconds: 0));
     }
-    await SharedPlayer.player.play();
+    await _player?.play();
   }
 
   void _onPause(PlayerPauseEvent event, Emitter<PlayerState> emit) async {
     final state = this.state;
     if (state is! PlayerDataState) return;
     emit(state.copyWith(playing: false));
-    await SharedPlayer.player.pause();
+    await _player?.pause();
   }
 
   void _onToggleLoop(_, Emitter<PlayerState> emit) async {
@@ -242,15 +250,15 @@ class PlayerBloc extends PlayerBlocType {
     _draggingVideoSlider = true;
     _videoSliderRestorePlaying = state.playing;
     emit(state.copyWith(playing: false));
-    await SharedPlayer.player.pause();
-    await SharedPlayer.player.seek(event.position);
+    await _player?.pause();
+    await _player?.seekTo(event.position);
   }
 
   void _onVideoSliderChanging(
     PlayerVideoSliderChangingEvent event,
     Emitter<PlayerState> emit,
   ) async {
-    await SharedPlayer.player.seek(event.position);
+    await _player?.seekTo(event.position);
   }
 
   void _onVideoSliderEndChange(
@@ -278,10 +286,10 @@ class PlayerBloc extends PlayerBlocType {
         } else {
           targetPosition = event.position;
         }
-        await SharedPlayer.player.seek(targetPosition);
+        await _player?.seekTo(targetPosition);
         if (_videoSliderRestorePlaying && event.position < event.duration) {
           state = state.copyWith(playing: true);
-          await SharedPlayer.player.play();
+          await _player?.play();
         }
         return state;
       },
@@ -292,12 +300,8 @@ class PlayerBloc extends PlayerBlocType {
   ({int index, SentenceEntity sentence})? _spotSentenceByPosition(
     Duration position,
   ) {
-    final sentenceList = state
-        .as<PlayerDataState>()
-        ?.subtitle
-        .as<PlayerSubtitleDataState>()
-        ?.sentenceList;
-    if (sentenceList == null) return null;
+    final sentenceList = _subtitle?.sentenceList;
+    if (sentenceList == null || sentenceList.isEmpty) return null;
     for (int i = 0; i < sentenceList.length; i++) {
       SentenceEntity? prev = i == 0 ? null : sentenceList[i - 1];
       SentenceEntity? next = sentenceList.elementAtOrNull(i + 1);
@@ -317,7 +321,7 @@ class PlayerBloc extends PlayerBlocType {
     if (state is! PlayerDataState) return;
     final nextSpeed = (1.0).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
     emit(state.copyWith(speed: nextSpeed));
-    await SharedPlayer.player.setRate(nextSpeed);
+    await _player?.setPlaybackSpeed(nextSpeed);
   }
 
   void _onIncSpeed(PlayerIncSpeedEvent event, Emitter<PlayerState> emit) async {
@@ -328,7 +332,7 @@ class PlayerBloc extends PlayerBlocType {
       _kMaxPlaySpeed,
     );
     emit(state.copyWith(speed: nextSpeed));
-    await SharedPlayer.player.setRate(nextSpeed);
+    await _player?.setPlaybackSpeed(nextSpeed);
   }
 
   void _onDecSpeed(PlayerDecSpeedEvent event, Emitter<PlayerState> emit) async {
@@ -339,23 +343,35 @@ class PlayerBloc extends PlayerBlocType {
       _kMaxPlaySpeed,
     );
     emit(state.copyWith(speed: nextSpeed));
-    await SharedPlayer.player.setRate(nextSpeed);
+    await _player?.setPlaybackSpeed(nextSpeed);
   }
 
   void _onInit(PlayerInitEvent event, Emitter<PlayerState> emit) async {
-    final mediaId = (await DB.loadMetadata()).playingMediaId;
+    debugPrint('player bloc ${identityHashCode(this)} on_init');
+    EasyLoading.show(maskType: .clear);
+    final mediaId = event.mediaId ?? (await DB.loadMetadata()).playingMediaId;
     emit(await _reload(mediaId));
+    EasyLoading.dismiss();
   }
 
-  void _onMediaChange(
-    PlayerMediaChangeEvent event,
-    Emitter<PlayerState> emit,
-  ) async {
-    emit(await _reload(event.mediaId));
-  }
+  // void _onPlayMedia(
+  //   PlayerPlayMediaEvent event,
+  //   Emitter<PlayerState> emit,
+  // ) async {
+  //   debugPrint('player bloc on play media ${event.mediaId}');
+  //   EasyLoading.show(maskType: .clear);
+  //   emit(await _reload(event.mediaId));
+  //   EasyLoading.dismiss();
+  // }
 
   Future<PlayerState> _reload(String? mediaId) async {
     _mediaId = mediaId;
+    var metadata = await DB.loadMetadata();
+    if (mediaId != metadata.playingMediaId) {
+      metadata = metadata.copyWith(playingMediaId: () => mediaId);
+      await DB.updateMetadata(metadata);
+    }
+    debugPrint('player bloc ${identityHashCode(this)} reloading $mediaId');
     if (mediaId == null) {
       return const PlayerEmptyState();
     }
@@ -368,11 +384,15 @@ class PlayerBloc extends PlayerBlocType {
     if (mediaFile == null) {
       return const PlayerEmptyState();
     }
-    final player = SharedPlayer.player;
-    await player.open(Media(mediaFile.path));
+    _player?.dispose();
+    final player = VideoPlayerController.file(mediaFile);
+    _player = player;
+    await player.initialize();
+    player.addListener(
+      () => add(PlayerPositionChangeEvent(player.value.position)),
+    );
     final title = await media.titleAsync;
     final subtitleList = await _loadSubtitleList(mediaFile);
-    final metadata = await DB.loadMetadata();
     final subtitle =
         subtitleList.firstWhereOrNull(
           (s) => s.name == metadata.playingSubtitleName,
@@ -384,17 +404,21 @@ class PlayerBloc extends PlayerBlocType {
         ? PlayerSubtitleDataState(sentenceList: subtitle.sentenceList)
         : const PlayerSubtitleEmptyState();
     _spot = hasSubtitle ? (index: 0, sentence: subtitle.sentenceList[0]) : null;
+    debugPrint('player bloc ${identityHashCode(this)} reloaded $mediaId');
+    await player.play();
     return PlayerDataState(
       showVolumeSlider: false,
       loopIndex: null,
       playing: true,
       subtitle: subtitleState,
       position: const Duration(seconds: 0),
-      duration: player.state.duration,
+      duration: player.value.duration,
       volume: 100,
       speed: 1,
       mediaType: media.type,
       title: title,
+      player: player,
+      scroller: _scroller,
     );
   }
 
@@ -422,9 +446,9 @@ class PlayerBloc extends PlayerBlocType {
 
   @override
   SentenceCardBlocType sentenceCardBlocAtIndex(int index) {
-    final subtitle = _subtitle?.sentenceList[index];
-    final initialPlaying = _spot?.index == index;
-    return SentenceCardBloc(subtitle, initialPlaying);
+    final sentence = _subtitle?.sentenceList[index];
+    final playing = _spot?.index == index;
+    return SentenceCardBloc()..add(SentenceCardInitEvent(sentence, playing));
   }
 }
 

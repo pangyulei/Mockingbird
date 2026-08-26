@@ -13,13 +13,10 @@ class AlbumCardBloc extends Bloc<AlbumCardEvent, AlbumCardState> {
   }
 
   void _onClick(AlbumCardClickEvent event, Emitter<AlbumCardState> emit) {
-    event.context.go(AppRoute.albumDetail(_id));
+    event.context.go(AppRoute.albumById(_id));
   }
 
-  void _onInit(
-    AlbumCardInitEvent event,
-    Emitter<AlbumCardState> emit,
-  ) async {
+  void _onInit(AlbumCardInitEvent event, Emitter<AlbumCardState> emit) async {
     final album = await AssetPathEntity.fromId(_id);
     final count = await album.assetCountAsync;
     emit(AlbumCardState(mediaCount: count, name: album.name));

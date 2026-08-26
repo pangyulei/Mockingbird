@@ -18,7 +18,8 @@ class SentenceCardUI extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return BlocProvider(
-      create: (context) => _bloc..add(const SentenceCardInitEvent()),
+      key: ValueKey(_bloc),
+      create: (context) => _bloc,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Builder(
@@ -32,6 +33,7 @@ class SentenceCardUI extends StatelessWidget {
                 final playing = context.select<SentenceCardBlocType, bool>(
                   (bloc) => bloc.state.playing,
                 );
+                debugPrint('sentence-card-ui ${identityHashCode(_bloc)} playing $playing');
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,

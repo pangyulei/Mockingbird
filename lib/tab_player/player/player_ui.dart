@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marquee/marquee.dart';
-import 'package:media_kit_video/media_kit_video.dart';
-import 'package:mockingbird/tab_player/player/player.dart';
 import 'package:mockingbird/tab_player/player/player_event.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:video_player/video_player.dart';
 
 abstract interface class PlayerBlocITF {
   SentenceCardBlocType sentenceCardBlocAtIndex(int index);
@@ -19,36 +18,23 @@ abstract class PlayerBlocType extends Bloc<PlayerEvent, PlayerState>
   PlayerBlocType(super.initialState);
 }
 
-class PlayerUI extends StatefulWidget {
-  final PlayerBlocType Function(ItemScrollController scrollController)
-  _blocCreater;
-  const PlayerUI(this._blocCreater, {super.key});
-
-  @override
-  State<StatefulWidget> createState() => _PlayerUIState();
-}
-
-class _PlayerUIState extends State<PlayerUI> {
-  final _scrollController = ItemScrollController();
-  late final PlayerBlocType _bloc;
-
-  @override
-  void initState() {
-    super.initState();
-    _bloc = widget._blocCreater(_scrollController);
-  }
+class PlayerUI extends StatelessWidget {
+  final PlayerBlocType _bloc;
+  const PlayerUI(this._bloc, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('player ui building');
     return BlocProvider(
-      create: (context) => _bloc,
+      create: (context) {
+        debugPrint('player ui blocprovider create called');
+        return _bloc;
+      },
       child: Builder(
         builder: (context) {
-          final (stateType, loading) = context
-              .select<PlayerBlocType, (Type, bool)>(
-                (bloc) => (bloc.state.runtimeType, bloc.state.loading),
-              );
-          // showLoading(loading);
+          final stateType = context.select<PlayerBlocType, Type>(
+            (bloc) => bloc.state.runtimeType,
+          );
           switch (stateType) {
             case PlayerInitState:
               return _pageForInit();
@@ -78,12 +64,12 @@ class _PlayerUIState extends State<PlayerUI> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _appBar(),
-      body: Column(children: [_videoWidget(), _subtitleWidget()]),
+      body: Column(children: [_videoWidget(context), _subtitleWidget(context)]),
       floatingActionButton: _floatingButtons(),
     );
   }
 
-  Widget _videoWidget() {
+  Widget _videoWidget(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black,
@@ -95,7 +81,7 @@ class _PlayerUIState extends State<PlayerUI> {
           ),
         ],
       ),
-      child: Column(children: [_displayer(), _controlBar()]),
+      child: Column(children: [_displayer(), _controlBar(context)]),
     );
   }
 
@@ -106,17 +92,17 @@ class _PlayerUIState extends State<PlayerUI> {
           (bloc) => bloc.state.as<PlayerDataState>()?.mediaType ?? .video,
         );
         if (mediaType == .video) {
-          return _videoDisplayer();
+          return _videoDisplayer(context);
         } else {
-          return _audioDisplayer();
+          return _audioDisplayer(context);
         }
       },
     );
   }
 
-  Widget _videoDisplayer() {
+  Widget _videoDisplayer(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 16 / 9.0,
+      aspectRatio: 16 / 9,
       child: Stack(
         alignment: .center,
         children: [
@@ -132,7 +118,7 @@ class _PlayerUIState extends State<PlayerUI> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.only(left: 16, bottom: 8),
-                      child: _progressSlider(),
+                      child: _progressSlider(context),
                     ),
                   ],
                 ),
@@ -149,14 +135,18 @@ class _PlayerUIState extends State<PlayerUI> {
   }
 
   Widget _player() {
-    return Video(
-      controller: VideoController(SharedPlayer.player),
-      pauseUponEnteringBackgroundMode: false,
-      resumeUponEnteringForegroundMode: false,
+    return Builder(
+      builder: (context) {
+        final player = context.select<PlayerBlocType, VideoPlayerController?>(
+          (bloc) => bloc.state.as<PlayerDataState>()?.player,
+        );
+        if (player == null) return const SizedBox.shrink();
+        return VideoPlayer(player);
+      },
     );
   }
 
-  Widget _audioDisplayer() {
+  Widget _audioDisplayer(BuildContext context) {
     return SizedBox(
       height: 150,
       child: Stack(
@@ -174,7 +164,7 @@ class _PlayerUIState extends State<PlayerUI> {
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-                child: _progressSlider(),
+                child: _progressSlider(context),
               ),
             ],
           ),
@@ -203,41 +193,37 @@ class _PlayerUIState extends State<PlayerUI> {
     );
   }
 
-  Widget _subtitleWidget() {
+  Widget _subtitleWidget(BuildContext context) {
     return Expanded(
       child: ColoredBox(
         color: Theme.of(context).scaffoldBackgroundColor,
         child: Builder(
           builder: (context) {
-            final subtitle = context
-                .select<PlayerBlocType, PlayerSubtitleState?>(
-                  (bloc) => bloc.state.as<PlayerDataState>()?.subtitle,
-                );
-            if (subtitle == null) {
+            final (subtitle, scroller) = context
+                .select<
+                  PlayerBlocType,
+                  (PlayerSubtitleState?, ItemScrollController?)
+                >((bloc) {
+                  final dataState = bloc.state.as<PlayerDataState>();
+                  return (dataState?.subtitle, dataState?.scroller);
+                });
+            if (subtitle == null || scroller == null) {
               return const SizedBox.shrink();
             }
             switch (subtitle) {
               case PlayerSubtitleDataState subtitle:
                 return ScrollablePositionedList.builder(
                   itemCount: subtitle.sentenceList.length,
-                  itemScrollController: _scrollController,
+                  itemScrollController: scroller,
                   itemBuilder: (context, i) {
                     final sentenceCardBloc = context
                         .read<PlayerBlocType>()
                         .sentenceCardBlocAtIndex(i);
                     return SentenceCardUI(sentenceCardBloc);
-                    // return SentenceCardUI(subtitle.sentenceList[i], (
-                    //   ref,
-                    //   sentenceId,
-                    // ) {
-                    //   // ref
-                    //   //     .read(playerProvider(_scrollController).notifier)
-                    //   //     .tapSentence(sentenceId);
-                    // });
                   },
                 );
               case PlayerSubtitleEmptyState _:
-                return _noSubtitle();
+                return _noSubtitle(context);
             }
           },
         ),
@@ -245,7 +231,7 @@ class _PlayerUIState extends State<PlayerUI> {
     );
   }
 
-  Widget _noSubtitle() {
+  Widget _noSubtitle(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return InkWell(
@@ -380,24 +366,22 @@ class _PlayerUIState extends State<PlayerUI> {
 
   Widget _volumeButton() {
     return Builder(
-      builder: (context) => IconButton(
-        onPressed: () {
-          context.read<PlayerBlocType>().add(const PlayerToggleVolumeEvent());
-        },
-        icon: Builder(
-          builder: (context) {
-            final volume = context.select<PlayerBlocType, double>(
-              (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? 1,
-            );
-            final icon = volume == 0
-                ? Icons.volume_off_rounded
-                : Icons.volume_up_rounded;
-            return Icon(icon);
+      builder: (context) {
+        final volume = context.select<PlayerBlocType, double>(
+          (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? 1,
+        );
+        final icon = volume == 0
+            ? Icons.volume_off_rounded
+            : Icons.volume_up_rounded;
+        return IconButton(
+          onPressed: () {
+            context.read<PlayerBlocType>().add(const PlayerToggleVolumeEvent());
           },
-        ),
-        color: Colors.white,
-        iconSize: 32,
-      ),
+          icon: Icon(icon),
+          color: Colors.white,
+          iconSize: 32,
+        );
+      },
     );
   }
 
@@ -438,7 +422,7 @@ class _PlayerUIState extends State<PlayerUI> {
     );
   }
 
-  Widget _progressSlider() {
+  Widget _progressSlider(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
@@ -572,7 +556,6 @@ class _PlayerUIState extends State<PlayerUI> {
     return AppBar(
       backgroundColor: Colors.black,
       foregroundColor: Colors.white,
-      // automaticallyImplyLeading: false,
       title: _title(),
     );
   }
@@ -605,7 +588,7 @@ class _PlayerUIState extends State<PlayerUI> {
     );
   }
 
-  Widget _controlBar() {
+  Widget _controlBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
@@ -617,13 +600,13 @@ class _PlayerUIState extends State<PlayerUI> {
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
         children: [
-          _playOrPauseButton(),
+          _playOrPauseButton(context),
           const SizedBox(width: 16),
-          _loopButton(),
+          _loopButton(context),
           const Spacer(),
           _speedDownButton(),
           const SizedBox(width: 8),
-          _speedLabel(),
+          _speedLabel(context),
           const SizedBox(width: 8),
           _speedUpButton(),
         ],
@@ -631,7 +614,7 @@ class _PlayerUIState extends State<PlayerUI> {
     );
   }
 
-  Widget _playOrPauseButton() {
+  Widget _playOrPauseButton(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Builder(
       builder: (context) {
@@ -662,7 +645,7 @@ class _PlayerUIState extends State<PlayerUI> {
     );
   }
 
-  Widget _loopButton() {
+  Widget _loopButton(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Builder(
       builder: (context) {
@@ -675,19 +658,17 @@ class _PlayerUIState extends State<PlayerUI> {
         final loop = context.select<PlayerBlocType, bool>(
           (bloc) => bloc.state.as<PlayerDataState>()?.loopIndex != null,
         );
-        return Builder(
-          builder: (context) => IconButton(
-            onPressed: () {
-              context.read<PlayerBlocType>().add(const PlayerToggleLoopEvent());
-            },
-            icon: Icon(
-              loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-              color: loop ? colorScheme.primary : colorScheme.outline,
-            ),
-            style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
-            constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-            padding: EdgeInsets.zero,
+        return IconButton(
+          onPressed: () {
+            context.read<PlayerBlocType>().add(const PlayerToggleLoopEvent());
+          },
+          icon: Icon(
+            loop ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+            color: loop ? colorScheme.primary : colorScheme.outline,
           ),
+          style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+          constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+          padding: EdgeInsets.zero,
         );
       },
     );
@@ -723,35 +704,33 @@ class _PlayerUIState extends State<PlayerUI> {
     );
   }
 
-  Widget _speedLabel() {
+  Widget _speedLabel(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Builder(
-      builder: (context) => GestureDetector(
-        onTap: () =>
-            context.read<PlayerBlocType>().add(const PlayerResetSpeedEvent()),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(20),
+      builder: (context) {
+        final speed = context.select<PlayerBlocType, double>(
+          (bloc) => bloc.state.as<PlayerDataState>()?.speed ?? 1,
+        );
+        return GestureDetector(
+          onTap: () =>
+              context.read<PlayerBlocType>().add(const PlayerResetSpeedEvent()),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '${speed}x',
+              style: TextStyle(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
           ),
-          child: Builder(
-            builder: (context) {
-              final speed = context.select<PlayerBlocType, double>(
-                (bloc) => bloc.state.as<PlayerDataState>()?.speed ?? 1,
-              );
-              return Text(
-                '${speed}x',
-                style: TextStyle(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              );
-            },
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
