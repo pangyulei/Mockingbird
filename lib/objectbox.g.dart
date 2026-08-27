@@ -45,7 +45,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 1008498112060179752),
     name: 'MetadataEntity',
-    lastPropertyId: const obx_int.IdUid(5, 1244199216946912259),
+    lastPropertyId: const obx_int.IdUid(6, 8764957294575502160),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -76,6 +76,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(5, 1244199216946912259),
         name: 'permissionRequested',
         type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 8764957294575502160),
+        name: 'playingPositionMs',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -215,12 +221,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final playingSubtitleNameOffset = object.playingSubtitleName == null
             ? null
             : fbb.writeString(object.playingSubtitleName!);
-        fbb.startTable(6);
+        fbb.startTable(7);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, playingMediaIdOffset);
         fbb.addOffset(2, playingSubtitleNameOffset);
         fbb.addInt64(3, object.databaseVersion);
         fbb.addBool(4, object.permissionRequested);
+        fbb.addInt64(5, object.playingPositionMs);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -239,6 +246,12 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final playingSubtitleNameParam = const fb.StringReader(
           asciiOptimization: true,
         ).vTableGetNullable(buffer, rootOffset, 8);
+        final playingPositionMsParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
         final databaseVersionParam = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -255,6 +268,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           id: idParam,
           playingMediaId: playingMediaIdParam,
           playingSubtitleName: playingSubtitleNameParam,
+          playingPositionMs: playingPositionMsParam,
           databaseVersion: databaseVersionParam,
           permissionRequested: permissionRequestedParam,
         );
@@ -305,5 +319,10 @@ class MetadataEntity_ {
   /// See [MetadataEntity.permissionRequested].
   static final permissionRequested = obx.QueryBooleanProperty<MetadataEntity>(
     _entities[1].properties[4],
+  );
+
+  /// See [MetadataEntity.playingPositionMs].
+  static final playingPositionMs = obx.QueryIntegerProperty<MetadataEntity>(
+    _entities[1].properties[5],
   );
 }

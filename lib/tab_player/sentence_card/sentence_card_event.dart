@@ -1,14 +1,12 @@
 import 'package:flutter/widgets.dart';
-import 'package:mockingbird/db/entities/sentence_entity.dart';
 
 sealed class SentenceCardEvent {
   const SentenceCardEvent();
 }
 
 class SentenceCardInitEvent extends SentenceCardEvent {
-  final SentenceEntity? sentence;
   final bool playing;
-  const SentenceCardInitEvent(this.sentence, this.playing);
+  const SentenceCardInitEvent(this.playing);
 }
 
 class SentenceCardClickEvent extends SentenceCardEvent {
@@ -16,7 +14,7 @@ class SentenceCardClickEvent extends SentenceCardEvent {
   const SentenceCardClickEvent(this.context);
 }
 
-class SentenceCardPlayingSentenceChangedEvent extends SentenceCardEvent {
+class SentenceCardPlayingSentenceChangeEvent extends SentenceCardEvent {
   final String? playingSentenceId;
-  const SentenceCardPlayingSentenceChangedEvent(this.playingSentenceId);
+  const SentenceCardPlayingSentenceChangeEvent(this.playingSentenceId);
 }

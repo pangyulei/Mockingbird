@@ -13,14 +13,14 @@ import 'package:mockingbird/tool/event_hub.dart';
 class SentenceCardBloc extends SentenceCardBlocType {
   final _subList = <StreamSubscription>[];
   SentenceEntity? _sentence;
-  SentenceCardBloc() : super(const SentenceCardState.empty()) {
+  SentenceCardBloc(this._sentence) : super(const SentenceCardState.empty()) {
     on<SentenceCardInitEvent>(_onInit);
-    on<SentenceCardPlayingSentenceChangedEvent>(_onPlayingSentenceChanged);
+    on<SentenceCardPlayingSentenceChangeEvent>(_onPlayingSentenceChange);
     on<SentenceCardClickEvent>(_onClick);
     _subList.add(
-      EventHub.on<HubPlayingSentenceChangedEvent>(
+      EventHub.on<HubPlayingSentenceChangeEvent>(
         (event) => add(
-          SentenceCardPlayingSentenceChangedEvent(event.playingSentenceId),
+          SentenceCardPlayingSentenceChangeEvent(event.playingSentenceId),
         ),
       ),
     );
@@ -43,8 +43,7 @@ class SentenceCardBloc extends SentenceCardBlocType {
   }
 
   void _onInit(SentenceCardInitEvent event, Emitter<SentenceCardState> emit) {
-    _sentence = event.sentence;
-    final sentence = event.sentence;
+    final sentence = _sentence;
     if (sentence == null) return;
     emit(
       SentenceCardState(
@@ -58,8 +57,8 @@ class SentenceCardBloc extends SentenceCardBlocType {
     );
   }
 
-  void _onPlayingSentenceChanged(
-    SentenceCardPlayingSentenceChangedEvent event,
+  void _onPlayingSentenceChange(
+    SentenceCardPlayingSentenceChangeEvent event,
     Emitter<SentenceCardState> emit,
   ) {
     emit(state.copyWith(playing: _sentence?.id == event.playingSentenceId));

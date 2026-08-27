@@ -7,18 +7,17 @@ import 'package:mockingbird/tab_albums/media_card/media_card_event.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class MediaCardBloc extends MediaCardBlocType {
   final AssetEntity? _media;
-  final bool _initialPlaying;
-  final _subList = <StreamSubscription>[];
-  MediaCardBloc(this._media, this._initialPlaying)
-    : super(const MediaCardState.empty()) {
+  final _subscriptionList = <StreamSubscription>[];
+  MediaCardBloc(this._media) : super(const MediaCardState.empty()) {
     on<MediaCardInitEvent>(_onInit);
     on<MediaCardClickEvent>(_onClick);
     on<MediaCardPlayingMediaChangeEvent>(_onPlayingMediaChange);
-    _subList.addAll([
+    _subscriptionList.addAll([
       EventHub.on<HubPlayMediaEvent>(
         (event) => add(MediaCardPlayingMediaChangeEvent(event.playingMediaId)),
       ),
@@ -32,32 +31,33 @@ class MediaCardBloc extends MediaCardBlocType {
     emit(state.copyWith(playing: _media?.id == event.playingMediaId));
   }
 
-  @override
-  Future<void> close() {
-    for (final sub in _subList) {
-      sub.cancel();
-    }
-    return super.close();
-  }
-
   void _onClick(MediaCardClickEvent event, Emitter<MediaCardState> emit) async {
     if (_media == null) return;
     EventHub.emit(HubPlayMediaEvent(_media.id));
     event.context.go(AppRoute.playerById(_media.id));
   }
 
-  void _onInit(_, Emitter<MediaCardState> emit) async {
+  void _onInit(MediaCardInitEvent event, Emitter<MediaCardState> emit) async {
     if (_media == null) {
       return;
     }
     final title = await _media.titleAsync;
+    final subtitleList = await _media.subtitleList;
     emit(
       MediaCardState(
         name: title,
         type: _media.type,
-        playing: _initialPlaying,
-        hasSubtitle: false, //TODO hassubtitle
+        playing: event.playing,
+        hasSubtitle: subtitleList.isNotEmpty,
       ),
     );
+  }
+
+  @override
+  Future<void> close() {
+    for (final sub in _subscriptionList) {
+      sub.cancel();
+    }
+    return super.close();
   }
 }

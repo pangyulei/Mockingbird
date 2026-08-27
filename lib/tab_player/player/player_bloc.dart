@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:defer/defer.dart';
@@ -10,17 +9,16 @@ import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
 import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/db/entities/sentence_entity.dart';
-import 'package:mockingbird/db/entities/subtitle_entity.dart';
 import 'package:mockingbird/tab_player/player/player_event.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tab_player/player/player_ui.dart';
+import 'package:mockingbird/tab_player/player_subtitle_list/player_subtitle_list_bloc.dart';
+import 'package:mockingbird/tab_player/player_subtitle_list/player_subtitle_list_ui.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_bloc.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
-import 'package:mockingbird/tool/subtitle_parser.dart';
-import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
@@ -39,16 +37,16 @@ class PlayerBloc extends PlayerBlocType {
   bool _draggingVideoSlider = false;
   bool _videoSliderRestorePlaying = false;
   String? _mediaId;
-  SubtitleEntity? _subtitle;
-  SubtitleEntity? _prevSubtitle;
-  int? _prevPlayingSentenceIndex;
+
   ({int index, SentenceEntity sentence})? _spot;
-  final _subList = <StreamSubscription>[];
+  final _subscriptionList = <StreamSubscription>[];
 
   PlayerBloc() : super(const PlayerInitState()) {
     debugPrint('player bloc ${identityHashCode(this)} created');
     on<PlayerInitEvent>(_onInit);
-    // on<Player PlayMediaEvent>(_onPlayMedia);
+    on<PlayerSubtitleChangeEvent>(_onSubtitleChange);
+    on<PlayerShowSubtitleListEvent>(_onShowSubtitleList);
+    on<PlayerHideSubtitleListEvent>(_onHideSubtitleList);
     on<PlayerClickSentenceEvent>(_onClickSentence);
     on<PlayerScrollToTopEvent>(_onScrollToTop);
     on<PlayerScrollToBottomEvent>(_onScrollToBottom);
@@ -66,11 +64,47 @@ class PlayerBloc extends PlayerBlocType {
     on<PlayerVideoSliderChangingEvent>(_onVideoSliderChanging);
     on<PlayerVideoSliderEndChangeEvent>(_onVideoSliderEndChange);
     on<PlayerVolumeChangeEvent>(_onVolumeChange);
-    _subList.addAll([
-      // EventHub.on<HubPlayMediaEvent>(
-      //   (event) => add(PlayerPlayMediaEvent(event.playingMediaId)),
-      // ),
+    _subscriptionList.addAll([
+      EventHub.on<HubSubtitleChangeEvent>(
+        (event) => add(PlayerSubtitleChangeEvent(event.index)),
+      ),
+      EventHub.on<HubAppPauseEvent>(_onAppPause),
     ]);
+  }
+
+  void _onAppPause(HubAppPauseEvent event) async {
+    final state = this.state;
+    if (state is! PlayerDataState) return;
+    final metadata = await DB.loadMetadata();
+    await DB.updateMetadata(
+      metadata.copyWith(
+        playingSubtitleName: () => state.subtitle?.name,
+        playingMediaId: () => _mediaId,
+        playingPositionMs: state.position.inMilliseconds,
+      ),
+    );
+  }
+
+  void _onSubtitleChange(
+    PlayerSubtitleChangeEvent event,
+    Emitter<PlayerState> emit,
+  ) async {
+    final state = this.state;
+    if (state is! PlayerDataState) return;
+    if (state.selectedSubtitleIndex == event.index) return;
+    _spot = _spotSentence(state.position, state.subtitle?.sentenceList);
+    emit(
+      state.copyWith(
+        selectedSubtitleIndex: () => event.index,
+        subtitleListVisible: false,
+        subtitleState: PlayerSubtitleDataState(
+          state.subtitle?.sentenceList ?? [],
+          0.3,
+          _spot?.index ?? 0,
+        ),
+      ),
+    );
+    EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
   }
 
   void _onClickSentence(
@@ -79,7 +113,7 @@ class PlayerBloc extends PlayerBlocType {
   ) async {
     var state = this.state;
     if (state is! PlayerDataState) return;
-    final sentenceIndex = _subtitle?.sentenceList.firstIndexWhereOrNull(
+    final sentenceIndex = state.subtitle?.sentenceList.firstIndexWhereOrNull(
       (sen) => sen.id == event.sentenceId,
     );
     if (sentenceIndex == null) return;
@@ -90,7 +124,7 @@ class PlayerBloc extends PlayerBlocType {
     so in loop mode, which sentence is loop wee need to manually maintain,
     can't rely on position listening
      */
-    final sentence = _subtitle?.sentenceList[sentenceIndex];
+    final sentence = state.subtitle?.sentenceList[sentenceIndex];
     if (sentence == null) return;
     if (state.loopIndex != null) {
       state = state.copyWith(loopIndex: () => sentenceIndex);
@@ -101,6 +135,54 @@ class PlayerBloc extends PlayerBlocType {
     await _player?.play();
   }
 
+  void _onShowSubtitleList(
+    PlayerShowSubtitleListEvent event,
+    Emitter<PlayerState> emit,
+  ) {
+    final state = this.state;
+    if (state is! PlayerDataState) return;
+    emit(state.copyWith(subtitleListVisible: true));
+  }
+
+  void _onHideSubtitleList(
+    PlayerHideSubtitleListEvent event,
+    Emitter<PlayerState> emit,
+  ) {
+    final state = this.state;
+    if (state is! PlayerDataState) return;
+    emit(state.copyWith(subtitleListVisible: false));
+  }
+
+  // void _onPickLibraryFileForSubtitle() async {
+
+  // }
+
+  // void _onSelectSubtitle(
+  //   PlayerSelectSubtitleEvent event,
+  //   Emitter<PlayerState> emit,
+  // ) async {
+  //   final state = this.state;
+  //   if (state is! PlayerDataState) return;
+  //   final subtitle = state.subtitleList[event.index];
+  //   if (_subtitle == subtitle) return;
+
+  //   _prevSubtitle = null; // force reload scroller
+  //   final subtitleState = PlayerSubtitleDataState(subtitle.sentenceList);
+
+  //   // Save selection to metadata
+  //   var metadata = await DB.loadMetadata();
+  //   metadata = metadata.copyWith(playingSubtitleName: () => subtitle.name);
+  //   await DB.updateMetadata(metadata);
+
+  //   emit(
+  //     state.copyWith(
+  //       subtitleState: subtitleState,
+  //       selectedSubtitleIndex: () => event.index,
+  //       showSubtitleList: false, // Close list after selection
+  //     ),
+  //   );
+  // }
+
   void _onScrollToTop(PlayerScrollToTopEvent event, Emitter<PlayerState> emit) {
     _scroller.safeScrollTo(0);
   }
@@ -109,7 +191,9 @@ class PlayerBloc extends PlayerBlocType {
     PlayerScrollToBottomEvent event,
     Emitter<PlayerState> emit,
   ) {
-    final subtitle = _subtitle;
+    final state = this.state;
+    if (state is! PlayerDataState) return;
+    final subtitle = state.subtitle;
     if (subtitle == null || subtitle.sentenceList.isEmpty) return;
     _scroller.safeScrollTo(subtitle.sentenceList.length - 1);
   }
@@ -162,7 +246,7 @@ class PlayerBloc extends PlayerBlocType {
     final loopIndex = state.loopIndex;
     final loopSentence = loopIndex == null
         ? null
-        : _subtitle?.sentenceList[loopIndex];
+        : state.subtitle?.sentenceList[loopIndex];
     if (!_draggingVideoSlider && loopSentence != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       // debugPrint('position changing loop $sentence');
@@ -171,14 +255,11 @@ class PlayerBloc extends PlayerBlocType {
       }
     }
     //handle scroll
-    _spot = _spotSentenceByPosition(event.position);
-    final isSubtitleChanged = _prevSubtitle != _subtitle;
-    final isSentenceChanged = _spot?.index != _prevPlayingSentenceIndex;
-    if (isSubtitleChanged) {
-      EventHub.emit(HubPlayingSentenceChangedEvent(_spot?.sentence.id));
-      _scroller.safeJumpTo(_spot?.index, alignment: 0.3);
-    } else if (isSentenceChanged) {
-      EventHub.emit(HubPlayingSentenceChangedEvent(_spot?.sentence.id));
+    final spot = _spotSentence(event.position, state.subtitle?.sentenceList);
+    final isSentenceChanged = _spot?.index != spot?.index;
+    _spot = spot;
+    if (isSentenceChanged) {
+      EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
       if (_draggingVideoSlider) {
         _scroller.safeJumpTo(_spot?.index, alignment: 0.3);
       } else if (loopIndex == null) {
@@ -186,14 +267,12 @@ class PlayerBloc extends PlayerBlocType {
         _scroller.safeScrollTo(_spot?.index, alignment: 0.3);
       }
     }
-    _prevSubtitle = _subtitle;
-    _prevPlayingSentenceIndex = _spot?.index;
   }
 
   @override
   Future<void> close() {
     debugPrint('player bloc ${identityHashCode(this)} closed');
-    for (final sub in _subList) {
+    for (final sub in _subscriptionList) {
       sub.cancel();
     }
     _player?.dispose();
@@ -206,7 +285,7 @@ class PlayerBloc extends PlayerBlocType {
   ) async {
     final state = this.state;
     if (state is! PlayerDataState) return;
-    emit(state.copyWith(showVolumeSlider: !state.showVolumeSlider));
+    emit(state.copyWith(volumeSliderVisible: !state.volumeSliderVisible));
   }
 
   void _onPlay(PlayerPlayEvent event, Emitter<PlayerState> emit) async {
@@ -231,11 +310,8 @@ class PlayerBloc extends PlayerBlocType {
     if (state is! PlayerDataState) return;
     if (state.loopIndex == null) {
       //to loop
-      emit(
-        state.copyWith(
-          loopIndex: () => _spotSentenceByPosition(state.position)?.index,
-        ),
-      );
+      final spot = _spotSentence(state.position, state.subtitle?.sentenceList);
+      emit(state.copyWith(loopIndex: () => spot?.index));
     } else {
       emit(state.copyWith(loopIndex: () => null));
     }
@@ -275,7 +351,10 @@ class PlayerBloc extends PlayerBlocType {
         // seek to sentence start
         final Duration targetPosition;
         if (state.loopIndex != null) {
-          final spot = _spotSentenceByPosition(event.position);
+          final spot = _spotSentence(
+            event.position,
+            state.subtitle?.sentenceList,
+          );
           if (spot == null) {
             state = state.copyWith(loopIndex: () => null);
             targetPosition = event.position;
@@ -297,11 +376,11 @@ class PlayerBloc extends PlayerBlocType {
     emit(newState);
   }
 
-  ({int index, SentenceEntity sentence})? _spotSentenceByPosition(
+  ({int index, SentenceEntity sentence})? _spotSentence(
     Duration position,
+    List<SentenceEntity>? sentenceList,
   ) {
-    final sentenceList = _subtitle?.sentenceList;
-    if (sentenceList == null || sentenceList.isEmpty) return null;
+    sentenceList ??= [];
     for (int i = 0; i < sentenceList.length; i++) {
       SentenceEntity? prev = i == 0 ? null : sentenceList[i - 1];
       SentenceEntity? next = sentenceList.elementAtOrNull(i + 1);
@@ -367,10 +446,6 @@ class PlayerBloc extends PlayerBlocType {
   Future<PlayerState> _reload(String? mediaId) async {
     _mediaId = mediaId;
     var metadata = await DB.loadMetadata();
-    if (mediaId != metadata.playingMediaId) {
-      metadata = metadata.copyWith(playingMediaId: () => mediaId);
-      await DB.updateMetadata(metadata);
-    }
     debugPrint('player bloc ${identityHashCode(this)} reloading $mediaId');
     if (mediaId == null) {
       return const PlayerEmptyState();
@@ -392,26 +467,48 @@ class PlayerBloc extends PlayerBlocType {
       () => add(PlayerPositionChangeEvent(player.value.position)),
     );
     final title = await media.titleAsync;
-    final subtitleList = await _loadSubtitleList(mediaFile);
-    final subtitle =
-        subtitleList.firstWhereOrNull(
-          (s) => s.name == metadata.playingSubtitleName,
-        ) ??
-        subtitleList.firstOrNull;
-    _subtitle = subtitle;
-    final hasSubtitle = subtitle != null && subtitle.sentenceList.isNotEmpty;
-    final subtitleState = hasSubtitle
-        ? PlayerSubtitleDataState(sentenceList: subtitle.sentenceList)
-        : const PlayerSubtitleEmptyState();
-    _spot = hasSubtitle ? (index: 0, sentence: subtitle.sentenceList[0]) : null;
+    final subtitleList = await media.subtitleList;
+    final int? selectedSubtitleIndex;
+    final Duration position;
+    if (mediaId == metadata.playingMediaId) {
+      selectedSubtitleIndex =
+          subtitleList.firstIndexWhereOrNull(
+            (sub) => sub.name == metadata.playingSubtitleName,
+          ) ??
+          (subtitleList.isEmpty ? null : 0);
+      position = metadata.playingPosition;
+    } else {
+      selectedSubtitleIndex = subtitleList.isEmpty ? null : 0;
+      position = const Duration(seconds: 0);
+    }
+    final subtitle = selectedSubtitleIndex == null
+        ? null
+        : subtitleList.elementAtOrNull(selectedSubtitleIndex);
+    final spot = _spotSentence(position, subtitle?.sentenceList);
+    _spot = spot;
+    final PlayerSubtitleState subtitleState;
+    if (spot == null || subtitle == null) {
+      subtitleState = const PlayerSubtitleEmptyState();
+    } else {
+      subtitleState = PlayerSubtitleDataState(
+        subtitle.sentenceList,
+        0.3,
+        spot.index,
+      );
+    }
     debugPrint('player bloc ${identityHashCode(this)} reloaded $mediaId');
+    await player.seekTo(position);
     await player.play();
     return PlayerDataState(
-      showVolumeSlider: false,
+      subtitleList: subtitleList,
+      selectedSubtitleIndex: selectedSubtitleIndex,
+      subtitleListVisible: false,
+      subtitleListButtonVisible: subtitleList.length > 1,
+      volumeSliderVisible: false,
       loopIndex: null,
       playing: true,
-      subtitle: subtitleState,
-      position: const Duration(seconds: 0),
+      subtitleState: subtitleState,
+      position: position,
       duration: player.value.duration,
       volume: 100,
       speed: 1,
@@ -422,33 +519,19 @@ class PlayerBloc extends PlayerBlocType {
     );
   }
 
-  Future<List<SubtitleEntity>> _loadSubtitleList(File mediaFile) async {
-    //找到同目录下的名称对应上的srt或vtt字幕文件
-    final subtitleList = <SubtitleEntity>[];
-    await for (final subFile in mediaFile.parent.list()) {
-      if (subFile is! File) continue;
-      final extension = p.extension(subFile.path); //带.
-      if (!{'.srt', '.vtt'}.contains(extension)) continue;
-      final subtitleName = p.basenameWithoutExtension(subFile.path);
-      final mediaName = p.basenameWithoutExtension(mediaFile.path);
-      final matched = subtitleName.toLowerCase().contains(
-        mediaName.toLowerCase(),
-      );
-      if (matched) {
-        final subtitleEntity = await SubtitleParser.parseFile(subFile);
-        if (subtitleEntity != null) {
-          subtitleList.add(subtitleEntity);
-        }
-      }
-    }
-    return subtitleList;
+  @override
+  SentenceCardBlocType sentenceCardBlocAtIndex(int index) {
+    final sentence = state.as<PlayerDataState>()?.subtitle?.sentenceList[index];
+    final playing = _spot?.index == index;
+    return SentenceCardBloc(sentence)..add(SentenceCardInitEvent(playing));
   }
 
   @override
-  SentenceCardBlocType sentenceCardBlocAtIndex(int index) {
-    final sentence = _subtitle?.sentenceList[index];
-    final playing = _spot?.index == index;
-    return SentenceCardBloc()..add(SentenceCardInitEvent(sentence, playing));
+  PlayerSubtitleListBlocType get subtitleListBlocType {
+    return PlayerSubtitleListBloc(
+      state.as<PlayerDataState>()?.subtitleList ?? [],
+      state.as<PlayerDataState>()?.selectedSubtitleIndex,
+    );
   }
 }
 

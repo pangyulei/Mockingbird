@@ -9,9 +9,17 @@ class PlayerInitEvent extends PlayerEvent {
   const PlayerInitEvent(this.mediaId);
 }
 
-class PlayerPlayMediaEvent extends PlayerEvent {
-  final String? mediaId;
-  const PlayerPlayMediaEvent(this.mediaId);
+class PlayerShowSubtitleListEvent extends PlayerEvent {
+  const PlayerShowSubtitleListEvent();
+}
+
+class PlayerHideSubtitleListEvent extends PlayerEvent {
+  const PlayerHideSubtitleListEvent();
+}
+
+class PlayerSubtitleChangeEvent extends PlayerEvent {
+  final int index;
+  const PlayerSubtitleChangeEvent(this.index);
 }
 
 class PlayerClickSentenceEvent extends PlayerEvent {

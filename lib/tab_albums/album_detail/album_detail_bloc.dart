@@ -8,6 +8,7 @@ import 'package:mockingbird/tab_albums/album_detail/album_detail_event.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_bloc.dart';
+import 'package:mockingbird/tab_albums/media_card/media_card_event.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -54,7 +55,7 @@ class AlbumDetailBloc extends AlbumDetailBlocType {
   @override
   MediaCardBlocType mediaCardBlocAtIndex(int index) {
     final media = state.as<AlbumDetailDataState>()?.mediaList[index];
-    final initialPlaying = media?.id == _metadata.playingMediaId;
-    return MediaCardBloc(media, initialPlaying);
+    final playing = media?.id == _metadata.playingMediaId;
+    return MediaCardBloc(media)..add(MediaCardInitEvent(playing));
   }
 }

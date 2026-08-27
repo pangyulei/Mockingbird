@@ -24,7 +24,7 @@
     },
     {
       "id": "5:1008498112060179752",
-      "lastPropertyId": "5:1244199216946912259",
+      "lastPropertyId": "6:8764957294575502160",
       "name": "MetadataEntity",
       "properties": [
         {
@@ -52,6 +52,11 @@
           "id": "5:1244199216946912259",
           "name": "permissionRequested",
           "type": 1
+        },
+        {
+          "id": "6:8764957294575502160",
+          "name": "playingPositionMs",
+          "type": 6
         }
       ],
       "relations": []

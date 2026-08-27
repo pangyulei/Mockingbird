@@ -13,7 +13,8 @@ class MediaCardUI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => _bloc..add(const MediaCardInitEvent()),
+      key: ValueKey(_bloc),
+      create: (context) => _bloc,
       child: Builder(
         builder: (context) {
           final theme = Theme.of(context);
@@ -21,26 +22,26 @@ class MediaCardUI extends StatelessWidget {
           final playing = context.select<MediaCardBlocType, bool>(
             (bloc) => bloc.state.playing,
           );
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: playing
-                  ? colorScheme.primaryContainer.withValues(alpha: 0.15)
-                  : colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: playing
-                    ? colorScheme.primary.withValues(alpha: 0.5)
-                    : Colors.white.withValues(alpha: 0.05),
-                width: 1,
-              ),
+          return GestureDetector(
+            onTap: () => context.read<MediaCardBlocType>().add(
+              MediaCardClickEvent(context),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: GestureDetector(
-                onTap: () => context.read<MediaCardBlocType>().add(
-                  MediaCardClickEvent(context),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: playing
+                    ? colorScheme.primaryContainer.withValues(alpha: 0.15)
+                    : colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: playing
+                      ? colorScheme.primary.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.05),
+                  width: 1,
                 ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -59,8 +60,6 @@ class MediaCardUI extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      _playButton(context),
                     ],
                   ),
                 ),
@@ -129,30 +128,30 @@ class MediaCardUI extends StatelessWidget {
     );
   }
 
-  Widget _playButton(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    return Builder(
-      builder: (context) {
-        final playing = context.select<MediaCardBlocType, bool>(
-          (bloc) => bloc.state.playing,
-        );
-        return Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            color: playing
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            playing ? Icons.graphic_eq_rounded : Icons.play_arrow_rounded,
-            color: playing ? Colors.white : colorScheme.primary,
-            size: 28,
-          ),
-        );
-      },
-    );
-  }
+  // Widget _playButton(BuildContext context) {
+  //   final theme = Theme.of(context);
+  //   final colorScheme = theme.colorScheme;
+  //   return Builder(
+  //     builder: (context) {
+  //       final playing = context.select<MediaCardBlocType, bool>(
+  //         (bloc) => bloc.state.playing,
+  //       );
+  //       return Container(
+  //         width: 48,
+  //         height: 48,
+  //         decoration: BoxDecoration(
+  //           color: playing
+  //               ? colorScheme.primary
+  //               : colorScheme.surfaceContainerHighest,
+  //           borderRadius: BorderRadius.circular(12),
+  //         ),
+  //         child: Icon(
+  //           playing ? Icons.graphic_eq_rounded : Icons.play_arrow_rounded,
+  //           color: playing ? Colors.white : colorScheme.primary,
+  //           size: 28,
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 }

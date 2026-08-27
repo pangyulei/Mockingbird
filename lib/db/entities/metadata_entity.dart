@@ -6,6 +6,7 @@ class MetadataEntity {
   int id;
   final String? playingMediaId;
   final String? playingSubtitleName;
+  final int playingPositionMs;
   final int databaseVersion;
   final bool permissionRequested;
 
@@ -13,6 +14,7 @@ class MetadataEntity {
     required this.id,
     required this.playingMediaId,
     required this.playingSubtitleName,
+    required this.playingPositionMs,
     required this.databaseVersion,
     required this.permissionRequested,
   });
@@ -24,16 +26,19 @@ class MetadataEntity {
         playingSubtitleName: null,
         databaseVersion: 0,
         permissionRequested: false,
+        playingPositionMs: 0,
       );
 
   MetadataEntity copyWith({
     String? Function()? playingMediaId,
     String? Function()? playingSubtitleName,
+    int? playingPositionMs,
     int? databaseVersion,
     bool? permissionRequested,
   }) {
     return MetadataEntity(
       id: id,
+      playingPositionMs: playingPositionMs ?? this.playingPositionMs,
       playingMediaId: playingMediaId == null
           ? this.playingMediaId
           : playingMediaId(),
@@ -48,4 +53,6 @@ class MetadataEntity {
   MetadataEntity incDatabaseVersion() {
     return copyWith(databaseVersion: databaseVersion + 1);
   }
+
+  Duration get playingPosition => Duration(milliseconds: playingPositionMs);
 }

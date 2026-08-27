@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:marquee/marquee.dart';
 import 'package:mockingbird/tab_player/player/player_event.dart';
 import 'package:mockingbird/tab_player/player/player_state.dart';
+import 'package:mockingbird/tab_player/player_subtitle_list/player_subtitle_list_ui.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -11,6 +12,7 @@ import 'package:video_player/video_player.dart';
 
 abstract interface class PlayerBlocITF {
   SentenceCardBlocType sentenceCardBlocAtIndex(int index);
+  PlayerSubtitleListBlocType get subtitleListBlocType;
 }
 
 abstract class PlayerBlocType extends Bloc<PlayerEvent, PlayerState>
@@ -30,25 +32,65 @@ class PlayerUI extends StatelessWidget {
         debugPrint('player ui blocprovider create called');
         return _bloc;
       },
-      child: Builder(
-        builder: (context) {
-          final stateType = context.select<PlayerBlocType, Type>(
-            (bloc) => bloc.state.runtimeType,
-          );
-          switch (stateType) {
-            case PlayerInitState:
-              return _pageForInit();
-            case PlayerEmptyState:
-              return _pageForEmpty(context);
-            case PlayerDataState:
-              return _pageForData(context);
-            default:
-              assert(false, 'stateType $stateType missed');
-              return const SizedBox.shrink();
+      child: BlocListener<PlayerBlocType, PlayerState>(
+        listener: (context, state) {
+          if (state is! PlayerDataState) {
+            assert(
+              false,
+              'player only listen when state is PlayerDataState, but now it is $state',
+            );
+            return;
+          }
+          if (state.subtitleListVisible) {
+            _showSubtitleList(context);
           }
         },
+        listenWhen: (previous, current) {
+          if (current is! PlayerDataState) return false;
+          if (previous is PlayerDataState) {
+            return previous.subtitleListVisible != current.subtitleListVisible;
+          } else {
+            return true;
+          }
+        },
+        child: Builder(
+          builder: (context) {
+            final stateType = context.select<PlayerBlocType, Type>(
+              (bloc) => bloc.state.runtimeType,
+            );
+            switch (stateType) {
+              case PlayerInitState:
+                return _pageForInit();
+              case PlayerEmptyState:
+                return _pageForEmpty(context);
+              case PlayerDataState:
+                return _pageForData(context);
+              default:
+                assert(false, 'stateType $stateType missed');
+                return const SizedBox.shrink();
+            }
+          },
+        ),
       ),
     );
+  }
+
+  void _showSubtitleList(BuildContext context) {
+    final subtitleListBloc = context
+        .read<PlayerBlocType>()
+        .subtitleListBlocType;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return PlayerSubtitleListUI(subtitleListBloc);
+      },
+    ).whenComplete(() {
+      if (context.mounted) {
+        context.read<PlayerBlocType>().add(const PlayerHideSubtitleListEvent());
+      }
+    });
   }
 
   Widget _pageForInit() {
@@ -199,22 +241,24 @@ class PlayerUI extends StatelessWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         child: Builder(
           builder: (context) {
-            final (subtitle, scroller) = context
+            final (subtitleState, scroller) = context
                 .select<
                   PlayerBlocType,
                   (PlayerSubtitleState?, ItemScrollController?)
                 >((bloc) {
                   final dataState = bloc.state.as<PlayerDataState>();
-                  return (dataState?.subtitle, dataState?.scroller);
+                  return (dataState?.subtitleState, dataState?.scroller);
                 });
-            if (subtitle == null || scroller == null) {
+            if (subtitleState == null || scroller == null) {
               return const SizedBox.shrink();
             }
-            switch (subtitle) {
-              case PlayerSubtitleDataState subtitle:
+            switch (subtitleState) {
+              case PlayerSubtitleDataState subtitleState:
                 return ScrollablePositionedList.builder(
-                  itemCount: subtitle.sentenceList.length,
+                  itemCount: subtitleState.sentenceList.length,
                   itemScrollController: scroller,
+                  initialAlignment: subtitleState.initialAlignment,
+                  initialScrollIndex: subtitleState.initialIndex,
                   itemBuilder: (context, i) {
                     final sentenceCardBloc = context
                         .read<PlayerBlocType>()
@@ -273,7 +317,7 @@ class PlayerUI extends StatelessWidget {
       builder: (context) {
         final hasSubtitle = context.select<PlayerBlocType, bool>(
           (bloc) =>
-              bloc.state.as<PlayerDataState>()?.subtitle
+              bloc.state.as<PlayerDataState>()?.subtitleState
                   is PlayerSubtitleDataState,
         );
         if (!hasSubtitle) return const SizedBox.shrink();
@@ -328,7 +372,8 @@ class PlayerUI extends StatelessWidget {
           builder: (context) {
             final bool showVolumeSlider = context.select<PlayerBlocType, bool>(
               (bloc) =>
-                  bloc.state.as<PlayerDataState>()?.showVolumeSlider ?? false,
+                  bloc.state.as<PlayerDataState>()?.volumeSliderVisible ??
+                  false,
             );
             if (showVolumeSlider) {
               return Expanded(child: _verticalVolumeSlider(context));
@@ -351,7 +396,8 @@ class PlayerUI extends StatelessWidget {
           builder: (context) {
             final bool showVolumeSlider = context.select<PlayerBlocType, bool>(
               (bloc) =>
-                  bloc.state.as<PlayerDataState>()?.showVolumeSlider ?? false,
+                  bloc.state.as<PlayerDataState>()?.volumeSliderVisible ??
+                  false,
             );
             if (showVolumeSlider) {
               return Expanded(child: _horizontalVolumeSlider(context));
@@ -598,18 +644,34 @@ class PlayerUI extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: Row(
-        children: [
-          _playOrPauseButton(context),
-          const SizedBox(width: 16),
-          _loopButton(context),
-          const Spacer(),
-          _speedDownButton(),
-          const SizedBox(width: 8),
-          _speedLabel(context),
-          const SizedBox(width: 8),
-          _speedUpButton(),
-        ],
+      child: Builder(
+        builder: (context) {
+          final subtitleListButtonVisible = context
+              .select<PlayerBlocType, bool>(
+                (bloc) =>
+                    bloc.state
+                        .as<PlayerDataState>()
+                        ?.subtitleListButtonVisible ??
+                    false,
+              );
+          return Row(
+            children: [
+              _playOrPauseButton(context),
+              const SizedBox(width: 16),
+              _loopButton(context),
+              if (subtitleListButtonVisible) ...[
+                const SizedBox(width: 16),
+                _subtitleListButton(context),
+              ],
+              const Spacer(),
+              _speedDownButton(),
+              const SizedBox(width: 8),
+              _speedLabel(context),
+              const SizedBox(width: 8),
+              _speedUpButton(),
+            ],
+          );
+        },
       ),
     );
   }
@@ -651,7 +713,7 @@ class PlayerUI extends StatelessWidget {
       builder: (context) {
         final hasSubtitle = context.select<PlayerBlocType, bool>(
           (bloc) =>
-              bloc.state.as<PlayerDataState>()?.subtitle
+              bloc.state.as<PlayerDataState>()?.subtitleState
                   is PlayerSubtitleDataState,
         );
         if (!hasSubtitle) return const SizedBox.shrink();
@@ -671,6 +733,19 @@ class PlayerUI extends StatelessWidget {
           padding: EdgeInsets.zero,
         );
       },
+    );
+  }
+
+  Widget _subtitleListButton(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return IconButton(
+      onPressed: () {
+        context.read<PlayerBlocType>().add(const PlayerShowSubtitleListEvent());
+      },
+      icon: Icon(Icons.subtitles_rounded, color: colorScheme.outline),
+      style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+      padding: EdgeInsets.zero,
     );
   }
 

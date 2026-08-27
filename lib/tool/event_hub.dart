@@ -11,9 +11,18 @@ class HubPlayMediaEvent extends HubEvent {
   const HubPlayMediaEvent(this.playingMediaId);
 }
 
-class HubPlayingSentenceChangedEvent extends HubEvent {
+class HubPlayingSentenceChangeEvent extends HubEvent {
   final String? playingSentenceId;
-  const HubPlayingSentenceChangedEvent(this.playingSentenceId);
+  const HubPlayingSentenceChangeEvent(this.playingSentenceId);
+}
+
+class HubSubtitleChangeEvent extends HubEvent {
+  final int index;
+  const HubSubtitleChangeEvent(this.index);
+}
+
+class HubAppPauseEvent extends HubEvent {
+  const HubAppPauseEvent();
 }
 
 class EventHub {
