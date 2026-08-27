@@ -33,9 +33,6 @@ class SentenceCardUI extends StatelessWidget {
                 final playing = context.select<SentenceCardBlocType, bool>(
                   (bloc) => bloc.state.playing,
                 );
-                debugPrint(
-                  'sentence-card-ui ${identityHashCode(_bloc)} playing $playing',
-                );
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,
@@ -72,11 +69,11 @@ class SentenceCardUI extends StatelessWidget {
                       children: [
                         Builder(
                           builder: (context) {
-                            final (text, playing) = context
-                                .select<SentenceCardBlocType, (String, bool)>(
-                                  (bloc) =>
-                                      (bloc.state.text, bloc.state.playing),
+                            final text = context
+                                .select<SentenceCardBlocType, String>(
+                                  (bloc) => bloc.state.text,
                                 );
+                            debugPrint('sentence-card-ui[$playing] $text');
                             return Text(
                               text,
                               style: theme.textTheme.bodyLarge?.copyWith(
