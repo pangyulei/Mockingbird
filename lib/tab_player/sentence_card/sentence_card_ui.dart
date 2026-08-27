@@ -33,7 +33,9 @@ class SentenceCardUI extends StatelessWidget {
                 final playing = context.select<SentenceCardBlocType, bool>(
                   (bloc) => bloc.state.playing,
                 );
-                debugPrint('sentence-card-ui ${identityHashCode(_bloc)} playing $playing');
+                debugPrint(
+                  'sentence-card-ui ${identityHashCode(_bloc)} playing $playing',
+                );
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   curve: Curves.easeInOut,

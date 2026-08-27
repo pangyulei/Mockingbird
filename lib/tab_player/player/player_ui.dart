@@ -254,7 +254,11 @@ class PlayerUI extends StatelessWidget {
             }
             switch (subtitleState) {
               case PlayerSubtitleDataState subtitleState:
+                debugPrint(
+                  'player ui align:${subtitleState.initialAlignment} index:${subtitleState.initialIndex}',
+                );
                 return ScrollablePositionedList.builder(
+                  key: ValueKey(subtitleState),
                   itemCount: subtitleState.sentenceList.length,
                   itemScrollController: scroller,
                   initialAlignment: subtitleState.initialAlignment,

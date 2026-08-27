@@ -5,8 +5,7 @@ sealed class MediaCardEvent {
 }
 
 class MediaCardInitEvent extends MediaCardEvent {
-  final bool playing;
-  const MediaCardInitEvent(this.playing);
+  const MediaCardInitEvent();
 }
 
 class MediaCardClickEvent extends MediaCardEvent {

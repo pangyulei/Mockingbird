@@ -2,8 +2,6 @@ import 'package:defer/defer.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:mockingbird/db/db.dart';
-import 'package:mockingbird/db/entities/metadata_entity.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_event.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_state.dart';
 import 'package:mockingbird/tab_albums/album_detail/album_detail_ui.dart';
@@ -15,7 +13,6 @@ import 'package:photo_manager/photo_manager.dart';
 
 class AlbumDetailBloc extends AlbumDetailBlocType {
   final String? _albumId;
-  late final MetadataEntity _metadata;
   AlbumDetailBloc(this._albumId) : super(const AlbumDetailInitState()) {
     on<AlbumDetailInitEvent>(_onInit);
   }
@@ -36,7 +33,6 @@ class AlbumDetailBloc extends AlbumDetailBlocType {
         EasyLoading.dismiss();
       },
       () async {
-        _metadata = await DB.loadMetadata();
         if (_albumId == null) {
           emit(const AlbumDetailNotFoundState());
           return;
@@ -55,7 +51,6 @@ class AlbumDetailBloc extends AlbumDetailBlocType {
   @override
   MediaCardBlocType mediaCardBlocAtIndex(int index) {
     final media = state.as<AlbumDetailDataState>()?.mediaList[index];
-    final playing = media?.id == _metadata.playingMediaId;
-    return MediaCardBloc(media)..add(MediaCardInitEvent(playing));
+    return MediaCardBloc(media)..add(const MediaCardInitEvent());
   }
 }
