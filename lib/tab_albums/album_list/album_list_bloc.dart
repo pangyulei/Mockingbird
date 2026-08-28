@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
+import 'package:mockingbird/tool/shared_metadata.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
@@ -18,7 +18,7 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
   }
 
   Future<AlbumListState> _reload() async {
-    final metadata = await DB.loadMetadata();
+    final metadata = SharedMetadata.instance;
     if (!metadata.permissionRequested) {
       return const AlbumListNotYetRequestedState();
     }
@@ -42,7 +42,7 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
     if (albumList.isEmpty) {
       return const AlbumListEmptyState();
     }
-    return AlbumListDataState(albumIdList: albumList.map((a) => a.id).toList());
+    return AlbumListDataState(albumList.map((a) => a.id).toList());
   }
 
   void _onRequestPermission(
@@ -50,7 +50,6 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
     Emitter<AlbumListState> emit,
   ) async {
     await PhotoManager.requestPermissionExtend();
-    emit(state.copyWith(loading: true));
     emit(await _reload());
   }
 }

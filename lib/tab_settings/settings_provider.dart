@@ -1,4 +1,3 @@
-import 'package:mockingbird/db/providers/db_preference_provider.dart';
 import 'package:mockingbird/tab_settings/settings_state.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

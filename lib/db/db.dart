@@ -29,7 +29,7 @@ class DB {
 
   static Future<MetadataEntity> loadMetadata() async {
     return (await _store.box<MetadataEntity>().getAllAsync()).firstOrNull ??
-        MetadataEntity.empty();
+        MetadataEntity();
   }
 
   static Future<MetadataEntity> updateMetadata(MetadataEntity metadata) async {

@@ -1,58 +1,62 @@
+import 'package:collection/collection.dart';
+import 'package:mockingbird/db/entities/media_progress_entity.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
 class MetadataEntity {
   @Id()
   int id;
-  final String? playingMediaId;
-  final String? playingSubtitleName;
-  final int playingPositionMs;
+
+  final mediaProgressList = ToMany<MediaProgressEntity>();
   final int databaseVersion;
+  final String? playingMediaId;
   final bool permissionRequested;
 
   MetadataEntity({
-    required this.id,
-    required this.playingMediaId,
-    required this.playingSubtitleName,
-    required this.playingPositionMs,
-    required this.databaseVersion,
-    required this.permissionRequested,
+    this.id = 0,
+    this.playingMediaId,
+    this.databaseVersion = 0,
+    this.permissionRequested = false,
   });
-
-  MetadataEntity.empty()
-    : this(
-        id: 0,
-        playingMediaId: null,
-        playingSubtitleName: null,
-        databaseVersion: 0,
-        permissionRequested: false,
-        playingPositionMs: 0,
-      );
 
   MetadataEntity copyWith({
     String? Function()? playingMediaId,
-    String? Function()? playingSubtitleName,
-    int? playingPositionMs,
     int? databaseVersion,
     bool? permissionRequested,
+    List<MediaProgressEntity>? mediaProgressList,
   }) {
-    return MetadataEntity(
+    final metadata = MetadataEntity(
       id: id,
-      playingPositionMs: playingPositionMs ?? this.playingPositionMs,
+      databaseVersion: databaseVersion ?? this.databaseVersion,
+      permissionRequested: permissionRequested ?? this.permissionRequested,
       playingMediaId: playingMediaId == null
           ? this.playingMediaId
           : playingMediaId(),
-      playingSubtitleName: playingSubtitleName == null
-          ? this.playingSubtitleName
-          : playingSubtitleName(),
-      databaseVersion: databaseVersion ?? this.databaseVersion,
-      permissionRequested: permissionRequested ?? this.permissionRequested,
     );
+    metadata.mediaProgressList.addAll(
+      mediaProgressList ?? this.mediaProgressList,
+    );
+    return metadata;
   }
 
   MetadataEntity incDatabaseVersion() {
     return copyWith(databaseVersion: databaseVersion + 1);
   }
 
-  Duration get playingPosition => Duration(milliseconds: playingPositionMs);
+  MediaProgressEntity? get playingMediaProgress =>
+      mediaProgressById(playingMediaId);
+  MediaProgressEntity? mediaProgressById(String? mediaId) =>
+      mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == mediaId);
+  void updateMediaProgress(MediaProgressEntity? progress) {
+    if (progress == null) return;
+    final i = mediaProgressList.firstIndexWhereOrNull(
+      (mp) => mp.mediaId == progress.mediaId,
+    );
+    if (i == null) {
+      mediaProgressList.add(progress);
+    } else {
+      mediaProgressList[i] = progress;
+    }
+  }
 }

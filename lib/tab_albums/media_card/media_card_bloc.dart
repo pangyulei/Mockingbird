@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_event.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
+import 'package:mockingbird/tool/shared_metadata.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class MediaCardBloc extends MediaCardBlocType {
@@ -44,7 +44,7 @@ class MediaCardBloc extends MediaCardBlocType {
     }
     final title = await _media.titleAsync;
     final subtitleList = await _media.subtitleList;
-    final playing = (await DB.loadMetadata()).playingMediaId == _media.id;
+    final playing = (await SharedMetadata.instance).playingMediaId == _media.id;
     emit(
       MediaCardState(
         name: title,

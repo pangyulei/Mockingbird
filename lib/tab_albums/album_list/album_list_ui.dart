@@ -41,11 +41,10 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
       create: (context) => AlbumListBloc()..add(const AlbumListInitEvent()),
       child: Builder(
         builder: (context) {
-          final (stateType, loading) = context
-              .select<AlbumListBloc, (Type, bool)>(
-                (bloc) => (bloc.state.runtimeType, bloc.state.loading),
+          final stateType = context
+              .select<AlbumListBloc, Type>(
+                (bloc) => bloc.state.runtimeType,
               );
-          // showLoading(loading);
           switch (stateType) {
             case AlbumListInitState:
               return _pageForInit();
