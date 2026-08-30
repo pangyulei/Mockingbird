@@ -35,6 +35,8 @@ class SharedPlayerBloc {
 class PlayerBloc extends PlayerBlocType {
   bool _draggingVideoSlider = false;
   bool _videoSliderRestorePlaying = false;
+  String? _mediaId;
+  bool _loading = false;
 
   ({int index, SentenceEntity sentence})? _spot;
   final _subscriptionList = <StreamSubscription>[];
@@ -92,7 +94,7 @@ class PlayerBloc extends PlayerBlocType {
     );
     emit(dataState);
     EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
-    final progress = SharedMetadata.instance.playingMediaProgress?.copyWith(
+    final progress = SharedMetadata.instance.mediaProgressById(_mediaId)?.copyWith(
       subtitleName: () => dataState?.subtitle?.name,
     );
     SharedMetadata.instance.updateMediaProgress(progress);
@@ -215,65 +217,66 @@ class PlayerBloc extends PlayerBlocType {
     emit(dataState.copyWith(volume: event.volume));
     await dataState.player.setVolume(event.volume);
   }
-
+  
+  //TODO 改成 drag分离，单独搞个 positionChange, 这个是 onPlayingPositionChange
   void _onPositionChange(
     PlayerPositionChangeEvent event,
     Emitter<PlayerState> emit,
   ) async {
-    if (state is! PlayerDataState) return;
-    final progress = SharedMetadata.instance.playingMediaProgress?.copyWith(
+    if (_loading) return;
+    final progress = SharedMetadata.instance.mediaProgressById(_mediaId)?.copyWith(
       positionMs: event.position.inMilliseconds,
     );
     SharedMetadata.instance.updateMediaProgress(progress);
-    // var state = this.state;
-    // if (state is! PlayerDataState) return;
+    debugPrint('${SharedMetadata.instance.mediaProgressById(_mediaId)}');
+    var state = this.state;
+    if (state is! PlayerDataState) return;
     // final player = _player;
     // if (player == null) return;
-    var dataState = state as PlayerDataState;
     if (!_draggingVideoSlider) {
       //Fix while tap video slider, it bounce at first
-      dataState = dataState.copyWith(position: event.position);
-      emit(dataState);
+      state = state.copyWith(position: event.position);
+      emit(state);
     }
-    if (event.position >= dataState.duration) {
+    if (event.position >= state.duration) {
       //if video end of duration, play/pause button should update
       //feature: replay if auto play to end
-      dataState = dataState.copyWith(playing: true);
-      emit(dataState);
-      await dataState.player.seekTo(const Duration(seconds: 0));
-      await dataState.player.play();
+      state = state.copyWith(playing: true);
+      emit(state);
+      await state.player.seekTo(const Duration(seconds: 0));
+      await state.player.play();
     }
 
     //handle loop reseek
-    final loopIndex = dataState.loopIndex;
+    final loopIndex = state.loopIndex;
     final loopSentence = loopIndex == null
         ? null
-        : dataState.subtitle?.sentenceList[loopIndex];
+        : state.subtitle?.sentenceList[loopIndex];
     if (!_draggingVideoSlider && loopSentence != null) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       // debugPrint('position changing loop $sentence');
       if (event.position > loopSentence.end) {
-        await dataState.player.seekTo(loopSentence.start);
+        await state.player.seekTo(loopSentence.start);
       }
     }
 
     //handle scroll
     final spot = _spotSentence(
       event.position,
-      dataState.subtitle?.sentenceList,
+      state.subtitle?.sentenceList,
     );
     final isSentenceChanged = _spot?.sentence.id != spot?.sentence.id;
     _spot = spot;
     if (isSentenceChanged) {
       EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
       if (_draggingVideoSlider) {
-        dataState.scroller.safeJumpTo(
+        state.scroller.safeJumpTo(
           _spot?.index,
           alignment: _spot?.alignment ?? 0,
         );
       } else if (loopIndex == null) {
         //playing auto scroll to next sentence, not for loop mode
-        dataState.scroller.safeScrollTo(
+        state.scroller.safeScrollTo(
           _spot?.index,
           alignment: _spot?.alignment ?? 0,
         );
@@ -442,8 +445,10 @@ class PlayerBloc extends PlayerBlocType {
   }
 
   void _onInit(PlayerInitEvent event, Emitter<PlayerState> emit) async {
+    _loading = true;
     EasyLoading.show(maskType: .clear);
     final mediaId = event.mediaId ?? SharedMetadata.instance.playingMediaId;
+    _mediaId = mediaId;
     final newState = await defer<PlayerState>(
       () async {
         SharedMetadata.instance = SharedMetadata.instance.copyWith(playingMediaId: () => mediaId);
@@ -472,18 +477,19 @@ class PlayerBloc extends PlayerBlocType {
         final int? selectedSubtitleIndex;
         final Duration position;
         var progress = SharedMetadata.instance.mediaProgressById(mediaId);
-        if (progress != null) {
+        if (progress == null) {
+          progress = MediaProgressEntity(mediaId: mediaId, positionMs: 0);
+          selectedSubtitleIndex = subtitleList.isEmpty ? null : 0;
+          position = const Duration(seconds: 0);
+
+        } else {
           final selectedSubtitleName = progress.subtitleName;
           selectedSubtitleIndex =
               subtitleList.firstIndexWhereOrNull(
-                (sub) => sub.name == selectedSubtitleName,
+                    (sub) => sub.name == selectedSubtitleName,
               ) ??
-              (subtitleList.isEmpty ? null : 0);
+                  (subtitleList.isEmpty ? null : 0);
           position = progress.position;
-        } else {
-          selectedSubtitleIndex = subtitleList.isEmpty ? null : 0;
-          position = const Duration(seconds: 0);
-          progress = MediaProgressEntity(mediaId: mediaId, positionMs: 0);
         }
         await player.seekTo(position);
         final subtitle = selectedSubtitleIndex == null
@@ -525,9 +531,9 @@ class PlayerBloc extends PlayerBlocType {
       },
     );
     emit(newState);
-    final dataState = newState.as<PlayerDataState>();
-    await dataState?.player.play();
+    await newState.as<PlayerDataState>()?.player.play();
     EasyLoading.dismiss();
+    _loading = false;
   }
 
   @override

@@ -45,8 +45,6 @@ class MetadataEntity {
     return copyWith(databaseVersion: databaseVersion + 1);
   }
 
-  MediaProgressEntity? get playingMediaProgress =>
-      mediaProgressById(playingMediaId);
   MediaProgressEntity? mediaProgressById(String? mediaId) =>
       mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == mediaId);
   void updateMediaProgress(MediaProgressEntity? progress) {
@@ -57,7 +55,6 @@ class MetadataEntity {
     if (i == null) {
       mediaProgressList.add(progress);
     } else {
-      debugPrint('${mediaProgressList[i]} => $progress');
       mediaProgressList[i] = progress;
     }
   }
