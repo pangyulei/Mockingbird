@@ -35,6 +35,7 @@ class AppUIState extends ConsumerState<AppUI> {
     );
   }
 
+  //TODO provide OperaGX like theme change at setting page
   ThemeData _theme() {
     const background = Color(0xFF0E1621);
     const surface = Color(0xFF17212B);
