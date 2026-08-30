@@ -148,7 +148,7 @@ class PlayerUI extends StatelessWidget {
       child: Stack(
         alignment: .center,
         children: [
-          _player(),
+          _player(),//TODO make it fit itself aspectratio
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,

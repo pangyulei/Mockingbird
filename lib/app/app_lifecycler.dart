@@ -3,16 +3,14 @@ import 'package:mockingbird/db/db.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/shared_metadata.dart';
 
-class AppLifecycleHandler with WidgetsBindingObserver {
-  AppLifecycleHandler();
-
+class AppLifecycler with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     debugPrint('app state: $state');
     //退后台/锁屏 inactive->hidden->pause
     //回前台 pause->hidden->inactive->resumed
     if (state == AppLifecycleState.paused) {
-      // EventHub.emit(const HubAppPauseEvent());
+      EventHub.emit(const HubAppPauseEvent());
       await DB.updateMetadata(SharedMetadata.instance);
     }
   }

@@ -4,9 +4,8 @@ import 'package:mockingbird/tab_albums/album_card/album_card_bloc.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_event.dart';
 
 class AlbumCardUI extends StatelessWidget {
-  final String _id;
-
-  const AlbumCardUI(this._id, {super.key});
+  final AlbumCardBloc _bloc;
+  const AlbumCardUI(this._bloc, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +13,7 @@ class AlbumCardUI extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return BlocProvider(
-      create: (context) => AlbumCardBloc(_id)..add(const AlbumCardInitEvent()),
+      create: (context) => _bloc,
       child: Builder(
         builder: (context) => InkWell(
           onTap: () =>

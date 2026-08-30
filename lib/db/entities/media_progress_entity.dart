@@ -29,4 +29,9 @@ class MediaProgressEntity {
   }
 
   Duration get position => Duration(milliseconds: positionMs);
+
+  @override
+  String toString() {
+    return 'MediaProgressEntity(id: $id, mediaId: $mediaId, subtitleName: $subtitleName, positionMs: $positionMs)';
+  }
 }

@@ -1,3 +1,5 @@
+import 'package:photo_manager/photo_manager.dart';
+
 sealed class AlbumListState {
   const AlbumListState();
 }
@@ -19,10 +21,6 @@ class AlbumListEmptyState extends AlbumListState {
 }
 
 class AlbumListDataState extends AlbumListState {
-  final List<String> albumIdList;
-  const AlbumListDataState(this.albumIdList);
-
-  AlbumListDataState copyWith({List<String>? albumIdList}) {
-    return AlbumListDataState(albumIdList ?? this.albumIdList);
-  }
+  final List<AssetPathEntity> albumList;
+  const AlbumListDataState(this.albumList);
 }

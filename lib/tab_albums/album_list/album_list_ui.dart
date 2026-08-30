@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_bloc.dart';
+import 'package:mockingbird/tab_albums/album_card/album_card_event.dart';
 import 'package:mockingbird/tab_albums/album_card/album_card_ui.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_bloc.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
@@ -8,32 +10,8 @@ import 'package:photo_manager/photo_manager.dart';
 
 import '../../tool/extensions.dart';
 
-class AlbumListUI extends StatefulWidget {
+class AlbumListUI extends StatelessWidget {
   const AlbumListUI({super.key});
-
-  @override
-  State<AlbumListUI> createState() => _AlbumListUIState();
-}
-
-class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // ref.invalidate(albumListProvider); TODO handle this
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,19 +19,18 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
       create: (context) => AlbumListBloc()..add(const AlbumListInitEvent()),
       child: Builder(
         builder: (context) {
-          final stateType = context
-              .select<AlbumListBloc, Type>(
-                (bloc) => bloc.state.runtimeType,
-              );
+          final stateType = context.select<AlbumListBloc, Type>(
+            (bloc) => bloc.state.runtimeType,
+          );
           switch (stateType) {
             case AlbumListInitState:
               return _pageForInit();
             case AlbumListNotYetRequestedState:
-              return _pageForRequestPermissions();
+              return _pageForRequestPermissions(context);
             case AlbumListPermissionDeniedState:
-              return _pageForGrantPermissionsViaSetting();
+              return _pageForGrantPermissionsViaSetting(context);
             case AlbumListEmptyState:
-              return _pageForEmpty();
+              return _pageForEmpty(context);
             case AlbumListDataState:
               return _pageForData();
             default:
@@ -69,7 +46,7 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
     return Scaffold(appBar: _appBar());
   }
 
-  Widget _pageForEmpty() {
+  Widget _pageForEmpty(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Scaffold(
@@ -116,7 +93,7 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
     );
   }
 
-  Widget _pageForRequestPermissions() {
+  Widget _pageForRequestPermissions(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Scaffold(
@@ -171,7 +148,7 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
     );
   }
 
-  Widget _pageForGrantPermissionsViaSetting() {
+  Widget _pageForGrantPermissionsViaSetting(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return Scaffold(
@@ -239,8 +216,7 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
           Builder(
             builder: (context) {
               final albumCount = context.select<AlbumListBloc, int?>(
-                (bloc) =>
-                    bloc.state.as<AlbumListDataState>()?.albumIdList.length,
+                (bloc) => bloc.state.as<AlbumListDataState>()?.albumList.length,
               );
               if (albumCount == null) return const SizedBox.shrink();
               return Text(
@@ -263,20 +239,23 @@ class _AlbumListUIState extends State<AlbumListUI> with WidgetsBindingObserver {
       builder: (context) {
         //watch all, albumCount may not change but the album inside list already change
         //etc. album order updated
-        final albumIdList = context.select<AlbumListBloc, List<String>?>(
-          (bloc) => bloc.state.as<AlbumListDataState>()?.albumIdList,
-        );
-        if (albumIdList == null) return const SizedBox.shrink();
+        final albumList =
+            context.select<AlbumListBloc, List<AssetPathEntity>?>(
+              (bloc) => bloc.state.as<AlbumListDataState>()?.albumList,
+            ) ??
+            [];
         return GridView.builder(
           padding: const EdgeInsets.all(12),
-          itemCount: albumIdList.length,
+          itemCount: albumList.length,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             mainAxisSpacing: 4,
             crossAxisSpacing: 4,
           ),
           itemBuilder: (context, i) {
-            return AlbumCardUI(albumIdList[i]);
+            return AlbumCardUI(
+              AlbumCardBloc(albumList[i])..add(const AlbumCardInitEvent()),
+            );
           },
         );
       },

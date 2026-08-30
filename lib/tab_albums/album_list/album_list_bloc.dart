@@ -9,6 +9,7 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
   AlbumListBloc() : super(const AlbumListInitState()) {
     on<AlbumListInitEvent>(_onInit);
     on<AlbumListRequestPermissionEvent>(_onRequestPermission);
+    //TODO listen to hubevent apppause then reload the page while backin foreground
   }
 
   void _onInit(AlbumListInitEvent event, Emitter<AlbumListState> emit) async {
@@ -42,7 +43,7 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
     if (albumList.isEmpty) {
       return const AlbumListEmptyState();
     }
-    return AlbumListDataState(albumList.map((a) => a.id).toList());
+    return AlbumListDataState(albumList);
   }
 
   void _onRequestPermission(
@@ -50,6 +51,9 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
     Emitter<AlbumListState> emit,
   ) async {
     await PhotoManager.requestPermissionExtend();
+    SharedMetadata.instance = SharedMetadata.instance.copyWith(
+      permissionRequested: true,
+    );
     emit(await _reload());
   }
 }

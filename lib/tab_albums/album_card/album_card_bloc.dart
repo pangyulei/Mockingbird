@@ -6,19 +6,18 @@ import 'package:mockingbird/tab_albums/album_card/album_card_state.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumCardBloc extends Bloc<AlbumCardEvent, AlbumCardState> {
-  final String _id;
-  AlbumCardBloc(this._id) : super(const AlbumCardState.empty()) {
+  final AssetPathEntity _album;
+  AlbumCardBloc(this._album) : super(const AlbumCardState.empty()) {
     on<AlbumCardInitEvent>(_onInit);
     on<AlbumCardClickEvent>(_onClick);
   }
 
   void _onClick(AlbumCardClickEvent event, Emitter<AlbumCardState> emit) {
-    event.context.go(AppRoute.albumById(_id));
+    event.context.go(AppRoute.albumById(_album.id));
   }
 
   void _onInit(AlbumCardInitEvent event, Emitter<AlbumCardState> emit) async {
-    final album = await AssetPathEntity.fromId(_id);
-    final count = await album.assetCountAsync;
-    emit(AlbumCardState(mediaCount: count, name: album.name));
+    final count = await _album.assetCountAsync;
+    emit(AlbumCardState(mediaCount: count, name: _album.name));
   }
 }
