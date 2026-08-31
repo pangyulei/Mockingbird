@@ -1,15 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
+import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/shared_metadata.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
+  final _subscriptionList = <StreamSubscription>[];
+  
   AlbumListBloc() : super(const AlbumListInitState()) {
     on<AlbumListInitEvent>(_onInit);
     on<AlbumListRequestPermissionEvent>(_onRequestPermission);
-    //TODO listen to hubevent apppause then reload the page while backin foreground
+    _subscriptionList.addAll([
+      EventHub.on<HubAppResumeEvent>((event) => add(AlbumListInitEvent()),),
+    ]);
+  }
+  
+  @override
+  Future<void> close() {
+    for(final sub in _subscriptionList) {
+      sub.cancel();
+    }
+    return super.close();
   }
 
   void _onInit(AlbumListInitEvent event, Emitter<AlbumListState> emit) async {

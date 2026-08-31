@@ -37,7 +37,6 @@ class AlbumDetailBloc extends AlbumDetailBlocType {
           emit(const AlbumDetailNotFoundState());
           return;
         }
-        //TODO handle '' id, try-catch?
         final album = await AssetPathEntity.fromId(_albumId);
         final mediaList = await album.getAssetListRange(
           start: 0,

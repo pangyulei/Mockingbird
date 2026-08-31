@@ -1,6 +1,4 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:mockingbird/db/db.dart';
-import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/shared_metadata.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';

@@ -25,6 +25,10 @@ class HubAppPauseEvent extends HubEvent {
   const HubAppPauseEvent();
 }
 
+class HubAppResumeEvent extends HubEvent {
+  const HubAppResumeEvent();
+}
+
 class EventHub {
   static final _behaviorSubject = BehaviorSubject<HubEvent>();
   static void emit(HubEvent event) => _behaviorSubject.add(event);

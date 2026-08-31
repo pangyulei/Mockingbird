@@ -1,24 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockingbird/app/app_route.dart';
-import 'package:mockingbird/tab_settings/settings_provider.dart';
-import 'package:mockingbird/tab_settings/settings_state.dart';
 
-class SettingsUI extends ConsumerWidget {
+class SettingsUI extends StatelessWidget {
   const SettingsUI({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final stateType = ref.watch(
-      settingsProvider.select((st) => st.value?.runtimeType),
-    );
-    switch (stateType) {
-      case SettingsState:
-        return _page(context);
-      default:
-        return Scaffold(appBar: _appBar());
-    }
+  Widget build(BuildContext context) {
+    return _page(context);
   }
 
   AppBar _appBar() {
@@ -31,21 +20,21 @@ class SettingsUI extends ConsumerWidget {
       body: ListView(
         children: [
           _sectionHeader(context, 'Playback'),
-          Consumer(
-            builder: (context, ref, child) {
-              final bool? loop = ref.watch(
-                settingsProvider.select((st) => st.value?.loop),
-              );
-              if (loop == null) return const SizedBox.shrink();
-              return SwitchListTile(
-                title: const Text('Default Loop Mode'),
-                subtitle: const Text('Loop current sentence by default'),
-                value: loop,
-                onChanged: (_) => _onToggleLoop(ref),
-                activeThumbColor: Theme.of(context).colorScheme.primary,
-              );
-            },
-          ),
+          // Consumer(
+          //   builder: (context, ref, child) {
+          //     final bool? loop = ref.watch(
+          //       settingsProvider.select((st) => st.value?.loop),
+          //     );
+          //     if (loop == null) return const SizedBox.shrink();
+          //     return SwitchListTile(
+          //       title: const Text('Default Loop Mode'),
+          //       subtitle: const Text('Loop current sentence by default'),
+          //       value: loop,
+          //       onChanged: (_) => _onToggleLoop(ref),
+          //       activeThumbColor: Theme.of(context).colorScheme.primary,
+          //     );
+          //   },
+          // ),
           const Divider(),
           _sectionHeader(context, 'Support'),
           ListTile(
@@ -71,10 +60,6 @@ class SettingsUI extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  void _onToggleLoop(WidgetRef ref) async {
-    await ref.read(settingsProvider.notifier).toggleLoop();
   }
 
   void _onTapAbout(BuildContext context) {

@@ -1,5 +1,4 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:mockingbird/db/entities/media_progress_entity.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:objectbox/objectbox.dart';
