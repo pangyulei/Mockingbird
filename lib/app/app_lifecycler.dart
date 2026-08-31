@@ -9,10 +9,9 @@ class AppLifecycler with WidgetsBindingObserver {
     debugPrint('app state: $state');
     //退后台/锁屏 inactive->hidden->pause
     //回前台 pause->hidden->inactive->resumed
-    if (state == .paused) {
-      EventHub.emit(const HubAppPauseEvent());
+    if (state == .inactive) {
+      EventHub.emit(const HubAppInactiveEvent());
       await DB.updateMetadata(SharedMetadata.instance);
-
     } else if (state == .resumed) {
       EventHub.emit(const HubAppResumeEvent());
     }
