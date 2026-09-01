@@ -28,6 +28,10 @@ class HubAppInactiveEvent extends HubEvent {
   const HubAppInactiveEvent();
 }
 
+class HubAppPauseEvent extends HubEvent {
+  const HubAppPauseEvent();
+}
+
 class HubAppResumeEvent extends HubEvent {
   const HubAppResumeEvent();
 }

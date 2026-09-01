@@ -73,7 +73,6 @@ class SentenceCardUI extends StatelessWidget {
                                 .select<SentenceCardBlocType, String>(
                                   (bloc) => bloc.state.text,
                                 );
-                            debugPrint('sentence-card-ui[$playing] $text');
                             return Text(
                               text,
                               style: theme.textTheme.bodyLarge?.copyWith(

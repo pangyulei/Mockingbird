@@ -30,11 +30,9 @@ class AlbumDetailUI extends StatelessWidget {
       },
       child: Builder(
         builder: (context) {
-          final (stateType, loading) = context
-              .select<AlbumDetailBlocType, (Type, bool)>(
-                (bloc) => (bloc.state.runtimeType, bloc.state.loading),
-              );
-          // showLoading(loading);
+          final stateType = context.select<AlbumDetailBlocType, Type>(
+            (bloc) => bloc.state.runtimeType,
+          );
           switch (stateType) {
             case AlbumDetailInitState:
               return _pageForLoading();

@@ -10,24 +10,36 @@ import 'package:photo_manager/photo_manager.dart';
 
 class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
   final _subscriptionList = <StreamSubscription>[];
-  
+
   AlbumListBloc() : super(const AlbumListInitState()) {
     on<AlbumListInitEvent>(_onInit);
     on<AlbumListRequestPermissionEvent>(_onRequestPermission);
+    on<AlbumListResumeEvent>(_onResume);
     _subscriptionList.addAll([
-      EventHub.on<HubAppResumeEvent>((event) => add(AlbumListInitEvent()),),
+      EventHub.on<HubAppResumeEvent>(
+        (event) => add(const AlbumListResumeEvent()),
+      ),
     ]);
   }
-  
+
   @override
   Future<void> close() {
-    for(final sub in _subscriptionList) {
+    for (final sub in _subscriptionList) {
       sub.cancel();
     }
     return super.close();
   }
 
   void _onInit(AlbumListInitEvent event, Emitter<AlbumListState> emit) async {
+    EasyLoading.show(maskType: .clear);
+    emit(await _reload());
+    EasyLoading.dismiss();
+  }
+
+  void _onResume(
+    AlbumListResumeEvent event,
+    Emitter<AlbumListState> emit,
+  ) async {
     EasyLoading.show(maskType: .clear);
     emit(await _reload());
     EasyLoading.dismiss();

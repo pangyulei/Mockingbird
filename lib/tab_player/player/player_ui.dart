@@ -27,11 +27,8 @@ class PlayerUI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('player ui building');
-    return BlocProvider(
-      create: (context) {
-        debugPrint('player ui blocprovider create called');
-        return _bloc;
-      },
+    return BlocProvider.value(
+      value: _bloc,
       child: BlocListener<PlayerBlocType, PlayerState>(
         listener: (context, state) {
           if (state is! PlayerDataState) {
