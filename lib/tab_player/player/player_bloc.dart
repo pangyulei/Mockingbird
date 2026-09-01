@@ -63,22 +63,47 @@ class PlayerBloc extends PlayerBlocType {
     on<PlayerVideoSliderChangingEvent>(_onVideoSliderChanging);
     on<PlayerVideoSliderEndChangeEvent>(_onVideoSliderEndChange);
     on<PlayerVolumeChangeEvent>(_onVolumeChange);
+    on<PlayerSyncFromBackgroundAudioEvent>(_onSyncFromBackgroundAudio);
     _subscriptionList.addAll([
       EventHub.on<HubSubtitleChangeEvent>(
         (event) => add(PlayerSubtitleChangeEvent(event.index)),
       ),
       EventHub.on<HubAppInactiveEvent>(_onAppInactive),
+      EventHub.on<HubSyncBackgroundAudioToPlayerEvent>(
+        (event) => add(PlayerSyncFromBackgroundAudioEvent(event.info)),
+      ),
     ]);
+  }
+
+  void _onSyncFromBackgroundAudio(
+    PlayerSyncFromBackgroundAudioEvent event,
+    Emitter<PlayerState> emit,
+  ) async {
+    final state = this.state.as<PlayerDataState>();
+    if (state == null) return;
+    emit(
+      state.copyWith(
+        playing: event.info.playing,
+        position: event.info.position,
+      ),
+    );
+    final player = state.player;
+    if (event.info.playing) {
+      await player.play();
+    } else {
+      await player.pause();
+    }
+    await player.seekTo(event.info.position);
   }
 
   void _onAppInactive(HubAppInactiveEvent event) {
     final state = this.state.as<PlayerDataState>();
     final media = _media;
-    final PlayerInfo? playerInfo;
+    final PlayerMediaInfo? playerInfo;
     if (state == null || media == null) {
       playerInfo = null;
     } else {
-      playerInfo = PlayerInfo(
+      playerInfo = PlayerMediaInfo(
         media: media,
         duration: state.duration,
         playing: state.playing,
@@ -87,7 +112,7 @@ class PlayerBloc extends PlayerBlocType {
         volume: state.volume,
       );
     }
-    EventHub.emit(HubAppInactiveSyncPlayerEvent(playerInfo));
+    EventHub.emit(HubSyncPlayerToBackgroundAudioEvent(playerInfo));
   }
 
   void _onSubtitleChange(

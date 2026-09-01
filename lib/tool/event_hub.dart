@@ -29,26 +29,37 @@ class HubAppInactiveEvent extends HubEvent {
   const HubAppInactiveEvent();
 }
 
-class PlayerInfo {
+class PlayerMediaInfo {
   final AssetEntity media;
   final bool playing;
   final Duration position;
   final Duration duration;
   final double speed;
   final double volume;
-  const PlayerInfo({
+  const PlayerMediaInfo({
     required this.media,
     required this.volume,
-    required this.playing ,
+    required this.playing,
     required this.position,
     required this.duration,
     required this.speed,
   });
 }
 
-class HubAppInactiveSyncPlayerEvent extends HubEvent {
-  final PlayerInfo? playerInfo;
-  const HubAppInactiveSyncPlayerEvent(this.playerInfo);
+class BackgroundAudioInfo {
+  final bool playing;
+  final Duration position;
+  const BackgroundAudioInfo({required this.playing, required this.position});
+}
+
+class HubSyncPlayerToBackgroundAudioEvent extends HubEvent {
+  final PlayerMediaInfo? info;
+  const HubSyncPlayerToBackgroundAudioEvent(this.info);
+}
+
+class HubSyncBackgroundAudioToPlayerEvent extends HubEvent {
+  final BackgroundAudioInfo info;
+  const HubSyncBackgroundAudioToPlayerEvent(this.info);
 }
 
 class HubAppPauseEvent extends HubEvent {

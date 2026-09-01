@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:mockingbird/tool/event_hub.dart';
 
 sealed class PlayerEvent {
   const PlayerEvent();
@@ -7,6 +8,11 @@ sealed class PlayerEvent {
 class PlayerInitEvent extends PlayerEvent {
   final String? mediaId;
   const PlayerInitEvent(this.mediaId);
+}
+
+class PlayerSyncFromBackgroundAudioEvent extends PlayerEvent {
+  final BackgroundAudioInfo info;
+  const PlayerSyncFromBackgroundAudioEvent(this.info);
 }
 
 class PlayerShowSubtitleListEvent extends PlayerEvent {

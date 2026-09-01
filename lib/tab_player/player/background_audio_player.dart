@@ -6,36 +6,83 @@ import 'package:just_audio/just_audio.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:path/path.dart' as p;
 
+//TODO handle loop situation
+
 class BackgroundAudioPlayer extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
   BackgroundAudioPlayer() {
-    EventHub.on<HubAppInactiveSyncPlayerEvent>((event) async {
-      await _update(event.playerInfo);
+    EventHub.on<HubSyncPlayerToBackgroundAudioEvent>((event) async {
+      await _syncFromPlayer(event.info);
     });
+    EventHub.on<HubAppResumeEvent>(_syncToPlayer);
   }
 
-  Future<void> _update(PlayerInfo? playerInfo) async {
+  void _syncToPlayer(HubAppResumeEvent event) {
+    if (mediaItem.valueOrNull == null) return;
+    EventHub.emit(
+      HubSyncBackgroundAudioToPlayerEvent(
+        BackgroundAudioInfo(
+          playing: _audioPlayer.playing,
+          position: _audioPlayer.position,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _syncFromPlayer(PlayerMediaInfo? playerInfo) async {
     // final path = (await media?.file)?.path;
     final mediaFile = await playerInfo?.media.file;
     final path = mediaFile?.path;
     if (playerInfo == null || path == null) {
       debugPrint('bg-audio update() missing data, clearing notification');
-      _clearMediaItem();
+      mediaItem.add(null);
+      playbackState.add(
+        playbackState.value.copyWith(
+          controls: const [],
+          systemActions: const {},
+          androidCompactActionIndices: null,
+          processingState: AudioProcessingState.idle,
+          playing: false,
+          updatePosition: const Duration(seconds: 0),
+          speed: 1,
+        ),
+      );
+      await _audioPlayer.clearAudioSources();
     } else {
       final media = playerInfo.media;
       final album = p.basename(p.dirname(path));
       // Update notification UI first to satisfy system requirements immediately
-      _updateMediaItemAndPlaybackState(
-        item: MediaItem(
+      mediaItem.add(
+        MediaItem(
           id: media.id,
           title: await media.titleAsync,
           album: album,
           duration: playerInfo.duration,
           artUri: null, //TODO fix artUri
         ),
-        playing: playerInfo.playing,
-        position: playerInfo.position,
-        speed: playerInfo.speed,
+      );
+      playbackState.add(
+        playbackState.value.copyWith(
+          controls: [
+            // MediaControl.skipToPrevious,
+            // if (playing) MediaControl.pause else MediaControl.play,
+            playerInfo.playing ? MediaControl.pause : MediaControl.play,
+            // MediaControl.stop,
+            // MediaControl.skipToNext,
+          ],
+          systemActions: const {
+            // MediaAction.seek,
+            MediaAction.playPause,
+            // MediaAction.skipToNext,
+            // MediaAction.skipToPrevious,
+          },
+          // androidCompactActionIndices: const [0, 1, 3],
+          androidCompactActionIndices: const [0],
+          processingState: AudioProcessingState.ready,
+          playing: playerInfo.playing,
+          updatePosition: playerInfo.position,
+          speed: playerInfo.speed,
+        ),
       );
 
       // Fix mediaItem not showing, audioPlayer control codes, must below updateItem
@@ -51,54 +98,31 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     }
   }
 
-  void _clearMediaItem() {
-    mediaItem.add(null);
-  }
-
-  void _updateMediaItemAndPlaybackState({
-    required MediaItem item,
-    required bool playing,
-    required Duration position,
-    required double speed,
-  }) {
-    mediaItem.add(item);
-    playbackState.add(
-      playbackState.value.copyWith(
-        controls: [
-          // MediaControl.skipToPrevious,
-          // if (playing) MediaControl.pause else MediaControl.play,
-          playing ? MediaControl.pause : MediaControl.play,
-          // MediaControl.stop,
-          // MediaControl.skipToNext,
-        ],
-        systemActions: const {
-          // MediaAction.seek,
-          MediaAction.playPause,
-          // MediaAction.skipToNext,
-          // MediaAction.skipToPrevious,
-        },
-        // androidCompactActionIndices: const [0, 1, 3],
-        androidCompactActionIndices: const [0],
-        processingState: AudioProcessingState.ready,
-        playing: playing,
-        updatePosition: position,
-        speed: speed,
-      ),
-    );
-  }
-
   @override
   Future<void> play() async {
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: [MediaControl.pause],
+        playing: true,
+      ),
+    );
     await _audioPlayer.play();
   }
 
   @override
   Future<void> pause() async {
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: [MediaControl.play],
+        playing: false,
+      ),
+    );
     await _audioPlayer.pause();
   }
 
   @override
   Future<void> seek(Duration position) async {
+    playbackState.add(playbackState.value.copyWith(updatePosition: position));
     await _audioPlayer.seek(position);
   }
 
