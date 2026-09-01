@@ -3,56 +3,47 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/rendering.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:mockingbird/tab_player/player/player_bloc.dart';
-import 'package:mockingbird/tab_player/player/player_state.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:path/path.dart' as p;
-
-import '../../tool/extensions.dart';
 
 class BackgroundAudioPlayer extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
   BackgroundAudioPlayer() {
-    EventHub.on<HubAppInactiveEvent>((event) async {
-      await _update();
+    EventHub.on<HubAppInactiveSyncPlayerEvent>((event) async {
+      await _update(event.playerInfo);
     });
   }
 
-  Future<void> _update() async {
-    final playerBloc = SharedPlayerBloc.instance;
-    final playerState = playerBloc.state.as<PlayerDataState>();
-    final media = playerBloc.media;
-    final path = (await media?.file)?.path;
-
-    if (path == null || media == null || playerState == null) {
+  Future<void> _update(PlayerInfo? playerInfo) async {
+    // final path = (await media?.file)?.path;
+    final mediaFile = await playerInfo?.media.file;
+    final path = mediaFile?.path;
+    if (playerInfo == null || path == null) {
       debugPrint('bg-audio update() missing data, clearing notification');
-      _updateMediaItemAndPlaybackState();
+      _clearMediaItem();
     } else {
+      final media = playerInfo.media;
       final album = p.basename(p.dirname(path));
-      final playerValue = playerState.player.value;
-      final playing = playerValue.isPlaying;
-      final position = playerValue.position;
-
       // Update notification UI first to satisfy system requirements immediately
       _updateMediaItemAndPlaybackState(
         item: MediaItem(
           id: media.id,
-          title: playerState.title,
+          title: await media.titleAsync,
           album: album,
-          duration: playerValue.duration,
+          duration: playerInfo.duration,
           artUri: null, //TODO fix artUri
         ),
-        playing: playing,
-        position: position,
-        speed: playerValue.playbackSpeed,
+        playing: playerInfo.playing,
+        position: playerInfo.position,
+        speed: playerInfo.speed,
       );
 
       // Fix mediaItem not showing, audioPlayer control codes, must below updateItem
       // Then setup the audio engine
       await _audioPlayer.setAudioSource(AudioSource.file(path));
-      await _audioPlayer.setVolume(playerValue.volume);
-      await _audioPlayer.seek(position);
-      if (playing) {
+      await _audioPlayer.setVolume(playerInfo.volume);
+      await _audioPlayer.seek(playerInfo.position);
+      if (playerInfo.playing) {
         await _audioPlayer.play();
       } else {
         await _audioPlayer.pause();
@@ -60,11 +51,15 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     }
   }
 
+  void _clearMediaItem() {
+    mediaItem.add(null);
+  }
+
   void _updateMediaItemAndPlaybackState({
-    MediaItem? item,
-    bool playing = false,
-    Duration position = const Duration(seconds: 0),
-    double speed = 1.0,
+    required MediaItem item,
+    required bool playing,
+    required Duration position,
+    required double speed,
   }) {
     mediaItem.add(item);
     playbackState.add(
