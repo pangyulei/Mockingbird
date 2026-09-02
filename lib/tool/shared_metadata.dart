@@ -7,9 +7,8 @@ class SharedMetadata {
   static late MetadataEntity instance;
   static Future<void> init() async {
     instance = await DB.loadMetadata();
-    EventHub.on<HubAppInactiveEvent>((event) async {
+    EventHub.on<HubAppPauseEvent>((event) async {
       await DB.updateMetadata(instance);
-      debugPrint('saved metadata to db: $instance');
     });
   }
 }

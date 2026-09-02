@@ -25,9 +25,6 @@ class HubSubtitleChangeEvent extends HubEvent {
   const HubSubtitleChangeEvent(this.index);
 }
 
-class HubAppInactiveEvent extends HubEvent {
-  const HubAppInactiveEvent();
-}
 
 class PlayerMediaInfo {
   final AssetEntity media;
@@ -46,20 +43,18 @@ class PlayerMediaInfo {
   });
 }
 
-class BackgroundAudioInfo {
-  final bool playing;
-  final Duration position;
-  const BackgroundAudioInfo({required this.playing, required this.position});
-}
-
 class HubSyncPlayerToBackgroundAudioEvent extends HubEvent {
   final PlayerMediaInfo? info;
   const HubSyncPlayerToBackgroundAudioEvent(this.info);
 }
 
 class HubSyncBackgroundAudioToPlayerEvent extends HubEvent {
-  final BackgroundAudioInfo info;
-  const HubSyncBackgroundAudioToPlayerEvent(this.info);
+  final bool playing;
+  final Duration position;
+  const HubSyncBackgroundAudioToPlayerEvent({
+    required this.playing,
+    required this.position,
+  });
 }
 
 class HubAppPauseEvent extends HubEvent {

@@ -8,6 +8,7 @@ import 'package:mockingbird/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
+import 'package:mockingbird/tool/extensions.dart';
 
 class SentenceCardBloc extends SentenceCardBlocType {
   final _subList = <StreamSubscription>[];
@@ -61,14 +62,3 @@ class SentenceCardBloc extends SentenceCardBlocType {
   }
 }
 
-extension on Duration {
-  String get desc {
-    final h = inHours;
-    final m = inMinutes.remainder(60);
-    final s = inSeconds.remainder(60);
-    if (h > 0) {
-      return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
-    }
-    return '$m:${s.toString().padLeft(2, '0')}';
-  }
-}

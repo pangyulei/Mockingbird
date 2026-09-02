@@ -62,7 +62,7 @@ class MetadataEntity {
   String toString() {
     final progressString = mediaProgressList
         .map((mp) => mp.toString())
-        .join('\n');
-    return 'MetadataEntity(id: $id, databaseVersion: $databaseVersion, playingMediaId: $playingMediaId, permissionRequested: $permissionRequested, mediaProgressList: [\n$progressString])';
+        .join(',');
+    return 'MetadataEntity(id: $id, databaseVersion: $databaseVersion, playingMediaId: $playingMediaId, permissionRequested: $permissionRequested, mediaProgressList: [$progressString])';
   }
 }

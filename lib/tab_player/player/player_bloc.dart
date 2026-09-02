@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
-import 'package:defer/defer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -32,12 +31,28 @@ class SharedPlayerBloc {
   static final instance = PlayerBloc();
 }
 
+typedef SpotType = ({int index, SentenceEntity sentence});
+typedef PositionUpdated = ({
+  bool mediaCompleted,
+  SentenceEntity? completedLoopSentence,
+  bool sentenceChanged,
+});
+
 class PlayerBloc extends PlayerBlocType {
   bool _draggingVideoSlider = false;
   bool _videoSliderRestorePlaying = false;
   AssetEntity? _media;
 
-  ({int index, SentenceEntity sentence})? _spot;
+  SpotType? get _spot {
+    final state = this.state;
+    if (state is! PlayerDataState) return null;
+    final sentenceList = state.subtitle?.sentenceList;
+    final position = state.position;
+    return sentenceList?.spot(position);
+  }
+
+  SpotType? _prevSpot;
+
   final _subscriptionList = <StreamSubscription>[];
 
   PlayerBloc() : super(const PlayerInitState()) {
@@ -68,9 +83,14 @@ class PlayerBloc extends PlayerBlocType {
       EventHub.on<HubSubtitleChangeEvent>(
         (event) => add(PlayerSubtitleChangeEvent(event.index)),
       ),
-      EventHub.on<HubAppInactiveEvent>(_onAppInactive),
+      EventHub.on<HubAppPauseEvent>(_onAppPause),
       EventHub.on<HubSyncBackgroundAudioToPlayerEvent>(
-        (event) => add(PlayerSyncFromBackgroundAudioEvent(event.info)),
+        (event) => add(
+          PlayerSyncFromBackgroundAudioEvent(
+            playing: event.playing,
+            position: event.position,
+          ),
+        ),
       ),
     ]);
   }
@@ -79,24 +99,20 @@ class PlayerBloc extends PlayerBlocType {
     PlayerSyncFromBackgroundAudioEvent event,
     Emitter<PlayerState> emit,
   ) async {
-    final state = this.state.as<PlayerDataState>();
-    if (state == null) return;
-    emit(
-      state.copyWith(
-        playing: event.info.playing,
-        position: event.info.position,
-      ),
-    );
-    final player = state.player;
-    if (event.info.playing) {
-      await player.play();
+    _draggingVideoSlider = true;
+    await _onDraggingPositionChange(event.position, emit);
+    _draggingVideoSlider = false;
+    final playing = event.playing;
+    emit(state.as<PlayerDataState>()?.copyWith(playing: playing) ?? state);
+    final player = state.as<PlayerDataState>()?.player;
+    if (playing) {
+      await player?.play();
     } else {
-      await player.pause();
+      await player?.pause();
     }
-    await player.seekTo(event.info.position);
   }
 
-  void _onAppInactive(HubAppInactiveEvent event) {
+  void _onAppPause(HubAppPauseEvent event) {
     final state = this.state.as<PlayerDataState>();
     final media = _media;
     final PlayerMediaInfo? playerInfo;
@@ -122,7 +138,7 @@ class PlayerBloc extends PlayerBlocType {
     var dataState = state.as<PlayerDataState>();
     if (dataState == null) return;
     if (dataState.selectedSubtitleIndex == event.index) return;
-    _spot = _spotSentence(dataState.position, dataState.subtitle?.sentenceList);
+
     dataState = dataState.copyWith(
       selectedSubtitleIndex: () => event.index,
       subtitleListVisible: false,
@@ -266,62 +282,72 @@ class PlayerBloc extends PlayerBlocType {
     if (_media == null) return;
     //Seperate dragging and playing position change listener
     if (_draggingVideoSlider) return;
+
     var state = this.state;
     if (state is! PlayerDataState) return;
-
-    if (event.position >= state.duration) {
-      //if video end of duration, play/pause button should update
-      //feature: replay if auto play to end
+    final positionUpdated = _updateWithPosition(
+      position: event.position,
+      emit: emit,
+    );
+    if (positionUpdated.mediaCompleted) {
+      //audo re-play media
       state = state.copyWith(playing: true);
       emit(state);
       await state.player.seekTo(const Duration(seconds: 0));
       await state.player.play();
     }
-
-    //handle loop reseek
-    final loopIndex = state.loopIndex;
-    final loopSentence = loopIndex == null
-        ? null
-        : state.subtitle?.sentenceList[loopIndex];
-    if (loopSentence != null) {
-      //if repeat one is turn on, while sentence finished, seek to beginning
-      // debugPrint('position changing loop $sentence');
-      if (event.position > loopSentence.end) {
-        await state.player.seekTo(loopSentence.start);
+    final completedLoopSentence = positionUpdated.completedLoopSentence;
+    if (completedLoopSentence != null) {
+      //reseek loop sentence
+      await state.player.seekTo(completedLoopSentence.start);
+    }
+    if (positionUpdated.sentenceChanged) {
+      //handle scroll
+      if (state.loopIndex == null) {
+        //playing auto scroll to next sentence, not for loop mode
+        state.scroller.safeScrollTo(
+          _spot?.index,
+          alignment: _spot?.alignment ?? 0,
+        );
       }
     }
-
-    final scroller = state.scroller;
-    _syncCommonStatWithPosition(event.position, emit, () {
-      //handle scroll
-      if (loopIndex == null) {
-        //playing auto scroll to next sentence, not for loop mode
-        scroller.safeScrollTo(_spot?.index, alignment: _spot?.alignment ?? 0);
-      }
-    });
   }
 
   Future<void> _onDraggingPositionChange(
     Duration position,
     Emitter<PlayerState> emit,
   ) async {
-    if (!_draggingVideoSlider) return;
-    final state = this.state;
-    if (state is! PlayerDataState) return;
-    await state.player.seekTo(position);
-    _syncCommonStatWithPosition(position, emit, () {
+    await state.as<PlayerDataState>()?.player.seekTo(position);
+    final positionUpdatedResult = _updateWithPosition(
+      position: position,
+      emit: emit,
+    );
+    if (state.as<PlayerDataState>()?.loopIndex != null) {
+      emit(state.as<PlayerDataState>()?.copyWith(loopIndex: () => _spot?.index) ?? state);
+    }
+    if (positionUpdatedResult.sentenceChanged) {
       //handle scroll
-      state.scroller.safeJumpTo(_spot?.index, alignment: _spot?.alignment ?? 0);
-    });
+      final spot = _spot;
+      if (spot != null) {
+        state.as<PlayerDataState>()?.scroller.safeJumpTo(
+          spot.index,
+          alignment: spot.alignment,
+        );
+      }
+    }
   }
 
-  void _syncCommonStatWithPosition(
-    Duration position,
-    Emitter<PlayerState> emit,
-    void Function() sentenceChangeCallback,
-  ) {
+  PositionUpdated _updateWithPosition({
+    required Duration position,
+    required Emitter<PlayerState> emit,
+  }) {
+    var result = (
+      mediaCompleted: false,
+      completedLoopSentence: null,
+      sentenceChanged: false,
+    );
     var state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! PlayerDataState) return result;
 
     final progress = SharedMetadata.instance
         .mediaProgressById(_media?.id)
@@ -332,13 +358,33 @@ class PlayerBloc extends PlayerBlocType {
     state = state.copyWith(position: position);
     emit(state);
 
-    final spot = _spotSentence(position, state.subtitle?.sentenceList);
-    final isSentenceChanged = _spot?.sentence.id != spot?.sentence.id;
-    _spot = spot;
-    if (isSentenceChanged) {
-      EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
-      sentenceChangeCallback();
+    final mediaCompleted = position >= state.duration;
+
+    //handle loop reseek
+    final loopIndex = state.loopIndex;
+    final loopSentence = loopIndex == null
+        ? null
+        : state.subtitle?.sentenceList[loopIndex];
+    SentenceEntity? completedLoopSentence;
+    if (loopSentence != null) {
+      //if repeat one is turn on, while sentence finished, seek to beginning
+      // debugPrint('position changing loop $sentence');
+      if (position > loopSentence.end) {
+        completedLoopSentence = loopSentence;
+      }
     }
+
+    //handle scroll
+    final sentenceChanged = _spot?.sentence.id != _prevSpot?.sentence.id;
+    if (sentenceChanged) {
+      EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
+    }
+    _prevSpot = _spot;
+    return (
+      mediaCompleted: mediaCompleted,
+      completedLoopSentence: completedLoopSentence,
+      sentenceChanged: sentenceChanged,
+    );
   }
 
   @override
@@ -382,7 +428,7 @@ class PlayerBloc extends PlayerBlocType {
     if (state is! PlayerDataState) return;
     if (state.loopIndex == null) {
       //to loop
-      final spot = _spotSentence(state.position, state.subtitle?.sentenceList);
+      final spot = state.subtitle?.sentenceList.spot(state.position);
       emit(state.copyWith(loopIndex: () => spot?.index));
     } else {
       emit(state.copyWith(loopIndex: () => null));
@@ -413,54 +459,13 @@ class PlayerBloc extends PlayerBlocType {
     PlayerVideoSliderEndChangeEvent event,
     Emitter<PlayerState> emit,
   ) async {
-    await defer(
-      () async {
-        _draggingVideoSlider = false;
-      },
-      () async {
-        var state = this.state;
-        if (state is! PlayerDataState) return state;
-        // seek to sentence start
-        final Duration targetPosition;
-        if (state.loopIndex != null) {
-          final spot = _spotSentence(
-            event.position,
-            state.subtitle?.sentenceList,
-          );
-          if (spot == null) {
-            state = state.copyWith(loopIndex: () => null);
-            targetPosition = event.position;
-          } else {
-            state = state.copyWith(loopIndex: () => spot.index);
-            targetPosition = spot.sentence.start;
-          }
-        } else {
-          targetPosition = event.position;
-        }
-        await _onDraggingPositionChange(targetPosition, emit);
-        if (_videoSliderRestorePlaying && event.position < event.duration) {
-          state = state.copyWith(playing: true);
-          await state.player.play();
-        }
-        emit(state);
-      },
-    );
-  }
-
-  ({int index, SentenceEntity sentence})? _spotSentence(
-    Duration position,
-    List<SentenceEntity>? sentenceList,
-  ) {
-    sentenceList ??= [];
-    for (int i = 0; i < sentenceList.length; i++) {
-      SentenceEntity? prev = i == 0 ? null : sentenceList[i - 1];
-      SentenceEntity? next = sentenceList.elementAtOrNull(i + 1);
-      SentenceEntity sentence = sentenceList[i];
-      if (sentence.playing(prev, next, position)) {
-        return (index: i, sentence: sentence);
-      }
+    await _onDraggingPositionChange(event.position, emit);
+    _draggingVideoSlider = false;
+    if (event.position < event.duration &&
+        _videoSliderRestorePlaying) {
+      emit(state.as<PlayerDataState>()?.copyWith(playing: true) ?? state);
+      await state.as<PlayerDataState>()?.player.play();
     }
-    return null;
   }
 
   void _onResetSpeed(
@@ -551,8 +556,7 @@ class PlayerBloc extends PlayerBlocType {
         : subtitleList.elementAtOrNull(selectedSubtitleIndex);
     progress = progress.copyWith(subtitleName: () => subtitle?.name);
     SharedMetadata.instance.updateMediaProgress(progress);
-    final spot = _spotSentence(position, subtitle?.sentenceList);
-    _spot = spot;
+    final spot = subtitle?.sentenceList.spot(position);
     EventHub.emit(HubPlayingSentenceChangeEvent(spot?.sentence.id));
     final PlayerSubtitleState subtitleState;
     if (spot == null || subtitle == null) {
@@ -633,6 +637,20 @@ extension on SentenceEntity {
   }
 }
 
-extension on ({int index, SentenceEntity sentence}) {
+extension on SpotType {
   double get alignment => index == 0 ? 0 : 0.3;
+}
+
+extension on List<SentenceEntity> {
+  SpotType? spot(Duration position) {
+    for (int i = 0; i < length; i++) {
+      SentenceEntity? prev = i == 0 ? null : this[i - 1];
+      SentenceEntity? next = elementAtOrNull(i + 1);
+      SentenceEntity sentence = this[i];
+      if (sentence.playing(prev, next, position)) {
+        return (index: i, sentence: sentence);
+      }
+    }
+    return null;
+  }
 }
