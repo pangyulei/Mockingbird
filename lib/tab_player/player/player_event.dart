@@ -58,9 +58,9 @@ class PlayerVolumeChangeEvent extends PlayerEvent {
   const PlayerVolumeChangeEvent(this.volume);
 }
 
-class PlayerPositionChangeEvent extends PlayerEvent {
+class PlayerPositionChangeByPlayingEvent extends PlayerEvent {
   final Duration position;
-  const PlayerPositionChangeEvent(this.position);
+  const PlayerPositionChangeByPlayingEvent(this.position);
 }
 
 class PlayerToggleVolumeEvent extends PlayerEvent {
@@ -91,20 +91,20 @@ class PlayerResetSpeedEvent extends PlayerEvent {
   const PlayerResetSpeedEvent();
 }
 
-class PlayerVideoSliderStartChangeEvent extends PlayerEvent {
+class PlayerMediaSliderStartChangeEvent extends PlayerEvent {
   final Duration position;
   final Duration duration;
-  const PlayerVideoSliderStartChangeEvent(this.position, this.duration);
+  const PlayerMediaSliderStartChangeEvent(this.position, this.duration);
 }
 
-class PlayerVideoSliderChangingEvent extends PlayerEvent {
+class PlayerMediaSliderChangingEvent extends PlayerEvent {
   final Duration position;
   final Duration duration;
-  const PlayerVideoSliderChangingEvent(this.position, this.duration);
+  const PlayerMediaSliderChangingEvent(this.position, this.duration);
 }
 
-class PlayerVideoSliderEndChangeEvent extends PlayerEvent {
+class PlayerMediaSliderEndChangeEvent extends PlayerEvent {
   final Duration position;
   final Duration duration;
-  const PlayerVideoSliderEndChangeEvent(this.position, this.duration);
+  const PlayerMediaSliderEndChangeEvent(this.position, this.duration);
 }

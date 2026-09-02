@@ -39,8 +39,7 @@ typedef PositionUpdated = ({
 });
 
 class PlayerBloc extends PlayerBlocType {
-  bool _draggingVideoSlider = false;
-  bool _videoSliderRestorePlaying = false;
+  bool _mediaPlayingBeforeDrag = false;
   AssetEntity? _media;
 
   SpotType? get _spot {
@@ -66,7 +65,7 @@ class PlayerBloc extends PlayerBlocType {
     on<PlayerScrollToBottomEvent>(_onScrollToBottom);
     on<PlayerScrollToPlayingSentenceEvent>(_onScrollToPlayingSentence);
     on<PlayerGoToAlbumListEvent>(_onGoToAlbumList);
-    on<PlayerPositionChangeEvent>(_onPlayingPositionChange);
+    on<PlayerPositionChangeByPlayingEvent>(_onPositionChangeByPlaying);
     on<PlayerToggleVolumeEvent>(_onToggleVolume);
     on<PlayerPauseEvent>(_onPause);
     on<PlayerPlayEvent>(_onPlay);
@@ -74,9 +73,9 @@ class PlayerBloc extends PlayerBlocType {
     on<PlayerResetSpeedEvent>(_onResetSpeed);
     on<PlayerIncSpeedEvent>(_onIncSpeed);
     on<PlayerDecSpeedEvent>(_onDecSpeed);
-    on<PlayerVideoSliderStartChangeEvent>(_onVideoSliderStartChange);
-    on<PlayerVideoSliderChangingEvent>(_onVideoSliderChanging);
-    on<PlayerVideoSliderEndChangeEvent>(_onVideoSliderEndChange);
+    on<PlayerMediaSliderStartChangeEvent>(_onMediaSliderStartChange);
+    on<PlayerMediaSliderChangingEvent>(_onMediaSliderChanging);
+    on<PlayerMediaSliderEndChangeEvent>(_onMediaSliderEndChange);
     on<PlayerVolumeChangeEvent>(_onVolumeChange);
     on<PlayerSyncFromBackgroundAudioEvent>(_onSyncFromBackgroundAudio);
     _subscriptionList.addAll([
@@ -99,16 +98,22 @@ class PlayerBloc extends PlayerBlocType {
     PlayerSyncFromBackgroundAudioEvent event,
     Emitter<PlayerState> emit,
   ) async {
-    _draggingVideoSlider = true;
-    await _onDraggingPositionChange(event.position, emit);
-    _draggingVideoSlider = false;
+    var state = this.state;
+    if (state is! PlayerDataState) return;
+    final player = state.player;
+    state = state.copyWith(playing: false);
+    emit(state);
+    await player.pause();
+
+    await _onPositionChangeByDragging(event.position, emit);
+
     final playing = event.playing;
-    emit(state.as<PlayerDataState>()?.copyWith(playing: playing) ?? state);
-    final player = state.as<PlayerDataState>()?.player;
+    state = state.copyWith(playing: playing);
+    emit(state);
     if (playing) {
-      await player?.play();
+      await player.play();
     } else {
-      await player?.pause();
+      await player.pause();
     }
   }
 
@@ -274,18 +279,18 @@ class PlayerBloc extends PlayerBlocType {
     await dataState.player.setVolume(event.volume);
   }
 
-  void _onPlayingPositionChange(
-    PlayerPositionChangeEvent event,
+  void _onPositionChangeByPlaying(
+    PlayerPositionChangeByPlayingEvent event,
     Emitter<PlayerState> emit,
   ) async {
     //Fix switch media, old listener still execute bug
     if (_media == null) return;
     //Seperate dragging and playing position change listener
-    if (_draggingVideoSlider) return;
 
     var state = this.state;
     if (state is! PlayerDataState) return;
-    final positionUpdated = _updateWithPosition(
+    if (!state.playing) return;
+    final positionUpdated = _updatePropertiesWithPosition(
       position: event.position,
       emit: emit,
     );
@@ -313,17 +318,21 @@ class PlayerBloc extends PlayerBlocType {
     }
   }
 
-  Future<void> _onDraggingPositionChange(
+  Future<void> _onPositionChangeByDragging(
     Duration position,
     Emitter<PlayerState> emit,
   ) async {
-    await state.as<PlayerDataState>()?.player.seekTo(position);
-    final positionUpdatedResult = _updateWithPosition(
+    final player = state.as<PlayerDataState>()?.player;
+    await player?.seekTo(position);
+    final positionUpdatedResult = _updatePropertiesWithPosition(
       position: position,
       emit: emit,
     );
     if (state.as<PlayerDataState>()?.loopIndex != null) {
-      emit(state.as<PlayerDataState>()?.copyWith(loopIndex: () => _spot?.index) ?? state);
+      emit(
+        state.as<PlayerDataState>()?.copyWith(loopIndex: () => _spot?.index) ??
+            state,
+      );
     }
     if (positionUpdatedResult.sentenceChanged) {
       //handle scroll
@@ -337,7 +346,7 @@ class PlayerBloc extends PlayerBlocType {
     }
   }
 
-  PositionUpdated _updateWithPosition({
+  PositionUpdated _updatePropertiesWithPosition({
     required Duration position,
     required Emitter<PlayerState> emit,
   }) {
@@ -435,36 +444,35 @@ class PlayerBloc extends PlayerBlocType {
     }
   }
 
-  void _onVideoSliderStartChange(
-    PlayerVideoSliderStartChangeEvent event,
+  void _onMediaSliderStartChange(
+    PlayerMediaSliderStartChangeEvent event,
     Emitter<PlayerState> emit,
   ) async {
     final state = this.state;
     if (state is! PlayerDataState) return;
-    _draggingVideoSlider = true;
-    _videoSliderRestorePlaying = state.playing;
+    _mediaPlayingBeforeDrag = state.playing;
     emit(state.copyWith(playing: false));
     await state.player.pause();
-    await _onDraggingPositionChange(event.position, emit);
+    await _onPositionChangeByDragging(event.position, emit);
   }
 
-  void _onVideoSliderChanging(
-    PlayerVideoSliderChangingEvent event,
+  void _onMediaSliderChanging(
+    PlayerMediaSliderChangingEvent event,
     Emitter<PlayerState> emit,
   ) async {
-    await _onDraggingPositionChange(event.position, emit);
+    await _onPositionChangeByDragging(event.position, emit);
   }
 
-  void _onVideoSliderEndChange(
-    PlayerVideoSliderEndChangeEvent event,
+  void _onMediaSliderEndChange(
+    PlayerMediaSliderEndChangeEvent event,
     Emitter<PlayerState> emit,
   ) async {
-    await _onDraggingPositionChange(event.position, emit);
-    _draggingVideoSlider = false;
-    if (event.position < event.duration &&
-        _videoSliderRestorePlaying) {
-      emit(state.as<PlayerDataState>()?.copyWith(playing: true) ?? state);
-      await state.as<PlayerDataState>()?.player.play();
+    var state = this.state;
+    if (state is! PlayerDataState) return;
+    await _onPositionChangeByDragging(event.position, emit);
+    if (event.position < event.duration && _mediaPlayingBeforeDrag) {
+      emit(state.copyWith(playing: true));
+      await state.player.play();
     }
   }
 
@@ -530,7 +538,7 @@ class PlayerBloc extends PlayerBlocType {
     final player = VideoPlayerController.file(mediaFile);
     await player.initialize();
     player.addListener(
-      () => add(PlayerPositionChangeEvent(player.value.position)),
+      () => add(PlayerPositionChangeByPlayingEvent(player.value.position)),
     );
     final title = await media.titleAsync;
     final subtitleList = await media.subtitleList;

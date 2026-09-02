@@ -99,26 +99,13 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     debugPrint(
       'Syncing back to player UI: playing=$playing, position=${position.desc}',
     );
-    await _reset();
+    //remove mediaItem, stop audio player
+    mediaItem.add(null);
+    await _audioPlayer.stop();
+    //emit event, player may start to play
     EventHub.emit(
       HubSyncBackgroundAudioToPlayerEvent(playing: playing, position: position),
     );
-  }
-
-  Future<void> _reset() async {
-    mediaItem.add(null);
-    // playbackState.add(
-    //   playbackState.value.copyWith(
-    //     controls: const [],
-    //     systemActions: const {},
-    //     androidCompactActionIndices: null,
-    //     processingState: AudioProcessingState.idle,
-    //     playing: false,
-    //     updatePosition: const Duration(seconds: 0),
-    //     speed: 1,
-    //   ),
-    // );
-    await _audioPlayer.stop();
   }
 
   @override

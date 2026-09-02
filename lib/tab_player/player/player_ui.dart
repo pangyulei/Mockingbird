@@ -145,7 +145,7 @@ class PlayerUI extends StatelessWidget {
       child: Stack(
         alignment: .center,
         children: [
-          _player(),//TODO make it fit itself aspectratio
+          _player(), //TODO make it fit itself aspectratio
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,
@@ -496,11 +496,12 @@ class PlayerUI extends StatelessWidget {
           final max = duration.inMilliseconds.toDouble();
           final val = position.inMilliseconds.clamp(0, max).toDouble();
           return Slider(
+            allowedInteraction: .slideThumb,
             value: val,
             max: max,
             onChangeStart: (val) {
               context.read<PlayerBlocType>().add(
-                PlayerVideoSliderStartChangeEvent(
+                PlayerMediaSliderStartChangeEvent(
                   Duration(milliseconds: val.toInt()),
                   duration,
                 ),
@@ -508,7 +509,7 @@ class PlayerUI extends StatelessWidget {
             },
             onChanged: (val) {
               context.read<PlayerBlocType>().add(
-                PlayerVideoSliderChangingEvent(
+                PlayerMediaSliderChangingEvent(
                   Duration(milliseconds: val.toInt()),
                   duration,
                 ),
@@ -516,7 +517,7 @@ class PlayerUI extends StatelessWidget {
             },
             onChangeEnd: (val) {
               context.read<PlayerBlocType>().add(
-                PlayerVideoSliderEndChangeEvent(
+                PlayerMediaSliderEndChangeEvent(
                   Duration(milliseconds: val.toInt()),
                   duration,
                 ),
