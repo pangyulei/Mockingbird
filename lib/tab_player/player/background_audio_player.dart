@@ -19,8 +19,6 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   int? _loopIndex;
   List<SentenceEntity> _sentenceList = [];
   Duration _duration = const Duration(seconds: 0);
-  String? _lastMediaId;
-  Uri? _lastArtUri;
 
   BackgroundAudioPlayer() {
     EventHub.on<HubSyncPlayerToBackgroundAudioEvent>(_onSyncFromPlayer);
@@ -75,9 +73,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     _loopIndex = playerInfo.loopIndex;
     _sentenceList = playerInfo.sentenceList;
     _duration = playerInfo.duration;
-    final artUri = _lastMediaId == media.id ? _lastArtUri : (await media.thumbAsync(playerInfo.position))?.uri;
-    _lastMediaId = media.id;
-    _lastArtUri = artUri;
+    final artUri = (await media.thumbAsync(playerInfo.position))?.uri;
     // Update notification UI first to satisfy system requirements immediately
     mediaItem.add(
       MediaItem(
