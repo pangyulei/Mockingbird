@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,9 @@ import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 //TODO handle loop situation
 
@@ -15,11 +19,15 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   int? _loopIndex;
   List<SentenceEntity> _sentenceList = [];
   Duration _duration = const Duration(seconds: 0);
+  String? _lastMediaId;
+  Uri? _lastArtUri;
 
   BackgroundAudioPlayer() {
     EventHub.on<HubSyncPlayerToBackgroundAudioEvent>(_onSyncFromPlayer);
     EventHub.on<HubAppResumeEvent>(_onAppResume);
-    _audioPlayer.speedStream.listen((speed) => playbackState.add(playbackState.value.copyWith(speed: speed)));
+    _audioPlayer.speedStream.listen(
+      (speed) => playbackState.add(playbackState.value.copyWith(speed: speed)),
+    );
     _audioPlayer.positionStream.listen(_onPositionChange);
     _audioPlayer.playerStateStream.listen(_onPlayerStateChange);
   }
@@ -43,9 +51,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   void _onPositionChange(Duration position) async {
     playbackState.add(playbackState.value.copyWith(updatePosition: position));
     //handle loop reseek
-    final loopSentence = _loopIndex == null
-        ? null
-        : _sentenceList.elementAtOrNull(_loopIndex!);
+    final loopSentence = _loopIndex == null ? null : _sentenceList.elementAtOrNull(_loopIndex!);
     if (loopSentence != null && position > loopSentence.end) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       //reseek loop sentence
@@ -69,6 +75,9 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     _loopIndex = playerInfo.loopIndex;
     _sentenceList = playerInfo.sentenceList;
     _duration = playerInfo.duration;
+    final artUri = _lastMediaId == media.id ? _lastArtUri : (await media.thumbAsync(playerInfo.position))?.uri;
+    _lastMediaId = media.id;
+    _lastArtUri = artUri;
     // Update notification UI first to satisfy system requirements immediately
     mediaItem.add(
       MediaItem(
@@ -76,7 +85,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
         title: await media.titleAsync,
         album: album,
         duration: playerInfo.duration,
-        artUri: null, //TODO fix artUri
+        artUri: artUri,
       ),
     );
     // playbackState.add(
@@ -120,15 +129,17 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     if (!mediaItem.hasValue) return;
     final playing = playbackState.value.playing;
     final position = playbackState.value.position;
-    debugPrint(
-      'Syncing back to player UI: playing=$playing, position=${position.desc}',
-    );
+    debugPrint('Syncing back to player UI: playing=$playing, position=${position.desc}');
     //remove mediaItem, stop audio player
     mediaItem.add(null);
     await _audioPlayer.stop();
     //emit event, player may start to play
     EventHub.emit(
-      HubSyncBackgroundAudioToPlayerEvent(playing: playing, position: position, loopIndex: _loopIndex),
+      HubSyncBackgroundAudioToPlayerEvent(
+        playing: playing,
+        position: position,
+        loopIndex: _loopIndex,
+      ),
     );
   }
 
@@ -162,4 +173,28 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   //   );
   //   await super.stop();
   // }
+}
+extension on AssetEntity {
+  Future<File?> thumbAsync(Duration position) async {
+    final file = await this.file;
+    if (file == null) return null;
+
+    final thumbData = await VideoThumbnail.thumbnailData(
+      video: file.path,
+      imageFormat: ImageFormat.JPEG,
+      timeMs: position.inMilliseconds,
+      maxWidth: 300,
+      quality: 75,
+    );
+
+    if (thumbData == null) return null;
+
+    final dir = await getTemporaryDirectory();
+    final title = await titleAsync;
+    final fileName = '$title-${size.width}x${size.height}-${DateTime.now()
+        .millisecondsSinceEpoch}';
+    final thumbFile = File(p.join(dir.path, fileName));
+    await thumbFile.writeAsBytes(thumbData, flush: true);
+    return thumbFile;
+  }
 }
