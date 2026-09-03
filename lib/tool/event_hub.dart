@@ -54,7 +54,7 @@ class PlayerInfo {
       position: position,
       duration: duration,
       speed: speed,
-      loopIndex: loopIndex?.call() ?? this.loopIndex,//TODO all copyWith use this pattern
+      loopIndex: loopIndex?.call() ?? this.loopIndex,
       sentenceList: sentenceList,
     );
   }

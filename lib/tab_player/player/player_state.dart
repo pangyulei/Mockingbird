@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/db/entities/subtitle_entity.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -24,6 +26,7 @@ class PlayerDataState extends PlayerState {
   final Duration duration;
   final double volume;
   final double speed;
+  final double aspectRatio;
   final bool volumeSliderVisible;
   final AssetType mediaType;
   final bool subtitleListVisible;
@@ -34,6 +37,7 @@ class PlayerDataState extends PlayerState {
   final ItemScrollController scroller;
   final bool subtitleListButtonVisible;
   const PlayerDataState({
+    required this.aspectRatio,
     required this.subtitleListButtonVisible,
     required this.subtitleList,
     required this.selectedSubtitleIndex,
@@ -55,6 +59,7 @@ class PlayerDataState extends PlayerState {
   PlayerDataState copyWith({
     int? Function()? loopIndex,
     bool? playing,
+    double? aspectRatio,
     double? volume,
     double? speed,
     PlayerSubtitleState? subtitleState,
@@ -69,14 +74,14 @@ class PlayerDataState extends PlayerState {
     List<SubtitleEntity>? subtitleList,
   }) {
     return PlayerDataState(
+      aspectRatio: aspectRatio ?? this.aspectRatio,
       subtitleListButtonVisible:
           subtitleListButtonVisible ?? this.subtitleListButtonVisible,
       subtitleList: subtitleList ?? this.subtitleList,
-      selectedSubtitleIndex: selectedSubtitleIndex == null
-          ? this.selectedSubtitleIndex
-          : selectedSubtitleIndex(),
+      selectedSubtitleIndex:
+          selectedSubtitleIndex?.call() ?? this.selectedSubtitleIndex,
       subtitleListVisible: subtitleListVisible ?? this.subtitleListVisible,
-      loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
+      loopIndex: loopIndex?.call() ?? this.loopIndex,
       playing: playing ?? this.playing,
       title: title ?? this.title,
       mediaType: mediaType ?? this.mediaType,
@@ -111,7 +116,7 @@ class PlayerSubtitleDataState extends PlayerSubtitleState {
   final double initialAlignment;
   final int initialIndex;
   const PlayerSubtitleDataState(
-    this.sentenceList, 
+    this.sentenceList,
     this.initialAlignment,
     this.initialIndex,
   );

@@ -1,74 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mockingbird/tab_settings/about/about_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mockingbird/tab_settings/about/about_bloc.dart';
 
-class AboutUI extends ConsumerWidget {
+class AboutUI extends StatelessWidget {
   const AboutUI({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('About')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
+    return BlocProvider(
+      create: (context) => AboutBloc(),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('About')),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.auto_stories_rounded,
+                  size: 80,
+                  color: colorScheme.primary,
+                ),
               ),
-              child: Icon(
-                Icons.auto_stories_rounded,
-                size: 80,
-                color: colorScheme.primary,
+              const SizedBox(height: 24),
+              Builder(
+                builder: (context) {
+                  final appName = context.select<AboutBloc, String>(
+                    (bloc) => bloc.state.appName,
+                  );
+                  return Text(
+                    appName,
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
+                  );
+                },
               ),
-            ),
-            const SizedBox(height: 24),
-            Consumer(
-              builder: (context, ref, child) {
-                final appName = ref.watch(
-                  aboutProvider.select((st) => st.value?.appName ?? ''),
-                );
-                return Text(
-                  appName,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: colorScheme.onSurface,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-            Consumer(
-              builder: (context, ref, child) {
-                final version = ref.watch(
-                  aboutProvider.select((st) => st.value?.version ?? ''),
-                );
-                return Text(
-                  'Version $version',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.outline,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 32),
-            Text(
-              'A language shadowing app designed to help you master new languages through deliberate practice.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
-            ),
-            const SizedBox(height: 48),
-            _contactSection(context),
-          ],
+              const SizedBox(height: 8),
+              Builder(
+                builder: (context) {
+                  final version = context.select<AboutBloc, String>(
+                    (bloc) => bloc.state.version,
+                  );
+                  return Text(
+                    'Version $version',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.outline,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 32),
+              Text(
+                'A language shadowing app designed to help you master new languages through deliberate practice.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(height: 1.5),
+              ),
+              const SizedBox(height: 48),
+              _contactSection(context),
+            ],
+          ),
         ),
       ),
     );

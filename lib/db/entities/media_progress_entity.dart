@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:objectbox/objectbox.dart';
 
 @Entity()
@@ -22,7 +24,7 @@ class MediaProgressEntity {
   }) {
     return MediaProgressEntity(
       id: id,
-      subtitleName: subtitleName == null ? this.subtitleName : subtitleName(),
+      subtitleName: subtitleName?.call() ?? this.subtitleName,
       positionMs: positionMs ?? this.positionMs,
       mediaId: mediaId ?? this.mediaId,
     );

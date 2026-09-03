@@ -510,6 +510,7 @@ class PlayerBloc extends PlayerBlocType {
       subtitleState = PlayerSubtitleDataState(subtitle.sentenceList, spot.alignment, spot.index);
     }
     return PlayerDataState(
+      aspectRatio: player.value.aspectRatio,
       subtitleList: subtitleList,
       selectedSubtitleIndex: selectedSubtitleIndex,
       subtitleListVisible: false,

@@ -1,22 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mockingbird/app/app_route.dart';
 
-class AppUI extends ConsumerStatefulWidget {
+class AppUI extends StatelessWidget {
   const AppUI({super.key});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => AppUIState();
-}
-
-class AppUIState extends ConsumerState<AppUI> {
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   Permission.notification.request();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +23,6 @@ class AppUIState extends ConsumerState<AppUI> {
     );
   }
 
-  //TODO provide OperaGX like theme change at setting page
   ThemeData _theme() {
     const background = Color(0xFF0E1621);
     const surface = Color(0xFF17212B);

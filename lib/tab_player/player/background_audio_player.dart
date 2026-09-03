@@ -12,8 +12,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
-//TODO handle loop situation
-
 class BackgroundAudioPlayer extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
   PlayerInfo? _playerInfo;
@@ -115,7 +113,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onAppResume(HubAppResumeEvent event) async {
-    if (mediaItem.valueOrNull == null) return; //TODO wrong judgement condition
+    if (mediaItem.valueOrNull == null) return; 
     final playing = playbackState.value.playing;
     final position = playbackState.value.position;
     debugPrint(

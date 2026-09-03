@@ -145,7 +145,15 @@ class PlayerUI extends StatelessWidget {
       child: Stack(
         alignment: .center,
         children: [
-          _player(), //TODO make it fit itself aspectratio
+          Builder(
+            builder: (context) {
+              final aspectRatio = context.select<PlayerBlocType, double>(
+                (bloc) =>
+                    bloc.state.as<PlayerDataState>()?.aspectRatio ?? 16 / 9,
+              );
+              return AspectRatio(aspectRatio: aspectRatio, child: _player());
+            },
+          ),
           _gradientDisplayerOverlay(),
           Row(
             mainAxisAlignment: .center,

@@ -17,8 +17,8 @@ class PlayerSubtitleListUI extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    return BlocProvider(
-      create: (context) => _bloc,
+    return BlocProvider.value(
+      value: _bloc,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20),
         decoration: BoxDecoration(

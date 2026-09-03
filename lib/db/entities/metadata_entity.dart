@@ -1,3 +1,5 @@
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:collection/collection.dart';
 import 'package:mockingbird/db/entities/media_progress_entity.dart';
 import 'package:mockingbird/tool/extensions.dart';
@@ -30,9 +32,7 @@ class MetadataEntity {
       id: id,
       databaseVersion: databaseVersion ?? this.databaseVersion,
       permissionRequested: permissionRequested ?? this.permissionRequested,
-      playingMediaId: playingMediaId == null
-          ? this.playingMediaId
-          : playingMediaId(),
+      playingMediaId: playingMediaId?.call() ?? this.playingMediaId,
     );
     metadata.mediaProgressList.addAll(
       mediaProgressList ?? this.mediaProgressList,

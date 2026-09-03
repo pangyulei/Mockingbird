@@ -12,8 +12,8 @@ class AlbumCardUI extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return BlocProvider(
-      create: (context) => _bloc,
+    return BlocProvider.value(
+      value: _bloc,
       child: Builder(
         builder: (context) => InkWell(
           onTap: () =>
