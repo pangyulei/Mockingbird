@@ -26,8 +26,7 @@ class HubSubtitleChangeEvent extends HubEvent {
   const HubSubtitleChangeEvent(this.index);
 }
 
-
-class PlayerMediaInfo {
+class PlayerInfo {
   final AssetEntity media;
   final bool playing;
   final Duration position;
@@ -36,7 +35,8 @@ class PlayerMediaInfo {
   final double volume;
   final int? loopIndex;
   final List<SentenceEntity> sentenceList;
-  const PlayerMediaInfo({
+
+  const PlayerInfo({
     required this.media,
     required this.volume,
     required this.playing,
@@ -44,12 +44,25 @@ class PlayerMediaInfo {
     required this.duration,
     required this.speed,
     required this.loopIndex,
-    required this.sentenceList
+    required this.sentenceList,
   });
+  PlayerInfo copyWith({int? Function()? loopIndex}) {
+    return PlayerInfo(
+      media: media,
+      volume: volume,
+      playing: playing,
+      position: position,
+      duration: duration,
+      speed: speed,
+      loopIndex: loopIndex?.call() ?? this.loopIndex,//TODO all copyWith use this pattern
+      sentenceList: sentenceList,
+    );
+  }
 }
 
 class HubSyncPlayerToBackgroundAudioEvent extends HubEvent {
-  final PlayerMediaInfo? info;
+  final PlayerInfo? info;
+
   const HubSyncPlayerToBackgroundAudioEvent(this.info);
 }
 
@@ -57,6 +70,7 @@ class HubSyncBackgroundAudioToPlayerEvent extends HubEvent {
   final bool playing;
   final Duration position;
   final int? loopIndex;
+
   const HubSyncBackgroundAudioToPlayerEvent({
     required this.playing,
     required this.position,
@@ -77,7 +91,6 @@ class EventHub {
 
   static void emit(HubEvent event) => _behaviorSubject.add(event);
 
-  static StreamSubscription<T> on<T extends HubEvent>(
-    void Function(T event) f,
-  ) => _behaviorSubject.stream.where((e) => e is T).cast<T>().listen(f);
+  static StreamSubscription<T> on<T extends HubEvent>(void Function(T event) f) =>
+      _behaviorSubject.stream.where((e) => e is T).cast<T>().listen(f);
 }

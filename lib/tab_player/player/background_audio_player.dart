@@ -16,25 +16,31 @@ import 'package:video_thumbnail/video_thumbnail.dart';
 
 class BackgroundAudioPlayer extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
-  int? _loopIndex;
-  List<SentenceEntity> _sentenceList = [];
-  Duration _duration = const Duration(seconds: 0);
+  PlayerInfo? _playerInfo;
 
   BackgroundAudioPlayer() {
     EventHub.on<HubSyncPlayerToBackgroundAudioEvent>(_onSyncFromPlayer);
     EventHub.on<HubAppResumeEvent>(_onAppResume);
-    _audioPlayer.speedStream.listen(
-      (speed) => playbackState.add(playbackState.value.copyWith(speed: speed)),
-    );
+    _audioPlayer.speedStream.listen((speed) {
+      if (_playerInfo == null) return;
+      playbackState.add(playbackState.value.copyWith(speed: speed));
+    });
     _audioPlayer.positionStream.listen(_onPositionChange);
     _audioPlayer.playerStateStream.listen(_onPlayerStateChange);
   }
 
   void _onPlayerStateChange(PlayerState state) {
+    if (_playerInfo == null) return;
+    final controls = [state.playing ? MediaControl.pause : MediaControl
+        .play];
+    final systemActions = const { MediaAction.playPause } ;
+    final androidCompactActionIndices = const [0];
     playbackState.add(
       playbackState.value.copyWith(
         playing: state.playing,
-        controls: [state.playing ? MediaControl.pause : MediaControl.play],
+        controls: controls,
+        systemActions: systemActions,
+        androidCompactActionIndices: androidCompactActionIndices,
         processingState: switch (state.processingState) {
           ProcessingState.idle => AudioProcessingState.idle,
           ProcessingState.loading => AudioProcessingState.loading,
@@ -47,9 +53,13 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onPositionChange(Duration position) async {
+    final playerInfo = _playerInfo;
+    if (playerInfo == null) return;
     playbackState.add(playbackState.value.copyWith(updatePosition: position));
     //handle loop reseek
-    final loopSentence = _loopIndex == null ? null : _sentenceList.elementAtOrNull(_loopIndex!);
+    final loopSentence = playerInfo.loopIndex == null ? null : playerInfo.sentenceList
+        .elementAtOrNull
+      (playerInfo.loopIndex!);
     if (loopSentence != null && position > loopSentence.end) {
       //if repeat one is turn on, while sentence finished, seek to beginning
       //reseek loop sentence
@@ -57,7 +67,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
       await _audioPlayer.seek(loopSentence.start);
     }
     //if position >= duration, replay
-    if (position >= _duration) {
+    if (position >= playerInfo.duration) {
       _audioPlayer.seek(const Duration(seconds: 0));
       await _audioPlayer.play();
     }
@@ -65,14 +75,12 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
 
   void _onSyncFromPlayer(HubSyncPlayerToBackgroundAudioEvent event) async {
     final playerInfo = event.info;
+    _playerInfo = playerInfo;
     final mediaFile = await playerInfo?.media.file;
     final path = mediaFile?.path;
     if (playerInfo == null || path == null) return;
     final media = playerInfo.media;
     final album = p.basename(p.dirname(path));
-    _loopIndex = playerInfo.loopIndex;
-    _sentenceList = playerInfo.sentenceList;
-    _duration = playerInfo.duration;
     final artUri = (await media.thumbAsync(playerInfo.position))?.uri;
     // Update notification UI first to satisfy system requirements immediately
     mediaItem.add(
@@ -84,29 +92,6 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
         artUri: artUri,
       ),
     );
-    // playbackState.add(
-    //   playbackState.value.copyWith(
-    //     controls: [
-    //       // MediaControl.skipToPrevious,
-    //       // if (playing) MediaControl.pause else MediaControl.play,
-    //       playerInfo.playing ? MediaControl.pause : MediaControl.play,
-    //       // MediaControl.stop,
-    //       // MediaControl.skipToNext,
-    //     ],
-    //     systemActions: const {
-    //       // MediaAction.seek,
-    //       MediaAction.playPause,
-    //       // MediaAction.skipToNext,
-    //       // MediaAction.skipToPrevious,
-    //     },
-    //     // androidCompactActionIndices: const [0, 1, 3],
-    //     androidCompactActionIndices: const [0],
-    //     processingState: AudioProcessingState.ready,
-    //     playing: playerInfo.playing,
-    //     updatePosition: playerInfo.position,
-    //     speed: playerInfo.speed,
-    //   ),
-    // );
 
     // Fix mediaItem not showing, audioPlayer control codes, must below updateItem
     // Then setup the audio engine
@@ -122,7 +107,8 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onAppResume(HubAppResumeEvent event) async {
-    if (!mediaItem.hasValue) return;
+    final playerInfo = _playerInfo;
+    if (playerInfo == null) return; //TODO wrong judgement condition
     final playing = playbackState.value.playing;
     final position = playbackState.value.position;
     debugPrint('Syncing back to player UI: playing=$playing, position=${position.desc}');
@@ -134,9 +120,10 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
       HubSyncBackgroundAudioToPlayerEvent(
         playing: playing,
         position: position,
-        loopIndex: _loopIndex,
+        loopIndex: playerInfo.loopIndex,
       ),
     );
+    _playerInfo = null;
   }
 
   @override
@@ -151,9 +138,9 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
 
   @override
   Future<void> seek(Duration position) async {
-    if (_loopIndex != null) {
-      final spot = _sentenceList.spot(position);
-      _loopIndex = spot?.index;
+    if (_playerInfo?.loopIndex != null) {
+      final spot = _playerInfo?.sentenceList.spot(position);
+      _playerInfo?.copyWith(loopIndex: ()=>spot?.index);
     }
     await _audioPlayer.seek(position);
   }
