@@ -14,42 +14,49 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
   int? _loopIndex;
   List<SentenceEntity> _sentenceList = [];
+  Duration _duration = const Duration(seconds: 0);
 
   BackgroundAudioPlayer() {
     EventHub.on<HubSyncPlayerToBackgroundAudioEvent>(_onSyncFromPlayer);
     EventHub.on<HubAppResumeEvent>(_onAppResume);
-    _audioPlayer.speedStream.listen((speed) {
-      playbackState.add(playbackState.value.copyWith(speed: speed));
-    });
-    _audioPlayer.positionStream.listen((position) async {
-      playbackState.add(playbackState.value.copyWith(updatePosition: position));
-      //handle loop reseek
-      final loopSentence = _loopIndex == null
-          ? null
-          : _sentenceList.elementAtOrNull(_loopIndex!);
-      if (loopSentence != null && position > loopSentence.end) {
-        //if repeat one is turn on, while sentence finished, seek to beginning
-        //reseek loop sentence
-        // await _audioPlayer.seekTo(completedLoopSentence.start);
-        await _audioPlayer.seek(loopSentence.start);
-      }
-    });
-    _audioPlayer.playerStateStream.listen((state) {
-      final playing = state.playing;
-      playbackState.add(
-        playbackState.value.copyWith(
-          playing: playing,
-          controls: [playing ? MediaControl.pause : MediaControl.play],
-          processingState: switch (state.processingState) {
-            ProcessingState.idle => AudioProcessingState.idle,
-            ProcessingState.loading => AudioProcessingState.loading,
-            ProcessingState.buffering => AudioProcessingState.buffering,
-            ProcessingState.ready => AudioProcessingState.ready,
-            ProcessingState.completed => AudioProcessingState.completed,
-          },
-        ),
-      );
-    });
+    _audioPlayer.speedStream.listen((speed) => playbackState.add(playbackState.value.copyWith(speed: speed)));
+    _audioPlayer.positionStream.listen(_onPositionChange);
+    _audioPlayer.playerStateStream.listen(_onPlayerStateChange);
+  }
+
+  void _onPlayerStateChange(PlayerState state) {
+    playbackState.add(
+      playbackState.value.copyWith(
+        playing: state.playing,
+        controls: [state.playing ? MediaControl.pause : MediaControl.play],
+        processingState: switch (state.processingState) {
+          ProcessingState.idle => AudioProcessingState.idle,
+          ProcessingState.loading => AudioProcessingState.loading,
+          ProcessingState.buffering => AudioProcessingState.buffering,
+          ProcessingState.ready => AudioProcessingState.ready,
+          ProcessingState.completed => AudioProcessingState.completed,
+        },
+      ),
+    );
+  }
+
+  void _onPositionChange(Duration position) async {
+    playbackState.add(playbackState.value.copyWith(updatePosition: position));
+    //handle loop reseek
+    final loopSentence = _loopIndex == null
+        ? null
+        : _sentenceList.elementAtOrNull(_loopIndex!);
+    if (loopSentence != null && position > loopSentence.end) {
+      //if repeat one is turn on, while sentence finished, seek to beginning
+      //reseek loop sentence
+      // await _audioPlayer.seekTo(completedLoopSentence.start);
+      await _audioPlayer.seek(loopSentence.start);
+    }
+    //if position >= duration, replay
+    if (position >= _duration) {
+      _audioPlayer.seek(const Duration(seconds: 0));
+      await _audioPlayer.play();
+    }
   }
 
   void _onSyncFromPlayer(HubSyncPlayerToBackgroundAudioEvent event) async {
@@ -61,6 +68,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     final album = p.basename(p.dirname(path));
     _loopIndex = playerInfo.loopIndex;
     _sentenceList = playerInfo.sentenceList;
+    _duration = playerInfo.duration;
     // Update notification UI first to satisfy system requirements immediately
     mediaItem.add(
       MediaItem(
