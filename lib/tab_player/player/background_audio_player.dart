@@ -22,7 +22,6 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     EventHub.on<HubSyncPlayerToBackgroundAudioEvent>(_onSyncFromPlayer);
     EventHub.on<HubAppResumeEvent>(_onAppResume);
     _audioPlayer.speedStream.listen((speed) {
-      if (_playerInfo == null) return;
       playbackState.add(playbackState.value.copyWith(speed: speed));
     });
     _audioPlayer.positionStream.listen(_onPositionChange);
@@ -30,11 +29,15 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onPlayerStateChange(PlayerState state) {
-    if (_playerInfo == null) return;
-    final controls = [state.playing ? MediaControl.pause : MediaControl
-        .play];
-    final systemActions = const { MediaAction.playPause } ;
-    final androidCompactActionIndices = const [0];
+    final controls = mediaItem.valueOrNull == null
+        ? const <MediaControl>[]
+        : [state.playing ? MediaControl.pause : MediaControl.play];
+    final systemActions = mediaItem.valueOrNull == null
+        ? const <MediaAction>{}
+        : const {MediaAction.playPause};
+    final androidCompactActionIndices = mediaItem.valueOrNull == null
+        ? null
+        : const [0];
     playbackState.add(
       playbackState.value.copyWith(
         playing: state.playing,
@@ -53,23 +56,28 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onPositionChange(Duration position) async {
-    final playerInfo = _playerInfo;
-    if (playerInfo == null) return;
+    // final playerInfo = _playerInfo;
+    // if (playerInfo == null) return;
     playbackState.add(playbackState.value.copyWith(updatePosition: position));
-    //handle loop reseek
-    final loopSentence = playerInfo.loopIndex == null ? null : playerInfo.sentenceList
-        .elementAtOrNull
-      (playerInfo.loopIndex!);
-    if (loopSentence != null && position > loopSentence.end) {
-      //if repeat one is turn on, while sentence finished, seek to beginning
-      //reseek loop sentence
-      // await _audioPlayer.seekTo(completedLoopSentence.start);
-      await _audioPlayer.seek(loopSentence.start);
-    }
-    //if position >= duration, replay
-    if (position >= playerInfo.duration) {
-      _audioPlayer.seek(const Duration(seconds: 0));
-      await _audioPlayer.play();
+
+    final playerInfo = _playerInfo;
+    if (playerInfo != null) {
+      //handle loop reseek
+      final loopIndex = playerInfo.loopIndex;
+      final loopSentence = loopIndex == null
+          ? null
+          : playerInfo.sentenceList.elementAtOrNull(loopIndex);
+      if (loopSentence != null && position > loopSentence.end) {
+        //if repeat one is turn on, while sentence finished, seek to beginning
+        //reseek loop sentence
+        // await _audioPlayer.seekTo(completedLoopSentence.start);
+        await _audioPlayer.seek(loopSentence.start);
+      }
+      //auto-replay, if position >= duration,
+      if (position >= playerInfo.duration) {
+        _audioPlayer.seek(const Duration(seconds: 0));
+        await _audioPlayer.play();
+      }
     }
   }
 
@@ -107,11 +115,12 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onAppResume(HubAppResumeEvent event) async {
-    final playerInfo = _playerInfo;
-    if (playerInfo == null) return; //TODO wrong judgement condition
+    if (mediaItem.valueOrNull == null) return; //TODO wrong judgement condition
     final playing = playbackState.value.playing;
     final position = playbackState.value.position;
-    debugPrint('Syncing back to player UI: playing=$playing, position=${position.desc}');
+    debugPrint(
+      'Syncing back to player UI: playing=$playing, position=${position.desc}',
+    );
     //remove mediaItem, stop audio player
     mediaItem.add(null);
     await _audioPlayer.stop();
@@ -120,10 +129,9 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
       HubSyncBackgroundAudioToPlayerEvent(
         playing: playing,
         position: position,
-        loopIndex: playerInfo.loopIndex,
+        loopIndex: _playerInfo?.loopIndex,
       ),
     );
-    _playerInfo = null;
   }
 
   @override
@@ -140,7 +148,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   Future<void> seek(Duration position) async {
     if (_playerInfo?.loopIndex != null) {
       final spot = _playerInfo?.sentenceList.spot(position);
-      _playerInfo?.copyWith(loopIndex: ()=>spot?.index);
+      _playerInfo?.copyWith(loopIndex: () => spot?.index);
     }
     await _audioPlayer.seek(position);
   }
@@ -157,6 +165,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   //   await super.stop();
   // }
 }
+
 extension on AssetEntity {
   Future<File?> thumbAsync(Duration position) async {
     final file = await this.file;
@@ -174,8 +183,8 @@ extension on AssetEntity {
 
     final dir = await getTemporaryDirectory();
     final title = await titleAsync;
-    final fileName = '$title-${size.width}x${size.height}-${DateTime.now()
-        .millisecondsSinceEpoch}';
+    final fileName =
+        '$title-${size.width}x${size.height}-${DateTime.now().millisecondsSinceEpoch}';
     final thumbFile = File(p.join(dir.path, fileName));
     await thumbFile.writeAsBytes(thumbData, flush: true);
     return thumbFile;
