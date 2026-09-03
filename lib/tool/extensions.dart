@@ -6,6 +6,8 @@ import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+import '../db/entities/sentence_entity.dart';
+
 extension ObjectHelper on Object {
   T? as<T>() {
     return (this is T) ? (this as T) : null;
@@ -90,5 +92,31 @@ extension DurationHelper on Duration {
       return '$h:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
     }
     return '$m:${s.toString().padLeft(2, '0')}';
+  }
+}
+
+typedef SpotType = ({int index, SentenceEntity sentence});
+extension SentenceListHelper on List<SentenceEntity> {
+  SpotType? spot(Duration position) {
+    for (int i = 0; i < length; i++) {
+      SentenceEntity? prev = i == 0 ? null : this[i - 1];
+      SentenceEntity? next = elementAtOrNull(i + 1);
+      SentenceEntity sentence = this[i];
+      if (sentence.playing(prev, next, position)) {
+        return (index: i, sentence: sentence);
+      }
+    }
+    return null;
+  }
+}
+
+extension on SentenceEntity {
+  bool playing(SentenceEntity? prev, SentenceEntity? next, Duration position) {
+    final start = prev == null ? const Duration(seconds: 0) : this.start;
+    if (next == null) {
+      return start <= position;
+    } else {
+      return start <= position && position < next.start;
+    }
   }
 }

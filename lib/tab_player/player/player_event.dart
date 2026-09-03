@@ -12,7 +12,9 @@ class PlayerInitEvent extends PlayerEvent {
 class PlayerSyncFromBackgroundAudioEvent extends PlayerEvent {
   final Duration position;
   final bool playing;
+  final int? loopIndex;
   const PlayerSyncFromBackgroundAudioEvent({
+    required this.loopIndex,
     required this.position,
     required this.playing,
   });

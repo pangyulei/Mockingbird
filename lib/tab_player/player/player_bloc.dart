@@ -31,7 +31,6 @@ class SharedPlayerBloc {
   static final instance = PlayerBloc();
 }
 
-typedef SpotType = ({int index, SentenceEntity sentence});
 typedef PositionUpdated = ({
   bool mediaCompleted,
   SentenceEntity? completedLoopSentence,
@@ -86,6 +85,7 @@ class PlayerBloc extends PlayerBlocType {
       EventHub.on<HubSyncBackgroundAudioToPlayerEvent>(
         (event) => add(
           PlayerSyncFromBackgroundAudioEvent(
+            loopIndex: event.loopIndex,
             playing: event.playing,
             position: event.position,
           ),
@@ -108,7 +108,7 @@ class PlayerBloc extends PlayerBlocType {
     await _onPositionChangeByDragging(event.position, emit);
 
     final playing = event.playing;
-    state = state.copyWith(playing: playing);
+    state = state.copyWith(playing: playing, loopIndex: () => event.loopIndex,);
     emit(state);
     if (playing) {
       await player.play();
@@ -131,6 +131,8 @@ class PlayerBloc extends PlayerBlocType {
         position: state.position,
         speed: state.speed,
         volume: state.volume,
+        loopIndex: state.loopIndex,
+        sentenceList: state.subtitle?.sentenceList ?? const [],
       );
     }
     EventHub.emit(HubSyncPlayerToBackgroundAudioEvent(playerInfo));
@@ -373,14 +375,11 @@ class PlayerBloc extends PlayerBlocType {
     final loopIndex = state.loopIndex;
     final loopSentence = loopIndex == null
         ? null
-        : state.subtitle?.sentenceList[loopIndex];
+        : state.subtitle?.sentenceList.elementAtOrNull(loopIndex);
     SentenceEntity? completedLoopSentence;
-    if (loopSentence != null) {
+    if (loopSentence != null && position > loopSentence.end) {
       //if repeat one is turn on, while sentence finished, seek to beginning
-      // debugPrint('position changing loop $sentence');
-      if (position > loopSentence.end) {
-        completedLoopSentence = loopSentence;
-      }
+      completedLoopSentence = loopSentence;
     }
 
     //handle scroll
@@ -634,31 +633,7 @@ class PlayerBloc extends PlayerBlocType {
   // }
 }
 
-extension on SentenceEntity {
-  bool playing(SentenceEntity? prev, SentenceEntity? next, Duration position) {
-    final start = prev == null ? const Duration(seconds: 0) : this.start;
-    if (next == null) {
-      return start <= position;
-    } else {
-      return start <= position && position < next.start;
-    }
-  }
-}
-
 extension on SpotType {
   double get alignment => index == 0 ? 0 : 0.3;
 }
 
-extension on List<SentenceEntity> {
-  SpotType? spot(Duration position) {
-    for (int i = 0; i < length; i++) {
-      SentenceEntity? prev = i == 0 ? null : this[i - 1];
-      SentenceEntity? next = elementAtOrNull(i + 1);
-      SentenceEntity sentence = this[i];
-      if (sentence.playing(prev, next, position)) {
-        return (index: i, sentence: sentence);
-      }
-    }
-    return null;
-  }
-}

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -33,6 +34,8 @@ class PlayerMediaInfo {
   final Duration duration;
   final double speed;
   final double volume;
+  final int? loopIndex;
+  final List<SentenceEntity> sentenceList;
   const PlayerMediaInfo({
     required this.media,
     required this.volume,
@@ -40,6 +43,8 @@ class PlayerMediaInfo {
     required this.position,
     required this.duration,
     required this.speed,
+    required this.loopIndex,
+    required this.sentenceList
   });
 }
 
@@ -51,9 +56,11 @@ class HubSyncPlayerToBackgroundAudioEvent extends HubEvent {
 class HubSyncBackgroundAudioToPlayerEvent extends HubEvent {
   final bool playing;
   final Duration position;
+  final int? loopIndex;
   const HubSyncBackgroundAudioToPlayerEvent({
     required this.playing,
     required this.position,
+    required this.loopIndex,
   });
 }
 

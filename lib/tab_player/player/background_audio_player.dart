@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
 import 'package:path/path.dart' as p;
@@ -11,14 +12,27 @@ import 'package:path/path.dart' as p;
 
 class BackgroundAudioPlayer extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
+  int? _loopIndex;
+  List<SentenceEntity> _sentenceList = [];
+
   BackgroundAudioPlayer() {
     EventHub.on<HubSyncPlayerToBackgroundAudioEvent>(_onSyncFromPlayer);
     EventHub.on<HubAppResumeEvent>(_onAppResume);
     _audioPlayer.speedStream.listen((speed) {
       playbackState.add(playbackState.value.copyWith(speed: speed));
     });
-    _audioPlayer.positionStream.listen((position) {
+    _audioPlayer.positionStream.listen((position) async {
       playbackState.add(playbackState.value.copyWith(updatePosition: position));
+      //handle loop reseek
+      final loopSentence = _loopIndex == null
+          ? null
+          : _sentenceList.elementAtOrNull(_loopIndex!);
+      if (loopSentence != null && position > loopSentence.end) {
+        //if repeat one is turn on, while sentence finished, seek to beginning
+        //reseek loop sentence
+        // await _audioPlayer.seekTo(completedLoopSentence.start);
+        await _audioPlayer.seek(loopSentence.start);
+      }
     });
     _audioPlayer.playerStateStream.listen((state) {
       final playing = state.playing;
@@ -45,6 +59,8 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     if (playerInfo == null || path == null) return;
     final media = playerInfo.media;
     final album = p.basename(p.dirname(path));
+    _loopIndex = playerInfo.loopIndex;
+    _sentenceList = playerInfo.sentenceList;
     // Update notification UI first to satisfy system requirements immediately
     mediaItem.add(
       MediaItem(
@@ -104,7 +120,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     await _audioPlayer.stop();
     //emit event, player may start to play
     EventHub.emit(
-      HubSyncBackgroundAudioToPlayerEvent(playing: playing, position: position),
+      HubSyncBackgroundAudioToPlayerEvent(playing: playing, position: position, loopIndex: _loopIndex),
     );
   }
 
@@ -120,6 +136,10 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
 
   @override
   Future<void> seek(Duration position) async {
+    if (_loopIndex != null) {
+      final spot = _sentenceList.spot(position);
+      _loopIndex = spot?.index;
+    }
     await _audioPlayer.seek(position);
   }
 
