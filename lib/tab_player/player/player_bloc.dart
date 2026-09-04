@@ -46,7 +46,7 @@ class PlayerBloc extends PlayerBlocType {
   SpotType? get _spot {
     final state = this.state;
     if (state is! PlayerDataState) return null;
-    final sentenceList = state.subtitle?.sentenceList;
+    final sentenceList = state.selectedSubtitle?.sentenceList;
     final position = state.position;
     return sentenceList?.spot(position);
   }
@@ -58,7 +58,9 @@ class PlayerBloc extends PlayerBlocType {
   PlayerBloc() : super(const PlayerInitState()) {
     debugPrint('player bloc ${identityHashCode(this)} created');
     on<PlayerInitEvent>(_onInit);
-    on<PlayerSelectAnotherSubtitleFromListEvent>(_onSelectAnotherSubtitleFromList);
+    on<PlayerSelectAnotherSubtitleFromListEvent>(
+      _onSelectAnotherSubtitleFromList,
+    );
     on<PlayerShowSubtitleListEvent>(_onShowSubtitleList);
     on<PlayerHideSubtitleListEvent>(_onHideSubtitleList);
     on<PlayerClickSentenceEvent>(_onClickSentence);
@@ -143,7 +145,7 @@ class PlayerBloc extends PlayerBlocType {
       speed: state.speed,
       volume: state.volume,
       loopIndex: state.loopIndex,
-      sentenceList: state.subtitle?.sentenceList ?? const [],
+      sentenceList: state.selectedSubtitle?.sentenceList ?? const [],
     );
     EventHub.emit(HubSyncPlayerToBackgroundAudioEvent(playerInfo));
   }
@@ -171,7 +173,7 @@ class PlayerBloc extends PlayerBlocType {
       selectedSubtitleName: () => event.name,
       subtitleListVisible: false,
       subtitleState: PlayerSubtitleDataState(
-        sentenceList: state.subtitle?.sentenceList ?? [],
+        sentenceList: state.selectedSubtitle?.sentenceList ?? [],
         initialAlignment: _spot?.alignment ?? 0,
         initialIndex: _spot?.index ?? 0,
       ),
@@ -202,10 +204,10 @@ class PlayerBloc extends PlayerBlocType {
      */
     var dataState = state;
     if (dataState is! PlayerDataState) return;
-    final sentenceIndex = dataState.subtitle?.sentenceList
+    final sentenceIndex = dataState.selectedSubtitle?.sentenceList
         .firstIndexWhereOrNull((sen) => sen.id == event.sentenceId);
     if (sentenceIndex == null) return;
-    final sentence = dataState.subtitle?.sentenceList[sentenceIndex];
+    final sentence = dataState.selectedSubtitle?.sentenceList[sentenceIndex];
     if (sentence == null) return;
     if (dataState.loopIndex != null) {
       dataState = dataState.copyWith(loopIndex: () => sentenceIndex);
@@ -276,7 +278,7 @@ class PlayerBloc extends PlayerBlocType {
   ) {
     final dataState = state;
     if (dataState is! PlayerDataState) return;
-    final subtitle = dataState.subtitle;
+    final subtitle = dataState.selectedSubtitle;
     if (subtitle == null || subtitle.sentenceList.isEmpty) return;
     dataState.scroller.safeScrollTo(subtitle.sentenceList.length - 1);
   }
@@ -396,7 +398,7 @@ class PlayerBloc extends PlayerBlocType {
     final loopIndex = state.loopIndex;
     final loopSentence = loopIndex == null
         ? null
-        : state.subtitle?.sentenceList.elementAtOrNull(loopIndex);
+        : state.selectedSubtitle?.sentenceList.elementAtOrNull(loopIndex);
     SentenceEntity? completedLoopSentence;
     if (loopSentence != null && position > loopSentence.end) {
       //if repeat one is turn on, while sentence finished, seek to beginning
@@ -457,7 +459,7 @@ class PlayerBloc extends PlayerBlocType {
     if (state is! PlayerDataState) return;
     if (state.loopIndex == null) {
       //to loop
-      final spot = state.subtitle?.sentenceList.spot(state.position);
+      final spot = state.selectedSubtitle?.sentenceList.spot(state.position);
       emit(state.copyWith(loopIndex: () => spot?.index));
     } else {
       emit(state.copyWith(loopIndex: () => null));
@@ -685,7 +687,10 @@ class PlayerBloc extends PlayerBlocType {
 
   @override
   SentenceCardBlocType sentenceCardBlocAtIndex(int index) {
-    final sentence = state.as<PlayerDataState>()?.subtitle?.sentenceList[index];
+    final sentence = state
+        .as<PlayerDataState>()
+        ?.selectedSubtitle
+        ?.sentenceList[index];
     final playing = _spot?.index == index;
     return SentenceCardBloc(sentence)..add(SentenceCardInitEvent(playing));
   }

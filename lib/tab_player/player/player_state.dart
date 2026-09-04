@@ -75,9 +75,11 @@ class PlayerDataState extends PlayerState {
   }) {
     return PlayerDataState(
       aspectRatio: aspectRatio ?? this.aspectRatio,
-      subtitleListButtonVisible: subtitleListButtonVisible ?? this.subtitleListButtonVisible,
+      subtitleListButtonVisible:
+          subtitleListButtonVisible ?? this.subtitleListButtonVisible,
       subtitleList: subtitleList ?? this.subtitleList,
-      selectedSubtitleName: selectedSubtitleName?.call() ?? this.selectedSubtitleName,
+      selectedSubtitleName:
+          selectedSubtitleName?.call() ?? this.selectedSubtitleName,
       subtitleListVisible: subtitleListVisible ?? this.subtitleListVisible,
       loopIndex: loopIndex?.call() ?? this.loopIndex,
       playing: playing ?? this.playing,
@@ -94,7 +96,7 @@ class PlayerDataState extends PlayerState {
     );
   }
 
-  SubtitleEntity? get subtitle {
+  SubtitleEntity? get selectedSubtitle {
     return subtitleList.firstWhereOrNull((s) => s.name == selectedSubtitleName);
   }
 }
@@ -112,5 +114,9 @@ class PlayerSubtitleDataState extends PlayerSubtitleState {
   final double initialAlignment;
   final int initialIndex;
 
-  const PlayerSubtitleDataState({required this.sentenceList, required this.initialAlignment, required this.initialIndex});
+  const PlayerSubtitleDataState({
+    required this.sentenceList,
+    required this.initialAlignment,
+    required this.initialIndex,
+  });
 }
