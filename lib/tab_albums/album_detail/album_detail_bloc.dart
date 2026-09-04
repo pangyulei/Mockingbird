@@ -42,6 +42,13 @@ class AlbumDetailBloc extends AlbumDetailBlocType {
           start: 0,
           end: await album.assetCountAsync,
         );
+        // Sort by title ascending (case-insensitive)
+        mediaList.sort((a, b) {
+          final aTitle = a.title?.toLowerCase() ?? '';
+          final bTitle = b.title?.toLowerCase() ?? '';
+          return aTitle.compareTo(bTitle);
+        });
+        emit(AlbumDetailDataState(name: album.name, mediaList: mediaList));
         emit(AlbumDetailDataState(name: album.name, mediaList: mediaList));
       },
     );
