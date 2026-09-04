@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:mockingbird/db/entities/media_progress_entity.dart';
 import 'package:mockingbird/db/entities/metadata_entity.dart';
 import 'package:mockingbird/db/entities/preference_entity.dart';
 import 'package:mockingbird/objectbox.g.dart';
@@ -34,6 +35,10 @@ class DB {
 
   static Future<MetadataEntity> updateMetadata(MetadataEntity metadata) async {
     return await _store.box<MetadataEntity>().putAndGetAsync(metadata);
+  }
+
+  static Future<MediaProgressEntity> updateProgress(MediaProgressEntity progress) async {
+    return await _store.box<MediaProgressEntity>().putAndGetAsync(progress);
   }
 
   static Future<PreferenceEntity?> loadPreference() async {

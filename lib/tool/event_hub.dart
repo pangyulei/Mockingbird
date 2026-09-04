@@ -61,7 +61,7 @@ class PlayerInfo {
 }
 
 class HubSyncPlayerToBackgroundAudioEvent extends HubEvent {
-  final PlayerInfo? info;
+  final PlayerInfo info;
 
   const HubSyncPlayerToBackgroundAudioEvent(this.info);
 }

@@ -53,37 +53,34 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onPositionChange(Duration position) async {
-    // final playerInfo = _playerInfo;
-    // if (playerInfo == null) return;
+    final playerInfo = _playerInfo;
+    if (playerInfo == null) return;
     playbackState.add(playbackState.value.copyWith(updatePosition: position));
 
-    final playerInfo = _playerInfo;
-    if (playerInfo != null) {
-      //handle loop reseek
-      final loopIndex = playerInfo.loopIndex;
-      final loopSentence = loopIndex == null
-          ? null
-          : playerInfo.sentenceList.elementAtOrNull(loopIndex);
-      if (loopSentence != null && position > loopSentence.end) {
-        //if repeat one is turn on, while sentence finished, seek to beginning
-        //reseek loop sentence
-        // await _audioPlayer.seekTo(completedLoopSentence.start);
-        await _audioPlayer.seek(loopSentence.start);
-      }
-      //auto-replay, if position >= duration,
-      if (position >= playerInfo.duration) {
-        _audioPlayer.seek(const Duration(seconds: 0));
-        await _audioPlayer.play();
-      }
+    //handle loop reseek
+    final loopIndex = playerInfo.loopIndex;
+    final loopSentence = loopIndex == null
+        ? null
+        : playerInfo.sentenceList.elementAtOrNull(loopIndex);
+    if (loopSentence != null && position > loopSentence.end) {
+      //if repeat one is turn on, while sentence finished, seek to beginning
+      //reseek loop sentence
+      // await _audioPlayer.seekTo(completedLoopSentence.start);
+      await _audioPlayer.seek(loopSentence.start);
+    }
+    //auto-replay, if position >= duration,
+    if (position >= playerInfo.duration) {
+      _audioPlayer.seek(const Duration(seconds: 0));
+      await _audioPlayer.play();
     }
   }
 
   void _onSyncFromPlayer(HubSyncPlayerToBackgroundAudioEvent event) async {
     final playerInfo = event.info;
     _playerInfo = playerInfo;
-    final mediaFile = await playerInfo?.media.file;
+    final mediaFile = await playerInfo.media.file;
     final path = mediaFile?.path;
-    if (playerInfo == null || path == null) return;
+    if (path == null) return;
     final media = playerInfo.media;
     final album = p.basename(p.dirname(path));
     final artUri = (await media.thumbAsync(playerInfo.position))?.uri;

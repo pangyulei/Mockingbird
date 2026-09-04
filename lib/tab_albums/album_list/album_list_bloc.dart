@@ -5,8 +5,9 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/tab_albums/album_list/album_list_state.dart';
 import 'package:mockingbird/tool/event_hub.dart';
-import 'package:mockingbird/tool/shared_metadata.dart';
 import 'package:photo_manager/photo_manager.dart';
+
+import '../../db/db.dart';
 
 class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
   final _subscriptionList = <StreamSubscription>[];
@@ -46,7 +47,7 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
   }
 
   Future<AlbumListState> _reload() async {
-    final metadata = SharedMetadata.instance;
+    final metadata = await DB.loadMetadata();
     if (!metadata.permissionRequested) {
       return const AlbumListNotYetRequestedState();
     }
@@ -78,9 +79,9 @@ class AlbumListBloc extends Bloc<AlbumListEvent, AlbumListState> {
     Emitter<AlbumListState> emit,
   ) async {
     await PhotoManager.requestPermissionExtend();
-    SharedMetadata.instance = SharedMetadata.instance.copyWith(
-      permissionRequested: true,
-    );
+    var metadata = await DB.loadMetadata();
+    metadata = metadata.copyWith(permissionRequested: true);
+    await DB.updateMetadata(metadata);
     emit(await _reload());
   }
 }

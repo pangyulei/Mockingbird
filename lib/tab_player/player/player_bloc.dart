@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,10 +19,11 @@ import 'package:mockingbird/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/tab_player/sentence_card/sentence_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
-import 'package:mockingbird/tool/shared_metadata.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
+
+import '../../db/db.dart';
 
 const double _kMaxPlaySpeed = 3.0;
 const double _kMinPlaySpeed = 0.25;
@@ -115,24 +117,30 @@ class PlayerBloc extends PlayerBlocType {
     }
   }
 
-  void _onAppPause(HubAppPauseEvent event) {
-    final state = this.state.as<PlayerDataState>();
+  void _onAppPause(HubAppPauseEvent event) async {
+    final state = this.state;
+    if (state is! PlayerDataState) return;
     final media = _media;
-    final PlayerInfo? playerInfo;
-    if (state == null || media == null) {
-      playerInfo = null;
-    } else {
-      playerInfo = PlayerInfo(
-        media: media,
-        duration: state.duration,
-        playing: state.playing,
-        position: state.position,
-        speed: state.speed,
-        volume: state.volume,
-        loopIndex: state.loopIndex,
-        sentenceList: state.subtitle?.sentenceList ?? const [],
-      );
+    if (media == null) return;
+    
+    //save position
+    var metadata = await DB.loadMetadata();
+    var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == _media?.id);
+    if (progress != null) {
+      progress = progress.copyWith(positionMs: state.position.inMilliseconds);
+      await DB.updateProgress(progress);
     }
+    //sync to background audio player
+    final playerInfo = PlayerInfo(
+      media: media,
+      duration: state.duration,
+      playing: state.playing,
+      position: state.position,
+      speed: state.speed,
+      volume: state.volume,
+      loopIndex: state.loopIndex,
+      sentenceList: state.subtitle?.sentenceList ?? const [],
+    );
     EventHub.emit(HubSyncPlayerToBackgroundAudioEvent(playerInfo));
   }
 
@@ -152,10 +160,13 @@ class PlayerBloc extends PlayerBlocType {
     );
     emit(dataState);
     EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
-    final progress = SharedMetadata.instance
-        .mediaProgressById(_media?.id)
-        ?.copyWith(subtitleName: () => dataState?.subtitle?.name);
-    SharedMetadata.instance.updateMediaProgress(progress);
+
+    var metadata = await DB.loadMetadata();
+    var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == _media?.id);
+    if (progress != null) {
+      progress = progress.copyWith(subtitleName: () => dataState?.subtitle?.name);
+      await DB.updateProgress(progress);
+    }
   }
 
   void _onClickSentence(PlayerClickSentenceEvent event, Emitter<PlayerState> emit) async {
@@ -316,11 +327,6 @@ class PlayerBloc extends PlayerBlocType {
     var state = this.state;
     if (state is! PlayerDataState) return result;
 
-    final progress = SharedMetadata.instance
-        .mediaProgressById(_media?.id)
-        ?.copyWith(positionMs: position.inMilliseconds);
-    SharedMetadata.instance.updateMediaProgress(progress);
-
     //Fix while tap video slider, it bounce at first
     state = state.copyWith(position: position);
     emit(state);
@@ -456,12 +462,19 @@ class PlayerBloc extends PlayerBlocType {
     //Fix switch media, old listener still execute bug
     _media = null;
     EasyLoading.show(maskType: .clear);
-    final mediaId = event.mediaId ?? SharedMetadata.instance.playingMediaId;
+    final String? mediaId;
+    var metadata = await DB.loadMetadata();
+    if (event.mediaId == null) {
+      mediaId = metadata.playingMediaId;
+    } else {
+      mediaId = event.mediaId;
+      metadata = metadata.copyWith(playingMediaId: () => event.mediaId);
+      await DB.updateMetadata(metadata);
+    }
     final media = mediaId == null ? null : await AssetEntity.fromId(mediaId);
     final state = await _reload(media);
     emit(state);
     await state.as<PlayerDataState>()?.player.play();
-    SharedMetadata.instance = SharedMetadata.instance.copyWith(playingMediaId: () => mediaId);
     EasyLoading.dismiss();
     _media = media;
   }
@@ -483,11 +496,16 @@ class PlayerBloc extends PlayerBlocType {
     final subtitleList = await media.subtitleList;
     final int? selectedSubtitleIndex;
     final Duration position;
-    var progress = SharedMetadata.instance.mediaProgressById(media.id);
+    var metadata = await DB.loadMetadata();
+    var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == media.id);
     if (progress == null) {
-      progress = MediaProgressEntity(mediaId: media.id, positionMs: 0);
       selectedSubtitleIndex = subtitleList.isEmpty ? null : 0;
+      final subtitleName = selectedSubtitleIndex == null ? null : subtitleList[selectedSubtitleIndex].name;
       position = const Duration(seconds: 0);
+      progress = MediaProgressEntity(mediaId: media.id, positionMs: 0, subtitleName: subtitleName);
+      metadata.mediaProgressList.add(progress);
+      await DB.updateMetadata(metadata);
+      
     } else {
       final selectedSubtitleName = progress.subtitleName;
       selectedSubtitleIndex =
@@ -499,8 +517,6 @@ class PlayerBloc extends PlayerBlocType {
     final subtitle = selectedSubtitleIndex == null
         ? null
         : subtitleList.elementAtOrNull(selectedSubtitleIndex);
-    progress = progress.copyWith(subtitleName: () => subtitle?.name);
-    SharedMetadata.instance.updateMediaProgress(progress);
     final spot = subtitle?.sentenceList.spot(position);
     EventHub.emit(HubPlayingSentenceChangeEvent(spot?.sentence.id));
     final PlayerSubtitleState subtitleState;

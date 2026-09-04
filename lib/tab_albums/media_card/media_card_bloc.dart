@@ -8,8 +8,9 @@ import 'package:mockingbird/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/tab_albums/media_card/media_card_ui.dart';
 import 'package:mockingbird/tool/event_hub.dart';
 import 'package:mockingbird/tool/extensions.dart';
-import 'package:mockingbird/tool/shared_metadata.dart';
 import 'package:photo_manager/photo_manager.dart';
+
+import '../../db/db.dart';
 
 class MediaCardBloc extends MediaCardBlocType {
   final AssetEntity? _media;
@@ -44,7 +45,8 @@ class MediaCardBloc extends MediaCardBlocType {
     }
     final title = await _media.titleAsync;
     final subtitleList = await _media.subtitleList;
-    final playing = (await SharedMetadata.instance).playingMediaId == _media.id;
+    final metadata = await DB.loadMetadata();
+    final playing = metadata.playingMediaId == _media.id;
     emit(
       MediaCardState(
         name: title,

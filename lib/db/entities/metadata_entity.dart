@@ -24,8 +24,7 @@ class MetadataEntity {
   MetadataEntity copyWith({
     String? Function()? playingMediaId,
     int? databaseVersion,
-    bool? permissionRequested,
-    List<MediaProgressEntity>? mediaProgressList,
+    bool? permissionRequested
   }) {
     final metadata = MetadataEntity(
       id: id,
@@ -33,28 +32,12 @@ class MetadataEntity {
       permissionRequested: permissionRequested ?? this.permissionRequested,
       playingMediaId: playingMediaId?.call() ?? this.playingMediaId,
     );
-    metadata.mediaProgressList.addAll(
-      mediaProgressList ?? this.mediaProgressList,
-    );
+    metadata.mediaProgressList.addAll(mediaProgressList,);
     return metadata;
   }
 
   MetadataEntity incDatabaseVersion() {
     return copyWith(databaseVersion: databaseVersion + 1);
-  }
-
-  MediaProgressEntity? mediaProgressById(String? mediaId) =>
-      mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == mediaId);
-  void updateMediaProgress(MediaProgressEntity? progress) {
-    if (progress == null) return;
-    final i = mediaProgressList.firstIndexWhereOrNull(
-      (mp) => mp.mediaId == progress.mediaId,
-    );
-    if (i == null) {
-      mediaProgressList.add(progress);
-    } else {
-      mediaProgressList[i] = progress;
-    }
   }
 
   @override
