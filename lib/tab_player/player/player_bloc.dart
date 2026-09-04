@@ -100,7 +100,7 @@ class PlayerBloc extends PlayerBlocType {
     ]);
   }
 
-  void _onAppResume(HubAppResumeEvent _) {
+  void _onAppResume(_) {
     add(const PlayerReloadSubtitleEvent());
   }
 
@@ -454,13 +454,12 @@ class PlayerBloc extends PlayerBlocType {
     await state.player.pause();
   }
 
-  void _onToggleLoop(_, Emitter<PlayerState> emit) async {
+  void _onToggleLoop(_, Emitter<PlayerState> emit) {
     final state = this.state;
     if (state is! PlayerDataState) return;
     if (state.loopIndex == null) {
       //to loop
-      final spot = state.selectedSubtitle?.sentenceList.spot(state.position);
-      emit(state.copyWith(loopIndex: () => spot?.index));
+      emit(state.copyWith(loopIndex: () => _spot?.index));
     } else {
       emit(state.copyWith(loopIndex: () => null));
     }

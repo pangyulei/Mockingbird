@@ -79,9 +79,9 @@ class PlayerDataState extends PlayerState {
           subtitleListButtonVisible ?? this.subtitleListButtonVisible,
       subtitleList: subtitleList ?? this.subtitleList,
       selectedSubtitleName:
-          selectedSubtitleName?.call() ?? this.selectedSubtitleName,
+          selectedSubtitleName == null ? this.selectedSubtitleName : selectedSubtitleName(),
       subtitleListVisible: subtitleListVisible ?? this.subtitleListVisible,
-      loopIndex: loopIndex?.call() ?? this.loopIndex,
+      loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       playing: playing ?? this.playing,
       title: title ?? this.title,
       mediaType: mediaType ?? this.mediaType,

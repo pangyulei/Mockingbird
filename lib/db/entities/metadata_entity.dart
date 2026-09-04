@@ -1,4 +1,3 @@
-
 import 'package:mockingbird/db/entities/media_progress_entity.dart';
 import 'package:objectbox/objectbox.dart';
 
@@ -22,15 +21,17 @@ class MetadataEntity {
   MetadataEntity copyWith({
     String? Function()? playingMediaId,
     int? databaseVersion,
-    bool? permissionRequested
+    bool? permissionRequested,
   }) {
     final metadata = MetadataEntity(
       id: id,
       databaseVersion: databaseVersion ?? this.databaseVersion,
       permissionRequested: permissionRequested ?? this.permissionRequested,
-      playingMediaId: playingMediaId?.call() ?? this.playingMediaId,
+      playingMediaId: playingMediaId == null
+          ? this.playingMediaId
+          : playingMediaId(),
     );
-    metadata.mediaProgressList.addAll(mediaProgressList,);
+    metadata.mediaProgressList.addAll(mediaProgressList);
     return metadata;
   }
 

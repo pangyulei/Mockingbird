@@ -54,7 +54,7 @@ class PlayerInfo {
       position: position,
       duration: duration,
       speed: speed,
-      loopIndex: loopIndex?.call() ?? this.loopIndex,
+      loopIndex: loopIndex == null ? this.loopIndex : loopIndex(),
       sentenceList: sentenceList,
     );
   }

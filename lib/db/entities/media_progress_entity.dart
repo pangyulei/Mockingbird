@@ -23,7 +23,7 @@ class MediaProgressEntity {
   }) {
     return MediaProgressEntity(
       id: id,
-      subtitleName: subtitleName?.call() ?? this.subtitleName,
+      subtitleName: subtitleName == null ? this.subtitleName : subtitleName(),
       positionMs: positionMs ?? this.positionMs,
       mediaId: mediaId ?? this.mediaId,
     );
