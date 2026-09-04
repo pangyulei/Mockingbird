@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -122,14 +121,10 @@ class PlayerBloc extends PlayerBlocType {
     if (state is! PlayerDataState) return;
     final media = _media;
     if (media == null) return;
-    
+
     //save position
-    var metadata = await DB.loadMetadata();
-    var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == _media?.id);
-    if (progress != null) {
-      progress = progress.copyWith(positionMs: state.position.inMilliseconds);
-      await DB.updateProgress(progress);
-    }
+    await _updateProgressPosition();
+
     //sync to background audio player
     final playerInfo = PlayerInfo(
       media: media,
@@ -142,6 +137,17 @@ class PlayerBloc extends PlayerBlocType {
       sentenceList: state.subtitle?.sentenceList ?? const [],
     );
     EventHub.emit(HubSyncPlayerToBackgroundAudioEvent(playerInfo));
+  }
+
+  Future<void> _updateProgressPosition() async {
+    final state = this.state;
+    if (state is! PlayerDataState) return;
+    final metadata = await DB.loadMetadata();
+    var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == _media?.id);
+    if (progress != null) {
+      progress = progress.copyWith(positionMs: state.position.inMilliseconds);
+      await DB.updateProgress(progress);
+    }
   }
 
   void _onSubtitleChange(PlayerSubtitleChangeEvent event, Emitter<PlayerState> emit) async {
@@ -459,6 +465,9 @@ class PlayerBloc extends PlayerBlocType {
   }
 
   void _onInit(PlayerInitEvent event, Emitter<PlayerState> emit) async {
+    //before switch media, update old media's progress position
+    await _updateProgressPosition();
+
     //Fix switch media, old listener still execute bug
     _media = null;
     EasyLoading.show(maskType: .clear);
@@ -500,12 +509,13 @@ class PlayerBloc extends PlayerBlocType {
     var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == media.id);
     if (progress == null) {
       selectedSubtitleIndex = subtitleList.isEmpty ? null : 0;
-      final subtitleName = selectedSubtitleIndex == null ? null : subtitleList[selectedSubtitleIndex].name;
+      final subtitleName = selectedSubtitleIndex == null
+          ? null
+          : subtitleList[selectedSubtitleIndex].name;
       position = const Duration(seconds: 0);
       progress = MediaProgressEntity(mediaId: media.id, positionMs: 0, subtitleName: subtitleName);
       metadata.mediaProgressList.add(progress);
       await DB.updateMetadata(metadata);
-      
     } else {
       final selectedSubtitleName = progress.subtitleName;
       selectedSubtitleIndex =
