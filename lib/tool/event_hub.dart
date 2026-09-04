@@ -21,9 +21,9 @@ class HubPlayingSentenceChangeEvent extends HubEvent {
 }
 
 class HubSubtitleChangeEvent extends HubEvent {
-  final int index;
+  final String name;
 
-  const HubSubtitleChangeEvent(this.index);
+  const HubSubtitleChangeEvent(this.name);
 }
 
 class PlayerInfo {

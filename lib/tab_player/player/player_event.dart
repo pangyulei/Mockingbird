@@ -28,9 +28,9 @@ class PlayerHideSubtitleListEvent extends PlayerEvent {
   const PlayerHideSubtitleListEvent();
 }
 
-class PlayerSubtitleChangeEvent extends PlayerEvent {
-  final int index;
-  const PlayerSubtitleChangeEvent(this.index);
+class PlayerSelectAnotherSubtitleFromListEvent extends PlayerEvent {
+  final String name;
+  const PlayerSelectAnotherSubtitleFromListEvent(this.name);
 }
 
 class PlayerClickSentenceEvent extends PlayerEvent {
@@ -41,6 +41,10 @@ class PlayerClickSentenceEvent extends PlayerEvent {
 class PlayerGoToAlbumListEvent extends PlayerEvent {
   final BuildContext context;
   const PlayerGoToAlbumListEvent(this.context);
+}
+
+class PlayerReloadSubtitleEvent extends PlayerEvent {
+  const PlayerReloadSubtitleEvent();
 }
 
 class PlayerScrollToTopEvent extends PlayerEvent {

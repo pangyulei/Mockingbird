@@ -8,8 +8,8 @@ class PlayerSubtitleListInitEvent extends PlayerSubtitleListEvent {
   const PlayerSubtitleListInitEvent();
 }
 
-class PlayerSubtitleListSelectIndexEvent extends PlayerSubtitleListEvent {
-  final int index;
+class PlayerSubtitleListSelectNameEvent extends PlayerSubtitleListEvent {
+  final String name;
   final BuildContext context;
-  const PlayerSubtitleListSelectIndexEvent(this.index, this.context);
+  const PlayerSubtitleListSelectNameEvent(this.name, this.context);
 }

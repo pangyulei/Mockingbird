@@ -7,17 +7,19 @@ import 'package:mockingbird/tab_player/player_subtitle_list/player_subtitle_list
 
 class PlayerSubtitleListBloc extends PlayerSubtitleListBlocType {
   final List<SubtitleEntity> _subtitleList;
-  PlayerSubtitleListBloc(this._subtitleList, int? selectedIndex)
-    : super(PlayerSubtitleListState(selectedIndex, _subtitleList)) {
-    // on<PlayerSubtitleListInitEvent>(_onInit);
-    on<PlayerSubtitleListSelectIndexEvent>(_onSelectIndex);
+  final String? _selectedSubtitleName;
+  PlayerSubtitleListBloc(this._subtitleList, this._selectedSubtitleName)
+    : super(PlayerSubtitleListState(_selectedSubtitleName, _subtitleList)) {
+    on<PlayerSubtitleListSelectNameEvent>(_onSelectName);
   }
 
-  void _onSelectIndex(
-    PlayerSubtitleListSelectIndexEvent event,
+  void _onSelectName(
+      PlayerSubtitleListSelectNameEvent event,
     Emitter<PlayerSubtitleListState> emit,
   ) {
-    emit(PlayerSubtitleListState(event.index, _subtitleList));
+    if (_selectedSubtitleName != event.name) {
+      emit(PlayerSubtitleListState(event.name, _subtitleList));
+    }
     Navigator.pop(event.context);
   }
 

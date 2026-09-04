@@ -46,13 +46,13 @@ class PlayerSubtitleListUI extends StatelessWidget {
                       .watch<PlayerSubtitleListBlocType>()
                       .state;
                   final subtitleList = state.subtitleList;
-                  final selectedIndex = state.selectedIndex;
+                  final selectedName = state.selectedSubtitleName;
                   return ListView.builder(
                     shrinkWrap: true,
                     itemCount: subtitleList.length,
                     itemBuilder: (context, index) {
                       final subtitle = subtitleList[index];
-                      final isSelected = index == selectedIndex;
+                      final isSelected = subtitle.name == selectedName;
 
                       return ListTile(
                         leading: Icon(
@@ -79,9 +79,9 @@ class PlayerSubtitleListUI extends StatelessWidget {
                               )
                             : null,
                         onTap: () {
-                          EventHub.emit(HubSubtitleChangeEvent(index));
+                          EventHub.emit(HubSubtitleChangeEvent(subtitle.name));
                           context.read<PlayerSubtitleListBlocType>().add(
-                            PlayerSubtitleListSelectIndexEvent(index, context),
+                            PlayerSubtitleListSelectNameEvent(subtitle.name, context),
                           );
                         },
                       );

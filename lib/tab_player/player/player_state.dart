@@ -1,4 +1,4 @@
-
+import 'package:collection/collection.dart';
 import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/db/entities/subtitle_entity.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -29,17 +29,18 @@ class PlayerDataState extends PlayerState {
   final bool volumeSliderVisible;
   final AssetType mediaType;
   final bool subtitleListVisible;
-  final int? selectedSubtitleIndex;
+  final String? selectedSubtitleName;
   final List<SubtitleEntity> subtitleList;
   final PlayerSubtitleState subtitleState;
   final VideoPlayerController player;
   final ItemScrollController scroller;
   final bool subtitleListButtonVisible;
+
   const PlayerDataState({
     required this.aspectRatio,
     required this.subtitleListButtonVisible,
     required this.subtitleList,
-    required this.selectedSubtitleIndex,
+    required this.selectedSubtitleName,
     required this.subtitleListVisible,
     required this.scroller,
     required this.player,
@@ -66,7 +67,7 @@ class PlayerDataState extends PlayerState {
     bool? volumeSliderVisible,
     bool? subtitleListVisible,
     bool? subtitleListButtonVisible,
-    int? Function()? selectedSubtitleIndex,
+    String? Function()? selectedSubtitleName,
     Duration? position,
     Duration? duration,
     String? title,
@@ -74,11 +75,9 @@ class PlayerDataState extends PlayerState {
   }) {
     return PlayerDataState(
       aspectRatio: aspectRatio ?? this.aspectRatio,
-      subtitleListButtonVisible:
-          subtitleListButtonVisible ?? this.subtitleListButtonVisible,
+      subtitleListButtonVisible: subtitleListButtonVisible ?? this.subtitleListButtonVisible,
       subtitleList: subtitleList ?? this.subtitleList,
-      selectedSubtitleIndex:
-          selectedSubtitleIndex?.call() ?? this.selectedSubtitleIndex,
+      selectedSubtitleName: selectedSubtitleName?.call() ?? this.selectedSubtitleName,
       subtitleListVisible: subtitleListVisible ?? this.subtitleListVisible,
       loopIndex: loopIndex?.call() ?? this.loopIndex,
       playing: playing ?? this.playing,
@@ -96,9 +95,7 @@ class PlayerDataState extends PlayerState {
   }
 
   SubtitleEntity? get subtitle {
-    return selectedSubtitleIndex == null
-        ? null
-        : subtitleList.elementAtOrNull(selectedSubtitleIndex!);
+    return subtitleList.firstWhereOrNull((s) => s.name == selectedSubtitleName);
   }
 }
 
@@ -114,9 +111,6 @@ class PlayerSubtitleDataState extends PlayerSubtitleState {
   final List<SentenceEntity> sentenceList;
   final double initialAlignment;
   final int initialIndex;
-  const PlayerSubtitleDataState(
-    this.sentenceList,
-    this.initialAlignment,
-    this.initialIndex,
-  );
+
+  const PlayerSubtitleDataState({required this.sentenceList, required this.initialAlignment, required this.initialIndex});
 }
