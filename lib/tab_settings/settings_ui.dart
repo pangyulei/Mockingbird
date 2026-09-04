@@ -19,7 +19,7 @@ class SettingsUI extends StatelessWidget {
       appBar: _appBar(),
       body: ListView(
         children: [
-          _sectionHeader(context, 'Playback'),
+          // _sectionHeader(context, 'Playback'),
           // Consumer(
           //   builder: (context, ref, child) {
           //     final bool? loop = ref.watch(
@@ -35,7 +35,7 @@ class SettingsUI extends StatelessWidget {
           //     );
           //   },
           // ),
-          const Divider(),
+          // const Divider(),
           _sectionHeader(context, 'Support'),
           ListTile(
             leading: const Icon(Icons.info_outline),
