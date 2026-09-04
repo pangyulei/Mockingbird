@@ -26,8 +26,8 @@ import 'package:video_player/video_player.dart';
 import '../../db/db.dart';
 
 const double _kMaxPlaySpeed = 3.0;
-const double _kMinPlaySpeed = 0.25;
-const double _kStepPlaySpeed = 0.25;
+const double _kMinPlaySpeed = 0.2;
+const double _kStepPlaySpeed = 0.1;
 
 class SharedPlayerBloc {
   static final instance = PlayerBloc();
@@ -511,10 +511,9 @@ class PlayerBloc extends PlayerBlocType {
   void _onIncSpeed(PlayerIncSpeedEvent event, Emitter<PlayerState> emit) async {
     final state = this.state;
     if (state is! PlayerDataState) return;
-    final double nextSpeed = (state.speed + _kStepPlaySpeed).clamp(
-      _kMinPlaySpeed,
-      _kMaxPlaySpeed,
-    );
+    final double nextSpeed = (state.speed + _kStepPlaySpeed)
+        .clamp(_kMinPlaySpeed, _kMaxPlaySpeed)
+        .digits(1);
     emit(state.copyWith(speed: nextSpeed));
     await state.player.setPlaybackSpeed(nextSpeed);
   }
@@ -522,10 +521,9 @@ class PlayerBloc extends PlayerBlocType {
   void _onDecSpeed(PlayerDecSpeedEvent event, Emitter<PlayerState> emit) async {
     final state = this.state;
     if (state is! PlayerDataState) return;
-    final double nextSpeed = (state.speed - _kStepPlaySpeed).clamp(
-      _kMinPlaySpeed,
-      _kMaxPlaySpeed,
-    );
+    final double nextSpeed = (state.speed - _kStepPlaySpeed)
+        .clamp(_kMinPlaySpeed, _kMaxPlaySpeed)
+        .digits(1);
     emit(state.copyWith(speed: nextSpeed));
     await state.player.setPlaybackSpeed(nextSpeed);
   }

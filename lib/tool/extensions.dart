@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:mockingbird/db/entities/subtitle_entity.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
@@ -118,5 +119,13 @@ extension on SentenceEntity {
     } else {
       return start <= position && position < next.start;
     }
+  }
+}
+
+extension DoubleHelper on double {
+  /// Returns a double rounded to N decimal places
+  double digits(int fractionDigits) {
+    num mod = pow(10, fractionDigits);
+    return ((this * mod).round().toDouble() / mod);
   }
 }
