@@ -452,7 +452,7 @@ class PlayerUI extends StatelessWidget {
       ),
       child: Builder(
         builder: (context) {
-          const double maxVolume = 100;
+          const double maxVolume = 1;
           final volume = context.select<PlayerBlocType, double>(
             (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? maxVolume,
           );

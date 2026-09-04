@@ -606,7 +606,7 @@ class PlayerBloc extends PlayerBlocType {
       subtitleState: subtitleState,
       position: position,
       duration: player.value.duration,
-      volume: 100,
+      volume: 1,
       speed: 1,
       mediaType: media.type,
       title: title,
