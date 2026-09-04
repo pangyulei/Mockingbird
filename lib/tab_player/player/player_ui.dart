@@ -308,13 +308,6 @@ class PlayerUI extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Tap here to import a subtitle file',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.outline.withValues(alpha: 0.6),
-              ),
-            ),
           ],
         ),
       ),

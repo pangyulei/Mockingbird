@@ -1,4 +1,3 @@
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 
 import 'package:mockingbird/db/entities/sentence_entity.dart';
 import 'package:mockingbird/db/entities/subtitle_entity.dart';

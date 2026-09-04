@@ -7,7 +7,6 @@ import 'package:mockingbird/tab_player/player/background_audio_player.dart';
 import 'package:mockingbird/tool/shared_metadata.dart';
 
 void main() async {
-  //TODO pad version, fixed sentenceList width, landscape orientation,
   WidgetsFlutterBinding.ensureInitialized(); //objectbox official code
   await DB.init();
   await SharedMetadata.init();
