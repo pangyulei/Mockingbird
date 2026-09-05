@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/tab_settings/about/about_bloc.dart';
+import 'package:mockingbird/tab_settings/about/about_event.dart';
 
 class AboutUI extends StatelessWidget {
   const AboutUI({super.key});
