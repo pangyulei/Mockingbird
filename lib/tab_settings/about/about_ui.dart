@@ -11,7 +11,7 @@ class AboutUI extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return BlocProvider(
-      create: (context) => AboutBloc(),
+      create: (context) => AboutBloc()..add(const AboutInitEvent()),
       child: Scaffold(
         appBar: AppBar(title: const Text('About')),
         body: SingleChildScrollView(
