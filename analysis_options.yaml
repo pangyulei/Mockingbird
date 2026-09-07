@@ -9,6 +9,14 @@ analyzer:
     prefer_const_literals_to_create_immutables: warning
     non_constant_identifier_names: ignore
     camel_case_types: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   rules:

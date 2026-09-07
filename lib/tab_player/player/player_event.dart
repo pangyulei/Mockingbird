@@ -43,9 +43,6 @@ class PlayerGoToAlbumListEvent extends PlayerEvent {
   const PlayerGoToAlbumListEvent(this.context);
 }
 
-class PlayerReloadSubtitleEvent extends PlayerEvent {
-  const PlayerReloadSubtitleEvent();
-}
 
 class PlayerScrollToTopEvent extends PlayerEvent {
   const PlayerScrollToTopEvent();
