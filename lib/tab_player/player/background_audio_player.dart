@@ -123,7 +123,6 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
       HubSyncBackgroundAudioToPlayerEvent(
         playing: playing,
         position: position,
-        loopIndex: _playerInfo?.loopIndex,
       ),
     );
   }

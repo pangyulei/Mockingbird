@@ -69,12 +69,10 @@ class HubSyncPlayerToBackgroundAudioEvent extends HubEvent {
 class HubSyncBackgroundAudioToPlayerEvent extends HubEvent {
   final bool playing;
   final Duration position;
-  final int? loopIndex;
 
   const HubSyncBackgroundAudioToPlayerEvent({
     required this.playing,
     required this.position,
-    required this.loopIndex,
   });
 }
 

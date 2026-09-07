@@ -91,7 +91,6 @@ class PlayerBloc extends PlayerBlocType {
             (event) =>
             add(
               PlayerSyncFromBackgroundAudioEvent(
-                loopIndex: event.loopIndex,
                 playing: event.playing,
                 position: event.position,
               ),
@@ -483,13 +482,13 @@ class PlayerBloc extends PlayerBlocType {
   }
 
   void _onInit(PlayerInitEvent event, Emitter<PlayerState> emit) async {
+    EasyLoading.show(maskType: .clear);
     //before switch media, update old media's progress position
     var state = this.state;
     if (state is PlayerDataState) {
       await _updateProgressPosition(state.position);
     }
 
-    EasyLoading.show(maskType: .clear);
     final metadata = await DB.loadMetadata();
     final mediaId = event.mediaId ?? metadata.playingMediaId;
     final media = mediaId == null ? null : await AssetEntity.fromId(mediaId);
@@ -507,19 +506,30 @@ class PlayerBloc extends PlayerBlocType {
       PlayerSyncFromBackgroundAudioEvent event,
       Emitter<PlayerState> emit,
       ) async {
-    var state = this.state;
-    if (state is! PlayerDataState) return;
-    //TODO reload maybe media already deleted
+    var newState = await defer<PlayerState>(() async {
 
+    }, () async {
+      EasyLoading.show(maskType: .clear);
+      var state = this.state;
+      if (state is! PlayerDataState) return state;
+      final mediaId = _media?.id;
+      if (mediaId == null) return state;
+
+
+      final media = await AssetEntity.fromId(mediaId);
+      return await _reload(media);
+    });
     await _onPositionChangeByDragging(event.position, emit);
-
-    state = state.copyWith(playing: event.playing, loopIndex: () => event.loopIndex);
-    emit(state);
-    if (event.playing) {
-      await state.player.play();
-    } else {
-      await state.player.pause();
+    if (newState is PlayerDataState) {
+      newState = newState.copyWith(playing: event.playing);
+      if (event.playing) {
+        await newState.player.play();
+      } else {
+        await newState.player.pause();
+      }
     }
+    emit(newState);
+    EasyLoading.dismiss();
   }
 
 
