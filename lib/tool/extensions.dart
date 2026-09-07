@@ -40,8 +40,7 @@ extension ScrollHelper on ItemScrollController {
     }
   }
 
-  void safeScrollTo(
-    int? index, {
+  void safeScrollTo(int? index, {
     double alignment = 0,
     Duration duration = const Duration(milliseconds: 250),
   }) {
@@ -113,7 +112,7 @@ extension SentenceListHelper on List<SentenceEntity> {
 
 extension on SentenceEntity {
   bool playing(SentenceEntity? prev, SentenceEntity? next, Duration position) {
-    final start = prev == null ? const Duration(seconds: 0) : this.start;
+    final start = prev == null ? Duration.zero : this.start;
     if (next == null) {
       return start <= position;
     } else {

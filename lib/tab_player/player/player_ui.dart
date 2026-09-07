@@ -12,6 +12,7 @@ import 'package:video_player/video_player.dart';
 
 abstract interface class PlayerBlocITF {
   SentenceCardBlocType sentenceCardBlocAtIndex(int index);
+
   PlayerSubtitleListBlocType get subtitleListBlocType;
 }
 
@@ -22,6 +23,7 @@ abstract class PlayerBlocType extends Bloc<PlayerEvent, PlayerState>
 
 class PlayerUI extends StatelessWidget {
   final PlayerBlocType _bloc;
+
   const PlayerUI(this._bloc, {super.key});
 
   @override
@@ -33,8 +35,8 @@ class PlayerUI extends StatelessWidget {
         listener: (context, state) {
           if (state is! PlayerDataState) {
             assert(
-              false,
-              'player only listen when state is PlayerDataState, but now it is $state',
+            false,
+            'player only listen when state is PlayerDataState, but now it is $state',
             );
             return;
           }
@@ -53,7 +55,7 @@ class PlayerUI extends StatelessWidget {
         child: Builder(
           builder: (context) {
             final stateType = context.select<PlayerBlocType, Type>(
-              (bloc) => bloc.state.runtimeType,
+                  (bloc) => bloc.state.runtimeType,
             );
             switch (stateType) {
               case PlayerInitState:
@@ -128,7 +130,10 @@ class PlayerUI extends StatelessWidget {
     return Builder(
       builder: (context) {
         final mediaType = context.select<PlayerBlocType, AssetType>(
-          (bloc) => bloc.state.as<PlayerDataState>()?.mediaType ?? .video,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.mediaType ?? .video,
         );
         if (mediaType == .video) {
           return _videoDisplayer(context);
@@ -148,8 +153,10 @@ class PlayerUI extends StatelessWidget {
           Builder(
             builder: (context) {
               final aspectRatio = context.select<PlayerBlocType, double>(
-                (bloc) =>
-                    bloc.state.as<PlayerDataState>()?.aspectRatio ?? 16 / 9,
+                    (bloc) =>
+                bloc.state
+                    .as<PlayerDataState>()
+                    ?.aspectRatio ?? 16 / 9,
               );
               return AspectRatio(aspectRatio: aspectRatio, child: _player());
             },
@@ -185,7 +192,10 @@ class PlayerUI extends StatelessWidget {
     return Builder(
       builder: (context) {
         final player = context.select<PlayerBlocType, VideoPlayerController?>(
-          (bloc) => bloc.state.as<PlayerDataState>()?.player,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.player,
         );
         if (player == null) return const SizedBox.shrink();
         return VideoPlayer(player);
@@ -243,24 +253,27 @@ class PlayerUI extends StatelessWidget {
   Widget _subtitleWidget(BuildContext context) {
     return Expanded(
       child: ColoredBox(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: Theme
+            .of(context)
+            .scaffoldBackgroundColor,
         child: Builder(
           builder: (context) {
             final (subtitleState, scroller) = context
                 .select<
-                  PlayerBlocType,
-                  (PlayerSubtitleState?, ItemScrollController?)
-                >((bloc) {
-                  final dataState = bloc.state.as<PlayerDataState>();
-                  return (dataState?.subtitleState, dataState?.scroller);
-                });
+                PlayerBlocType,
+                (PlayerSubtitleState?, ItemScrollController?)
+            >((bloc) {
+              final dataState = bloc.state.as<PlayerDataState>();
+              return (dataState?.subtitleState, dataState?.scroller);
+            });
             if (subtitleState == null || scroller == null) {
               return const SizedBox.shrink();
             }
             switch (subtitleState) {
               case PlayerSubtitleDataState subtitleState:
                 debugPrint(
-                  'player ui align:${subtitleState.initialAlignment} index:${subtitleState.initialIndex}',
+                  'player ui align:${subtitleState.initialAlignment} index:${subtitleState
+                      .initialIndex}',
                 );
                 return ScrollablePositionedList.builder(
                   key: ValueKey(subtitleState),
@@ -318,12 +331,16 @@ class PlayerUI extends StatelessWidget {
     return Builder(
       builder: (context) {
         final hasSubtitle = context.select<PlayerBlocType, bool>(
-          (bloc) =>
-              bloc.state.as<PlayerDataState>()?.subtitleState
-                  is PlayerSubtitleDataState,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.subtitleState
+          is PlayerSubtitleDataState,
         );
         if (!hasSubtitle) return const SizedBox.shrink();
-        final colorScheme = Theme.of(context).colorScheme;
+        final colorScheme = Theme
+            .of(context)
+            .colorScheme;
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -373,8 +390,10 @@ class PlayerUI extends StatelessWidget {
         Builder(
           builder: (context) {
             final bool showVolumeSlider = context.select<PlayerBlocType, bool>(
-              (bloc) =>
-                  bloc.state.as<PlayerDataState>()?.volumeSliderVisible ??
+                  (bloc) =>
+              bloc.state
+                  .as<PlayerDataState>()
+                  ?.volumeSliderVisible ??
                   false,
             );
             if (showVolumeSlider) {
@@ -397,8 +416,10 @@ class PlayerUI extends StatelessWidget {
         Builder(
           builder: (context) {
             final bool showVolumeSlider = context.select<PlayerBlocType, bool>(
-              (bloc) =>
-                  bloc.state.as<PlayerDataState>()?.volumeSliderVisible ??
+                  (bloc) =>
+              bloc.state
+                  .as<PlayerDataState>()
+                  ?.volumeSliderVisible ??
                   false,
             );
             if (showVolumeSlider) {
@@ -416,7 +437,10 @@ class PlayerUI extends StatelessWidget {
     return Builder(
       builder: (context) {
         final volume = context.select<PlayerBlocType, double>(
-          (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? 1,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.volume ?? 1,
         );
         final icon = volume == 0
             ? Icons.volume_off_rounded
@@ -438,7 +462,9 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _horizontalVolumeSlider(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
         trackHeight: 3.0,
@@ -454,7 +480,10 @@ class PlayerUI extends StatelessWidget {
         builder: (context) {
           const double maxVolume = 1;
           final volume = context.select<PlayerBlocType, double>(
-            (bloc) => bloc.state.as<PlayerDataState>()?.volume ?? maxVolume,
+                (bloc) =>
+            bloc.state
+                .as<PlayerDataState>()
+                ?.volume ?? maxVolume,
           );
           return Slider(
             value: volume,
@@ -471,7 +500,9 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _progressSlider(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
     return SliderTheme(
       data: SliderTheme.of(context).copyWith(
         trackHeight: 3.0,
@@ -487,13 +518,18 @@ class PlayerUI extends StatelessWidget {
         builder: (context) {
           final (position, duration) = context
               .select<PlayerBlocType, (Duration, Duration)>(
-                (bloc) => (
-                  bloc.state.as<PlayerDataState>()?.position ??
-                      const Duration(seconds: 0),
-                  bloc.state.as<PlayerDataState>()?.duration ??
-                      const Duration(seconds: 0),
-                ),
-              );
+                (bloc) =>
+            (
+            bloc.state
+                .as<PlayerDataState>()
+                ?.position ??
+                Duration.zero,
+            bloc.state
+                .as<PlayerDataState>()
+                ?.duration ??
+                Duration.zero,
+            ),
+          );
           final max = duration.inMilliseconds.toDouble();
           final val = position.inMilliseconds.clamp(0, max).toDouble();
           return Slider(
@@ -531,8 +567,12 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _pageForEmpty(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
+    final textTheme = Theme
+        .of(context)
+        .textTheme;
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
@@ -615,7 +655,10 @@ class PlayerUI extends StatelessWidget {
       child: Builder(
         builder: (context) {
           final title = context.select<PlayerBlocType, String>(
-            (bloc) => bloc.state.as<PlayerDataState>()?.title ?? '',
+                (bloc) =>
+            bloc.state
+                .as<PlayerDataState>()
+                ?.title ?? '',
           );
           if (title.isEmpty) {
             return const Text('');
@@ -638,7 +681,9 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _controlBar(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surface,
@@ -652,11 +697,11 @@ class PlayerUI extends StatelessWidget {
           final subtitleListButtonVisible = context
               .select<PlayerBlocType, bool>(
                 (bloc) =>
-                    bloc.state
-                        .as<PlayerDataState>()
-                        ?.subtitleListButtonVisible ??
-                    false,
-              );
+            bloc.state
+                .as<PlayerDataState>()
+                ?.subtitleListButtonVisible ??
+                false,
+          );
           return Row(
             children: [
               _playOrPauseButton(context),
@@ -680,11 +725,16 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _playOrPauseButton(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
     return Builder(
       builder: (context) {
         final playing = context.select<PlayerBlocType, bool>(
-          (bloc) => bloc.state.as<PlayerDataState>()?.playing ?? false,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.playing ?? false,
         );
         return IconButton.filled(
           onPressed: () {
@@ -711,17 +761,24 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _loopButton(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
     return Builder(
       builder: (context) {
         final hasSubtitle = context.select<PlayerBlocType, bool>(
-          (bloc) =>
-              bloc.state.as<PlayerDataState>()?.subtitleState
-                  is PlayerSubtitleDataState,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.subtitleState
+          is PlayerSubtitleDataState,
         );
         if (!hasSubtitle) return const SizedBox.shrink();
         final loop = context.select<PlayerBlocType, bool>(
-          (bloc) => bloc.state.as<PlayerDataState>()?.loopIndex != null,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.loopIndex != null,
         );
         return IconButton(
           onPressed: () {
@@ -740,7 +797,9 @@ class PlayerUI extends StatelessWidget {
   }
 
   Widget _subtitleListButton(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
     return IconButton(
       onPressed: () {
         context.read<PlayerBlocType>().add(const PlayerShowSubtitleListEvent());
@@ -754,40 +813,53 @@ class PlayerUI extends StatelessWidget {
 
   Widget _speedDownButton() {
     return Builder(
-      builder: (context) => IconButton(
-        onPressed: () {
-          context.read<PlayerBlocType>().add(const PlayerDecSpeedEvent());
-        },
-        icon: const Icon(Icons.remove_circle_outline_rounded),
-        color: Theme.of(context).colorScheme.outline,
-        style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
-        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-        padding: EdgeInsets.zero,
-      ),
+      builder: (context) =>
+          IconButton(
+            onPressed: () {
+              context.read<PlayerBlocType>().add(const PlayerDecSpeedEvent());
+            },
+            icon: const Icon(Icons.remove_circle_outline_rounded),
+            color: Theme
+                .of(context)
+                .colorScheme
+                .outline,
+            style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+            constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+            padding: EdgeInsets.zero,
+          ),
     );
   }
 
   Widget _speedUpButton() {
     return Builder(
-      builder: (context) => IconButton(
-        onPressed: () {
-          context.read<PlayerBlocType>().add(const PlayerIncSpeedEvent());
-        },
-        icon: const Icon(Icons.add_circle_outline_rounded),
-        color: Theme.of(context).colorScheme.outline,
-        style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
-        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-        padding: EdgeInsets.zero,
-      ),
+      builder: (context) =>
+          IconButton(
+            onPressed: () {
+              context.read<PlayerBlocType>().add(const PlayerIncSpeedEvent());
+            },
+            icon: const Icon(Icons.add_circle_outline_rounded),
+            color: Theme
+                .of(context)
+                .colorScheme
+                .outline,
+            style: IconButton.styleFrom(tapTargetSize: .shrinkWrap),
+            constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+            padding: EdgeInsets.zero,
+          ),
     );
   }
 
   Widget _speedLabel(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme
+        .of(context)
+        .colorScheme;
     return Builder(
       builder: (context) {
         final speed = context.select<PlayerBlocType, double>(
-          (bloc) => bloc.state.as<PlayerDataState>()?.speed ?? 1,
+              (bloc) =>
+          bloc.state
+              .as<PlayerDataState>()
+              ?.speed ?? 1,
         );
         return GestureDetector(
           onTap: () =>

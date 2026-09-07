@@ -70,7 +70,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     }
     //auto-replay, if position >= duration,
     if (position >= playerInfo.duration) {
-      _audioPlayer.seek(const Duration(seconds: 0));
+      _audioPlayer.seek(Duration.zero);
       await _audioPlayer.play();
     }
   }
@@ -109,7 +109,7 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
   }
 
   void _onAppResume(HubAppResumeEvent event) async {
-    if (mediaItem.valueOrNull == null) return; 
+    if (mediaItem.valueOrNull == null) return;
     final playing = playbackState.value.playing;
     final position = playbackState.value.position;
     debugPrint(
@@ -146,17 +146,17 @@ class BackgroundAudioPlayer extends BaseAudioHandler {
     await _audioPlayer.seek(position);
   }
 
-  // @override
-  // Future<void> stop() async {
-  //   await _mediaController.mb_pause();
-  //   playbackState.add(
-  //     playbackState.value.copyWith(
-  //       playing: false,
-  //       processingState: AudioProcessingState.idle,
-  //     ),
-  //   );
-  //   await super.stop();
-  // }
+// @override
+// Future<void> stop() async {
+//   await _mediaController.mb_pause();
+//   playbackState.add(
+//     playbackState.value.copyWith(
+//       playing: false,
+//       processingState: AudioProcessingState.idle,
+//     ),
+//   );
+//   await super.stop();
+// }
 }
 
 extension on AssetEntity {
@@ -177,7 +177,9 @@ extension on AssetEntity {
     final dir = await getTemporaryDirectory();
     final title = await titleAsync;
     final fileName =
-        '$title-${size.width}x${size.height}-${DateTime.now().millisecondsSinceEpoch}';
+        '$title-${size.width}x${size.height}-${DateTime
+        .now()
+        .millisecondsSinceEpoch}';
     final thumbFile = File(p.join(dir.path, fileName));
     await thumbFile.writeAsBytes(thumbData, flush: true);
     return thumbFile;
