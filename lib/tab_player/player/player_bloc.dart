@@ -490,6 +490,11 @@ class PlayerBloc extends PlayerBlocType {
       final media = await AssetEntity.fromId(mediaId);
       if (media == null) {
         state = await _reload(null);
+        //media is deleted
+        final metadata = await DB.loadMetadata();
+        metadata.copyWith(playingMediaId: () => null);
+        await DB.updateMetadata(metadata);
+        
       } else {
         state = await _reload((
             media: media,
@@ -523,6 +528,8 @@ class PlayerBloc extends PlayerBlocType {
       () async {
         //Fix switch media, old listener still execute bug
         _media = null;
+        //Fix media deleted but still can here voice
+        state.as<PlayerDataState>()?.player.dispose();
         if (info == null) {
           return const PlayerEmptyState();
         }
@@ -531,7 +538,6 @@ class PlayerBloc extends PlayerBlocType {
         if (mediaFile == null) {
           return const PlayerEmptyState();
         }
-        state.as<PlayerDataState>()?.player.dispose();
         final player = VideoPlayerController.file(mediaFile);
         await player.initialize();
         player.addListener(() => add(PlayerPositionChangeByPlayingEvent(player.value.position)));
