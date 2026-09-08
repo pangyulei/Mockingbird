@@ -490,18 +490,18 @@ class PlayerBloc extends PlayerBlocType {
       final media = await AssetEntity.fromId(mediaId);
       if (media == null) {
         state = await _reload(null);
-        //media is deleted
-        final metadata = await DB.loadMetadata();
-        metadata.copyWith(playingMediaId: () => null);
-        await DB.updateMetadata(metadata);
         
       } else {
-        state = await _reload((
+        state = await _reload(
+          (
             media: media,
             selectedSubtitleName: state.selectedSubtitleName,
             loopIndex: state.loopIndex,
             position: event.position,
-            playing: event.playing)
+            playing: event.playing,
+            volume: state.volume,
+            speed: state.speed,
+          )
         );
       }
       emit(state);
@@ -515,14 +515,15 @@ class PlayerBloc extends PlayerBlocType {
       int? loopIndex,
       Duration position,
       String? selectedSubtitleName,
+      double volume,
+      double speed,
     })?
     info,
   ) async {
+    var metadata = await DB.loadMetadata();
     final newState = await defer<PlayerState>(
       () async {
-        var metadata = await DB.loadMetadata();
-        metadata = metadata.copyWith(playingMediaId: () => info?.media.id);
-        await DB.updateMetadata(metadata);
+        await DB.updateMetadata(metadata.copyWith(playingMediaId: () => info?.media.id));
         _media = info?.media;
       },
       () async {
@@ -542,7 +543,6 @@ class PlayerBloc extends PlayerBlocType {
         await player.initialize();
         player.addListener(() => add(PlayerPositionChangeByPlayingEvent(player.value.position)));
         final title = await info.media.titleAsync;
-        var metadata = await DB.loadMetadata();
         var progress = metadata.mediaProgressList.firstWhereOrNull(
           (mp) => mp.mediaId == info.media.id,
         );
@@ -561,7 +561,6 @@ class PlayerBloc extends PlayerBlocType {
             );
         if (progress.id == 0) {
           metadata.mediaProgressList.add(progress);
-          await DB.updateMetadata(metadata);
         }
         await player.seekTo(info.position);
         if (info.playing) {
@@ -588,8 +587,8 @@ class PlayerBloc extends PlayerBlocType {
           subtitleState: subtitleState,
           position: info.position,
           duration: player.value.duration,
-          volume: 1,
-          speed: 1,
+          volume: info.volume,
+          speed: info.speed,
           mediaType: info.media.type,
           title: title,
           player: player,
