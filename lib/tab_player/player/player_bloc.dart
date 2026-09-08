@@ -467,7 +467,7 @@ class PlayerBloc extends PlayerBlocType {
       var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == mediaId);
       final position = progress?.position ?? Duration.zero;
       state = await _reload((media: media, playing: true, position: position, loopIndex: null,
-      selectedSubtitleName: progress?.subtitleName));
+      selectedSubtitleName: progress?.subtitleName, speed: 1, volume: 1));
     }
     emit(state);
     EasyLoading.dismiss();
