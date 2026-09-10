@@ -1,9 +1,9 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:mockingbird/app/app_lifecycler.dart';
-import 'package:mockingbird/app/app_ui.dart';
-import 'package:mockingbird/db/db.dart';
-import 'package:mockingbird/tab_player/player/background_audio_player.dart';
+import 'package:mockingbird/mobile/app/app_lifecycler.dart';
+import 'package:mockingbird/mobile/app/app_ui.dart';
+import 'package:mockingbird/mobile/db/db.dart';
+import 'package:mockingbird/mobile/tab_player/player/background_audio_player.dart';
 
 
 void main() async {
