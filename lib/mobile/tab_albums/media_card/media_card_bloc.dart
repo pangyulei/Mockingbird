@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/mobile/app/app_route.dart';
+import 'package:mockingbird/mobile/app/mobile_app_route.dart';
 import 'package:mockingbird/mobile/tab_albums/media_card/media_card_event.dart';
 import 'package:mockingbird/mobile/tab_albums/media_card/media_card_state.dart';
 import 'package:mockingbird/mobile/tab_albums/media_card/media_card_ui.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
-import 'package:mockingbird/mobile/tool/extensions.dart';
+import 'package:mockingbird/tool/event_hub.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../db/db.dart';
@@ -34,7 +34,7 @@ class MediaCardBloc extends MediaCardBlocType {
   void _onClick(MediaCardClickEvent event, Emitter<MediaCardState> emit) async {
     if (_media == null) return;
     EventHub.emit(HubPlayMediaEvent(_media.id));
-    event.context.go(AppRoute.playerById(_media.id));
+    event.context.go(MobileAppRoute.playerById(_media.id));
   }
 
   void _onInit(MediaCardInitEvent event, Emitter<MediaCardState> emit) async {

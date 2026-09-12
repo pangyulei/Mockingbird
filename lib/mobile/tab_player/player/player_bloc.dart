@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/mobile/app/app_route.dart';
+import 'package:mockingbird/mobile/app/mobile_app_route.dart';
 import 'package:mockingbird/mobile/db/entities/media_progress_entity.dart';
 import 'package:mockingbird/mobile/db/entities/sentence_entity.dart';
 import 'package:mockingbird/mobile/db/entities/subtitle_entity.dart';
@@ -18,12 +18,12 @@ import 'package:mockingbird/mobile/tab_player/player_subtitle_list/player_subtit
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_bloc.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_ui.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
-import 'package:mockingbird/mobile/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../tool/event_hub.dart';
+import '../../../tool/extensions.dart';
 import '../../db/db.dart';
 
 const double _kMaxPlaySpeed = 3.0;
@@ -244,7 +244,7 @@ class PlayerBloc extends PlayerBlocType {
   }
 
   void _onGoToAlbumList(PlayerGoToAlbumListEvent event, Emitter<PlayerState> emit) {
-    event.context.go(AppRoute.albumList);
+    event.context.go(MobileAppRoute.albumList);
   }
 
   void _onVolumeChange(PlayerVolumeChangeEvent event, Emitter<PlayerState> emit) async {

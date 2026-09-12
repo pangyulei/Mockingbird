@@ -4,8 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:path/path.dart' as p;
 import 'package:uuid/uuid.dart';
 
-import '../db/entities/sentence_entity.dart';
-import '../db/entities/subtitle_entity.dart';
+import '../mobile/db/entities/sentence_entity.dart';
+import '../mobile/db/entities/subtitle_entity.dart';
 
 class SubtitleParser {
   static Future<SubtitleEntity?> parsePath(String pathStr) async {

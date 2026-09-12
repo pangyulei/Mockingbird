@@ -7,8 +7,7 @@ import 'package:mockingbird/mobile/tab_albums/album_list/album_list_bloc.dart';
 import 'package:mockingbird/mobile/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/mobile/tab_albums/album_list/album_list_state.dart';
 import 'package:photo_manager/photo_manager.dart';
-
-import '../../tool/extensions.dart';
+import 'package:mockingbird/tool/extensions.dart';
 
 class AlbumListUI extends StatelessWidget {
   const AlbumListUI({super.key});

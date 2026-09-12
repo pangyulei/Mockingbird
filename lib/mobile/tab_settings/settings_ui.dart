@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/mobile/app/app_route.dart';
+import 'package:mockingbird/mobile/app/mobile_app_route.dart';
 
 class SettingsUI extends StatelessWidget {
   const SettingsUI({super.key});
@@ -63,6 +63,6 @@ class SettingsUI extends StatelessWidget {
   }
 
   void _onTapAbout(BuildContext context) {
-    context.push(AppRoute.about);
+    context.push(MobileAppRoute.about);
   }
 }

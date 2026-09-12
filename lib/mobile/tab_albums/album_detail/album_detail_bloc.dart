@@ -8,9 +8,10 @@ import 'package:mockingbird/mobile/tab_albums/album_detail/album_detail_ui.dart'
 import 'package:mockingbird/mobile/tab_albums/media_card/media_card_bloc.dart';
 import 'package:mockingbird/mobile/tab_albums/media_card/media_card_event.dart';
 import 'package:mockingbird/mobile/tab_albums/media_card/media_card_ui.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
-import 'package:mockingbird/mobile/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
+
+import '../../../tool/event_hub.dart';
+import '../../../tool/extensions.dart';
 
 class AlbumDetailBloc extends AlbumDetailBlocType {
   final String? _albumId;

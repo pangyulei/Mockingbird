@@ -7,8 +7,8 @@ import 'package:mockingbird/mobile/tab_player/player/player_ui.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_ui.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
-import 'package:mockingbird/mobile/tool/extensions.dart';
+import 'package:mockingbird/tool/event_hub.dart';
+import 'package:mockingbird/tool/extensions.dart';
 
 class SentenceCardBloc extends SentenceCardBlocType {
   final _subList = <StreamSubscription>[];

@@ -5,7 +5,7 @@ import 'package:mockingbird/mobile/tab_player/player/player_event.dart';
 import 'package:mockingbird/mobile/tab_player/player/player_state.dart';
 import 'package:mockingbird/mobile/tab_player/player_subtitle_list/player_subtitle_list_ui.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_ui.dart';
-import 'package:mockingbird/mobile/tool/extensions.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';

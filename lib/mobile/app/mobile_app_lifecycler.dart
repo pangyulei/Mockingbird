@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
 
-class AppLifecycler with WidgetsBindingObserver {
+import '../../tool/event_hub.dart';
+
+class MobileAppLifecycler with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     debugPrint('app state: $state');

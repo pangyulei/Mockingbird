@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:mockingbird/mobile/tab_albums/album_list/album_list_event.dart';
 import 'package:mockingbird/mobile/tab_albums/album_list/album_list_state.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
+import 'package:mockingbird/tool/event_hub.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../db/db.dart';

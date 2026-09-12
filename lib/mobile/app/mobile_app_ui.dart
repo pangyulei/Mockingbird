@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mockingbird/mobile/app/app_route.dart';
+import 'package:mockingbird/mobile/app/mobile_app_route.dart';
 
-class AppUI extends StatelessWidget {
-  const AppUI({super.key});
+class MobileAppUI extends StatelessWidget {
+  const MobileAppUI({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRoute.init((index, shell) {
+      routerConfig: MobileAppRoute.init((index, shell) {
         // ➔ 切换 Tab 的核心方法
         shell.goBranch(
           index,

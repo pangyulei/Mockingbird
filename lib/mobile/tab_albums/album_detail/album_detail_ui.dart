@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/mobile/tab_albums/album_detail/album_detail_event.dart';
 import 'package:mockingbird/mobile/tab_albums/album_detail/album_detail_state.dart';
-import 'package:mockingbird/mobile/tool/extensions.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+import '../../../tool/extensions.dart';
 import '../media_card/media_card_ui.dart';
 
 abstract interface class AlbumDetailBlocITF {

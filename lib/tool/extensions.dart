@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:flutter/rendering.dart';
 import 'package:mockingbird/mobile/db/entities/subtitle_entity.dart';
-import 'package:mockingbird/mobile/tool/subtitle_parser.dart';
+import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../db/entities/sentence_entity.dart';
+import '../mobile/db/entities/sentence_entity.dart';
 
 extension ObjectHelper on Object {
   T? as<T>() {
@@ -127,4 +128,15 @@ extension DoubleHelper on double {
     num mod = pow(10, fractionDigits);
     return ((this * mod).round().toDouble() / mod);
   }
+}
+
+enum PlatformType {
+  desktop,
+  mobile,
+  pad,
+}
+
+PlatformType get kPlatformType {
+  if (Platform.isFuchsia || Platform.isLinux || Platform.isWindows || Platform.isMacOS) return .desktop;
+  return .mobile;//TODO here should differ pad version
 }

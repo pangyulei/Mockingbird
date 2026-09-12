@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/mobile/tab_player/player_subtitle_list/player_subtitle_list_event.dart';
 import 'package:mockingbird/mobile/tab_player/player_subtitle_list/player_subtitle_list_state.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
+import 'package:mockingbird/tool/event_hub.dart';
 
 abstract class PlayerSubtitleListBlocType
     extends Bloc<PlayerSubtitleListEvent, PlayerSubtitleListState> {

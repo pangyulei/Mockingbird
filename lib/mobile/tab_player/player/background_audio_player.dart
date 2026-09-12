@@ -4,18 +4,18 @@ import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:mockingbird/mobile/tool/event_hub.dart';
-import 'package:mockingbird/mobile/tool/extensions.dart';
+import 'package:mockingbird/tool/event_hub.dart';
+import 'package:mockingbird/tool/extensions.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
-class BackgroundAudioPlayer extends BaseAudioHandler {
+class MobileBackgroundAudioPlayer extends BaseAudioHandler {
   final _audioPlayer = AudioPlayer();
   PlayerInfo? _playerInfo;
 
-  BackgroundAudioPlayer() {
+  MobileBackgroundAudioPlayer() {
     EventHub.on<HubSyncPlayerToBackgroundAudioEvent>(_onSyncFromPlayer);
     EventHub.on<HubAppResumeEvent>(_onAppResume);
     _audioPlayer.speedStream.listen((speed) {

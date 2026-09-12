@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockingbird/mobile/tab_albums/album_detail/album_detail_bloc.dart';
-import 'package:mockingbird/mobile/tab_albums/album_detail/album_detail_ui.dart';
-import 'package:mockingbird/mobile/tab_albums/album_list/album_list_ui.dart';
 import 'package:mockingbird/mobile/tab_player/player/player_bloc.dart';
 import 'package:mockingbird/mobile/tab_player/player/player_event.dart';
 import 'package:mockingbird/mobile/tab_player/player/player_ui.dart';
@@ -11,18 +8,17 @@ import 'package:mockingbird/mobile/tab_settings/settings_ui.dart';
 
 typedef OnClickTab = void Function(int index, StatefulNavigationShell shell);
 
-class AppRoute {
+class DesktopAppRoute {
   static GoRouter? _router;
   static GoRouter init(OnClickTab callback) {
     var router = _router;
     router ??= GoRouter(
-      initialLocation: AppRoute.albumList,
+      initialLocation: player,
       routes: <RouteBase>[
         StatefulShellRoute.indexedStack(
           builder: (context, state, shell) =>
               _indexesStackScaffold(context, shell, callback),
           branches: [
-            StatefulShellBranch(routes: [_albumRoute()]),
             StatefulShellBranch(routes: [_playerRoute()]),
             StatefulShellBranch(routes: [_settingsRoute()]),
           ],
@@ -33,13 +29,6 @@ class AppRoute {
     return router;
   }
 
-  static String get albumList => '/albums';
-
-  // static String get addAlbum => '$albums/new';
-  static String albumById(String id) => '$albumList/$id';
-
-  // static String editAlbum(int id) => '$albums/$id/edit';
-
   static String get player => '/player';
   static String playerById(String mediaId) => '$player?mediaId=$mediaId';
 
@@ -47,20 +36,20 @@ class AppRoute {
 
   static String get about => '$settings/about';
 
-  static GoRoute _albumRoute() => GoRoute(
-    path: albumList,
-    builder: (context, state) => const AlbumListUI(),
-    routes: [
-      GoRoute(
-        path: ':albumId',
-        builder: (BuildContext context, GoRouterState state) {
-          final albumId = state.pathParameters['albumId'];
-          debugPrint('albumdetail go-router create instance $albumId');
-          return AlbumDetailUI(AlbumDetailBloc(albumId));
-        },
-      ),
-    ],
-  );
+  // static GoRoute _albumRoute() => GoRoute(
+  //   path: albumList,
+  //   builder: (context, state) => const AlbumListUI(),
+  //   routes: [
+  //     GoRoute(
+  //       path: ':albumId',
+  //       builder: (BuildContext context, GoRouterState state) {
+  //         final albumId = state.pathParameters['albumId'];
+  //         debugPrint('albumdetail go-router create instance $albumId');
+  //         return AlbumDetailUI(AlbumDetailBloc(albumId));
+  //       },
+  //     ),
+  //   ],
+  // );
 
   static GoRoute _playerRoute() => GoRoute(
     path: player,
@@ -74,7 +63,7 @@ class AppRoute {
   );
 
   static GoRoute _settingsRoute() => GoRoute(
-    path: AppRoute.settings,
+    path: settings,
     builder: (BuildContext context, GoRouterState state) {
       return const SettingsUI();
     },
@@ -113,11 +102,6 @@ class AppRoute {
           unselectedFontSize: 12,
           type: BottomNavigationBarType.fixed,
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.folder_rounded),
-              activeIcon: Icon(Icons.folder_rounded),
-              label: 'Albums',
-            ),
             BottomNavigationBarItem(
               icon: Icon(Icons.play_circle_rounded),
               activeIcon: Icon(Icons.play_circle_rounded),
