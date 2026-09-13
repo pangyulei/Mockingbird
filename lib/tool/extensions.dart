@@ -1,14 +1,30 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter/rendering.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:mockingbird/mobile/db/entities/subtitle_entity.dart';
 import 'package:mockingbird/tool/subtitle_parser.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../mobile/db/entities/sentence_entity.dart';
+
+extension WindowControllerHelper on WindowController {
+  Future<void> bindMethods() async {
+    await setWindowMethodHandler((call) async {
+      switch (call.method) {
+        case 'window_close':
+          return await windowManager.close(); // real close, not hide
+        default:
+          throw Exception('Not implemented: ${call.method}');
+      }
+    });
+  }
+
+  Future<void> close() => invokeMethod('window_close'); // this is what you want
+}
 
 extension ObjectHelper on Object {
   T? as<T>() {
@@ -71,7 +87,9 @@ extension AssetEntityHelper on AssetEntity {
       if (!{'.srt', '.vtt'}.contains(extension)) continue;
       final subtitleName = p.basenameWithoutExtension(subFile.path);
       final mediaName = p.basenameWithoutExtension(mediaFile.path);
-      final matched = subtitleName.toLowerCase().contains(mediaName.toLowerCase());
+      final matched = subtitleName.toLowerCase().contains(
+        mediaName.toLowerCase(),
+      );
       if (matched) {
         final subtitleEntity = await SubtitleParser.parseFile(subFile);
         if (subtitleEntity != null) {
@@ -130,13 +148,14 @@ extension DoubleHelper on double {
   }
 }
 
-enum PlatformType {
-  desktop,
-  mobile,
-  pad,
-}
+enum PlatformType { desktop, mobile, tablet }
 
 PlatformType get kPlatformType {
-  if (Platform.isFuchsia || Platform.isLinux || Platform.isWindows || Platform.isMacOS) return .desktop;
-  return .mobile;//TODO here should differ pad version
+  if (Platform.isFuchsia ||
+      Platform.isLinux ||
+      Platform.isWindows ||
+      Platform.isMacOS) {
+    return .desktop;
+  }
+  return .mobile; //TODO here should differ tablet version
 }

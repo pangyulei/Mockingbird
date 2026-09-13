@@ -5,19 +5,19 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-sealed class PlayerState {
-  const PlayerState();
+sealed class MobilePlayerState {
+  const MobilePlayerState();
 }
 
-class PlayerInitState extends PlayerState {
-  const PlayerInitState();
+class MobilePlayerInitState extends MobilePlayerState {
+  const MobilePlayerInitState();
 }
 
-class PlayerEmptyState extends PlayerState {
-  const PlayerEmptyState();
+class MobilePlayerEmptyState extends MobilePlayerState {
+  const MobilePlayerEmptyState();
 }
 
-class PlayerDataState extends PlayerState {
+class MobilePlayerDataState extends MobilePlayerState {
   final int? loopIndex;
   final bool playing;
   final String title;
@@ -36,7 +36,7 @@ class PlayerDataState extends PlayerState {
   final ItemScrollController scroller;
   final bool subtitleListButtonVisible;
 
-  const PlayerDataState({
+  const MobilePlayerDataState({
     required this.aspectRatio,
     required this.subtitleListButtonVisible,
     required this.subtitleList,
@@ -56,7 +56,7 @@ class PlayerDataState extends PlayerState {
     required this.title,
   });
 
-  PlayerDataState copyWith({
+  MobilePlayerDataState copyWith({
     int? Function()? loopIndex,
     bool? playing,
     double? aspectRatio,
@@ -73,9 +73,10 @@ class PlayerDataState extends PlayerState {
     String? title,
     List<SubtitleEntity>? subtitleList,
   }) {
-    return PlayerDataState(
+    return MobilePlayerDataState(
       aspectRatio: aspectRatio ?? this.aspectRatio,
-      subtitleListButtonVisible: subtitleListButtonVisible ?? this.subtitleListButtonVisible,
+      subtitleListButtonVisible:
+          subtitleListButtonVisible ?? this.subtitleListButtonVisible,
       subtitleList: subtitleList ?? this.subtitleList,
       selectedSubtitleName: selectedSubtitleName == null
           ? this.selectedSubtitleName

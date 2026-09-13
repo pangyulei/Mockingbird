@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mockingbird/mobile/tab_albums/album_detail/album_detail_bloc.dart';
 import 'package:mockingbird/mobile/tab_albums/album_detail/album_detail_ui.dart';
 import 'package:mockingbird/mobile/tab_albums/album_list/album_list_ui.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_bloc.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_event.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_ui.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_bloc.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_event.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_ui.dart';
 import 'package:mockingbird/mobile/tab_settings/about/about_ui.dart';
 import 'package:mockingbird/mobile/tab_settings/settings_ui.dart';
 
@@ -68,8 +68,8 @@ class MobileAppRoute {
       // final mediaId = state.pathParameters['mediaId'];
       final mediaId = state.uri.queryParameters['mediaId'];
       debugPrint('player go-router create mediaId($mediaId)');
-      final playerBloc = SharedPlayerBloc.instance;
-      return PlayerUI(playerBloc..add(PlayerInitEvent(mediaId)));
+      final playerBloc = SharedMobilePlayerBloc.instance;
+      return MobilePlayerUI(playerBloc..add(MobilePlayerInitEvent(mediaId)));
     },
   );
 

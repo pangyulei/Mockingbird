@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mockingbird/mobile/db/entities/sentence_entity.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_event.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_ui.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_event.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_ui.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_event.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_state.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_ui.dart';
@@ -20,7 +20,9 @@ class SentenceCardBloc extends SentenceCardBlocType {
     on<SentenceCardClickEvent>(_onClick);
     _subList.add(
       EventHub.on<HubPlayingSentenceChangeEvent>(
-        (event) => add(SentenceCardPlayingSentenceChangeEvent(event.playingSentenceId)),
+        (event) => add(
+          SentenceCardPlayingSentenceChangeEvent(event.playingSentenceId),
+        ),
       ),
     );
   }
@@ -28,7 +30,9 @@ class SentenceCardBloc extends SentenceCardBlocType {
   void _onClick(SentenceCardClickEvent event, Emitter<SentenceCardState> emit) {
     final sentenceId = _sentence?.id;
     if (sentenceId == null) return;
-    event.context.read<PlayerBlocType>().add(PlayerClickSentenceEvent(sentenceId));
+    event.context.read<PlayerBlocType>().add(
+      MobilePlayerClickSentenceEvent(sentenceId),
+    );
   }
 
   @override

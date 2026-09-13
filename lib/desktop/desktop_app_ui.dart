@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'desktop_app_route.dart';
+import 'package:mockingbird/desktop/player/desktop_player_ui.dart';
 
 class DesktopAppUI extends StatelessWidget {
   const DesktopAppUI({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      routerConfig: DesktopAppRoute.init((index, shell) {
-        // ➔ 切换 Tab 的核心方法
-        shell.goBranch(
-          index,
-          initialLocation:
-              index == shell.currentIndex, // 重复点击当前 Tab 会回到该 Tab 的根路由
-        );
-      }),
       theme: _theme(),
       builder: EasyLoading.init(),
+      home: const DesktopPlayerUI(),
     );
   }
 

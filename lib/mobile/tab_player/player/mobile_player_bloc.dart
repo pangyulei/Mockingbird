@@ -10,9 +10,9 @@ import 'package:mockingbird/mobile/app/mobile_app_route.dart';
 import 'package:mockingbird/mobile/db/entities/media_progress_entity.dart';
 import 'package:mockingbird/mobile/db/entities/sentence_entity.dart';
 import 'package:mockingbird/mobile/db/entities/subtitle_entity.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_event.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_state.dart';
-import 'package:mockingbird/mobile/tab_player/player/player_ui.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_event.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_state.dart';
+import 'package:mockingbird/mobile/tab_player/player/mobile_player_ui.dart';
 import 'package:mockingbird/mobile/tab_player/player_subtitle_list/player_subtitle_list_bloc.dart';
 import 'package:mockingbird/mobile/tab_player/player_subtitle_list/player_subtitle_list_ui.dart';
 import 'package:mockingbird/mobile/tab_player/sentence_card/sentence_card_bloc.dart';
@@ -30,8 +30,8 @@ const double _kMaxPlaySpeed = 3.0;
 const double _kMinPlaySpeed = 0.2;
 const double _kStepPlaySpeed = 0.1;
 
-class SharedPlayerBloc {
-  static final instance = PlayerBloc();
+class SharedMobilePlayerBloc {
+  static final instance = MobilePlayerBloc();
 }
 
 typedef PositionUpdated = ({
@@ -40,13 +40,13 @@ typedef PositionUpdated = ({
   bool sentenceChanged,
 });
 
-class PlayerBloc extends PlayerBlocType {
+class MobilePlayerBloc extends PlayerBlocType {
   bool _mediaPlayingBeforeDrag = false;
   AssetEntity? _media;
 
   SpotType? get _spot {
     final state = this.state;
-    if (state is! PlayerDataState) return null;
+    if (state is! MobilePlayerDataState) return null;
     final sentenceList = state.selectedSubtitle?.sentenceList;
     final position = state.position;
     return sentenceList?.spot(position);
@@ -56,38 +56,44 @@ class PlayerBloc extends PlayerBlocType {
 
   final _subscriptionList = <StreamSubscription>[];
 
-  PlayerBloc() : super(const PlayerInitState()) {
+  MobilePlayerBloc() : super(const MobilePlayerInitState()) {
     debugPrint('player bloc ${identityHashCode(this)} created');
-    on<PlayerInitEvent>(_onInit);
-    on<PlayerSelectAnotherSubtitleFromListEvent>(_onSelectAnotherSubtitleFromList);
-    on<PlayerShowSubtitleListEvent>(_onShowSubtitleList);
-    on<PlayerHideSubtitleListEvent>(_onHideSubtitleList);
-    on<PlayerClickSentenceEvent>(_onClickSentence);
-    on<PlayerScrollToTopEvent>(_onScrollToTop);
-    on<PlayerScrollToBottomEvent>(_onScrollToBottom);
-    on<PlayerScrollToPlayingSentenceEvent>(_onScrollToPlayingSentence);
-    on<PlayerGoToAlbumListEvent>(_onGoToAlbumList);
-    on<PlayerPositionChangeByPlayingEvent>(_onPositionChangeByPlaying);
-    on<PlayerToggleVolumeEvent>(_onToggleVolume);
-    on<PlayerPauseEvent>(_onPause);
-    on<PlayerPlayEvent>(_onPlay);
-    on<PlayerToggleLoopEvent>(_onToggleLoop);
-    on<PlayerResetSpeedEvent>(_onResetSpeed);
-    on<PlayerIncSpeedEvent>(_onIncSpeed);
-    on<PlayerDecSpeedEvent>(_onDecSpeed);
-    on<PlayerMediaSliderStartChangeEvent>(_onMediaSliderStartChange);
-    on<PlayerMediaSliderChangingEvent>(_onMediaSliderChanging);
-    on<PlayerMediaSliderEndChangeEvent>(_onMediaSliderEndChange);
-    on<PlayerVolumeChangeEvent>(_onVolumeChange);
-    on<PlayerSyncFromBackgroundAudioEvent>(_onSyncFromBackgroundAudio);
+    on<MobilePlayerInitEvent>(_onInit);
+    on<MobilePlayerSelectAnotherSubtitleFromListEvent>(
+      _onSelectAnotherSubtitleFromList,
+    );
+    on<MobilePlayerShowSubtitleListEvent>(_onShowSubtitleList);
+    on<MobilePlayerHideSubtitleListEvent>(_onHideSubtitleList);
+    on<MobilePlayerClickSentenceEvent>(_onClickSentence);
+    on<MobilePlayerScrollToTopEvent>(_onScrollToTop);
+    on<MobilePlayerScrollToBottomEvent>(_onScrollToBottom);
+    on<MobilePlayerScrollToPlayingSentenceEvent>(_onScrollToPlayingSentence);
+    on<MobilePlayerGoToAlbumListEvent>(_onGoToAlbumList);
+    on<MobilePlayerPositionChangeByPlayingEvent>(_onPositionChangeByPlaying);
+    on<MobilePlayerToggleVolumeEvent>(_onToggleVolume);
+    on<MobilePlayerPauseEvent>(_onPause);
+    on<MobilePlayerPlayEvent>(_onPlay);
+    on<MobilePlayerToggleLoopEvent>(_onToggleLoop);
+    on<MobilePlayerResetSpeedEvent>(_onResetSpeed);
+    on<MobilePlayerIncSpeedEvent>(_onIncSpeed);
+    on<MobilePlayerDecSpeedEvent>(_onDecSpeed);
+    on<MobilePlayerMediaSliderStartChangeEvent>(_onMediaSliderStartChange);
+    on<MobilePlayerMediaSliderChangingEvent>(_onMediaSliderChanging);
+    on<MobilePlayerMediaSliderEndChangeEvent>(_onMediaSliderEndChange);
+    on<MobilePlayerVolumeChangeEvent>(_onVolumeChange);
+    on<MobilePlayerSyncFromBackgroundAudioEvent>(_onSyncFromBackgroundAudio);
     _subscriptionList.addAll([
       EventHub.on<HubSubtitleChangeEvent>(
-        (event) => add(PlayerSelectAnotherSubtitleFromListEvent(event.name)),
+        (event) =>
+            add(MobilePlayerSelectAnotherSubtitleFromListEvent(event.name)),
       ),
       EventHub.on<HubAppPauseEvent>(_onAppPause),
       EventHub.on<HubSyncBackgroundAudioToPlayerEvent>(
         (event) => add(
-          PlayerSyncFromBackgroundAudioEvent(playing: event.playing, position: event.position),
+          MobilePlayerSyncFromBackgroundAudioEvent(
+            playing: event.playing,
+            position: event.position,
+          ),
         ),
       ),
     ]);
@@ -95,7 +101,7 @@ class PlayerBloc extends PlayerBlocType {
 
   void _onAppPause(HubAppPauseEvent event) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     final media = _media;
     if (media == null) return;
 
@@ -118,9 +124,11 @@ class PlayerBloc extends PlayerBlocType {
 
   Future<void> _updateProgressPosition(Duration position) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     final metadata = await DB.loadMetadata();
-    var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == _media?.id);
+    var progress = metadata.mediaProgressList.firstWhereOrNull(
+      (mp) => mp.mediaId == _media?.id,
+    );
     if (progress != null) {
       progress = progress.copyWith(positionMs: position.inMilliseconds);
       await DB.updateProgress(progress);
@@ -128,11 +136,11 @@ class PlayerBloc extends PlayerBlocType {
   }
 
   void _onSelectAnotherSubtitleFromList(
-    PlayerSelectAnotherSubtitleFromListEvent event,
-    Emitter<PlayerState> emit,
+    MobilePlayerSelectAnotherSubtitleFromListEvent event,
+    Emitter<MobilePlayerState> emit,
   ) async {
     var state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     state = state.copyWith(
       selectedSubtitleName: () => event.name,
       subtitleListVisible: false,
@@ -146,14 +154,19 @@ class PlayerBloc extends PlayerBlocType {
     EventHub.emit(HubPlayingSentenceChangeEvent(_spot?.sentence.id));
 
     var metadata = await DB.loadMetadata();
-    var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == _media?.id);
+    var progress = metadata.mediaProgressList.firstWhereOrNull(
+      (mp) => mp.mediaId == _media?.id,
+    );
     if (progress != null) {
       progress = progress.copyWith(subtitleName: () => event.name);
       await DB.updateProgress(progress);
     }
   }
 
-  void _onClickSentence(PlayerClickSentenceEvent event, Emitter<PlayerState> emit) async {
+  void _onClickSentence(
+    MobilePlayerClickSentenceEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     /*Fix loop mode, tap sentence bug
     in loop mode, you seek from s(n)->s(n+1),
     because it beyond s(n) end, so it trigger reseek to start
@@ -162,10 +175,9 @@ class PlayerBloc extends PlayerBlocType {
     can't rely on position listening
      */
     var dataState = state;
-    if (dataState is! PlayerDataState) return;
-    final sentenceIndex = dataState.selectedSubtitle?.sentenceList.firstIndexWhereOrNull(
-      (sen) => sen.id == event.sentenceId,
-    );
+    if (dataState is! MobilePlayerDataState) return;
+    final sentenceIndex = dataState.selectedSubtitle?.sentenceList
+        .firstIndexWhereOrNull((sen) => sen.id == event.sentenceId);
     if (sentenceIndex == null) return;
     final sentence = dataState.selectedSubtitle?.sentenceList[sentenceIndex];
     if (sentence == null) return;
@@ -180,15 +192,21 @@ class PlayerBloc extends PlayerBlocType {
     await dataState.player.play();
   }
 
-  void _onShowSubtitleList(PlayerShowSubtitleListEvent event, Emitter<PlayerState> emit) {
+  void _onShowSubtitleList(
+    MobilePlayerShowSubtitleListEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     emit(state.copyWith(subtitleListVisible: true));
   }
 
-  void _onHideSubtitleList(PlayerHideSubtitleListEvent event, Emitter<PlayerState> emit) {
+  void _onHideSubtitleList(
+    MobilePlayerHideSubtitleListEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     emit(state.copyWith(subtitleListVisible: false));
   }
 
@@ -222,50 +240,68 @@ class PlayerBloc extends PlayerBlocType {
   //   );
   // }
 
-  void _onScrollToTop(PlayerScrollToTopEvent event, Emitter<PlayerState> emit) {
-    state.as<PlayerDataState>()?.scroller.safeScrollTo(0);
+  void _onScrollToTop(
+    MobilePlayerScrollToTopEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) {
+    state.as<MobilePlayerDataState>()?.scroller.safeScrollTo(0);
   }
 
-  void _onScrollToBottom(PlayerScrollToBottomEvent event, Emitter<PlayerState> emit) {
+  void _onScrollToBottom(
+    MobilePlayerScrollToBottomEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) {
     final dataState = state;
-    if (dataState is! PlayerDataState) return;
+    if (dataState is! MobilePlayerDataState) return;
     final subtitle = dataState.selectedSubtitle;
     if (subtitle == null || subtitle.sentenceList.isEmpty) return;
     dataState.scroller.safeScrollTo(subtitle.sentenceList.length - 1);
   }
 
   void _onScrollToPlayingSentence(
-    PlayerScrollToPlayingSentenceEvent event,
-    Emitter<PlayerState> emit,
+    MobilePlayerScrollToPlayingSentenceEvent event,
+    Emitter<MobilePlayerState> emit,
   ) {
     final index = _spot?.index;
     if (index == null) return;
-    state.as<PlayerDataState>()?.scroller.safeScrollTo(index, alignment: 0.3);
+    state.as<MobilePlayerDataState>()?.scroller.safeScrollTo(
+      index,
+      alignment: 0.3,
+    );
   }
 
-  void _onGoToAlbumList(PlayerGoToAlbumListEvent event, Emitter<PlayerState> emit) {
+  void _onGoToAlbumList(
+    MobilePlayerGoToAlbumListEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) {
     event.context.go(MobileAppRoute.albumList);
   }
 
-  void _onVolumeChange(PlayerVolumeChangeEvent event, Emitter<PlayerState> emit) async {
+  void _onVolumeChange(
+    MobilePlayerVolumeChangeEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     var dataState = state;
-    if (dataState is! PlayerDataState) return;
+    if (dataState is! MobilePlayerDataState) return;
     emit(dataState.copyWith(volume: event.volume));
     await dataState.player.setVolume(event.volume);
   }
 
   void _onPositionChangeByPlaying(
-    PlayerPositionChangeByPlayingEvent event,
-    Emitter<PlayerState> emit,
+    MobilePlayerPositionChangeByPlayingEvent event,
+    Emitter<MobilePlayerState> emit,
   ) async {
     //Fix switch media, old listener still execute bug
     if (_media == null) return;
     //Seperate dragging and playing position change listener
 
     var state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     if (!state.playing) return;
-    final positionUpdated = _updatePropertiesWithPosition(position: event.position, emit: emit);
+    final positionUpdated = _updatePropertiesWithPosition(
+      position: event.position,
+      emit: emit,
+    );
     if (positionUpdated.mediaCompleted) {
       //audo re-play media
       state = state.copyWith(playing: true);
@@ -282,21 +318,30 @@ class PlayerBloc extends PlayerBlocType {
       //handle scroll
       if (state.loopIndex == null) {
         //playing auto scroll to next sentence, not for loop mode
-        state.scroller.safeScrollTo(_spot?.index, alignment: _spot?.alignment ?? 0);
+        state.scroller.safeScrollTo(
+          _spot?.index,
+          alignment: _spot?.alignment ?? 0,
+        );
       }
     }
   }
 
-  Future<void> _onPositionChangeByDragging(Duration position, Emitter<PlayerState> emit) async {
+  Future<void> _onPositionChangeByDragging(
+    Duration position,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     var state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     if (state.playing) {
       state = state.copyWith(playing: false);
       emit(state);
       await state.player.pause();
     }
     await state.player.seekTo(position);
-    final positionUpdatedResult = _updatePropertiesWithPosition(position: position, emit: emit);
+    final positionUpdatedResult = _updatePropertiesWithPosition(
+      position: position,
+      emit: emit,
+    );
     if (state.loopIndex != null) {
       state = state.copyWith(loopIndex: () => _spot?.index);
       emit(state);
@@ -312,11 +357,15 @@ class PlayerBloc extends PlayerBlocType {
 
   PositionUpdated _updatePropertiesWithPosition({
     required Duration position,
-    required Emitter<PlayerState> emit,
+    required Emitter<MobilePlayerState> emit,
   }) {
-    var result = (mediaCompleted: false, completedLoopSentence: null, sentenceChanged: false);
+    var result = (
+      mediaCompleted: false,
+      completedLoopSentence: null,
+      sentenceChanged: false,
+    );
     var state = this.state;
-    if (state is! PlayerDataState) return result;
+    if (state is! MobilePlayerDataState) return result;
 
     //Fix while tap video slider, it bounce at first
     state = state.copyWith(position: position);
@@ -354,19 +403,25 @@ class PlayerBloc extends PlayerBlocType {
     for (final sub in _subscriptionList) {
       sub.cancel();
     }
-    state.as<PlayerDataState>()?.player.dispose();
+    state.as<MobilePlayerDataState>()?.player.dispose();
     return super.close();
   }
 
-  void _onToggleVolume(PlayerToggleVolumeEvent event, Emitter<PlayerState> emit) async {
+  void _onToggleVolume(
+    MobilePlayerToggleVolumeEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     emit(state.copyWith(volumeSliderVisible: !state.volumeSliderVisible));
   }
 
-  void _onPlay(PlayerPlayEvent event, Emitter<PlayerState> emit) async {
+  void _onPlay(
+    MobilePlayerPlayEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     emit(state.copyWith(playing: true));
     if (state.position >= state.duration) {
       await state.player.seekTo(Duration.zero);
@@ -374,16 +429,19 @@ class PlayerBloc extends PlayerBlocType {
     await state.player.play();
   }
 
-  void _onPause(PlayerPauseEvent event, Emitter<PlayerState> emit) async {
+  void _onPause(
+    MobilePlayerPauseEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     emit(state.copyWith(playing: false));
     await state.player.pause();
   }
 
-  void _onToggleLoop(_, Emitter<PlayerState> emit) {
+  void _onToggleLoop(_, Emitter<MobilePlayerState> emit) {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     if (state.loopIndex == null) {
       //to loop
       emit(state.copyWith(loopIndex: () => _spot?.index));
@@ -393,28 +451,28 @@ class PlayerBloc extends PlayerBlocType {
   }
 
   void _onMediaSliderStartChange(
-    PlayerMediaSliderStartChangeEvent event,
-    Emitter<PlayerState> emit,
+    MobilePlayerMediaSliderStartChangeEvent event,
+    Emitter<MobilePlayerState> emit,
   ) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     _mediaPlayingBeforeDrag = state.playing;
     await _onPositionChangeByDragging(event.position, emit);
   }
 
   void _onMediaSliderChanging(
-    PlayerMediaSliderChangingEvent event,
-    Emitter<PlayerState> emit,
+    MobilePlayerMediaSliderChangingEvent event,
+    Emitter<MobilePlayerState> emit,
   ) async {
     await _onPositionChangeByDragging(event.position, emit);
   }
 
   void _onMediaSliderEndChange(
-    PlayerMediaSliderEndChangeEvent event,
-    Emitter<PlayerState> emit,
+    MobilePlayerMediaSliderEndChangeEvent event,
+    Emitter<MobilePlayerState> emit,
   ) async {
     var state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     await _onPositionChangeByDragging(event.position, emit);
     if (event.position < event.duration && _mediaPlayingBeforeDrag) {
       emit(state.copyWith(playing: true));
@@ -422,17 +480,23 @@ class PlayerBloc extends PlayerBlocType {
     }
   }
 
-  void _onResetSpeed(PlayerResetSpeedEvent event, Emitter<PlayerState> emit) async {
+  void _onResetSpeed(
+    MobilePlayerResetSpeedEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     final nextSpeed = (1.0).clamp(_kMinPlaySpeed, _kMaxPlaySpeed);
     emit(state.copyWith(speed: nextSpeed));
     await state.player.setPlaybackSpeed(nextSpeed);
   }
 
-  void _onIncSpeed(PlayerIncSpeedEvent event, Emitter<PlayerState> emit) async {
+  void _onIncSpeed(
+    MobilePlayerIncSpeedEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     final double nextSpeed = (state.speed + _kStepPlaySpeed)
         .clamp(_kMinPlaySpeed, _kMaxPlaySpeed)
         .digits(1);
@@ -440,9 +504,12 @@ class PlayerBloc extends PlayerBlocType {
     await state.player.setPlaybackSpeed(nextSpeed);
   }
 
-  void _onDecSpeed(PlayerDecSpeedEvent event, Emitter<PlayerState> emit) async {
+  void _onDecSpeed(
+    MobilePlayerDecSpeedEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     final state = this.state;
-    if (state is! PlayerDataState) return;
+    if (state is! MobilePlayerDataState) return;
     final double nextSpeed = (state.speed - _kStepPlaySpeed)
         .clamp(_kMinPlaySpeed, _kMaxPlaySpeed)
         .digits(1);
@@ -450,11 +517,14 @@ class PlayerBloc extends PlayerBlocType {
     await state.player.setPlaybackSpeed(nextSpeed);
   }
 
-  void _onInit(PlayerInitEvent event, Emitter<PlayerState> emit) async {
+  void _onInit(
+    MobilePlayerInitEvent event,
+    Emitter<MobilePlayerState> emit,
+  ) async {
     EasyLoading.show(maskType: .clear);
     //before switch media, update old media's progress position
     var state = this.state;
-    if (state is PlayerDataState) {
+    if (state is MobilePlayerDataState) {
       await _updateProgressPosition(state.position);
     }
 
@@ -464,7 +534,9 @@ class PlayerBloc extends PlayerBlocType {
     if (media == null) {
       state = await _reload(null);
     } else {
-      var progress = metadata.mediaProgressList.firstWhereOrNull((mp) => mp.mediaId == mediaId);
+      var progress = metadata.mediaProgressList.firstWhereOrNull(
+        (mp) => mp.mediaId == mediaId,
+      );
       final position = progress?.position ?? Duration.zero;
       state = await _reload((
         media: media,
@@ -481,8 +553,8 @@ class PlayerBloc extends PlayerBlocType {
   }
 
   void _onSyncFromBackgroundAudio(
-    PlayerSyncFromBackgroundAudioEvent event,
-    Emitter<PlayerState> emit,
+    MobilePlayerSyncFromBackgroundAudioEvent event,
+    Emitter<MobilePlayerState> emit,
   ) async {
     await defer(
       () async {
@@ -491,7 +563,7 @@ class PlayerBloc extends PlayerBlocType {
       () async {
         EasyLoading.show(maskType: .clear);
         var state = this.state;
-        if (state is! PlayerDataState) return;
+        if (state is! MobilePlayerDataState) return;
         final mediaId = _media?.id;
         if (mediaId == null) return;
 
@@ -514,7 +586,7 @@ class PlayerBloc extends PlayerBlocType {
     );
   }
 
-  Future<PlayerState> _reload(
+  Future<MobilePlayerState> _reload(
     ({
       AssetEntity media,
       bool playing,
@@ -527,33 +599,47 @@ class PlayerBloc extends PlayerBlocType {
     info,
   ) async {
     var metadata = await DB.loadMetadata();
-    final newState = await defer<PlayerState>(
+    final newState = await defer<MobilePlayerState>(
       () async {
-        await DB.updateMetadata(metadata.copyWith(playingMediaId: () => info?.media.id));
+        await DB.updateMetadata(
+          metadata.copyWith(playingMediaId: () => info?.media.id),
+        );
         _media = info?.media;
       },
       () async {
         //Fix switch media, old listener still execute bug
         _media = null;
         //Fix media deleted but still can here voice
-        state.as<PlayerDataState>()?.player.dispose();
+        state.as<MobilePlayerDataState>()?.player.dispose();
         if (info == null) {
-          return const PlayerEmptyState();
+          return const MobilePlayerEmptyState();
         }
         //because of this is read and have to await, this has to be a AsyncNotifier
         final mediaFile = await info.media.file;
         if (mediaFile == null) {
-          return const PlayerEmptyState();
+          return const MobilePlayerEmptyState();
         }
         final player = VideoPlayerController.file(mediaFile);
         await player.initialize();
-        player.addListener(() => add(PlayerPositionChangeByPlayingEvent(player.value.position)));
+        player.addListener(
+          () => add(
+            MobilePlayerPositionChangeByPlayingEvent(player.value.position),
+          ),
+        );
         final title = await info.media.titleAsync;
         var progress = metadata.mediaProgressList.firstWhereOrNull(
           (mp) => mp.mediaId == info.media.id,
         );
-        final (:subtitleList, :selectedSubtitleName, :subtitleState, :subtitleListButtonVisible) =
-            await _reloadSubtitle(info.media, info.selectedSubtitleName, info.position);
+        final (
+          :subtitleList,
+          :selectedSubtitleName,
+          :subtitleState,
+          :subtitleListButtonVisible,
+        ) = await _reloadSubtitle(
+          info.media,
+          info.selectedSubtitleName,
+          info.position,
+        );
         progress =
             progress?.copyWith(
               mediaId: info.media.id,
@@ -573,7 +659,7 @@ class PlayerBloc extends PlayerBlocType {
           await player.play();
         }
         final int? loopIndex;
-        if (state.as<PlayerDataState>()?.loopIndex == null) {
+        if (state.as<MobilePlayerDataState>()?.loopIndex == null) {
           loopIndex = null;
         } else {
           final sentenceList = subtitleList
@@ -581,7 +667,7 @@ class PlayerBloc extends PlayerBlocType {
               ?.sentenceList;
           loopIndex = sentenceList?.spot(info.position)?.index;
         }
-        return PlayerDataState(
+        return MobilePlayerDataState(
           aspectRatio: player.value.aspectRatio,
           subtitleList: subtitleList,
           selectedSubtitleName: selectedSubtitleName,
@@ -613,12 +699,18 @@ class PlayerBloc extends PlayerBlocType {
       bool subtitleListButtonVisible,
     })
   >
-  _reloadSubtitle(AssetEntity media, String? selectedSubtitleName, Duration position) async {
+  _reloadSubtitle(
+    AssetEntity media,
+    String? selectedSubtitleName,
+    Duration position,
+  ) async {
     final subtitleList = await media.subtitleList;
     if (!subtitleList.any((s) => s.name == selectedSubtitleName)) {
       selectedSubtitleName = subtitleList.firstOrNull?.name;
     }
-    final subtitle = subtitleList.firstWhereOrNull((s) => s.name == selectedSubtitleName);
+    final subtitle = subtitleList.firstWhereOrNull(
+      (s) => s.name == selectedSubtitleName,
+    );
     final spot = subtitle?.sentenceList.spot(position);
     EventHub.emit(HubPlayingSentenceChangeEvent(spot?.sentence.id));
     final PlayerSubtitleState subtitleState;
@@ -641,7 +733,10 @@ class PlayerBloc extends PlayerBlocType {
 
   @override
   SentenceCardBlocType sentenceCardBlocAtIndex(int index) {
-    final sentence = state.as<PlayerDataState>()?.selectedSubtitle?.sentenceList[index];
+    final sentence = state
+        .as<MobilePlayerDataState>()
+        ?.selectedSubtitle
+        ?.sentenceList[index];
     final playing = _spot?.index == index;
     return SentenceCardBloc(sentence)..add(SentenceCardInitEvent(playing));
   }
@@ -649,8 +744,8 @@ class PlayerBloc extends PlayerBlocType {
   @override
   PlayerSubtitleListBlocType get subtitleListBlocType {
     return PlayerSubtitleListBloc(
-      state.as<PlayerDataState>()?.subtitleList ?? [],
-      state.as<PlayerDataState>()?.selectedSubtitleName,
+      state.as<MobilePlayerDataState>()?.subtitleList ?? [],
+      state.as<MobilePlayerDataState>()?.selectedSubtitleName,
     );
   }
 
